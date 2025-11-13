@@ -13,18 +13,21 @@ This guide will help you set up the Agent Observability system to monitor and vi
 Add the PAI_DIR environment variable to your shell profile:
 
 **For zsh users** (macOS default):
+
 ```bash
 echo 'export PAI_DIR="$HOME/.claude"' >> ~/.zshrc
 source ~/.zshrc
 ```
 
 **For bash users**:
+
 ```bash
 echo 'export PAI_DIR="$HOME/.claude"' >> ~/.bashrc
 source ~/.bashrc
 ```
 
 Verify it's set:
+
 ```bash
 echo $PAI_DIR
 # Should output: /Users/yourname/.claude
@@ -64,6 +67,7 @@ If you already have `~/.claude/settings.json`:
 4. **Important**: Each hook type (PreToolUse, PostToolUse, etc.) can have multiple hooks. Add the `capture-all-events.ts` hook to each type alongside your existing hooks.
 
 Example merged hook:
+
 ```json
 "SessionStart": [
   {
@@ -125,25 +129,29 @@ bun install
 Open two terminal windows/tabs:
 
 **Terminal 1 - Backend Server**:
+
 ```bash
 cd ~/Projects/PAI/skills/agent-observability/apps/server
 bun run dev
 ```
 
 You should see:
-```
+
+```txt
 Server running on http://localhost:3001
 Watching for events...
 ```
 
 **Terminal 2 - Frontend Client**:
+
 ```bash
 cd ~/Projects/PAI/skills/agent-observability/apps/client
 bun run dev
 ```
 
 You should see:
-```
+
+```txt
   VITE v5.x.x  ready in xxx ms
 
   ➜  Local:   http://localhost:5173/
@@ -153,7 +161,8 @@ You should see:
 ## 7. Open Dashboard
 
 Open your browser to:
-```
+
+```txt
 http://localhost:5173
 ```
 
@@ -167,6 +176,7 @@ You should see the Agent Observability dashboard with a timeline view.
 4. Watch the dashboard update in real-time!
 
 You should see:
+
 - 🟢 SessionStart event when you open Claude Code
 - 🔵 PreToolUse events before each tool is used
 - 🟣 PostToolUse events after each tool completes
@@ -178,29 +188,35 @@ You should see:
 ### Events Not Appearing in Dashboard
 
 1. **Check hook is running**:
+
    ```bash
    # After using a tool in Claude Code, check if events are being written
    ls -lt ~/.claude/history/raw-outputs/ | head -5
    ```
+
    You should see recent `.jsonl` files
 
 2. **Check server logs**:
    Look at Terminal 1 (server) for any error messages
 
 3. **Verify PAI_DIR is set**:
+
    ```bash
    echo $PAI_DIR
    ```
 
 4. **Check hook permissions**:
+
    ```bash
    ls -l ~/.claude/skills/agent-observability/hooks/capture-all-events.ts
    ```
+
    Should show `-rwxr-xr-x` (executable)
 
 ### Server Won't Start
 
 1. **Port already in use**:
+
    ```bash
    lsof -i :3001
    # Kill any process using port 3001
@@ -208,6 +224,7 @@ You should see:
    ```
 
 2. **Dependencies not installed**:
+
    ```bash
    cd ~/Projects/PAI/skills/agent-observability/apps/server
    rm -rf node_modules
@@ -217,6 +234,7 @@ You should see:
 ### Dashboard Shows Old Data
 
 The dashboard watches for new events but doesn't automatically reload historical data. To see old events:
+
 1. Stop the server (Ctrl+C in Terminal 1)
 2. Restart with `bun run dev`
 3. Refresh the browser
@@ -236,6 +254,7 @@ To change where events are stored, edit `~/.claude/settings.json`:
 ```
 
 Then create the required structure:
+
 ```bash
 mkdir -p /path/to/your/custom/directory/history/raw-outputs
 ```
@@ -243,6 +262,7 @@ mkdir -p /path/to/your/custom/directory/history/raw-outputs
 ### Filter Events
 
 To only capture specific event types, remove unwanted hooks from your `~/.claude/settings.json`. For example, to only capture tool usage (not prompts or session events), keep only:
+
 - PreToolUse
 - PostToolUse
 

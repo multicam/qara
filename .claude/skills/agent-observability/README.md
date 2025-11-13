@@ -49,7 +49,7 @@ Our implementation leverages Claude Code's hook system to capture events directl
 
 ## Architecture
 
-```
+```txt
 ┌─────────────────┐
 │  Claude Code    │
 │   (with hooks)  │
@@ -84,6 +84,7 @@ Our implementation leverages Claude Code's hook system to capture events directl
 ```
 
 **Event Flow:**
+
 1. Claude Code executes hooks on various events (tool use, session start, etc.)
 2. `capture-all-events.ts` appends events to daily JSONL file
 3. Server watches JSONL files for changes using Bun's filesystem API
@@ -116,6 +117,7 @@ See [SETUP.md](./SETUP.md) for detailed installation instructions.
 **Quick Start:**
 
 1. Set environment variable:
+
    ```bash
    export PAI_DIR="/Users/yourname/.claude"
    ```
@@ -123,12 +125,14 @@ See [SETUP.md](./SETUP.md) for detailed installation instructions.
 2. Configure hooks in `~/.claude/settings.json` (see `settings.json.example`)
 
 3. Install dependencies:
+
    ```bash
    cd skills/agent-observability/apps/server && bun install
    cd ../client && bun install
    ```
 
 4. Run the dashboard:
+
    ```bash
    # Terminal 1 - Server
    cd apps/server && bun run dev
@@ -148,18 +152,21 @@ Once installed and running, the dashboard will automatically display events from
 ### Dashboard Views
 
 **Timeline View**
+
 - Horizontal swim lanes for each agent
 - Events displayed chronologically
 - Color-coded by agent type
 - Click events for detailed information
 
 **Event Inspector**
+
 - Click any event to see full details
 - View tool inputs/outputs
 - See error messages and stack traces
 - Inspect session metadata
 
 **Filters**
+
 - Filter by agent name
 - Filter by session ID
 - Filter by event type
@@ -179,7 +186,7 @@ Once installed and running, the dashboard will automatically display events from
 
 ## File Structure
 
-```
+```txt
 skills/agent-observability/
 ├── README.md                    # This file
 ├── SETUP.md                     # Installation instructions
@@ -211,22 +218,26 @@ skills/agent-observability/
 ### No events appearing
 
 **Check environment variable:**
+
 ```bash
 echo $PAI_DIR
 # Should output: /Users/yourname/.claude
 ```
 
 **Verify directory exists:**
+
 ```bash
 mkdir -p ~/.claude/history/raw-outputs
 ```
 
 **Check hook is configured:**
+
 ```bash
 cat ~/.claude/settings.json | grep capture-all-events
 ```
 
 **Make hook executable:**
+
 ```bash
 chmod +x /Users/yourname/Projects/PAI/skills/agent-observability/hooks/capture-all-events.ts
 ```
@@ -239,16 +250,19 @@ Look for hook execution errors in your terminal when running Claude Code.
 ### Events file not found
 
 **File naming convention:**
-```
+
+```txt
 ~/.claude/history/raw-outputs/YYYY-MM/YYYY-MM-DD_all-events.jsonl
 ```
 
 **Check if files are being created:**
+
 ```bash
 ls -la ~/.claude/history/raw-outputs/$(date +%Y-%m)/
 ```
 
 **Manually test the hook:**
+
 ```bash
 cd /Users/yourname/Projects/PAI/skills/agent-observability/hooks
 PAI_DIR="/Users/yourname/.claude" bun run capture-all-events.ts
@@ -259,18 +273,21 @@ PAI_DIR="/Users/yourname/.claude" bun run capture-all-events.ts
 ### WebSocket connection failed
 
 **Check server is running:**
+
 ```bash
 # Should show server on port 3001
 lsof -i :3001
 ```
 
 **Check for port conflicts:**
+
 ```bash
 # Kill conflicting process
 kill -9 $(lsof -ti:3001)
 ```
 
 **Restart both server and client:**
+
 ```bash
 # Terminal 1
 cd apps/server && bun run dev
@@ -287,17 +304,20 @@ Open DevTools (F12) and look for WebSocket connection errors.
 ### Permission denied
 
 **Make hook executable:**
+
 ```bash
 chmod +x skills/agent-observability/hooks/capture-all-events.ts
 ```
 
 **Check directory permissions:**
+
 ```bash
 ls -la ~/.claude/history/
 # Should be writable by your user
 ```
 
 **Verify PAI_DIR write access:**
+
 ```bash
 touch ~/.claude/test-write && rm ~/.claude/test-write
 # Should succeed without errors
@@ -308,11 +328,13 @@ touch ~/.claude/test-write && rm ~/.claude/test-write
 ### Events not updating in real-time
 
 **Check file watcher is working:**
+
 ```bash
 # Server logs should show "Watching for file changes..."
 ```
 
 **Test manual event creation:**
+
 ```bash
 echo '{"timestamp":"2025-01-28T12:00:00Z","type":"test","data":{}}' >> \
   ~/.claude/history/raw-outputs/$(date +%Y-%m)/$(date +%Y-%m-%d)_all-events.jsonl
@@ -371,6 +393,7 @@ Contributions are welcome! This is part of the PAI (Personal AI Infrastructure) 
 5. Submit a pull request
 
 **Areas for improvement:**
+
 - Additional visualization types (charts, graphs)
 - Event filtering and search improvements
 - Historical data analysis tools
@@ -417,7 +440,6 @@ Part of the PAI (Personal AI Infrastructure) project. See main PAI repository fo
 
 ## Related Projects
 
-- [PAI Skills Repository](https://github.com/danielmiessler/pai-skills)
 - [Claude Code Documentation](https://docs.anthropic.com/claude/docs)
 - [indydevdan's Agent Observability](https://github.com/indydevdan)
 

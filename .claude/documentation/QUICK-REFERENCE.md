@@ -79,42 +79,6 @@ cp $PAI_DIR/.env.example $PAI_DIR/.env
 
 ---
 
-## 🎯 Voice Server
-
-### Start Voice Server
-
-```bash
-# Start in background
-cd $PAI_DIR/voice-server && bun server.ts &
-
-# Start in foreground (see logs)
-cd $PAI_DIR/voice-server && bun server.ts
-```
-
-### Test Voice Server
-
-```bash
-# Check if running
-curl -s http://localhost:8888/health
-
-# Send test message
-curl -X POST http://localhost:8888/notify \
-  -H "Content-Type: application/json" \
-  -d '{"message": "Hello from PAI!"}'
-```
-
-### Stop Voice Server
-
-```bash
-# Find process
-lsof -i :8888
-
-# Kill by port
-kill $(lsof -t -i:8888)
-```
-
----
-
 ## 🔍 Troubleshooting
 
 ### PAI_DIR Not Found
@@ -302,8 +266,6 @@ ls -la ~/Library/Logs/pai*
 # Git history
 cd $PAI_DIR && git log --oneline -20
 
-# Voice server logs (if running in background)
-tail -f ~/Library/Logs/pai-voice-server.log
 ```
 
 ### Documentation
@@ -340,7 +302,6 @@ open $PAI_DIR/documentation/architecture.md
 | `PAI_HOME` | Your home directory | `/Users/daniel` |
 | `DA` | AI assistant name | `Qara` |
 | `DA_COLOR` | Display color | `purple` |
-| `PORT` | Voice server port | `8888` |
 | `PERPLEXITY_API_KEY` | Perplexity research | `pk-...` |
 | `GOOGLE_API_KEY` | Gemini AI | `AIza...` |
 | `REPLICATE_API_TOKEN` | AI generation | `r8_...` |
@@ -368,10 +329,6 @@ alias pai-shell='open -e ~/.bashrc'
 # Updates
 alias pai-update='cd $PAI_DIR && git pull'
 alias pai-status='cd $PAI_DIR && git status'
-
-# Voice
-alias pai-voice='cd $PAI_DIR/voice-server && bun server.ts &'
-alias pai-test='curl -X POST http://localhost:8888/notify -d "{\"message\":\"Test\"}"'
 ```
 
 ### Keyboard Shortcuts in Terminal

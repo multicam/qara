@@ -27,8 +27,6 @@ import { join } from 'path';
 
 async function sendNotification(title: string, message: string, priority: string = 'normal') {
   try {
-    // Get voice ID from environment variable (customize in settings.json)
-    const voiceId = process.env.DA_VOICE_ID || 'default-voice-id';
 
     const response = await fetch('http://localhost:8888/notify', {
       method: 'POST',
@@ -38,9 +36,7 @@ async function sendNotification(title: string, message: string, priority: string
       body: JSON.stringify({
         title,
         message,
-        voice_enabled: true,
         priority,
-        voice_id: voiceId
       }),
     });
 

@@ -7,12 +7,14 @@ This directory shows the expected structure that will be created in your actual 
 ## Actual Location
 
 Events will be written to:
-```
+
+```txt
 ~/.claude/history/raw-outputs/YYYY-MM/YYYY-MM-DD_all-events.jsonl
 ```
 
 Example:
-```
+
+```txt
 ~/.claude/history/raw-outputs/2025-01/2025-01-28_all-events.jsonl
 ```
 
@@ -36,6 +38,7 @@ Events are stored in JSONL (JSON Lines) format - one JSON object per line:
 ```
 
 This format is:
+
 - ✅ Human-readable (each line is valid JSON)
 - ✅ Grep-able (search with standard tools)
 - ✅ Streamable (process line-by-line)

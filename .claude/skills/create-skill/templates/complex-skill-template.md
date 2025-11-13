@@ -6,6 +6,7 @@ description: Comprehensive description. Mention key methods and tools. USE WHEN 
 # Skill Name
 
 ## When to Activate This Skill
+
 - Building/creating [domain] applications
 - Implementing [capability]
 - User requests [specific feature]
@@ -15,31 +16,37 @@ description: Comprehensive description. Mention key methods and tools. USE WHEN 
 ## Core Workflow
 
 ### Phase 1: [Setup/Initialization]
+
 **Command:** `/command-name` (if applicable)
 
 [Quick setup instructions]
 
 **Key actions:**
+
 - Action 1
 - Action 2
 - Action 3
 
 ### Phase 2: [Main Work]
+
 **Command:** `/command-name` (if applicable)
 
 [Core execution steps]
 
 **Key actions:**
+
 - Action 1
 - Action 2
 - Action 3
 
 ### Phase 3: [Validation/Completion]
+
 **Command:** `/command-name` (if applicable)
 
 [Validation and completion steps]
 
 **Key actions:**
+
 - Action 1
 - Action 2
 - Action 3
@@ -53,6 +60,7 @@ description: Comprehensive description. Mention key methods and tools. USE WHEN 
 ## Default Configuration / Stack
 
 Standard setup for this skill:
+
 - Technology 1
 - Technology 2
 - Technology 3
@@ -90,16 +98,19 @@ For stack info: `read ${PAI_DIR}/skills/[skill-name]/primary-stack/CLAUDE.md`
 ### Common Tasks
 
 **Task 1:**
+
 ```bash
 command-sequence-1
 ```
 
 **Task 2:**
+
 ```bash
 command-sequence-2
 ```
 
 **Task 3:**
+
 ```bash
 command-sequence-3
 ```

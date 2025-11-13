@@ -40,13 +40,11 @@ description: |
   📊 STATUS: Current state after completion
   ➡️ NEXT: Recommended follow-up actions
   🎯 COMPLETED: [Task description in 12 words - NOT "Completed X"]
-  🗣️ CUSTOM COMPLETED: [Voice-optimized response under 8 words]
 
   === PAI/QARA SYSTEM ARCHITECTURE ===
   This description provides: core identity + essential contacts + stack preferences + critical security + response format (always in system prompt).
   Full context loaded from SKILL.md for comprehensive tasks, including:
   - Complete contact list and social media accounts
-  - Voice IDs for agent routing (if using ElevenLabs)
   - Extended security procedures and infrastructure caution
   - Detailed scratchpad instructions
 
@@ -55,7 +53,7 @@ description: |
   - Tier 2 (On Demand): Read SKILL.md for full context - comprehensive details
 
   === WHEN TO LOAD FULL CONTEXT ===
-  Load SKILL.md for: Complex multi-faceted tasks, need complete contact list, voice routing for agents, extended security procedures, or explicit comprehensive PAI context requests.
+  Load SKILL.md for: Complex multi-faceted tasks, need complete contact list, routing for agents, extended security procedures, or explicit comprehensive PAI context requests.
 
   === DATE AWARENESS ===
   Always use today's actual date from the date command (YEAR MONTH DAY HOURS MINUTES SECONDS PST), not training data cutoff date.
@@ -87,26 +85,6 @@ When user says these first names:
 - **LinkedIn**: https://www.linkedin.com/in/yourprofile/
 - **Instagram**: https://instagram.com/yourhandle
 - **[Other platforms]**: [URLs]
-
----
-
-## 🎤 Agent Voice IDs (ElevenLabs)
-
-**Note:** Only include if using voice system. Delete this section if not needed.
-
-For voice system routing:
-
-- qara: [your-voice-id-here]
-- perplexity-researcher: [your-voice-id-here]
-- claude-researcher: [your-voice-id-here]
-- gemini-researcher: [your-voice-id-here]
-- pentester: [your-voice-id-here]
-- engineer: [your-voice-id-here]
-- principal-engineer: [your-voice-id-here]
-- designer: [your-voice-id-here]
-- architect: [your-voice-id-here]
-- artist: [your-voice-id-here]
-- writer: [your-voice-id-here]
 
 ---
 
@@ -146,7 +124,9 @@ Configured in `~/.claude/settings.json`
 ### Infrastructure Caution
 
 Be **EXTREMELY CAUTIOUS** when working with:
+
 - AWS
+- Vercel
 - Cloudflare
 - [ADD YOUR SPECIFIC INFRASTRUCTURE - GCP, Azure, DigitalOcean, etc.]
 - Any core production-supporting services

@@ -6,6 +6,7 @@ description: Guide for creating new skills in Qara's personal AI infrastructure.
 # Create Skill - Skill Creation Framework
 
 ## When to Activate This Skill
+
 - "Create a new skill for X"
 - "Build a skill that does Y"
 - "Add a skill for Z"
@@ -16,7 +17,9 @@ description: Guide for creating new skills in Qara's personal AI infrastructure.
 ## Core Skill Creation Workflow
 
 ### Step 1: Understand the Purpose
+
 Ask these questions:
+
 - **What does this skill do?** (Clear, specific purpose)
 - **When should it activate?** (Trigger conditions)
 - **What tools/commands does it use?** (Dependencies)
@@ -25,12 +28,14 @@ Ask these questions:
 ### Step 2: Choose Skill Type
 
 **Simple Skill** (SKILL.md only):
+
 - Single focused capability
 - Minimal dependencies
 - Quick reference suffices
 - Examples: fabric-patterns, youtube-extraction
 
 **Complex Skill** (SKILL.md + CLAUDE.md + supporting files):
+
 - Multi-step workflows
 - Extensive context needed
 - Multiple sub-components
@@ -53,6 +58,7 @@ ${PAI_DIR}/skills/[skill-name]/
 ### Step 4: Write SKILL.md (Required)
 
 Use this structure:
+
 ```markdown
 ---
 name: skill-name
@@ -79,6 +85,7 @@ For detailed context: `read ${PAI_DIR}/skills/[skill-name]/CLAUDE.md`
 ### Step 5: Write CLAUDE.md (If Complex)
 
 Include:
+
 - Comprehensive methodology
 - Detailed workflows
 - Component documentation
@@ -106,12 +113,14 @@ Update `${PAI_DIR}/global/QARA.md` available_skills section to include the new s
 ## Description Best Practices
 
 Your description should:
+
 - Clearly state what the skill does
 - Include trigger phrases (e.g., "USE WHEN user says...")
 - Mention key tools/methods used
 - Be concise but complete (1-3 sentences)
 
 **Good examples:**
+
 - "Multi-source comprehensive research using perplexity-researcher, claude-researcher, and gemini-researcher agents. Launches up to 10 parallel research agents for fast results. USE WHEN user says 'do research', 'research X', 'find information about'..."
 - "Chrome DevTools MCP for web application debugging, visual testing, and browser automation. The ONLY acceptable way to debug web apps - NEVER use curl, fetch, or wget."
 

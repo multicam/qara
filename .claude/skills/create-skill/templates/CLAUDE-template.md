@@ -5,6 +5,7 @@
 **[Value proposition - what this skill enables and why it matters]**
 
 This guide covers:
+
 - [Major topic 1]
 - [Major topic 2]
 - [Major topic 3]
@@ -25,11 +26,13 @@ This guide covers:
 ### [Main Approach] vs [Alternative Approach]
 
 **The Problem [Alternative] Solves:**
+
 - Problem 1
 - Problem 2
 - Problem 3
 
 **Why [Main Approach] Is Different:**
+
 - ✅ Advantage 1 with explanation
 - ✅ Advantage 2 with explanation
 - ✅ Advantage 3 with explanation
@@ -46,6 +49,7 @@ This guide covers:
 ### Core Components
 
 **Component 1:**
+
 - Purpose
 - How it works
 - When to use
@@ -56,7 +60,7 @@ This guide covers:
 
 ### System Diagram / Workflow Overview
 
-```
+```txt
 [ASCII diagram or structured breakdown of system]
 ```
 
@@ -65,16 +69,19 @@ This guide covers:
 **[Brief description of the workflow approach]**
 
 ### Phase 0: [Setup/Foundation]
+
 **Command:** `/command-name` (if applicable)
 
 [Detailed instructions for this phase]
 
 **Objectives:**
+
 - Objective 1
 - Objective 2
 - Objective 3
 
 **Output:**
+
 - Output file 1 - Description
 - Output file 2 - Description
 - Automatically captured to [location]
@@ -82,17 +89,20 @@ This guide covers:
 **Notes:** [Important notes about this phase]
 
 ### Phase 1: [Next Phase Name]
+
 **Command:** `/command-name`
 
 [Detailed instructions]
 
 **Objectives:**
+
 - Objective 1
 - Objective 2
 
 **Output:** [What gets created]
 
 ### Phase 2: [Next Phase Name]
+
 [Continue for all phases]
 
 **🏁 Goal: [Summary of what the complete workflow achieves]**
@@ -102,13 +112,17 @@ This guide covers:
 These enhance [aspect] throughout the process:
 
 ### `/command-name-1`
+
 **When:** [When to use this command]
+
 - Purpose and benefits
 - What it does
 - How it improves results
 
 ### `/command-name-2`
+
 **When:** [When to use this command]
+
 - Purpose and benefits
 - What it does
 - How it improves results
@@ -138,6 +152,7 @@ These enhance [aspect] throughout the process:
 [Detailed description of primary technology]
 
 **Key features:**
+
 - Feature 1
 - Feature 2
 - Feature 3
@@ -145,6 +160,7 @@ These enhance [aspect] throughout the process:
 ### Supporting Tools
 
 **Tool 1:**
+
 - Purpose
 - Integration
 - Usage
@@ -173,11 +189,11 @@ These enhance [aspect] throughout the process:
 ### Agent 1 (Name)
 
 **Training:** [Specialization]
-**Voice:** [ID]
 **Configuration:** `path`
 **Parallel Execution:** [Capabilities]
 
 **Responsibilities:**
+
 - Phase 1: [What agent does]
 - Phase 2: [What agent does]
 
@@ -188,6 +204,7 @@ These enhance [aspect] throughout the process:
 [How agents work together]
 
 **Workflow Handoff:**
+
 1. Agent 1 completes [work]
 2. Agent 2 validates [artifacts]
 3. Communication protocol
@@ -218,6 +235,7 @@ These enhance [aspect] throughout the process:
 **Rationale:** [Why this matters]
 
 **Consequences of violation:**
+
 - Consequence 1
 - Consequence 2
 
@@ -239,6 +257,7 @@ These enhance [aspect] throughout the process:
 **Context:** [Situation description]
 
 **Approach:**
+
 ```
 Step-by-step walkthrough with commands/code
 ```
@@ -248,6 +267,7 @@ Step-by-step walkthrough with commands/code
 **Lessons:** [What to learn from this]
 
 ### Example 2: [Scenario Name]
+
 [Same structure]
 
 ## 📈 SUCCESS METRICS / VALIDATION
@@ -269,6 +289,7 @@ Step-by-step walkthrough with commands/code
 ### Problem 1: [Common Issue]
 
 **Symptoms:**
+
 - Symptom 1
 - Symptom 2
 
@@ -279,16 +300,19 @@ Step-by-step walkthrough with commands/code
 [Step-by-step fix]
 
 ### Problem 2: [Common Issue]
+
 [Same structure]
 
 ## 📚 SUPPLEMENTARY RESOURCES
 
 ### Internal Resources
+
 - Path to related documentation
 - Path to components
 - Path to examples
 
 ### External Resources
+
 - Official documentation links
 - Community resources
 - Learning materials
@@ -311,10 +335,12 @@ command-sequence
 ### Decision Tree
 
 **When to use approach A:**
+
 - Condition 1
 - Condition 2
 
 **When to use approach B:**
+
 - Condition 1
 - Condition 2
 
@@ -338,16 +364,19 @@ command-sequence
 ## 🎯 SUMMARY
 
 **Key Takeaways:**
+
 1. Takeaway 1
 2. Takeaway 2
 3. Takeaway 3
 
 **Remember:**
+
 - Critical point 1
 - Critical point 2
 - Critical point 3
 
 **Next Steps:**
+
 - Action 1
 - Action 2
 - Action 3

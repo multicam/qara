@@ -6,6 +6,7 @@ description: Create irresistible offers and pitches using Alex Hormozi's methodo
 # Alex Hormozi Pitch Skill
 
 ## When to Activate This Skill
+
 - Create compelling offer or pitch
 - Design irresistible value proposition
 - Structure pricing and guarantees
@@ -33,17 +34,20 @@ Guides you through Alex Hormozi's systematic approach to creating offers so comp
 ## Core Frameworks Applied
 
 ### The Value Equation
-```
+
+```txt
 Value = (Dream Outcome × Perceived Likelihood) / (Time Delay × Effort & Sacrifice)
 ```
 
 ### Four Guarantee Types
+
 - Unconditional (money-back)
 - Conditional (performance-based)
 - Outcome-based (results-tied)
 - Anti-guarantee (all sales final)
 
 ### MAGIC Naming Formula
+
 - **M**ake it about them
 - **A**nnounce the avatar
 - **G**ive them a goal

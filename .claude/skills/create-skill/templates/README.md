@@ -5,18 +5,22 @@ This directory contains templates for creating new skills in Qara's personal AI 
 ## Available Templates
 
 ### 1. simple-skill-template.md
+
 **Use for:**
+
 - Single focused capability
 - Straightforward workflows
 - Minimal context needed (< 100 lines)
 - Quick reference is sufficient
 
 **Examples from PAI:**
+
 - fabric-patterns
 - youtube-extraction
 - email
 
 **Structure:**
+
 - YAML frontmatter (name, description)
 - When to Activate section
 - Core workflow
@@ -25,18 +29,22 @@ This directory contains templates for creating new skills in Qara's personal AI 
 - Supplementary resources
 
 ### 2. complex-skill-template.md
+
 **Use for:**
+
 - Multi-phase workflows
 - Extensive methodology
 - Multiple components
 - Requires deep context
 
 **Examples from PAI:**
+
 - development (with CLAUDE.md, primary-stack, style-guide)
 - website (full lifecycle management)
 - consulting (professional services)
 
 **Structure:**
+
 - YAML frontmatter
 - When to Activate section
 - Core workflow (multi-phase)
@@ -47,32 +55,39 @@ This directory contains templates for creating new skills in Qara's personal AI 
 - Key principles
 
 **Note:** Complex skills should have:
+
 - SKILL.md (quick reference - use this template)
 - CLAUDE.md (comprehensive guide - use CLAUDE-template.md)
 - Supporting subdirectories as needed
 
 ### 3. skill-with-agents-template.md
+
 **Use for:**
+
 - Skills that use specialized agents
 - Workflows requiring agent expertise
 - Parallel execution capabilities
 - Agent collaboration protocols
 
 **Examples from PAI:**
+
 - research (parallel researcher agents)
 - development (architect + engineer agents)
 
 **Structure:**
+
 - YAML frontmatter
 - When to Activate section
-- Available agents (with training, voice, config)
+- Available agents (with training, config)
 - Execution workflow (single vs parallel)
 - Agent collaboration protocol
 - Speed benefits
 - Supplementary resources
 
 ### 4. CLAUDE-template.md
+
 **Use for:**
+
 - Comprehensive documentation for complex skills
 - Deep methodology guides
 - Complete system documentation
@@ -80,6 +95,7 @@ This directory contains templates for creating new skills in Qara's personal AI 
 **Pairs with:** complex-skill-template.md
 
 **Structure:**
+
 - Purpose statement
 - What is [concept]?
 - Architecture/methodology
@@ -96,31 +112,39 @@ This directory contains templates for creating new skills in Qara's personal AI 
 ## How to Use These Templates
 
 ### Step 1: Choose Template
+
 Decide if your skill is:
+
 - Simple → simple-skill-template.md
 - Complex → complex-skill-template.md + CLAUDE-template.md
 - Agent-based → skill-with-agents-template.md
 
 ### Step 2: Copy Template
+
 ```bash
 cp ${PAI_DIR}/skills/create-skill/templates/[template-name].md \
    ${PAI_DIR}/skills/[new-skill-name]/SKILL.md
 ```
 
 ### Step 3: Customize
+
 Replace all placeholders:
+
 - `[skill-name]` → actual skill name
 - `[description]` → actual description
 - `[trigger phrase]` → actual trigger phrases
 - All bracketed content → actual content
 
 ### Step 4: Write Content
+
 Follow the structure, fill in all sections with actual content.
 
 ### Step 5: Add to Global Context
+
 Update `${PAI_DIR}/global/QARA.md` available_skills section.
 
 ### Step 6: Test
+
 Test activation with natural language phrases.
 
 ## Template Placeholders
@@ -143,6 +167,7 @@ Look for these patterns and replace them:
 ## Validation Checklist
 
 After using a template, verify:
+
 - [ ] All `[bracketed placeholders]` replaced
 - [ ] YAML frontmatter complete (name, description)
 - [ ] Description includes activation triggers

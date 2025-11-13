@@ -247,6 +247,7 @@ fabric "your text here" -p [pattern]
 - `create_upgrade_pack` - Upgrade documentation
 
 ### Improvement (10 patterns)
+
 - `improve_writing` - General writing improvement
 - `improve_academic_writing` - Academic writing
 - `improve_prompt` - Prompt engineering
@@ -259,6 +260,7 @@ fabric "your text here" -p [pattern]
 - `clean_text` - Text cleanup
 
 ### Rating/Judgment (8 patterns)
+
 - `rate_ai_response` - Rate AI outputs
 - `rate_ai_result` - Rate AI results
 - `rate_content` - Rate content quality
@@ -290,12 +292,14 @@ ls ~/.config/fabric/patterns/
 ## 💡 Usage Examples
 
 **Threat Modeling:**
+
 ```bash
 # User: "Create a threat model for our new API"
 fabric "API that handles user authentication and payment processing" -p create_threat_model
 ```
 
 **Summarization:**
+
 ```bash
 # User: "Summarize this blog post"
 fabric -u "https://example.com/blog-post" -p summarize
@@ -305,6 +309,7 @@ fabric -u "https://example.com/article" -p create_5_sentence_summary
 ```
 
 **Wisdom Extraction:**
+
 ```bash
 # User: "Extract wisdom from this video"
 fabric -y "https://youtube.com/watch?v=..." -p extract_wisdom
@@ -314,6 +319,7 @@ fabric -u "URL" -p extract_main_idea
 ```
 
 **Analysis:**
+
 ```bash
 # User: "Analyze this code for issues"
 fabric "$(cat code.py)" -p analyze_code
@@ -338,6 +344,7 @@ fabric "security claims text" -p analyze_claims
 ## 🚀 Advanced Usage
 
 **Pipe content through Fabric:**
+
 ```bash
 cat article.txt | fabric -p extract_wisdom
 pbpaste | fabric -p summarize
@@ -345,12 +352,14 @@ curl -s "https://..." | fabric -p analyze_claims
 ```
 
 **Process YouTube videos:**
+
 ```bash
 # Fabric handles download + transcription + processing
 fabric -y "https://youtube.com/watch?v=..." -p youtube_summary
 ```
 
 **Chain patterns (manual):**
+
 ```bash
 # Extract then summarize
 fabric -u "URL" -p extract_wisdom > wisdom.txt
@@ -369,6 +378,7 @@ cat wisdom.txt | fabric -p create_5_sentence_summary
 **The skill's value is in selecting the RIGHT pattern for the task.**
 
 When user says "Create a threat model using Fabric", your job is to:
+
 1. Recognize "threat model" intent
 2. Know available options: `create_threat_model`, `create_stride_threat_model`, `create_threat_scenarios`
 3. Select the best match (usually `create_threat_model` unless STRIDE specified)

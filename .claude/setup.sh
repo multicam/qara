@@ -298,7 +298,7 @@ if [ "$NEEDS_INSTALL" = true ]; then
     if [ "$HAS_BUN" = false ]; then
         echo ""
         print_warning "Bun is not installed. Bun is a fast JavaScript runtime."
-        print_info "It's needed for PAI's voice server and other features."
+        print_info "It's needed for features."
         echo ""
 
         if ask_yes_no "Install Bun?"; then
@@ -375,7 +375,7 @@ if [ "$SHOULD_ADD_CONFIG" = true ]; then
     print_step "Adding PAI environment variables to $SHELL_CONFIG..."
 
     # Ask for AI assistant name
-    AI_NAME=$(ask_input "What would you like to call your AI assistant?" "Qora")
+    AI_NAME=$(ask_input "What would you like to call your AI assistant?" "Qara")
 
     # Ask for color
     echo ""
@@ -452,8 +452,8 @@ if [ "$SHOULD_CREATE_ENV" = true ]; then
     print_step "Creating .env file from template..."
 
     # In v0.6.0, .env.example is in .claude/ subdirectory
-    if [ -f "$PAI_DIR/.claude/.env.example" ]; then
-        cp "$PAI_DIR/.claude/.env.example" "$PAI_DIR/.env"
+    if [ -f "$PAI_DIR/.env.example" ]; then
+        cp "$PAI_DIR/.env.example" "$PAI_DIR/.env"
 
         # Update PAI_DIR in .env
         if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -492,56 +492,8 @@ fi
 # Step 7: Voice Server Setup (Optional)
 # ============================================
 
-print_header "Step 7: Voice Server (Optional)"
+print_header "Step 7: Voice Server -- disabled"
 
-echo "PAI includes a voice server that can speak notifications to you."
-echo "It uses macOS's built-in Premium voices (free, high-quality, offline)."
-echo ""
-
-if ask_yes_no "Would you like to set up the voice server?" "n"; then
-    print_step "Setting up voice server..."
-
-    # Check if voice server directory exists
-    if [ -d "$PAI_DIR/voice-server" ]; then
-        cd "$PAI_DIR/voice-server"
-
-        # Install dependencies
-        print_step "Installing voice server dependencies..."
-        bun install
-
-        print_success "Voice server configured!"
-        print_info "To start the voice server, run:"
-        echo "  cd $PAI_DIR/voice-server && bun server.ts &"
-        echo ""
-
-        if ask_yes_no "Start the voice server now?"; then
-            bun server.ts &
-            sleep 2
-
-            # Test the voice server
-            if curl -s http://localhost:8888/health >/dev/null 2>&1; then
-                print_success "Voice server is running!"
-
-                if ask_yes_no "Test the voice server?"; then
-                    curl -X POST http://localhost:8888/notify \
-                        -H "Content-Type: application/json" \
-                        -d '{"message": "Hello! Your voice server is working perfectly!"}' \
-                        2>/dev/null
-
-                    sleep 2
-                    print_success "You should have heard a message!"
-                fi
-            else
-                print_warning "Voice server may not have started correctly."
-                print_info "Check the logs for details."
-            fi
-        fi
-    else
-        print_warning "Voice server directory not found. Skipping."
-    fi
-else
-    print_info "Skipping voice server setup. You can set it up later."
-fi
 
 # ============================================
 # Step 8: Claude Code Integration
@@ -568,223 +520,44 @@ if ask_yes_no "Are you using Claude Code?"; then
             mv "$HOME/.claude/settings.json" "$HOME/.claude/settings.json.backup"
             print_info "Backed up existing settings to settings.json.backup"
 
-            ln -sf "$PAI_DIR/.claude/settings.json" "$HOME/.claude/settings.json"
+            ln -sf "$PAI_DIR/settings.json" "$HOME/.claude/settings.json"
             print_success "Claude Code configured to use PAI!"
         fi
     else
-        ln -sf "$PAI_DIR/.claude/settings.json" "$HOME/.claude/settings.json"
+        ln -sf "$PAI_DIR/settings.json" "$HOME/.claude/settings.json"
         print_success "Claude Code configured to use PAI!"
     fi
 
-    # Fix: Replace ${PAI_DIR} with absolute path in settings.json and commands
-    print_step "Verifying hooks configuration..."
-
-    # Check if settings.json uses ${PAI_DIR} variable (needs fixing)
-    if grep -q '${PAI_DIR}' "$PAI_DIR/.claude/settings.json" 2>/dev/null; then
-        print_warning "Fixing hook paths in settings.json..."
-
-        # Replace all instances of ${PAI_DIR} with the actual absolute path
-        sed -i "s|\${PAI_DIR}|$PAI_DIR|g" "$PAI_DIR/.claude/settings.json"
-
-        print_success "Variable paths fixed in settings.json"
-    fi
-
-    # v0.6.0 fix: Update hook paths from /PAI/hooks/ to /PAI/.claude/hooks/ (always run)
-    if [ -f "$PAI_DIR/.claude/settings.json" ]; then
-        if grep -q "$PAI_DIR/hooks/" "$PAI_DIR/.claude/settings.json" 2>/dev/null; then
-            print_warning "Fixing v0.6.0 hook paths in settings.json..."
-
-            # Update hook paths from /PAI/hooks/ to /PAI/.claude/hooks/
-            sed -i "s|$PAI_DIR/hooks/|$PAI_DIR/.claude/hooks/|g" "$PAI_DIR/.claude/settings.json"
-
-            # Update statusline path from /PAI/statusline to /PAI/.claude/statusline
-            sed -i "s|$PAI_DIR/statusline-command.sh|$PAI_DIR/.claude/statusline-command.sh|g" "$PAI_DIR/.claude/settings.json"
-
-            print_success "v0.6.0 paths fixed in settings.json"
-        fi
-    fi
-
-    # v0.6.0 fix: Update hook scripts to use .claude/skills path
-    if [ -f "$PAI_DIR/.claude/hooks/load-core-context.ts" ]; then
-        print_warning "Fixing skill paths in load-core-context.ts hook..."
-        sed -i "s|'skills/CORE/SKILL.md'|'.claude/skills/CORE/SKILL.md'|g" "$PAI_DIR/.claude/hooks/load-core-context.ts"
-        print_success "Hook script paths fixed"
-    fi
-
-    # v0.6.0 fix: Update hook scripts to use .claude/hooks path (not /hooks)
-    if [ -f "$PAI_DIR/.claude/hooks/initialize-pai-session.ts" ]; then
-        if grep -q "paiDir, 'hooks/" "$PAI_DIR/.claude/hooks/initialize-pai-session.ts" 2>/dev/null; then
-            print_warning "Fixing hook paths in initialize-pai-session.ts..."
-            sed -i "s|paiDir, 'hooks/|paiDir, '.claude/hooks/|g" "$PAI_DIR/.claude/hooks/initialize-pai-session.ts"
-            print_success "initialize-pai-session.ts hook paths fixed"
-        fi
-    fi
-
-    # Also fix ${PAI_DIR} in commands/load-dynamic-requirements.md
-    if [ -f "$PAI_DIR/.claude/commands/load-dynamic-requirements.md" ] && grep -q '${PAI_DIR}' "$PAI_DIR/.claude/commands/load-dynamic-requirements.md" 2>/dev/null; then
-        print_warning "Fixing paths in load-dynamic-requirements.md..."
-
-        # Replace ${PAI_DIR} with absolute path
-        sed -i "s|\${PAI_DIR}|$PAI_DIR|g" "$PAI_DIR/.claude/commands/load-dynamic-requirements.md"
-
-        # v0.6.0 fix: Update PAI.md path from /PAI/PAI.md to /PAI/.claude/PAI.md
-        sed -i "s|$PAI_DIR/PAI\.md|$PAI_DIR/.claude/PAI.md|g" "$PAI_DIR/.claude/commands/load-dynamic-requirements.md"
-
-        print_success "Command paths fixed in load-dynamic-requirements.md"
-    fi
-
-    # Fix PAI_DIR environment variable in settings.json env section
-    if command_exists jq; then
-        current_pai_dir=$(jq -r '.env.PAI_DIR // empty' "$PAI_DIR/.claude/settings.json" 2>/dev/null)
-        if [ "$current_pai_dir" != "$PAI_DIR" ]; then
-            print_warning "Fixing PAI_DIR environment variable in settings.json..."
-
-            # Update env.PAI_DIR to use absolute path
-            jq --arg pai_dir "$PAI_DIR" '.env.PAI_DIR = $pai_dir' "$PAI_DIR/.claude/settings.json" > "$PAI_DIR/.claude/settings.json.tmp" && \
-            mv "$PAI_DIR/.claude/settings.json.tmp" "$PAI_DIR/.claude/settings.json"
-
-            print_success "PAI_DIR environment variable fixed"
-        fi
-
-        # Update DA (AI assistant name) in settings.json
-        current_da=$(jq -r '.env.DA // empty' "$PAI_DIR/.claude/settings.json" 2>/dev/null)
-        if [ "$current_da" != "$AI_NAME" ]; then
-            print_warning "Updating AI assistant name in settings.json..."
-
-            jq --arg ai_name "$AI_NAME" '.env.DA = $ai_name' "$PAI_DIR/.claude/settings.json" > "$PAI_DIR/.claude/settings.json.tmp" && \
-            mv "$PAI_DIR/.claude/settings.json.tmp" "$PAI_DIR/.claude/settings.json"
-
-            print_success "AI assistant name updated to: $AI_NAME"
-        fi
-
-        # Update DA_COLOR in settings.json
-        current_color=$(jq -r '.env.DA_COLOR // empty' "$PAI_DIR/.claude/settings.json" 2>/dev/null)
-        if [ "$current_color" != "$AI_COLOR" ]; then
-            print_warning "Updating AI assistant color in settings.json..."
-
-            jq --arg ai_color "$AI_COLOR" '.env.DA_COLOR = $ai_color' "$PAI_DIR/.claude/settings.json" > "$PAI_DIR/.claude/settings.json.tmp" && \
-            mv "$PAI_DIR/.claude/settings.json.tmp" "$PAI_DIR/.claude/settings.json"
-
-            print_success "AI assistant color updated to: $AI_COLOR"
-        fi
-    fi
-
-    # Update PAI.md with the user's chosen AI assistant name and identity assertion
-    if [ -f "$PAI_DIR/.claude/PAI.md" ]; then
-        # Check if PAI.md needs identity assertion added
-        if ! grep -q "IMPORTANT: You are" "$PAI_DIR/.claude/PAI.md" 2>/dev/null; then
-            print_warning "Adding identity assertion to PAI.md..."
-
-            # Create a temporary file with the new Core Identity section
-            cat > "$PAI_DIR/.pai_identity_tmp" << IDENTITY_EOF
-## Core Identity
-
-This system is your Personal AI Infrastructure (PAI) instance.
-
-**IMPORTANT: You are $AI_NAME, NOT "Claude Code"!**
-
-**Name:** $AI_NAME
-
-**Role:** Personal AI assistant integrated into the development workflow.
-
-**Operating Environment:** Personal AI infrastructure built around Claude Code with Skills-based context management.
-
-**Personality:** Friendly, professional, helpful, proactive.
-
-**Identity Assertion:**
-- When introducing yourself, use: "I'm $AI_NAME, your AI assistant"
-- Do NOT introduce yourself as "Claude Code" unless specifically discussing the underlying platform
-- $AI_NAME is your primary identity in this PAI system
-- You are powered by Claude (Anthropic's AI) but your name is $AI_NAME
-
----
-IDENTITY_EOF
-
-            # Replace the Core Identity section in PAI.md
-            # First, get the line number where Core Identity starts
-            core_identity_line=$(grep -n "^## Core Identity" "$PAI_DIR/.claude/PAI.md" | cut -d: -f1)
-
-            if [ -n "$core_identity_line" ]; then
-                # Find the next --- after Core Identity
-                next_separator_line=$(tail -n +$((core_identity_line + 1)) "$PAI_DIR/.claude/PAI.md" | grep -n "^---" | head -1 | cut -d: -f1)
-                next_separator_line=$((core_identity_line + next_separator_line))
-
-                # Create new PAI.md: content before Core Identity + new identity + content after separator
-                {
-                    head -n $((core_identity_line - 1)) "$PAI_DIR/.claude/PAI.md"
-                    cat "$PAI_DIR/.pai_identity_tmp"
-                    tail -n +$((next_separator_line + 1)) "$PAI_DIR/.claude/PAI.md"
-                } > "$PAI_DIR/.pai_md_tmp"
-
-                mv "$PAI_DIR/.pai_md_tmp" "$PAI_DIR/.claude/PAI.md"
-                rm "$PAI_DIR/.pai_identity_tmp"
-
-                print_success "PAI.md updated with AI identity: $AI_NAME"
-            else
-                print_warning "Could not find Core Identity section in PAI.md"
-                rm "$PAI_DIR/.pai_identity_tmp"
-            fi
-        elif grep -q "default: Qora" "$PAI_DIR/.claude/PAI.md" 2>/dev/null; then
-            # Simple case: just update the name line
-            print_warning "Updating AI assistant name in PAI.md..."
-            sed -i "s/\*\*Name:\*\* You can customize this (default: Qora)/\*\*Name:\*\* $AI_NAME/" "$PAI_DIR/.claude/PAI.md"
-            print_success "PAI.md updated with AI name: $AI_NAME"
-        fi
-    fi
-
-
     # Update load-dynamic-requirements.md with the user's chosen AI assistant name
-    if [ -f "$PAI_DIR/.claude/commands/load-dynamic-requirements.md" ]; then
-        # Replace hardcoded "Qora" references with the user's chosen name
-        if grep -q "respond like Qora" "$PAI_DIR/.claude/commands/load-dynamic-requirements.md" 2>/dev/null; then
+    if [ -f "$PAI_DIR/commands/load-dynamic-requirements.md" ]; then
+        # Replace hardcoded "Qara" references with the user's chosen name
+        if grep -q "respond like Qara" "$PAI_DIR/commands/load-dynamic-requirements.md" 2>/dev/null; then
             print_warning "Updating AI name in load-dynamic-requirements.md..."
 
-            # Replace the two Qora references in the conversational section
-            sed -i "s/respond like Qora having a chat/respond like $AI_NAME having a chat/g" "$PAI_DIR/.claude/commands/load-dynamic-requirements.md"
-            sed -i "s/You're Qora, their assistant/You're $AI_NAME, their assistant/g" "$PAI_DIR/.claude/commands/load-dynamic-requirements.md"
+            # Replace the two Qara references in the conversational section
+            sed -i "s/respond like Qara having a chat/respond like $AI_NAME having a chat/g" "$PAI_DIR/commands/load-dynamic-requirements.md"
+            sed -i "s/You're Qara, their assistant/You're $AI_NAME, their assistant/g" "$PAI_DIR/commands/load-dynamic-requirements.md"
 
             print_success "load-dynamic-requirements.md updated with AI name: $AI_NAME"
         fi
     fi
 
     # Update SKILL.md with the user's chosen AI assistant name
-    if [ -f "$PAI_DIR/.claude/skills/CORE/SKILL.md" ]; then
+    if [ -f "$PAI_DIR/skills/CORE/SKILL.md" ]; then
         # Check if SKILL.md still has the template placeholder
-        if grep -q "Your Name: \[CUSTOMIZE" "$PAI_DIR/.claude/skills/CORE/SKILL.md" 2>/dev/null; then
+        if grep -q "Your Name: \[CUSTOMIZE" "$PAI_DIR/skills/CORE/SKILL.md" 2>/dev/null; then
             print_warning "Updating AI name in SKILL.md..."
 
             # Replace the template placeholder with the user's chosen name
-            sed -i "s/Your Name: \[CUSTOMIZE - e.g., Qora, Nova, Atlas\]/Your Name: $AI_NAME/" "$PAI_DIR/.claude/skills/CORE/SKILL.md"
+            sed -i "s/Your Name: \[CUSTOMIZE - e.g., Qara, Nova, Atlas\]/Your Name: $AI_NAME/" "$PAI_DIR/skills/CORE/SKILL.md"
 
             print_success "SKILL.md updated with AI name: $AI_NAME"
         fi
     fi
 
-    # Check if load-dynamic-requirements.ts is missing from UserPromptSubmit
-    if ! grep -q "load-dynamic-requirements.ts" "$PAI_DIR/.claude/settings.json" 2>/dev/null; then
-        print_warning "Adding missing load-dynamic-requirements.ts hook..."
-
-        # Use jq to add load-dynamic-requirements.ts to UserPromptSubmit hooks
-        jq --arg pai_dir "$PAI_DIR" '.hooks.UserPromptSubmit[0] = {
-            "matcher": "*",
-            "hooks": [
-                {
-                    "type": "command",
-                    "command": ($pai_dir + "/.claude/hooks/load-dynamic-requirements.ts")
-                },
-                {
-                    "type": "command",
-                    "command": ($pai_dir + "/.claude/hooks/update-tab-titles.ts")
-                }
-            ]
-        }' "$PAI_DIR/.claude/settings.json" > "$PAI_DIR/.claude/settings.json.tmp" && \
-        mv "$PAI_DIR/.claude/settings.json.tmp" "$PAI_DIR/.claude/settings.json"
-
-        print_success "Missing hook added!"
-    fi
 
     # Fix executable permission on load-dynamic-requirements.ts
-    chmod +x "$PAI_DIR/.claude/hooks/load-dynamic-requirements.ts" 2>/dev/null
+    chmod +x "$PAI_DIR/hooks/load-dynamic-requirements.ts" 2>/dev/null
 
     print_success "Hooks configuration verified"
 
@@ -796,7 +569,7 @@ IDENTITY_EOF
     echo ""
 else
     print_info "For other AI assistants, refer to the documentation:"
-    echo "  $PAI_DIR/.claude/documentation/how-to-start.md"
+    echo "  $PAI_DIR/documentation/how-to-start.md"
 fi
 
 # ============================================
@@ -814,11 +587,11 @@ elif [ -d "$HOME/.claude/hooks" ]; then
     if ask_yes_no "Replace it with PAI's hooks?"; then
         mv "$HOME/.claude/hooks" "$HOME/.claude/hooks.backup"
         print_info "Backed up existing hooks to hooks.backup"
-        ln -sf "$PAI_DIR/.claude/hooks" "$HOME/.claude/hooks"
+        ln -sf "$PAI_DIR/hooks" "$HOME/.claude/hooks"
         print_success "Hooks linked to PAI!"
     fi
 else
-    ln -sf "$PAI_DIR/.claude/hooks" "$HOME/.claude/hooks"
+    ln -sf "$PAI_DIR/hooks" "$HOME/.claude/hooks"
     print_success "Hooks linked to PAI!"
 fi
 
@@ -831,11 +604,11 @@ elif [ -d "$HOME/.claude/skills" ]; then
     if ask_yes_no "Replace it with PAI's skills?"; then
         mv "$HOME/.claude/skills" "$HOME/.claude/skills.backup"
         print_info "Backed up existing skills to skills.backup"
-        ln -sf "$PAI_DIR/.claude/skills" "$HOME/.claude/skills"
+        ln -sf "$PAI_DIR/skills" "$HOME/.claude/skills"
         print_success "Skills linked to PAI!"
     fi
 else
-    ln -sf "$PAI_DIR/.claude/skills" "$HOME/.claude/skills"
+    ln -sf "$PAI_DIR/skills" "$HOME/.claude/skills"
     print_success "Skills linked to PAI!"
 fi
 
@@ -880,8 +653,8 @@ else
 fi
 
 # Test 2: Skills directory exists
-if [ -d "$PAI_DIR/.claude/skills" ]; then
-    skill_count=$(find "$PAI_DIR/.claude/skills" -maxdepth 1 -type d | wc -l | tr -d ' ')
+if [ -d "$PAI_DIR/skills" ]; then
+    skill_count=$(find "$PAI_DIR/skills" -maxdepth 1 -type d | wc -l | tr -d ' ')
     print_success "Found $skill_count skills"
 else
     print_warning "Skills directory not found"
@@ -889,7 +662,7 @@ fi
 
 # Test 3: Commands directory exists
 if [ -d "$PAI_DIR/.claude/commands" ]; then
-    command_count=$(find "$PAI_DIR/.claude/commands" -type f -name "*.md" | wc -l | tr -d ' ')
+    command_count=$(find "$PAI_DIR/commands" -type f -name "*.md" | wc -l | tr -d ' ')
     print_success "Found $command_count commands"
 else
     print_warning "Commands directory not found"
@@ -922,7 +695,7 @@ fi
 # Test 7: Hooks symlink
 if [ -L "$HOME/.claude/hooks" ]; then
     hooks_target=$(readlink "$HOME/.claude/hooks")
-    if [ "$hooks_target" = "$PAI_DIR/.claude/hooks" ]; then
+    if [ "$hooks_target" = "$PAI_DIR/hooks" ]; then
         print_success "Hooks symlink configured correctly"
     else
         print_warning "Hooks symlink points to wrong location: $hooks_target"
@@ -934,7 +707,7 @@ fi
 # Test 8: Skills symlink
 if [ -L "$HOME/.claude/skills" ]; then
     skills_target=$(readlink "$HOME/.claude/skills")
-    if [ "$skills_target" = "$PAI_DIR/.claude/skills" ]; then
+    if [ "$skills_target" = "$PAI_DIR/skills" ]; then
         print_success "Skills symlink configured correctly"
     else
         print_warning "Skills symlink points to wrong location: $skills_target"
@@ -991,7 +764,7 @@ echo ""
 echo "3. ${CYAN}Customize PAI for you:${NC}"
 echo "   • Edit: $PAI_DIR/.claude/skills/CORE/SKILL.md"
 echo "   • Add API keys: $PAI_DIR/.env"
-echo "   • Read the docs: $PAI_DIR/.claude/documentation/how-to-start.md"
+echo "   • Read the docs: $PAI_DIR/documentation/how-to-start.md"
 echo ""
 
 print_header "Quick Reference"
@@ -1007,7 +780,7 @@ echo ""
 
 print_header "Resources"
 
-echo "  📖 Documentation: $PAI_DIR/.claude/documentation/"
+echo "  📖 Documentation: $PAI_DIR/documentation/"
 echo "  🌐 GitHub: https://github.com/danielmiessler/Personal_AI_Infrastructure"
 echo "  📝 Blog: https://danielmiessler.com/blog/personal-ai-infrastructure"
 echo "  🎬 Video: https://youtu.be/iKwRWwabkEc"

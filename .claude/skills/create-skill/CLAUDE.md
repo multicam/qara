@@ -5,6 +5,7 @@
 **Skills are modular, self-contained packages that extend Claude's capabilities with specialized knowledge, workflows, and tools.**
 
 This guide combines:
+
 - Anthropic's official skill methodology
 - PAI-specific patterns and conventions
 - Best practices from existing skills
@@ -15,6 +16,7 @@ This guide combines:
 ### Definition
 
 Skills are contextual packages that:
+
 1. **Extend capabilities**: Add specialized knowledge or workflows
 2. **Load progressively**: Metadata → Instructions → Resources
 3. **Activate intelligently**: Match user intent to skill descriptions
@@ -24,12 +26,14 @@ Skills are contextual packages that:
 ### Skills vs Slash Commands
 
 **Skills**:
+
 - Contextual knowledge and workflows
 - Always available in system prompt
 - Triggered by matching user intent
 - Can reference slash commands
 
 **Slash Commands**:
+
 - Executable workflows
 - Must be explicitly invoked
 - Typically orchestrate multiple tools
@@ -42,17 +46,20 @@ Skills are contextual packages that:
 ### Three-Layer Loading System
 
 **Layer 1: Metadata** (Always Loaded)
+
 ```yaml
 ---
 name: skill-name
 description: Clear description with activation triggers
 ---
 ```
+
 - Appears in `<available_skills>` in system prompt
 - Used for intent matching
 - Must be concise but complete
 
 **Layer 2: SKILL.md Body** (Loaded When Activated)
+
 - Quick reference instructions
 - Core workflows
 - Key commands
@@ -60,6 +67,7 @@ description: Clear description with activation triggers
 - References to deeper resources
 
 **Layer 3: Supporting Resources** (Loaded As Needed)
+
 - CLAUDE.md (comprehensive context)
 - Subdirectories (components, templates, docs)
 - Scripts, references, assets
@@ -67,18 +75,21 @@ description: Clear description with activation triggers
 ### Directory Structure Patterns
 
 #### Simple Skill Structure
-```
+
+```txt
 ${PAI_DIR}/skills/fabric-patterns/
 └── SKILL.md          # Everything in one file
 ```
 
 **Use when:**
+
 - Single focused capability
 - Minimal context needed
 - Quick reference suffices
 
 #### Complex Skill Structure
-```
+
+```txt
 ${PAI_DIR}/skills/development/
 ├── SKILL.md                      # Quick reference
 ├── CLAUDE.md                     # Full methodology
@@ -92,6 +103,7 @@ ${PAI_DIR}/skills/development/
 ```
 
 **Use when:**
+
 - Multi-step workflows
 - Extensive methodology
 - Multiple sub-components
@@ -131,6 +143,7 @@ For components: `read ${PAI_DIR}/skills/[name]/[subdirectory]/`
 ### Description Writing Guidelines
 
 **Critical elements:**
+
 1. **What it does**: Clear capability statement
 2. **Key methods/tools**: Mention specific technologies
 3. **Activation triggers**: "USE WHEN user says..." phrases
@@ -139,6 +152,7 @@ For components: `read ${PAI_DIR}/skills/[name]/[subdirectory]/`
 **Examples from PAI:**
 
 **Good - research skill:**
+
 ```yaml
 description: Multi-source comprehensive research using perplexity-researcher,
   claude-researcher, and gemini-researcher agents. Launches up to 10 parallel
@@ -146,27 +160,32 @@ description: Multi-source comprehensive research using perplexity-researcher,
   'find information about', 'investigate', 'analyze trends', 'current events',
   or any research-related request.
 ```
+
 ✅ Clear what it does (multi-source research)
 ✅ Mentions tools (3 researcher types)
 ✅ Lists explicit triggers
 ✅ Explains benefit (parallel, fast)
 
 **Good - chrome-devtools skill:**
+
 ```yaml
 description: Chrome DevTools MCP for web application debugging, visual testing,
   and browser automation. The ONLY acceptable way to debug web apps - NEVER use
   curl, fetch, or wget. Provides screenshots, console inspection, network monitoring,
   and DOM analysis.
 ```
+
 ✅ States purpose (debugging, testing)
 ✅ Strong negative trigger (never use curl)
 ✅ Lists capabilities
 ✅ Clear domain (web applications)
 
 **Bad example:**
+
 ```yaml
 description: A skill for development tasks
 ```
+
 ❌ Too vague
 ❌ No triggers
 ❌ No tools mentioned
@@ -175,6 +194,7 @@ description: A skill for development tasks
 ### Instruction Writing Standards
 
 **Use imperative/infinitive form** (verb-first instructions):
+
 - ✅ "Create directory structure"
 - ✅ "Launch research agents in parallel"
 - ✅ "Use Chrome DevTools for debugging"
@@ -182,12 +202,14 @@ description: A skill for development tasks
 - ❌ "We will launch research agents"
 
 **Be specific and actionable:**
+
 - ✅ "Run `bun dev` to start server"
 - ✅ "Execute `/conduct-research` slash command"
 - ❌ "Start the application"
 - ❌ "Do research"
 
 **Reference, don't duplicate:**
+
 - ✅ "Use contacts from global context"
 - ✅ "Follow global security rules"
 - ✅ "See CLAUDE.md for full methodology"
@@ -198,6 +220,7 @@ description: A skill for development tasks
 ### Phase 1: Planning
 
 **Questions to answer:**
+
 1. What problem does this skill solve?
 2. When should it activate? (User phrases)
 3. What tools/commands does it use?
@@ -208,12 +231,14 @@ description: A skill for development tasks
 **Decision: Simple vs Complex**
 
 Choose SIMPLE if:
+
 - Single focused capability
 - < 100 lines of instruction
 - No sub-components needed
 - Quick reference is sufficient
 
 Choose COMPLEX if:
+
 - Multi-phase workflow
 - Requires extensive methodology
 - Has multiple components
@@ -222,12 +247,14 @@ Choose COMPLEX if:
 ### Phase 2: Structure Creation
 
 **For Simple Skill:**
+
 ```bash
 mkdir -p ${PAI_DIR}/skills/[skill-name]
 # Create SKILL.md only
 ```
 
 **For Complex Skill:**
+
 ```bash
 mkdir -p ${PAI_DIR}/skills/[skill-name]
 mkdir -p ${PAI_DIR}/skills/[skill-name]/[component-dirs]
@@ -237,21 +264,25 @@ mkdir -p ${PAI_DIR}/skills/[skill-name]/[component-dirs]
 ### Phase 3: Content Writing
 
 **Step 1: Write description first**
+
 - This drives everything else
 - Test by asking: "Would Qara activate this skill for relevant requests?"
 
 **Step 2: Document activation triggers**
+
 - List explicit user phrases
 - Include natural language variations
 - Think about how users express this need
 
 **Step 3: Write core instructions**
+
 - Use imperative form
 - Be specific and actionable
 - Include examples
 - Reference deeper resources
 
 **Step 4: Add supporting resources (if complex)**
+
 - CLAUDE.md for methodology
 - Component files for reusable pieces
 - Templates or examples
@@ -261,6 +292,7 @@ mkdir -p ${PAI_DIR}/skills/[skill-name]/[component-dirs]
 **Update global context:**
 
 Edit `${PAI_DIR}/global/QARA.md`:
+
 ```markdown
 <available_skills>
 <skill>
@@ -272,18 +304,21 @@ Edit `${PAI_DIR}/global/QARA.md`:
 ```
 
 **Verify location:**
+
 - User-created skills: `<location>user</location>`
 - System skills: `<location>system</location>`
 
 ### Phase 5: Testing
 
 **Test activation:**
+
 1. Use natural language that should trigger skill
 2. Verify skill loads correctly
 3. Check all file references work
 4. Validate against examples
 
 **Test workflow:**
+
 1. Follow instructions step-by-step
 2. Verify commands execute correctly
 3. Check all tools are available
@@ -292,6 +327,7 @@ Edit `${PAI_DIR}/global/QARA.md`:
 ### Phase 6: Iteration
 
 **Refine based on:**
+
 - Actual usage patterns
 - User feedback
 - Tool updates
@@ -350,6 +386,7 @@ For advanced usage: `read ${PAI_DIR}/docs/[resource].md`
 ### Template 2: Complex Skill
 
 **SKILL.md** (Quick Reference):
+
 ```markdown
 ---
 name: skill-name
@@ -406,6 +443,7 @@ For components: `read ${PAI_DIR}/skills/[name]/[component]/`
 ```
 
 **CLAUDE.md** (Comprehensive Guide):
+
 ```markdown
 # Skill Name - Comprehensive Guide
 
@@ -501,8 +539,8 @@ description: Capability using specialized agents. Supports parallel execution. U
 ## Available Agents
 
 ### Agent 1 (Name)
+
 **Training:** [Specialization]
-**Voice:** [ElevenLabs ID]
 **Configuration:** `${PAI_DIR}/agents/[name].md`
 **Use for:** [When to use this agent]
 
@@ -539,18 +577,21 @@ For methodology: `read ${PAI_DIR}/skills/[name]/CLAUDE.md`
 ### Example 1: Simple Skill (fabric-patterns)
 
 **Analysis:**
+
 - ✅ Single capability (process content with patterns)
 - ✅ Straightforward workflow
 - ✅ No sub-components needed
 - ✅ Only SKILL.md required
 
 **Structure:**
-```
+
+```txt
 skills/fabric-patterns/
 └── SKILL.md
 ```
 
 **Key features:**
+
 - Clear "When to Activate" section
 - Lists common patterns
 - Provides concrete examples
@@ -559,13 +600,15 @@ skills/fabric-patterns/
 ### Example 2: Complex Skill (development)
 
 **Analysis:**
+
 - ✅ Multi-phase methodology (spec-kit)
 - ✅ Multiple components (primary-stack, style-guide)
 - ✅ Extensive context needed
 - ✅ Requires SKILL.md + CLAUDE.md + components
 
 **Structure:**
-```
+
+```txt
 skills/development/
 ├── SKILL.md                    # Quick ref
 ├── CLAUDE.md                   # 500+ lines of methodology
@@ -579,6 +622,7 @@ skills/development/
 ```
 
 **Key features:**
+
 - SKILL.md = quick start (69 lines)
 - CLAUDE.md = full guide (500+ lines)
 - Progressive disclosure
@@ -588,18 +632,21 @@ skills/development/
 ### Example 3: Skill with Agents (research)
 
 **Analysis:**
+
 - ✅ Uses multiple specialized agents
 - ✅ Supports parallel execution
 - ✅ Orchestrates complex workflows
 - ✅ Simple SKILL.md sufficient
 
 **Structure:**
-```
+
+```txt
 skills/research/
 └── SKILL.md
 ```
 
 **Key features:**
+
 - Lists available agents
 - Explains parallel execution
 - References slash command for orchestration
@@ -609,17 +656,20 @@ skills/research/
 ## 🔧 NAMING CONVENTIONS
 
 ### Skill Name (Directory & Metadata)
+
 - **Format**: `lowercase-with-hyphens`
 - **Length**: 2-4 words typically
 - **Style**: Descriptive, not generic
 
 **Good examples:**
+
 - `chrome-devtools` (specific tool)
 - `ai-image-generation` (clear capability)
 - `fabric-patterns` (tool + method)
 - `web-scraping` (clear domain)
 
 **Bad examples:**
+
 - `testing` (too generic)
 - `helper` (meaningless)
 - `chrome_devtools` (underscores)
@@ -630,6 +680,7 @@ skills/research/
 **SKILL.md**: Always exactly this
 **CLAUDE.md**: Always exactly this for comprehensive guides
 **Other files**: Use descriptive names with context:
+
 - `auth-setup.md`
 - `stripe-billing.md`
 - `visual-tdd-workflow.md`
@@ -758,15 +809,19 @@ Execute in sequence or parallel as appropriate.
 ### Anthropic Skill Categories
 
 **Creative & Design:**
+
 - algorithmic-art, canvas-design, slack-gif-creator
 
 **Development & Technical:**
+
 - artifacts-builder, mcp-builder, webapp-testing
 
 **Enterprise & Communication:**
+
 - brand-guidelines, internal-comms, theme-factory
 
 **Meta Skills:**
+
 - skill-creator, template-skill
 
 **PAI follows same categorization principle but with personal infrastructure focus.**
@@ -776,6 +831,7 @@ Execute in sequence or parallel as appropriate.
 ### Global Context Inheritance
 
 Skills automatically have access to:
+
 - Contacts (from QARA.md)
 - Security rules (from QARA.md)
 - Response format (from QARA.md)
@@ -800,6 +856,7 @@ Skills often reference slash commands:
 ```
 
 **Relationship:**
+
 - Skill = Knowledge + Context
 - Command = Executable Workflow
 - Skill activates → Command executes
@@ -820,6 +877,7 @@ For this skill, use:
 ### UFC Integration
 
 Skills inherit Universal Output Capture:
+
 - All execution automatically logged
 - History searchable via commands
 - Learnings captured automatically
@@ -838,6 +896,7 @@ Skills inherit Universal Output Capture:
 ### Version Control
 
 Track skill changes in git:
+
 ```bash
 git add skills/[skill-name]/
 git commit -m "Update [skill-name]: [what changed]"
@@ -846,6 +905,7 @@ git commit -m "Update [skill-name]: [what changed]"
 ### Deprecation
 
 If skill becomes obsolete:
+
 1. Mark as deprecated in description
 2. Point to replacement skill
 3. Don't delete immediately (grace period)
@@ -867,42 +927,52 @@ If skill becomes obsolete:
 ## 🚨 COMMON MISTAKES TO AVOID
 
 ### Mistake 1: Vague Descriptions
+
 ❌ "A skill for web development"
 ✅ "Build applications using spec-kit methodology with TDD..."
 
 ### Mistake 2: Duplicating Global Context
+
 ❌ Copying contacts list into every skill
 ✅ "Use contacts from global context"
 
 ### Mistake 3: Missing Activation Triggers
+
 ❌ No "USE WHEN" phrases
 ✅ "USE WHEN user says 'do research', 'investigate'..."
 
 ### Mistake 4: Imperative Form Violations
+
 ❌ "You should create a directory"
 ✅ "Create directory structure"
 
 ### Mistake 5: Over-complicating Simple Skills
+
 ❌ Creating CLAUDE.md for 20-line skill
 ✅ Keep it simple with just SKILL.md
 
 ### Mistake 6: Under-documenting Complex Skills
+
 ❌ 500-line SKILL.md with no CLAUDE.md
 ✅ Split into SKILL.md (quick ref) + CLAUDE.md (full)
 
 ### Mistake 7: Broken References
+
 ❌ Referencing files that don't exist
 ✅ Verify all paths before committing
 
 ### Mistake 8: No Examples
+
 ❌ Only abstract instructions
 ✅ Include concrete usage examples
 
 ### Mistake 9: Skipping Testing
+
 ❌ Committing without validation
 ✅ Test with natural language first
 
 ### Mistake 10: Forgetting QARA.md Update
+
 ❌ Creating skill but not adding to available_skills
 ✅ Always update global context
 
@@ -911,16 +981,19 @@ If skill becomes obsolete:
 ### Study These Examples
 
 **For simple skills:**
+
 - `fabric-patterns` - Clean, focused, complete
 - `youtube-extraction` - Single capability, clear workflow
 - `email` - Straightforward with important rules
 
 **For complex skills:**
+
 - `development` - Multi-phase methodology, components
 - `website` - Full lifecycle management
 - `consulting` - Professional service delivery
 
 **For agent skills:**
+
 - `research` - Parallel agent execution
 - `development` - Agent collaboration protocol
 
@@ -931,6 +1004,7 @@ If skill becomes obsolete:
 ### Skill Won't Activate
 
 **Check:**
+
 1. Is it in QARA.md available_skills?
 2. Does description match user's intent?
 3. Are activation triggers clear?
@@ -939,6 +1013,7 @@ If skill becomes obsolete:
 ### Instructions Don't Work
 
 **Check:**
+
 1. Are all referenced files present?
 2. Are commands/tools available?
 3. Are paths correct?
@@ -947,6 +1022,7 @@ If skill becomes obsolete:
 ### Complex Skill Overwhelming
 
 **Solution:**
+
 1. Split into SKILL.md + CLAUDE.md
 2. Create component subdirectories
 3. Use progressive disclosure
@@ -955,6 +1031,7 @@ If skill becomes obsolete:
 ### Skill Too Generic
 
 **Solution:**
+
 1. Narrow the scope
 2. Add specific trigger phrases
 3. Define clear boundaries
@@ -963,18 +1040,21 @@ If skill becomes obsolete:
 ## 📚 FURTHER READING
 
 ### Anthropic Resources
+
 - Official skills repository: https://github.com/anthropics/skills
 - skill-creator: Study the meta-skill
 - template-skill: Basic structure template
 - Document skills: Advanced examples (PDF, DOCX, etc.)
 
 ### PAI Resources
+
 - `${PAI_DIR}/global/QARA.md` - Global context and available_skills
 - `${PAI_DIR}/agents/` - Agent configurations
 - `${PAI_DIR}/commands/` - Slash commands
 - `${PAI_DIR}/docs/` - MCP and tool documentation
 
 ### Testing Your Skills
+
 - Launch new Claude session to test clean state
 - Use various phrasings of activation triggers
 - Verify all file references work

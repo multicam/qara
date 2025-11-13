@@ -6,6 +6,7 @@ description: Capability using specialized agents. Supports parallel execution of
 # Skill Name - Agent-Powered Capability
 
 ## When to Activate This Skill
+
 - Task requiring specialized agent expertise
 - Complex multi-step workflows in [domain]
 - Requests for [specific capability]
@@ -15,33 +16,37 @@ description: Capability using specialized agents. Supports parallel execution of
 ## Available Agents
 
 ### Agent 1 Name (Role)
+
 **Training:** [Specialization and methodology]
-**Voice:** [ElevenLabs Voice ID]
 **Configuration:** `${PAI_DIR}/agents/[agent-name].md`
 **Parallel Execution:** Can launch up to 10 agents for [work type]
 
 **Primary Responsibilities:**
+
 - Responsibility 1
 - Responsibility 2
 - Responsibility 3
 
 **Use when:**
+
 - Scenario 1
 - Scenario 2
 - Scenario 3
 
 ### Agent 2 Name (Role)
+
 **Training:** [Specialization and methodology]
-**Voice:** [ElevenLabs Voice ID]
 **Configuration:** `${PAI_DIR}/agents/[agent-name].md`
 **Parallel Execution:** Can launch up to 10 agents for [work type]
 
 **Primary Responsibilities:**
+
 - Responsibility 1
 - Responsibility 2
 - Responsibility 3
 
 **Use when:**
+
 - Scenario 1
 - Scenario 2
 - Scenario 3
@@ -51,11 +56,13 @@ description: Capability using specialized agents. Supports parallel execution of
 ### Single Agent Execution
 
 **When to use:**
+
 - Sequential work required
 - Shared state dependencies
 - Foundation work that blocks others
 
 **Process:**
+
 ```markdown
 1. Launch agent with specific task
 2. Agent completes work
@@ -66,23 +73,27 @@ description: Capability using specialized agents. Supports parallel execution of
 ### Parallel Agent Execution (Up to 10 Agents)
 
 **When to use:**
+
 - Independent tasks can run simultaneously
 - No shared state dependencies
 - Maximum throughput needed
 
 **Parallelizable Work:**
+
 - Independent [work type] 1
 - Independent [work type] 2
 - Independent [work type] 3
 - Multiple [domain objects] without dependencies
 
 **Sequential Work (DO NOT PARALLELIZE):**
+
 - Tasks with shared state
 - Foundation setup blocking other work
 - Dependencies requiring strict ordering
 - Work requiring synchronization
 
 **How to launch parallel agents:**
+
 ```
 Launch multiple agents in SINGLE message with multiple Task tool calls:
 - Task: "Agent 1 - Work item A"
@@ -92,6 +103,7 @@ Launch multiple agents in SINGLE message with multiple Task tool calls:
 ```
 
 **Best Practices:**
+
 1. Identify parallelizable work upfront
 2. Launch all parallel agents in ONE message
 3. Wait for all to complete before proceeding
@@ -128,7 +140,6 @@ Launch multiple agents in SINGLE message with multiple Task tool calls:
 
 ### Communication Standards
 
-- **Voice notifications:** Agents use ElevenLabs voices for completion
 - **Progress updates:** Every 60-90 seconds during active work
 - **Explicit uncertainty:** Use [NEEDS CLARIFICATION] markers
 - **Quality validation:** Check standards before proceeding
@@ -136,18 +147,21 @@ Launch multiple agents in SINGLE message with multiple Task tool calls:
 ### Collaboration Examples
 
 **Scenario 1: [Common Issue]**
+
 - Agent 2 encounters [problem] during work
 - Agent 2 asks: "[Specific question]"
 - Agent 1 [resolution approach]
 - Agent 2 proceeds with [next step]
 
 **Scenario 2: [Another Issue]**
+
 - Agent 1 finds [condition requiring adjustment]
 - Agent 1 documents [justification]
 - Agent 2 reviews and approves/rejects
 - Both update [shared resource] if approved
 
 **Scenario 3: [Technical Challenge]**
+
 - Agent 2 hits [blocker] not in plan
 - Agent 2 asks: "[Question about approach]"
 - Agent 1 evaluates options, updates [plan/spec]
@@ -156,18 +170,23 @@ Launch multiple agents in SINGLE message with multiple Task tool calls:
 ## Main Workflow
 
 ### Step 1: [Initialization]
+
 [Setup instructions]
 
 ### Step 2: [Agent Launch]
+
 [Instructions for launching appropriate agents]
 
 ### Step 3: [Monitoring]
+
 [How to monitor agent progress]
 
 ### Step 4: [Results Collection]
+
 [How to collect and synthesize agent outputs]
 
 ### Step 5: [Validation]
+
 [How to validate final results]
 
 ## Speed Benefits

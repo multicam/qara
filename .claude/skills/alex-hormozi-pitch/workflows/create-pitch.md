@@ -26,6 +26,7 @@ Ask the user these key questions (you can ask all at once for efficiency):
 **Step 2: List All Problems & Obstacles**
 
 Work with the user to identify:
+
 - Every obstacle the customer faces in achieving their goal
 - All the reasons they might fail or struggle
 - Common objections and hesitations
@@ -38,6 +39,7 @@ Create a comprehensive list (aim for 10-20 problems).
 ### Phase 2: The Value Equation Optimization
 
 **The Formula:**
+
 ```
 Value = (Dream Outcome × Perceived Likelihood) / (Time Delay × Effort & Sacrifice)
 ```
@@ -47,6 +49,7 @@ Value = (Dream Outcome × Perceived Likelihood) / (Time Delay × Effort & Sacrif
 Work through each component:
 
 **A. Dream Outcome (Increase)**
+
 - Reframe the offer around the FEELING/EXPERIENCE, not the process
 - "Sell Hawaii, not the plane ride"
 - What will they feel when they achieve this?
@@ -54,6 +57,7 @@ Work through each component:
 - What status do they gain?
 
 **B. Perceived Likelihood of Achievement (Increase)**
+
 - What proof can you provide? (Testimonials, case studies, data)
 - What guarantees will you offer? (We'll design this in Step 5)
 - What credentials/authority do you have?
@@ -62,12 +66,14 @@ Work through each component:
 **Step 4: Minimize the Denominator**
 
 **C. Time Delay (Decrease)**
+
 - How fast can they get results?
 - Can you speed up delivery?
 - What quick wins can you provide?
 - How do you demonstrate speed?
 
 **D. Effort & Sacrifice (Decrease)**
+
 - How can you make this easier?
 - What can you do FOR them vs. have them do themselves?
 - Can you remove steps/complexity?
@@ -81,15 +87,18 @@ Work through each component:
 **Step 5: Create Solutions List**
 
 For each problem identified in Step 2, create a solution framed as:
+
 - "How to [solve problem] [faster/easier/better]"
 
 Example transformations:
+
 - Problem: "Buying healthy food is hard"
 - Solution: "How to buy delicious healthy food without complicated meal planning"
 
 **Step 6: Build Your Complete Deliverables Checklist**
 
 Based on solutions, define EXACTLY what you'll provide:
+
 - Core offer components
 - Tools and resources
 - Templates and frameworks
@@ -103,12 +112,14 @@ Based on solutions, define EXACTLY what you'll provide:
 **Step 7: Structure The Value Stack**
 
 **Core Offer:**
+
 - Primary deliverable(s)
 - Anchor price to this
 
 **Bonuses (using MAGIC formula):**
 
 For each bonus, create using:
+
 - **M**ake it about them (the WHY/reason)
 - **A**nnounce the avatar (who it's for)
 - **G**ive them a goal (specific outcome)
@@ -116,10 +127,12 @@ For each bonus, create using:
 - **C**omplete with container word (System, Blueprint, Masterclass, Challenge, etc.)
 
 Example:
+
 - Generic: "Meal planning guide"
 - MAGIC: "The 7-Day Family Nutrition Blueprint - How Busy Parents Create Healthy Meals in 30 Minutes"
 
 **For each bonus, define:**
+
 1. What it is
 2. How it relates to their problem
 3. The value it provides (use Value Equation)
@@ -136,27 +149,33 @@ Aim for 5-10 high-value bonuses that eclipse the core offer's perceived value.
 Based on the business model and customer segment, choose:
 
 **Option 1: Unconditional Guarantee**
+
 - Best for: Lower ticket B2C
 - Structure: "X-day money-back guarantee, no questions asked"
 - Increases: Perceived likelihood dramatically
 
 **Option 2: Conditional Guarantee**
+
 - Best for: Mid-ticket, when customer completion matters
 - Structure: "Complete [specific actions], if you don't get [result], full refund"
 - Example: "Attend all 6 sessions and complete the workbook. If you don't [achieve X], we'll refund 100%"
 
 **Option 3: Outcome-Based/Performance Guarantee**
+
 - Best for: B2B, high-ticket, consulting
 - Structure: Payment tied to results
 - Examples: Revenue share, performance bonuses, "pay only when you get X customers"
 
 **Option 4: Anti-Guarantee**
+
 - Best for: Consumables, devalued products
 - Structure: All sales final
 - Use sparingly
 
 **Stacking Guarantees (Advanced):**
+
 Combine multiple types:
+
 - "30-day unconditional money-back PLUS 90-day conditional triple-your-money-back if you complete the program"
 
 ---
@@ -168,28 +187,33 @@ Combine multiple types:
 **CRITICAL RULE:** Scarcity must be REAL. Choose from:
 
 **A. Capacity-Based Scarcity (Most Legitimate)**
+
 - "Only accepting X clients at this service level"
 - Based on actual fulfillment capacity
 - Creates waiting lists
 - Transparent about availability
 
 **B. Quantity-Based Limits**
+
 - Limited bonuses
 - Limited inventory
 - One-time availability
 
 **C. Time-Based Urgency**
+
 - Rolling cohorts (real start dates)
 - Seasonal urgency (real occasions)
 - 72-hour promotional windows
 - Bonus deadlines ("Sign up in 24 hours, get [bonus]")
 
 **D. Exploding Opportunity**
+
 - Market arbitrage that decays
 - Platform changes
 - Regulatory windows
 
 **Implementation Rules:**
+
 - ✅ Tie to real constraints
 - ✅ Be transparent
 - ✅ Consistently enforce deadlines
@@ -205,6 +229,7 @@ Combine multiple types:
 Review the offer through these lenses:
 
 **Common Objections:**
+
 1. **"Too expensive"** → Address via value stack, payment plans
 2. **"Won't work for me"** → Address via guarantee, testimonials, specificity
 3. **"Don't have time"** → Address via effort reduction (denominator)
@@ -212,6 +237,7 @@ Review the offer through these lenses:
 5. **"Need to think about it"** → Address via scarcity, urgency
 
 **Structural Solutions:**
+
 - Each bonus should eliminate a specific obstacle
 - Guarantee addresses risk objection
 - Social proof addresses "will it work?" objection
@@ -225,18 +251,21 @@ Review the offer through these lenses:
 **Step 11: Set The Price**
 
 **Hormozi's Pricing Principles:**
+
 1. **Price based on VALUE, not costs**
 2. **Create 10x value-to-price ratio**
 3. **Charge premium prices for prestige positioning**
 4. **Never discount - add value instead**
 
 **Pricing Tactics:**
+
 - Anchor to core offer
 - Compare total stack value to price
 - Show value gap clearly
 - Consider payment plans to reduce effort barrier
 
 **Price Presentation:**
+
 ```
 Core Offer: $X,XXX value
 Bonus 1: $XXX value
@@ -322,24 +351,28 @@ At the end of the workflow, the user should have:
 ## 🎯 EXECUTION GUIDELINES FOR QARA
 
 **1. Be Interactive**
+
 - Ask clarifying questions
 - Dig deeper when answers are vague
 - Challenge weak positioning
 - Suggest improvements based on Hormozi principles
 
 **2. Use Examples**
+
 - Show before/after transformations
 - Provide MAGIC formula examples
 - Demonstrate value stack presentations
 - Reference real-world applications
 
 **3. Apply Frameworks Rigorously**
+
 - Ensure Value Equation is optimized
 - Verify bonuses use MAGIC formula
 - Check guarantee matches business model
 - Confirm scarcity is legitimate
 
 **4. Think Like Hormozi**
+
 - Focus on value gap, not features
 - Emphasize transformation over process
 - Make it "too good not to take"
@@ -356,28 +389,32 @@ Use the mandatory response format when complete:
 **📊 STATUS:** Offer strength assessment and recommendations
 **➡️ NEXT:** Testing strategy, iteration opportunities, launch considerations
 **🎯 COMPLETED:** Created Hormozi Grand Slam Offer for [product/service]
-**🗣️ CUSTOM COMPLETED:** [Optional: Voice-optimized under 8 words]
 
 ---
 
 ## 💡 HORMOZI WISDOM - QUICK REFERENCE
 
 **On Value:**
+
 - "Make people an offer so good they feel stupid saying no"
 - "The goal is to get 10x the value for 1x the price"
 
 **On Guarantees:**
+
 - "The person with the strongest guarantee wins"
 - "If you're not willing to back it up, why should they buy?"
 
 **On Pricing:**
+
 - "Charge the highest prices in your market"
 - "Never discount - add more value instead"
 
 **On Scarcity:**
+
 - "Scarcity must be real or it will backfire"
 
 **On Objections:**
+
 - "The best objection handling happens before the sales conversation"
 
 ---

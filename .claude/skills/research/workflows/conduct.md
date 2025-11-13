@@ -32,6 +32,7 @@ When a user asks for research, YOU must deliver **FAST RESULTS** through massive
    - Exhaustive coverage: ~45-60 seconds
 
 **Workflow for all modes:**
+
 1. Decompose question into focused sub-questions (appropriate to mode)
 2. Launch all agents in parallel (SINGLE message with multiple Task calls)
 3. Each agent does ONE query + ONE follow-up max
@@ -40,6 +41,7 @@ When a user asks for research, YOU must deliver **FAST RESULTS** through massive
 6. Report back using mandatory response format
 
 **Speed Strategy:**
+
 - Each agent handles a specific angle/sub-question
 - Parallel execution = results in under 1 minute
 - Follow-up queries only when critical information is missing
@@ -118,6 +120,7 @@ Task({ subagent_type: "gemini-researcher", description: "Query 24", prompt: "...
 ```
 
 **Each agent prompt should:**
+
 - Include the specific creative query angle
 - **Instruct: "Do 1-2 focused searches and return findings. YOU HAVE UP TO 3 MINUTES - return results as soon as you have useful findings."**
 - Keep it concise but thorough
@@ -137,6 +140,7 @@ Task({ subagent_type: "gemini-researcher", description: "Query 24", prompt: "...
 ### Step 3: Synthesize Extensive Research Results
 
 **Enhanced synthesis requirements for extensive research:**
+
 - Identify themes across all 24 research angles
 - Cross-validate findings from multiple agents and perspectives
 - Highlight unique insights from each agent type
@@ -145,6 +149,7 @@ Task({ subagent_type: "gemini-researcher", description: "Query 24", prompt: "...
 - Calculate comprehensive metrics (24 agents, ~48+ queries, 3 services)
 
 **Report structure:**
+
 ```markdown
 ## Executive Summary
 [1-2 paragraph overview of comprehensive findings]
@@ -195,6 +200,7 @@ Task({ subagent_type: "gemini-researcher", description: "Query 24", prompt: "...
 ### Step 1: Identify 3 Core Angles
 
 Break the question into 3 focused sub-questions - one optimized for each agent type:
+
 - **Angle 1 (Perplexity):** Current/web-based information
 - **Angle 2 (Claude):** Detailed/analytical perspective
 - **Angle 3 (Gemini):** Multi-perspective synthesis
@@ -229,11 +235,13 @@ Task({ subagent_type: "gemini-researcher", description: "Multi-perspective", pro
 **Step 1a: Break Down the Research Question**
 
 Decompose the user's question into 9 specific sub-questions:
+
 - 3 questions optimized for Perplexity (web/current)
 - 3 questions optimized for Claude (academic/detailed)
 - 3 questions optimized for Gemini (multi-perspective)
 
 Each question should cover:
+
 - Different angles of the topic
 - Specific aspects to investigate
 - Related areas that provide context
@@ -261,11 +269,13 @@ Task({ subagent_type: "gemini-researcher", description: "Query 9", prompt: "..."
 ```
 
 **Available Research Agents:**
+
 - **perplexity-researcher**: Fast Perplexity API searches
 - **claude-researcher**: Claude WebSearch with intelligent query decomposition
 - **gemini-researcher**: Google Gemini multi-perspective research
 
 **CRITICAL RULES FOR SPEED:**
+
 1. ✅ **Launch ALL 9 agents in ONE message** (parallel execution)
 2. ✅ **Each agent gets ONE specific sub-question** (focused research)
 3. ✅ **3 agents per type** (balanced coverage)
@@ -286,6 +296,7 @@ Task({ subagent_type: "gemini-researcher", description: "Query 9", prompt: "..."
 - **TIMELY RESULTS > PERFECT COMPLETENESS**
 
 Each agent returns:
+
 - Focused findings from their specific sub-question
 - Source citations
 - Confidence indicators
@@ -296,11 +307,13 @@ Each agent returns:
 Create a comprehensive report that:
 
 **A. Identifies Confidence Levels:**
+
 - **HIGH CONFIDENCE**: Findings corroborated by multiple sources
 - **MEDIUM CONFIDENCE**: Found by one source, seems reliable
 - **LOW CONFIDENCE**: Single source, needs verification
 
 **B. Structures Information:**
+
 ```markdown
 ## Key Findings
 
@@ -324,6 +337,7 @@ Create a comprehensive report that:
 ```
 
 **C. Calculate Research Metrics:**
+
 - **Total Queries**: Count all queries across all research commands
 - **Services Used**: List unique services (Perplexity API, Claude WebSearch, etc.)
 - **Total Output**: Estimated character/word count of all research
@@ -340,9 +354,9 @@ Create a comprehensive report that:
 **📊 STATUS:** Research coverage, confidence levels, data quality
 **➡️ NEXT:** Recommended follow-up research or verification needed
 **🎯 COMPLETED:** Completed multi-source [topic] research
-**🗣️ CUSTOM COMPLETED:** [Optional: Voice-optimized under 8 words]
 
 **📈 RESEARCH METRICS:**
+
 - **Total Queries:** [X] (Primary: [Y], Secondary: [Z])
 - **Services Used:** [N] (List: [service1, service2])
 - **Total Output:** [~X words/characters]
@@ -352,8 +366,10 @@ Create a comprehensive report that:
 ## 🚨 CRITICAL RULES FOR QARA
 
 ### ⏱️ TIMEOUT RULES (MOST IMPORTANT):
+
 **After the timeout period, STOP WAITING and synthesize with whatever results you have.**
 - **Quick (3 agents): 2 minute timeout**
+
 - **Standard (9 agents): 3 minute timeout**
 - **Extensive (24 agents): 10 minute timeout**
 - ✅ Proceed with partial results after timeout
@@ -363,29 +379,32 @@ Create a comprehensive report that:
 - ❌ DO NOT let one slow agent block the entire research
 
 ### MODE SELECTION:
+
 - **QUICK:** User says "quick research" → 3 agents (1 of each type) → **2 min timeout**
 - **STANDARD:** Default for most requests → 9 agents (3 of each type) → **3 min timeout**
 - **EXTENSIVE:** User says "extensive research" → 24 agents (8 of each type) → **10 min timeout**
 
 ### QUICK RESEARCH (3 agents - 1 of each type):
+
 1. **3 FOCUSED ANGLES** - One per agent type
 2. **LAUNCH 3 AGENTS IN PARALLEL** - SINGLE message with 3 Task calls
 3. **OPTIMIZE per agent** - Perplexity (current), Claude (detailed), Gemini (multi-perspective)
 4. **FAST RESULTS** - ~15-20 seconds
 
 ### STANDARD RESEARCH (9 agents - 3 of each type):
+
 1. **LAUNCH 9 AGENTS IN PARALLEL** - Use a SINGLE message with 9 Task tool calls
 2. **DECOMPOSE the question** - Create 9 focused sub-questions (3 per agent type)
 3. **ONE QUERY + ONE FOLLOW-UP per agent** - Quick, focused research cycles
 4. **BALANCE across agent types** - 3 perplexity + 3 claude + 3 gemini
 5. **WAIT for ALL agents** (~30 seconds) before synthesizing
 6. **SYNTHESIZE results** - Don't just concatenate outputs
-7. **USE the mandatory response format** - This triggers voice notifications
-8. **CALCULATE accurate metrics** - Count queries, agents, output size
-9. **ATTRIBUTE sources** - Show which agent/method found each insight
-10. **MARK confidence levels** - Based on multi-source agreement
+7. **CALCULATE accurate metrics** - Count queries, agents, output size
+8. **ATTRIBUTE sources** - Show which agent/method found each insight
+9. **MARK confidence levels** - Based on multi-source agreement
 
 ### EXTENSIVE RESEARCH (24 agents - 8 of each type):
+
 1. **DETECT "extensive research" request** - Activate 24-agent mode
 2. **USE be-creative skill with UltraThink** - Generate 24 diverse query angles
 3. **LAUNCH 24 AGENTS IN PARALLEL** - 8 perplexity + 8 claude + 8 gemini (SINGLE message)
@@ -396,6 +415,7 @@ Create a comprehensive report that:
 8. **COVERAGE MAP** - Show aspects, perspectives, and domains explored
 
 **SPEED CHECKLIST:**
+
 - ✅ Launched agents in ONE message? (parallel execution)
 - ✅ Each agent has ONE focused sub-question?
 - ✅ Using up to 10 agents for broad coverage?
@@ -405,6 +425,7 @@ Create a comprehensive report that:
 ## 🚧 HANDLING BLOCKED OR FAILED CRAWLS
 
 If research commands report being blocked, encountering CAPTCHAs, or facing bot detection, note this in your synthesis and recommend using:
+
 - `mcp__Brightdata__scrape_as_markdown` - Scrape single URLs that bypass bot detection
 - `mcp__Brightdata__scrape_batch` - Scrape multiple URLs (up to 10)
 - `mcp__Brightdata__search_engine` - Search Google, Bing, or Yandex with CAPTCHA bypass
@@ -417,6 +438,7 @@ If research commands report being blocked, encountering CAPTCHAs, or facing bot 
 **User asks:** "Research the latest developments in quantum computing"
 
 **Your workflow:**
+
 1. ✅ Recognize research intent (hook loaded this command)
 2. ✅ **Decompose into 9 focused sub-questions (3 per agent type):**
 
@@ -436,6 +458,7 @@ If research commands report being blocked, encountering CAPTCHAs, or facing bot 
    - What's happening in quantum cryptography?
 
 3. ✅ **Launch 9 agents in PARALLEL (ONE message with 9 Task calls):**
+
    ```
    // 3 Perplexity
    Task(perplexity-researcher, "2025 quantum breakthroughs")
@@ -460,7 +483,6 @@ If research commands report being blocked, encountering CAPTCHAs, or facing bot 
    - Disagreements → Note and flag
 6. ✅ **Calculate metrics** (9 agents, ~18 queries, 3 services, output size, confidence %)
 7. ✅ **Return comprehensive report** with mandatory format
-8. ✅ **Voice notification** automatically triggered by your 🎯 COMPLETED line
 
 **Result:** User gets comprehensive quantum computing research from 9 parallel agents (3 of each type) in ~30 seconds, with balanced multi-source validation, source attribution, and confidence levels.
 
@@ -469,8 +491,10 @@ If research commands report being blocked, encountering CAPTCHAs, or facing bot 
 **User asks:** "Do extensive research on AI consciousness and sentience"
 
 **Your workflow:**
+
 1. ✅ Recognize **"extensive research"** trigger
 2. ✅ **Use be-creative skill with UltraThink** to generate 24 diverse query angles:
+   
    ```
    <instructions>
    ULTRATHINK + VERBALIZED SAMPLING:
@@ -482,6 +506,7 @@ If research commands report being blocked, encountering CAPTCHAs, or facing bot 
    ```
 
 3. ✅ **Generate 24 creative queries organized by agent type:**
+
    - **Perplexity (web/current):** Latest AI consciousness claims, current research papers, industry perspectives, consciousness tests, recent breakthroughs, ethical debates, etc.
    - **Claude (academic/detailed):** Philosophical frameworks, integrated information theory, neuroscience parallels, computational theories, historical evolution, etc.
    - **Gemini (multi-perspective):** Cross-cultural views on consciousness, interdisciplinary connections, consciousness in nature, emergence theories, etc.
@@ -500,22 +525,12 @@ If research commands report being blocked, encountering CAPTCHAs, or facing bot 
 
 7. ✅ **Comprehensive metrics** (24 agents, ~48+ queries, extensive cross-validation)
 
-8. ✅ **Voice notification** automatically triggered
-
 **Result:** User gets exhaustive AI consciousness research from 24 parallel agents covering philosophy, neuroscience, computer science, ethics, and more - with extensive cross-validation and domain coverage mapping in under 1 minute.
-
-## 🎤 VOICE NOTIFICATIONS
-
-Voice notifications are AUTOMATIC when you use the mandatory response format. The stop-hook will:
-- Extract your 🎯 COMPLETED line
-- Send it to the voice server with Jamie (Premium) voice at 228 wpm
-- Announce "Completed multi-source [topic] research"
-
-**YOU DO NOT NEED TO MANUALLY SEND VOICE NOTIFICATIONS** - just use the format.
 
 ## 🔄 BENEFITS OF THIS ARCHITECTURE
 
 **Why parallel agent execution delivers speed:**
+
 1. ✅ **10 agents working simultaneously** - Not sequential, truly parallel
 2. ✅ **Results in under 1 minute** - Each agent does 1-2 quick searches
 3. ✅ **Complete coverage** - Multiple perspectives from different services
@@ -524,6 +539,7 @@ Voice notifications are AUTOMATIC when you use the mandatory response format. Th
 6. ✅ **Multi-source validation** - High confidence from cross-agent agreement
 
 **Speed Comparison:**
+
 - ❌ **Old way:** Sequential searches → 5-10 minutes
 - ✅ **New way:** 10 parallel agents → Under 1 minute
 
