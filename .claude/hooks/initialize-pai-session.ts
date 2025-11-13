@@ -9,13 +9,11 @@
  * - Checks if this is a subagent session (skips for subagents)
  * - Tests that stop-hook is properly configured
  * - Sets initial terminal tab title
- * - Sends voice notification that system is ready (if voice server is running)
  * - Calls load-core-context.ts to inject PAI context into the session
  *
  * Setup:
  * 1. Set environment variables in settings.json:
  *    - DA: Your AI's name (e.g., "Qara", "Nova", "Assistant")
- *    - DA_VOICE_ID: Your ElevenLabs voice ID (if using voice system)
  *    - PAI_DIR: Path to your PAI directory (defaults to $HOME/.claude)
  * 2. Ensure load-core-context.ts exists in hooks/ directory
  * 3. Add both hooks to SessionStart in settings.json
@@ -25,29 +23,6 @@ import { existsSync, statSync } from 'fs';
 import { homedir } from 'os';
 import { join } from 'path';
 
-async function sendNotification(title: string, message: string, priority: string = 'normal') {
-  try {
-
-    const response = await fetch('http://localhost:8888/notify', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        title,
-        message,
-        priority,
-      }),
-    });
-
-    if (!response.ok) {
-      console.error(`Notification failed: ${response.status}`);
-    }
-  } catch (error) {
-    // Silently fail if voice server isn't running
-    // console.error('Failed to send notification:', error);
-  }
-}
 
 async function testStopHook() {
   const paiDir = process.env.PAI_DIR || join(homedir(), '.claude');
@@ -115,7 +90,6 @@ async function main() {
     // Note: PAI core context loading is handled by load-core-context.ts hook
     // which should run BEFORE this hook in settings.json SessionStart hooks
 
-    await sendNotification(`${daName} Systems Initialized`, message, 'low');
     process.exit(0);
   } catch (error) {
     console.error('SessionStart hook error:', error);

@@ -8,27 +8,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
 
-interface NotificationPayload {
-  title: string;
-  message: string;
-  voice_enabled: boolean;
-  voice_name?: string;
-  rate?: number;
-  priority?: 'low' | 'normal' | 'high';
-}
 
-interface VoiceConfig {
-  voice_name: string;
-  rate_wpm: number;
-  rate_multiplier: number;
-  description: string;
-  type: string;
-}
-
-interface VoicesConfig {
-  default_rate: number;
-  voices: Record<string, VoiceConfig>;
-}
 
 interface HookInput {
   session_id: string;
@@ -49,20 +29,6 @@ interface TranscriptEntry {
   timestamp?: string;
 }
 
-/**
- * Send notification to the Qara notification server
- */
-async function sendNotification(payload: NotificationPayload): Promise<void> {
-  try {
-    await fetch('http://localhost:8888/notify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-  } catch (error) {
-    // Silently handle notification failures
-  }
-}
 
 /**
  * Count messages in transcript to provide context
@@ -99,22 +65,6 @@ function getTranscriptStats(transcriptPath: string): { messageCount: number; isL
   }
 }
 
-// Load voice configuration
-let qaraVoiceConfig: VoiceConfig;
-try {
-  const voicesPath = join(homedir(), 'Library/Mobile Documents/com~apple~CloudDocs/Claude/voice-server/voices.json');
-  const config: VoicesConfig = JSON.parse(readFileSync(voicesPath, 'utf-8'));
-  qaraVoiceConfig = config.voices.qara;
-} catch (e) {
-  // Fallback to hardcoded Qara voice config
-  qaraVoiceConfig = {
-    voice_name: "Jamie (Premium)",
-    rate_wpm: 263,
-    rate_multiplier: 1.5,
-    description: "UK Male",
-    type: "Premium"
-  };
-}
 
 async function main() {
   let hookInput: HookInput | null = null;
@@ -164,16 +114,8 @@ async function main() {
     }
   }
   
-  // Send notification with voice (using Qara's voice from config)
-  await sendNotification({
-    title: 'Qara Context',
-    message: message,
-    voice_enabled: true,
-    voice_name: qaraVoiceConfig.voice_name,
-    rate: qaraVoiceConfig.rate_wpm,
-    priority: 'low',
-  });
-  
+  // Voice notification removed - voice server is no longer used
+
   process.exit(0);
 }
 

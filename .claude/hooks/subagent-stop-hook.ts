@@ -2,17 +2,6 @@
 
 import { readFileSync, existsSync } from 'fs';
 
-// Voice mappings for different agent types
-const AGENT_VOICE_IDS: Record<string, string> = {
-  researcher: 'AXdMgz6evoL7OPd7eU12',
-  pentester: 'hmMWXCj9K7N5mCPcRkfC',
-  engineer: 'kmSVBPu7loj4ayNinwWM',
-  designer: 'ZF6FPAbjXT4488VcRRnw',
-  architect: 'muZKMsIDGYtIkjjiUS82',
-  writer: 'gfRt6Z3Z8aTbpLfexQ7N',
-  qara: 'jqcCZkN6Knx8BJ5TBdYR',
-  default: 'jqcCZkN6Knx8BJ5TBdYR'
-};
 
 async function delay(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -274,24 +263,8 @@ async function main() {
   const fullMessage = completionMessage; // Message is already prepared with agent name
   const agentName = finalAgentType.charAt(0).toUpperCase() + finalAgentType.slice(1);
   
-  // Send to notification server
-  try {
-    await fetch('http://localhost:8888/notify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        title: `${agentName} Agent`,
-        message: fullMessage,
-        voice_enabled: true,
-        agent_type: finalAgentType,
-        voice_id: AGENT_VOICE_IDS[finalAgentType] || AGENT_VOICE_IDS.default
-      })
-    });
-    
-    console.log(`✅ Sent: [${agentName}] ${fullMessage}`);
-  } catch (e) {
-    console.error('Failed to send notification:', e);
-  }
+  // Voice notification removed - voice server is no longer used
+  console.log(`✅ Completed: [${agentName}] ${fullMessage}`);
 }
 
 main().catch(console.error);

@@ -130,41 +130,6 @@ function setTerminalTabTitle(title: string): void {
   }
 }
 
-// Load voice configuration from voices.json
-interface VoiceConfig {
-  voice_name: string;
-  rate_wpm: number;
-  rate_multiplier: number;
-  description: string;
-  type: string;
-}
-
-interface VoicesConfig {
-  default_rate: number;
-  voices: Record<string, VoiceConfig>;
-}
-
-// Load voices configuration
-let VOICE_CONFIG: VoicesConfig;
-try {
-  const voicesPath = join(homedir(), 'Library/Mobile Documents/com~apple~CloudDocs/Claude/voice-server/voices.json');
-  VOICE_CONFIG = JSON.parse(readFileSync(voicesPath, 'utf-8'));
-} catch (e) {
-  // Fallback to hardcoded config if file doesn't exist
-  console.error('⚠️ Could not load voices.json, using fallback config');
-  VOICE_CONFIG = {
-    default_rate: 175,
-    voices: {
-      qara: { voice_name: "Jamie (Premium)", rate_wpm: 263, rate_multiplier: 1.5, description: "UK Male", type: "Premium" },
-      researcher: { voice_name: "Ava (Premium)", rate_wpm: 236, rate_multiplier: 1.35, description: "US Female", type: "Premium" },
-      engineer: { voice_name: "Tom (Enhanced)", rate_wpm: 236, rate_multiplier: 1.35, description: "US Male", type: "Enhanced" },
-      architect: { voice_name: "Serena (Premium)", rate_wpm: 236, rate_multiplier: 1.35, description: "UK Female", type: "Premium" },
-      designer: { voice_name: "Isha (Premium)", rate_wpm: 236, rate_multiplier: 1.35, description: "Indian Female", type: "Premium" },
-      pentester: { voice_name: "Oliver (Enhanced)", rate_wpm: 236, rate_multiplier: 1.35, description: "UK Male", type: "Enhanced" },
-      writer: { voice_name: "Samantha (Enhanced)", rate_wpm: 236, rate_multiplier: 1.35, description: "US Female", type: "Enhanced" }
-    }
-  };
-}
 
 // Intelligent response generator - prioritizes custom COMPLETED messages
 function generateIntelligentResponse(userQuery: string, assistantResponse: string, completedLine: string): string {
@@ -359,7 +324,6 @@ async function main() {
 
   // Generate the announcement
   let message = '';
-  let voiceConfig = VOICE_CONFIG.voices.qara; // Default to Qara's voice config
   let qaraHasCustomCompleted = false;
 
   // ALWAYS check Qara's response FIRST (even when agents are used)
@@ -433,7 +397,6 @@ async function main() {
       const wordCount = customText.split(/\s+/).length;
       if (customText && wordCount <= 8) {
         message = customText;
-        voiceConfig = VOICE_CONFIG.voices[agentType.toLowerCase()] || VOICE_CONFIG.voices.qara;
         console.error(`🗣️ AGENT CUSTOM VOICE (fallback): ${message}`);
       } else {
         // Custom completed too long, fall back to regular COMPLETED
@@ -444,7 +407,6 @@ async function main() {
             .replace(/\[AGENT:\w+\]\s*/i, '')
             .trim();
           message = generateIntelligentResponse(lastUserQuery, taskResult, completedText);
-          voiceConfig = VOICE_CONFIG.voices[agentType.toLowerCase()] || VOICE_CONFIG.voices.qara;
           console.error(`🎯 AGENT FALLBACK (custom too long): ${message}`);
         }
       }
@@ -464,27 +426,13 @@ async function main() {
 
         // Generate intelligent response for agent tasks
         message = generateIntelligentResponse(lastUserQuery, taskResult, completedText);
-        voiceConfig = VOICE_CONFIG.voices[agentType.toLowerCase()] || VOICE_CONFIG.voices.qara;
 
         console.error(`🎯 AGENT INTELLIGENT (fallback): ${message}`);
       }
     }
   }
 
-  // FIRST: Send voice notification if we have a message
-  if (message) {
-    // Send to voice server with both voice name and speech rate
-    await fetch('http://localhost:8888/notify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        message: message,
-        voice_name: voiceConfig.voice_name,
-        rate: voiceConfig.rate_wpm
-      })
-    }).catch(() => {});
-    console.error(`🔊 Voice notification sent: "${message}" with voice: ${voiceConfig.voice_name} at ${voiceConfig.rate_wpm} wpm (${voiceConfig.rate_multiplier}x)`);
-  }
+  // Voice notification removed - voice server is no longer used
 
   // ALWAYS set tab title to override any previous titles (like "dynamic requirements")
   // Generate a meaningful title even if we don't have a voice message
