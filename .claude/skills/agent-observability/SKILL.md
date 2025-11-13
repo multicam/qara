@@ -51,18 +51,20 @@ cd ../client && bun install
 ### Start the Observability Dashboard
 
 **Terminal 1 - Server:**
+
 ```bash
 cd ~/Projects/PAI/skills/agent-observability/apps/server
 bun run dev
 ```
 
 **Terminal 2 - Client:**
+
 ```bash
 cd ~/Projects/PAI/skills/agent-observability/apps/client
 bun run dev
 ```
 
-**Open browser:** http://localhost:5173
+**Open browser:** [http://localhost:5173](http://localhost:5173)
 
 ### Using Claude Code
 
@@ -103,11 +105,12 @@ Once the dashboard is running, any Claude Code activity will appear in real-time
 
 Events are stored in JSONL (JSON Lines) format:
 
-```
+```bash
 ~/.claude/history/raw-outputs/YYYY-MM/YYYY-MM-DD_all-events.jsonl
 ```
 
 Each line is a complete JSON object:
+
 ```jsonl
 {"source_app":"qara","session_id":"abc123","hook_event_type":"PreToolUse","payload":{...},"timestamp":1234567890,"timestamp_pst":"2025-01-28 14:30:00 PST"}
 ```
@@ -121,7 +124,7 @@ Each line is a complete JSON object:
 
 ## Architecture
 
-```
+```txt
 ┌─────────────────┐
 │  Claude Code    │  Executes hooks on events
 │   (with hooks)  │

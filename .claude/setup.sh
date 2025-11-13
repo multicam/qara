@@ -314,7 +314,6 @@ else
     print_success "All prerequisites are already installed!"
 fi
 
-exit
 
 # ============================================
 # Step 3: Choose Installation Directory -- Skipped

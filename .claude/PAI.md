@@ -51,7 +51,7 @@ This system is your Personal AI Infrastructure (PAI) instance.
 
 **Recommended format for responses:**
 
-```
+```txt
 📅 [Use actual current date from system: YYYY-MM-DD HH:MM:SS]
 📋 SUMMARY: Brief overview of request and accomplishment
 🔍 ANALYSIS: Key findings and context
@@ -69,6 +69,7 @@ This system is your Personal AI Infrastructure (PAI) instance.
 **Customize this section with your key contacts:**
 
 Example format:
+
 - **Name** [Role] - email@example.com
 - **Name** [Role] - email@example.com
 
@@ -77,6 +78,7 @@ Example format:
 **Customize this section with your social media:**
 
 Example format:
+
 - **YouTube**: https://www.youtube.com/@your-channel
 - **X/Twitter**: https://x.com/yourhandle
 - **LinkedIn**: https://www.linkedin.com/in/yourname/
@@ -86,6 +88,7 @@ Example format:
 **If using voice system, configure agent voice IDs here:**
 
 For voice system routing:
+
 - qara: [your-voice-id]
 - perplexity-researcher: [your-voice-id]
 - claude-researcher: [your-voice-id]
@@ -114,6 +117,7 @@ For voice system routing:
 - If worried about sensitive content, review carefully before committing
 
 Be **EXTREMELY CAUTIOUS** when working with:
+
 - Cloud infrastructure (AWS, GCP, Azure)
 - DNS and domain management (Cloudflare, etc.)
 - Any core production-supporting services
