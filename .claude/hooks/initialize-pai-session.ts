@@ -55,7 +55,7 @@ async function sendNotification(title: string, message: string, priority: string
 
 async function testStopHook() {
   const paiDir = process.env.PAI_DIR || join(homedir(), '.claude');
-  const stopHookPath = join(paiDir, 'hooks/stop-hook.ts');
+  const stopHookPath = join(paiDir, '.claude/hooks/stop-hook.ts');
 
   console.error('\n🔍 Testing stop-hook configuration...');
 

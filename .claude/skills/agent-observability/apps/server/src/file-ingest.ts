@@ -52,6 +52,7 @@ function getTodayEventsFile(): string {
  */
 function readNewEvents(filePath: string): HookEvent[] {
   if (!existsSync(filePath)) {
+    console.log(`⚠️  File does not exist: ${filePath}`);
     return [];
   }
 
@@ -61,16 +62,21 @@ function readNewEvents(filePath: string): HookEvent[] {
     const content = readFileSync(filePath, 'utf-8');
     const newContent = content.slice(lastPosition);
 
+    console.log(`📖 Reading from position ${lastPosition} to ${content.length} (${newContent.length} bytes)`);
+
     // Update position to end of file
     filePositions.set(filePath, content.length);
 
     if (!newContent.trim()) {
+      console.log(`   No new content to read`);
       return [];
     }
 
     // Parse JSONL - one JSON object per line
     const lines = newContent.trim().split('\n');
     const newEvents: HookEvent[] = [];
+
+    console.log(`   Parsing ${lines.length} line(s)`);
 
     for (const line of lines) {
       if (!line.trim()) continue;
@@ -85,6 +91,7 @@ function readNewEvents(filePath: string): HookEvent[] {
       }
     }
 
+    console.log(`   Parsed ${newEvents.length} event(s)`);
     return newEvents;
   } catch (error) {
     console.error(`Error reading file ${filePath}:`, error);
@@ -123,25 +130,41 @@ function watchFile(filePath: string): void {
   }
 
   console.log(`👀 Watching: ${filePath}`);
+
+  // Check if file exists - if not, poll until it does
+  if (!existsSync(filePath)) {
+    console.log(`⏳ File doesn't exist yet, will poll every 5s until created...`);
+    const pollInterval = setInterval(() => {
+      if (existsSync(filePath)) {
+        console.log(`✅ File created! Starting watch...`);
+        clearInterval(pollInterval);
+        watchFile(filePath); // Recursive call now that file exists
+      }
+    }, 5000); // Check every 5 seconds
+    return;
+  }
+
   watchedFiles.add(filePath);
 
   // Set file position to END of file - only read NEW events from now on
   // Do NOT load historical events from before server start
-  if (existsSync(filePath)) {
-    const content = readFileSync(filePath, 'utf-8');
-    filePositions.set(filePath, content.length);
-    console.log(`📍 Positioned at end of file - only new events will be captured`);
-  }
+  const content = readFileSync(filePath, 'utf-8');
+  filePositions.set(filePath, content.length);
+  console.log(`📍 Positioned at end of file - only new events will be captured`);
 
   // Watch for changes
-  const watcher = watch(filePath, (eventType) => {
+  const watcher = watch(filePath, (eventType: string) => {
+    console.log(`📝 File change detected: ${eventType} on ${filePath}`);
     if (eventType === 'change') {
       const newEvents = readNewEvents(filePath);
+      if (newEvents.length > 0) {
+        console.log(`🔥 Read ${newEvents.length} new event(s) from file`);
+      }
       storeEvents(newEvents);
     }
   });
 
-  watcher.on('error', (error) => {
+  watcher.on('error', (error: Error) => {
     console.error(`Error watching ${filePath}:`, error);
     watchedFiles.delete(filePath);
   });
@@ -153,7 +176,9 @@ function watchFile(filePath: string): void {
  */
 export function startFileIngestion(callback?: (events: HookEvent[]) => void): void {
   console.log('🚀 Starting file-based event streaming (in-memory only)');
-  console.log('📂 Reading from ~/.claude/history/raw-outputs/');
+  const paiDir = process.env.PAI_DIR || join(homedir(), '.claude');
+  console.log(`📂 PAI_DIR: ${paiDir}`);
+  console.log(`📂 Reading from: ${paiDir}/history/raw-outputs/`);
 
   // Set the callback for event notifications
   if (callback) {
@@ -162,6 +187,7 @@ export function startFileIngestion(callback?: (events: HookEvent[]) => void): vo
 
   // Watch today's file
   const todayFile = getTodayEventsFile();
+  console.log(`📅 Today's file: ${todayFile}`);
   watchFile(todayFile);
 
   // Check for new day's file every hour

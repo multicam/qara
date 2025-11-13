@@ -321,6 +321,11 @@ fi
 
 print_header "Step 3: Choose Installation Directory -- Skipped"
 
+# Derive PAI_DIR from script location
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PAI_DIR="$(dirname "$SCRIPT_DIR")"
+print_info "Using PAI directory: $PAI_DIR"
+
 
 # ============================================
 # Step 4: Download or Update PAI -- Skipped
@@ -422,7 +427,7 @@ fi
 
 # Source the configuration for this session
 export PAI_DIR="$PAI_DIR"
-export PAI_HOME="$PAI_PATH"
+export PAI_HOME="$HOME"
 
 # ============================================
 # Step 6: Create .env File
@@ -1020,57 +1025,3 @@ echo -e "${GREEN}${ROCKET} Welcome to PAI! You're now ready to augment your life
 echo -e "${PURPLE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 
-# Optional: Open documentation
-if ask_yes_no "Would you like to open the getting started guide?" "y"; then
-    if ! open "$PAI_DIR/.claude/documentation/how-to-start.md" 2>/dev/null; then
-        # Reset terminal before displaying doc
-        stty sane 2>/dev/null || true
-        cat "$PAI_DIR/.claude/documentation/how-to-start.md"
-        echo ""  # Ensure final newline
-    fi
-fi
-
-# ============================================
-# CRITICAL: Shell Reload Warning
-# ============================================
-
-echo ""
-echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${YELLOW}⚠️  IMPORTANT: Restart Your Shell${NC}"
-echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo ""
-echo "Your shell configuration has been updated, but your CURRENT shell"
-echo "session still has old settings loaded in memory (including any old"
-echo "aliases or PATH configurations)."
-echo ""
-
-# Check if old claude alias exists in current session
-if alias claude 2>/dev/null | grep -q "claude-wrapper"; then
-    echo -e "${RED}${WARN} WARNING: Detected old 'claude' alias in current session!${NC}"
-    echo "This WILL cause errors until you reload your shell."
-    echo ""
-fi
-
-echo "To activate PAI, you MUST do ONE of the following:"
-echo ""
-echo "  ${CYAN}Option 1 (Recommended):${NC}"
-echo "    • Close this terminal window"
-echo "    • Open a new terminal"
-echo ""
-echo "  ${CYAN}Option 2 (Quick):${NC}"
-echo "    • Run: ${GREEN}source $SHELL_CONFIG${NC}"
-echo "    • Run: ${GREEN}exec bash${NC}"
-echo ""
-echo "  ${CYAN}Option 3 (Manual):${NC}"
-echo "    • Run: ${GREEN}unalias claude 2>/dev/null${NC}"
-echo "    • Run: ${GREEN}source $SHELL_CONFIG${NC}"
-echo ""
-echo -e "${YELLOW}After reloading, test with: ${GREEN}claude --version${NC}"
-echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-
-echo ""
-print_success "Setup complete! Enjoy using PAI! 🎉"
-echo ""
-
-# Reset terminal to clean state (fixes newline issues from /dev/tty usage)
-stty sane 2>/dev/null || true

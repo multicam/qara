@@ -84,26 +84,27 @@ if [ "$cache_needs_update" = true ]; then
     if mkdir "$LOCK_FILE" 2>/dev/null; then
         # We got the lock - update cache with timeout
         if command -v bunx >/dev/null 2>&1; then
-            # Run ccusage with a timeout (5 seconds for faster updates)
+            # Get TODAY's usage only, not cumulative total
+            TODAY_FILTER=$(date +"%Y%m%d")
+            # Run ccusage with date filter for today only (15 seconds timeout - ccusage needs time to fetch pricing data)
             # Check if gtimeout is available (macOS), otherwise try timeout (Linux)
             if command -v gtimeout >/dev/null 2>&1; then
-                ccusage_output=$(gtimeout 5 bunx ccusage 2>/dev/null | sed 's/\x1b\[[0-9;]*m//g' | grep "│ Total" | head -1)
+                ccusage_output=$(gtimeout 15 bunx ccusage --since $TODAY_FILTER --until $TODAY_FILTER 2>/dev/null | sed 's/\x1b\[[0-9;]*m//g' | grep "^│ Total" | head -1)
             elif command -v timeout >/dev/null 2>&1; then
-                ccusage_output=$(timeout 5 bunx ccusage 2>/dev/null | sed 's/\x1b\[[0-9;]*m//g' | grep "│ Total" | head -1)
+                ccusage_output=$(timeout 15 bunx ccusage --since $TODAY_FILTER --until $TODAY_FILTER 2>/dev/null | sed 's/\x1b\[[0-9;]*m//g' | grep "^│ Total" | head -1)
             else
                 # Fallback without timeout (but faster than before)
-                ccusage_output=$(bunx ccusage 2>/dev/null | sed 's/\x1b\[[0-9;]*m//g' | grep "│ Total" | head -1)
+                ccusage_output=$(bunx ccusage --since $TODAY_FILTER --until $TODAY_FILTER 2>/dev/null | sed 's/\x1b\[[0-9;]*m//g' | grep "^│ Total" | head -1)
             fi
 
             if [ -n "$ccusage_output" ]; then
-                # Extract input/output tokens, removing commas and ellipsis
-                daily_input=$(echo "$ccusage_output" | awk -F'│' '{print $4}' | sed 's/[^0-9]//g' | head -c 10)
-                daily_output=$(echo "$ccusage_output" | awk -F'│' '{print $5}' | sed 's/[^0-9]//g' | head -c 10)
-                # Extract cost, keep the dollar sign
+                # Extract Total Tokens column (field 8) - this includes input, output, cache create, and cache read
+                daily_total=$(echo "$ccusage_output" | awk -F'│' '{print $8}' | sed 's/[^0-9]//g' | head -c 15)
+                # Extract cost (field 9), keep the dollar sign
                 daily_cost=$(echo "$ccusage_output" | awk -F'│' '{print $9}' | sed 's/^ *//;s/ *$//')
 
-                if [ -n "$daily_input" ] && [ -n "$daily_output" ]; then
-                    daily_total=$((daily_input + daily_output))
+                if [ -n "$daily_total" ]; then
+                    # Format with thousands separator
                     daily_tokens=$(printf "%'d" "$daily_total" 2>/dev/null || echo "$daily_total")
 
                     # Write to cache file (properly escape dollar sign)

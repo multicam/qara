@@ -17,13 +17,18 @@ const wsClients = new Set<any>();
 // Start file-based ingestion (reads from ~/.claude/history/raw-outputs/)
 // Pass a callback to broadcast new events to connected WebSocket clients
 startFileIngestion((events) => {
+  console.log(`📡 Broadcasting ${events.length} event(s) to ${wsClients.size} WebSocket client(s)`);
+
   // Broadcast each event to all connected WebSocket clients
   events.forEach(event => {
     const message = JSON.stringify({ type: 'event', data: event });
+    console.log(`   → Event: ${event.source_app} | ${event.hook_event_type}`);
+
     wsClients.forEach(client => {
       try {
         client.send(message);
       } catch (err) {
+        console.log(`   ⚠️  Failed to send to client, removing from list`);
         // Client disconnected, remove from set
         wsClients.delete(client);
       }
@@ -259,11 +264,12 @@ const server = Bun.serve({
   
   websocket: {
     open(ws) {
-      console.log('WebSocket client connected');
+      console.log(`🔌 WebSocket client connected (total clients: ${wsClients.size + 1})`);
       wsClients.add(ws);
-      
+
       // Send recent events on connection
       const events = getRecentEvents(50);
+      console.log(`   → Sending ${events.length} initial events to new client`);
       ws.send(JSON.stringify({ type: 'initial', data: events }));
     },
     
@@ -273,8 +279,8 @@ const server = Bun.serve({
     },
     
     close(ws) {
-      console.log('WebSocket client disconnected');
       wsClients.delete(ws);
+      console.log(`🔌 WebSocket client disconnected (remaining clients: ${wsClients.size})`);
     },
     
     error(ws, error) {

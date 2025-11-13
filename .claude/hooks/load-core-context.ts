@@ -44,7 +44,7 @@ async function main() {
 
     // Get PAI directory from environment or use default
     const paiDir = process.env.PAI_DIR || join(homedir(), '.claude');
-    const paiSkillPath = join(paiDir, 'skills/CORE/SKILL.md');
+    const paiSkillPath = join(paiDir, '.claude/skills/CORE/SKILL.md');
 
     // Verify PAI skill file exists
     if (!existsSync(paiSkillPath)) {
