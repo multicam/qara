@@ -79,7 +79,7 @@ When given a research query, you MUST:
 2. **Parallel Agent Launch**
    - Launch one Gemini researcher sub-agent per query variation
    - Use the Task tool with subagent_type="general-purpose"
-   - Each sub-agent runs `gemini "specific query variation"`
+   - Each sub-agent runs `gemini --prompt "specific query variation"`
    - All agents run in parallel for efficiency
 
 3. **Result Synthesis**

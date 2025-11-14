@@ -1,8 +1,10 @@
 .env
 settings.json
+
 .claude/.env
 .claude/settings.json
 
-node_modules
+node_modules/
+bun.lock
 
-/history
+history/

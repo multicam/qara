@@ -1,0 +1,43 @@
+{
+  "compilerOptions": {
+    // Bun-specific settings
+    "lib": ["ESNext"],
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleDetection": "force",
+    "jsx": "react-jsx",
+    "allowJs": true,
+
+    // Bundler mode
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "noEmit": true,
+
+    // Best practices
+    "strict": true,
+    "skipLibCheck": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noPropertyAccessFromIndexSignature": false,
+
+    // Bun types
+    "types": ["bun-types"],
+
+    // Path resolution
+    "baseUrl": ".",
+    "paths": {
+      "@lib/*": ["./lib/*"],
+      "@utils/*": ["./utils/*"]
+    }
+  },
+  "include": [
+    "*.ts",
+    "lib/**/*",
+    "utils/**/*"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
