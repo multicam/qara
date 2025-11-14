@@ -32,7 +32,7 @@ The system automatically maps changed files to documentation updates:
 | `commands/**` | `documentation/command-system.md` |
 | `hooks/**` | `documentation/hook-system.md` |
 | `agents/**` | `documentation/agent-system.md` |
-| `voice-server/**` | `documentation/voice-system.md` |
+| `context/**` | `documentation/ufc-context-system.md` |
 | `package.json` | Dependencies section |
 | `.mcp.json` | MCP servers documentation |
 | Any non-doc file | `README.md` (timestamp) |

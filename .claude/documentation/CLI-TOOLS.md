@@ -45,6 +45,7 @@ PAI uses a modern CLI tool stack that provides:
 **What it does:** Finds files by name, path, or attributes
 
 **Why it's better:**
+
 - 5-10x faster than `find` (parallel execution)
 - Respects .gitignore by default (no clutter)
 - Colored output (easier to scan)
@@ -52,11 +53,13 @@ PAI uses a modern CLI tool stack that provides:
 - Smart defaults (excludes hidden files)
 
 **Install:**
+
 ```bash
 cargo install fd-find
 ```
 
 **Quick example:**
+
 ```bash
 # Find all TypeScript files
 fd -e ts
@@ -75,6 +78,7 @@ fd -H config
 **What it does:** Searches file contents for patterns
 
 **Why it's better:**
+
 - 10-50x faster than `grep` (parallelized, optimized)
 - Respects .gitignore by default (searches what matters)
 - Skips binary files automatically (no garbage output)
@@ -82,11 +86,13 @@ fd -H config
 - Beautiful colored output with context
 
 **Install:**
+
 ```bash
 cargo install ripgrep
 ```
 
 **Quick example:**
+
 ```bash
 # Search for "TODO" in current directory
 rg TODO

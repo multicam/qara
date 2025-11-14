@@ -48,7 +48,7 @@ PAI (Personal AI Infrastructure) is a modular, event-driven system that enhances
 ┌────────────────▼────────────────────────────────────────────┐
 │                    Service Layer                            │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐       │
-│  │ Voice Server │  │ MCP Tools    │  │ Commands     │       │
+│  │ MCP Tools    │  │ Commands     │  │ Hooks        │       │
 │  │              │  │              │  │              │       │
 │  └──────────────┘  └──────────────┘  └──────────────┘       │
 └─────────────────────────────────────────────────────────────┘
@@ -100,9 +100,9 @@ Supporting services that provide additional functionality.
 
 **Services:**
 
-- **Voice Server**: Text-to-speech notifications
 - **MCP Tools**: Model Context Protocol integrations
 - **Command System**: Custom command execution
+- **Hook System**: Event-driven automation
 
 ## Data Flow
 
@@ -147,25 +147,33 @@ Intent Analysis → Pattern Matching → Context Selection → Dynamic Loading
 ```
 ${PAI_DIR}/
 ├── skills/              # Modular capability packages
+│   ├── CORE/           # Core PAI identity and preferences
 │   ├── prompting/      # Prompt engineering guide
 │   ├── create-skill/   # Skill creation framework
-│   ├── development/    # Software development
+│   ├── research/       # Multi-source research orchestration
+│   ├── fabric/         # 242+ AI patterns
 │   └── [custom]/       # Your custom skills
+├── context/             # UFC context files
+│   ├── CLAUDE.md       # Global context
+│   ├── architecture/   # Architecture docs
+│   ├── projects/       # Project-specific contexts
+│   └── [others]/       # Various context categories
 ├── hooks/               # Event hooks
-│   ├── user-prompt-submit-hook
-│   ├── tool-use-hook
-│   └── post-execution-hook
+│   ├── load-core-context.ts
+│   ├── initialize-pai-session.ts
+│   ├── capture-*.ts
+│   └── [others].ts
 ├── commands/            # Custom slash commands
 │   └── *.md            # Command definitions
 ├── agents/              # Specialized AI agents
 │   ├── engineer.md
 │   ├── researcher.md
+│   ├── architect.md
+│   ├── designer.md
 │   └── [others].md
-├── voice-server/        # Voice notification service
-│   ├── server.ts       # Server implementation
-│   ├── voices.json     # Voice configuration
-│   └── menubar/        # Menu bar integration
 ├── documentation/       # System documentation
+├── PAI.md               # Global PAI context
+├── settings.json        # Claude Code settings
 └── statusline-command.sh
 
 ${HOME}/
@@ -176,24 +184,6 @@ ${HOME}/
 ```
 
 ## Communication Protocols
-
-### HTTP APIs
-
-**Voice Server API:**
-
-- `POST /notify` - Send voice notification
-- `GET /health` - Health check
-- `POST /pai` - PAI-specific notifications
-
-**Request Format:**
-
-```json
-{
-  "message": "Text to speak",
-  "voice_id": "optional_voice_id",
-  "title": "Optional Title"
-}
-```
 
 ### Hook Protocol
 
@@ -285,10 +275,10 @@ Service Error → Hook System → User Notification → Fallback Action
 
 ### Fallback Strategies
 
-1. **Voice Server**: Falls back to macOS `say`
-2. **Context Loading**: Uses default context
-3. **Agent Selection**: Falls back to general-purpose
-4. **Hook Execution**: Continues on non-critical failures
+1. **Context Loading**: Uses default context
+2. **Agent Selection**: Falls back to general-purpose
+3. **Hook Execution**: Continues on non-critical failures
+4. **Skill Loading**: Falls back to manual activation
 
 ## Future Architecture Considerations
 

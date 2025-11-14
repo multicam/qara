@@ -60,7 +60,7 @@ Before we start, let's make sure you have the basics. Don't worry - we'll walk t
 **3. Bun** (JavaScript runtime)
 
    - **What it is:** A fast JavaScript engine (like Node.js but better)
-   - **Why you need it:** Powers the voice server and various PAI features
+   - **Why you need it:** Powers various PAI features and hooks
    - **Check if you have it:** `bun --version`
    - **Don't have it?** Install it:
 
@@ -205,9 +205,6 @@ GOOGLE_API_KEY=""                       # For Gemini research
 REPLICATE_API_TOKEN=""                  # For AI images/videos
 OPENAI_API_KEY=""                       # For GPT features
 
-# ============ SYSTEM CONFIGURATION ============
-PORT="8888"                             # Voice server port
-
 # ============ YOUR AI ASSISTANT ============
 DA="Assistant"                          # Your AI's name
 DA_COLOR="purple"                       # Display color
@@ -224,40 +221,7 @@ DA_COLOR="purple"                       # Display color
 
 ---
 
-### Step 5: Optional - Voice Server Setup
-
-**Do you want your AI to talk to you?** This is totally optional but pretty cool!
-
-PAI can use macOS's built-in Premium voices (they're free, high-quality, and work offline).
-
-**To set this up:**
-
-1. **Download a Premium voice:**
-   - Go to: System Settings → Accessibility → Spoken Content
-   - Click "System Voice" → "Manage Voices..."
-   - Download a Premium or Enhanced voice (try "Zoe" or "Samantha" - they're great!)
-
-2. **Start the voice server:**
-   ```bash
-   cd $PAI_DIR/voice-server
-   bun install  # Install dependencies
-   bun server.ts &  # Start in background
-   ```
-
-3. **Test it:**
-   ```bash
-   curl -X POST http://localhost:8888/notify \
-     -H "Content-Type: application/json" \
-     -d '{"message": "Hello! Your voice server is working!"}'
-   ```
-
-   **You should hear your computer speak!** 🔊
-
-**Don't hear anything?** No worries - skip this for now. You can always set it up later. The voice server is completely optional.
-
----
-
-### Step 6: Configure Your AI Assistant (Claude Code)
+### Step 5: Configure Your AI Assistant (Claude Code)
 
 Almost there! Now let's connect Claude Code to PAI.
 
@@ -287,7 +251,7 @@ Almost there! Now let's connect Claude Code to PAI.
 
 ---
 
-### Step 7: Understanding Your Setup
+### Step 6: Understanding Your Setup
 
 Congratulations! PAI is installed. But let's take a moment to understand what you just set up.
 
@@ -297,12 +261,13 @@ Congratulations! PAI is installed. But let's take a moment to understand what yo
 PAI/
 ├── agents/          # Specialized AI agents (researcher, engineer, designer, etc.)
 ├── commands/        # Custom commands you can run
+├── context/         # Context files for UFC system
 ├── documentation/   # Help files (you're reading one!)
 ├── hooks/           # Automation that runs when you do things
 ├── skills/          # Specialized capabilities (research, coding, design, etc.)
+├── PAI.md           # Global PAI context
 ├── settings.json    # Your Claude Code configuration
-├── .env             # Your API keys and settings
-└── voice-server/    # Voice notification system
+└── .env             # Your API keys and settings
 ```
 
 **How it works:**
@@ -315,7 +280,7 @@ PAI/
 
 ---
 
-### Step 8: Customize PAI for YOU
+### Step 7: Customize PAI for YOU
 
 This is where it gets fun! PAI is completely customizable. Here are some things you can do:
 
@@ -424,24 +389,6 @@ ls -la ~/.claude/settings.json
 ln -sf $PAI_DIR/settings.json ~/.claude/settings.json
 
 # Restart Claude Code
-```
-
-### Voice server not working
-
-**Fix:**
-
-```bash
-# Check if Bun is installed:
-bun --version
-
-# Try starting the voice server manually:
-cd $PAI_DIR/voice-server
-bun server.ts
-
-# Check for errors in the output
-
-# Make sure you have a Premium voice installed:
-# System Settings → Accessibility → Spoken Content → System Voice → Manage Voices
 ```
 
 ### API Keys not working
@@ -563,9 +510,6 @@ cd $PAI_DIR                      # Quick way to navigate to PAI
 # Update PAI to latest version
 cd $PAI_DIR && git pull          # Get latest features and fixes
 
-# Start voice server (optional)
-cd $PAI_DIR/voice-server && bun server.ts &
-
 # Reload shell configuration
 source ~/.zshrc                  # Apply any changes you made
 
@@ -580,12 +524,13 @@ ls $PAI_DIR/commands/            # See pre-built tasks
 
 | What | Where |
 |------|-------|
-| PAI main directory | `$PAI_DIR` (usually `~/PAI`) |
+| PAI main directory | `$PAI_DIR` (usually `~/.claude`) |
 | Your settings | `$PAI_DIR/.env` |
+| Global context | `$PAI_DIR/PAI.md` |
 | Skills | `$PAI_DIR/skills/` |
 | Commands | `$PAI_DIR/commands/` |
+| Context files | `$PAI_DIR/context/` |
 | Documentation | `$PAI_DIR/documentation/` |
-| Voice server | `$PAI_DIR/voice-server/` |
 | Logs | `~/Library/Logs/` |
 
 **Important Environment Variables:**

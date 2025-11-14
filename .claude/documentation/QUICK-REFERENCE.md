@@ -194,7 +194,6 @@ source ~/.bashrc
 | **fabric** | threat model, summarize, extract | "Summarize this article" |
 | **blogging** | blog, write, publish | "Write a blog post about AI" |
 | **design** | design, UI, UX | "Design a dashboard" |
-| **ffuf** | pentest, security, fuzz | "Test this API endpoint" |
 | **web-scraping** | scrape, extract, crawl | "Scrape data from this site" |
 | **chrome-devtools** | browser, screenshot, debug | "Take a screenshot" |
 

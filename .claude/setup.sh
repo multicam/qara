@@ -251,6 +251,16 @@ else
     HAS_RIPGREP=false
 fi
 
+print_step "Checking for bat..."
+if command_exists bat; then
+    bat_version=$(bat --version | head -n1 | awk '{print $2}')
+    print_success "bat $bat_version is installed"
+    HAS_BAT=true
+else
+    print_warning "bat is not installed"
+    HAS_BAT=false
+fi
+
 
 # ============================================
 # Step 2: Install Missing Software
@@ -359,7 +369,7 @@ if [ "$NEEDS_INSTALL" = true ]; then
     if [ "$HAS_CARGO" = false ]; then
         echo ""
         print_warning "Cargo (Rust) is not installed. Cargo is needed for modern CLI tools."
-        print_info "It's required to install fd, ripgrep, and ast-grep."
+        print_info "It's required to install fd, ripgrep, bat, and ast-grep."
         echo ""
 
         if ask_yes_no "Install Cargo (Rust)?"; then
@@ -426,6 +436,23 @@ if [ "$NEEDS_INSTALL" = true ]; then
             HAS_RIPGREP=true
         else
             print_warning "ripgrep is optional, but recommended. Continuing without it."
+        fi
+    fi
+
+    # Install bat if needed and cargo is available
+    if [ "$HAS_BAT" = false ] && [ "$HAS_CARGO" = true ]; then
+        echo ""
+        print_warning "bat is not installed. bat is a modern file viewer with syntax highlighting."
+        print_info "It's preferred over cat for viewing files (part of PAI CLI tool preferences)."
+        echo ""
+
+        if ask_yes_no "Install bat?"; then
+            print_step "Installing bat via cargo..."
+            cargo install bat
+            print_success "bat installed successfully!"
+            HAS_BAT=true
+        else
+            print_warning "bat is optional, but recommended. Continuing without it."
         fi
     fi
 else
@@ -845,7 +872,7 @@ fi
 if command_exists cargo; then
     print_success "Cargo (Rust) is available"
 else
-    print_info "Cargo not installed (optional, needed for fd, ripgrep, and ast-grep)"
+    print_info "Cargo not installed (optional, needed for fd, ripgrep, bat, and ast-grep)"
 fi
 
 # Test 11: fd installation
@@ -867,6 +894,13 @@ if command_exists rg; then
     print_success "ripgrep is available (preferred text search)"
 else
     print_info "ripgrep not installed (optional, but recommended for text searches)"
+fi
+
+# Test 14: bat installation
+if command_exists bat; then
+    print_success "bat is available (preferred file viewer)"
+else
+    print_info "bat not installed (optional, but recommended for viewing files)"
 fi
 
 # ============================================

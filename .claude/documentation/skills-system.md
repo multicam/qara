@@ -310,7 +310,6 @@ Edit your global configuration to include the skill in `<available_skills>`:
 
 - **ai-image-generation**: Image generation workflows
 - **ai-video-generation**: Video generation workflows
-- **ffuf**: Web fuzzing for security testing
 
 ### Meta Skills
 

@@ -25,6 +25,7 @@ description: |
   - CLI Tools:
     • File search: fd over find (modern, fast, respects .gitignore)
     • Text search: ripgrep (rg) over grep (faster, smarter defaults, respects .gitignore)
+    • File viewing: bat over cat (syntax highlighting, git integration)
     • Code search: ast-grep for semantic code search/refactoring (AST-aware)
   - Analysis vs Action: If asked to analyze, do analysis only - don't change things unless explicitly asked
   - Scratchpad: Use ~/.claude/scratchpad/ with timestamps for test/random tasks
@@ -197,6 +198,54 @@ grep -n "pattern" file.txt           # Show line numbers
 
 **Note:** Claude Code has a Grep tool built-in that uses ripgrep under the hood - prefer using that tool over bash commands when possible.
 
+### File Viewing: bat over cat
+
+**Always prefer `bat` for viewing file contents.** Use `cat` only as a fallback when bat is unavailable.
+
+**Why bat:**
+
+- Syntax highlighting (supports 200+ languages)
+- Git integration (shows modifications in gutter)
+- Automatic paging for long files
+- Line numbers by default
+- Non-printable character display
+- Better readability with themes
+
+**When to use bat:**
+
+- Viewing source code files (default choice)
+- Quick file inspection with syntax highlighting
+- Reviewing files with Git changes highlighted
+- Reading configuration files with better formatting
+
+**When to fall back to cat:**
+
+- bat is not available on the system
+- Piping output to another command (use `bat --plain` or `cat`)
+- Performance-critical scripts where syntax highlighting is unnecessary
+- Binary file inspection (though both should be avoided)
+
+**Quick Reference:**
+
+```bash
+# bat (preferred)
+bat file.txt                         # View file with syntax highlighting
+bat file.py file.js                  # View multiple files
+bat -n file.txt                      # Show line numbers (default)
+bat --plain file.txt                 # Plain output (like cat, for piping)
+bat -p file.txt                      # Plain output, short form
+bat -l python file.txt               # Force specific language
+bat --theme=ansi                     # Use specific theme
+bat -A file.txt                      # Show all characters (tabs, newlines)
+
+# cat (fallback)
+cat file.txt                         # View file
+cat file1.txt file2.txt              # View multiple files
+cat -n file.txt                      # Show line numbers
+```
+
+**Note:** Claude Code has a Read tool for reading files - prefer using that tool over bash commands when possible.
+
 ### Code Search: ast-grep for Semantic Operations
 
 **Use `ast-grep` for semantic code search and refactoring.** This is AST-aware (Abstract Syntax Tree), not just text matching.
@@ -232,6 +281,7 @@ sg scan --rule rule.yml # Use rule file for complex patterns
 
 - **File search** (find by name) → Use `fd`
 - **Text search** (find by content) → Use `ripgrep` (rg)
+- **File viewing** (display file contents) → Use `bat`
 - **Code search** (find by structure) → Use `ast-grep`
 
 ---
