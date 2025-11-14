@@ -661,7 +661,7 @@ else
 fi
 
 # Test 3: Commands directory exists
-if [ -d "$PAI_DIR/.claude/commands" ]; then
+if [ -d "$PAI_DIR/commands" ]; then
     command_count=$(find "$PAI_DIR/commands" -type f -name "*.md" | wc -l | tr -d ' ')
     print_success "Found $command_count commands"
 else
@@ -762,7 +762,7 @@ echo "   • 'Research the latest AI developments'"
 echo "   • 'What skills do you have?'"
 echo ""
 echo "3. ${CYAN}Customize PAI for you:${NC}"
-echo "   • Edit: $PAI_DIR/.claude/skills/CORE/SKILL.md"
+echo "   • Edit: $PAI_DIR/skills/CORE/SKILL.md"
 echo "   • Add API keys: $PAI_DIR/.env"
 echo "   • Read the docs: $PAI_DIR/documentation/how-to-start.md"
 echo ""
@@ -774,7 +774,7 @@ echo ""
 echo "  ${CYAN}cd \$PAI_DIR${NC}                    # Go to PAI directory"
 echo "  ${CYAN}cd \$PAI_DIR && git pull${NC}       # Update PAI to latest version"
 echo "  ${CYAN}open -e \$PAI_DIR/.env${NC}         # Edit API keys"
-echo "  ${CYAN}ls \$PAI_DIR/.claude/skills${NC}            # See available skills"
+echo "  ${CYAN}ls \$PAI_DIR/skills${NC}            # See available skills"
 echo "  ${CYAN}source ~/.zshrc${NC}                # Reload environment"
 echo ""
 

@@ -9,9 +9,10 @@ description: Multi-source comprehensive research using perplexity-researcher, cl
 
 **Before starting any task with this skill, load complete PAI context:**
 
-`read ${PAI_DIR}/.claude/skills/CORE/SKILL.md`
+`read ${PAI_DIR}/skills/CORE/SKILL.md`
 
 This provides access to:
+
 - Complete contact list and team members
 - Stack preferences (TypeScript>Python, bun>npm, uv>pip)
 - Security rules and repository safety protocols
@@ -21,6 +22,7 @@ This provides access to:
 ## When to Use This Skill
 
 This skill activates when the user requests research or information gathering:
+
 - "Do research on X"
 - "Research this topic"
 - "Find information about X"
@@ -32,16 +34,19 @@ This skill activates when the user requests research or information gathering:
 **THREE RESEARCH MODES:**
 
 **QUICK RESEARCH MODE:**
+
 - User says "quick research" → Launch 3 agents (1 of each type)
 - **Timeout: 2 minutes** | Main Qara waits 2 minutes then synthesizes
 - Best for: Simple queries, straightforward questions
 
 **STANDARD RESEARCH MODE (Default):**
+
 - Default for most research requests → Launch 9 agents (3 of each type)
 - **Timeout: 3 minutes** | Main Qara waits 3 minutes then synthesizes
 - Best for: Most research needs, comprehensive coverage
 
 **EXTENSIVE RESEARCH MODE:**
+
 - User says "extensive research" → Launch 24 agents (8 of each type)
 - Use be-creative skill with UltraThink for maximum query diversity
 - Generate 24 unique, creative research angles
@@ -49,6 +54,7 @@ This skill activates when the user requests research or information gathering:
 - Best for: Deep-dive research, multi-domain analysis, comprehensive reports
 
 **⏱️ CRITICAL TIMEOUT RULES:**
+
 - **Quick (3 agents): 2 minute timeout**
 - **Standard (9 agents): 3 minute timeout**
 - **Extensive (24 agents): 10 minute timeout**
@@ -106,6 +112,7 @@ This skill activates when the user requests research or information gathering:
 **File Structure Example:**
 
 **Scratchpad (temporary workspace):**
+
 ```
 ${PAI_DIR}/scratchpad/2025-10-26-143022_research-agi-frameworks/
 ├── raw-outputs/
@@ -118,6 +125,7 @@ ${PAI_DIR}/scratchpad/2025-10-26-143022_research-agi-frameworks/
 ```
 
 **History (permanent archive):**
+
 ```
 ${PAI_DIR}/history/research/2025-10-26_agi-frameworks/
 ├── README.md (research documentation)
@@ -127,6 +135,7 @@ ${PAI_DIR}/history/research/2025-10-26_agi-frameworks/
 ```
 
 **README.md Template:**
+
 ```markdown
 # Research: [Topic]
 
@@ -158,4 +167,4 @@ ${PAI_DIR}/history/research/2025-10-26_agi-frameworks/
 
 ## Full Workflow Reference
 
-For complete step-by-step instructions: `read ${PAI_DIR}/.claude/commands/conduct-research.md`
+For complete step-by-step instructions: `read ${PAI_DIR}/commands/conduct-research.md`
