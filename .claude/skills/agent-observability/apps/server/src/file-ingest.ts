@@ -9,7 +9,7 @@
  * - PAI_DIR: Path to your PAI directory (defaults to ~/.claude/)
  *   Example: export PAI_DIR="/Users/yourname/.claude"
  *
- * Reads events from: ${PAI_DIR}/history/raw-outputs/YYYY-MM/YYYY-MM-DD_all-events.jsonl
+ * Reads events from: ~/.claude/history/raw-outputs/YYYY-MM/YYYY-MM-DD_all-events.jsonl
  */
 
 import { watch, existsSync } from 'fs';
@@ -35,15 +35,22 @@ let onEventsReceived: ((events: HookEvent[]) => void) | null = null;
  * Get the path to today's all-events file
  */
 function getTodayEventsFile(): string {
-  const paiDir = process.env.PAI_DIR || join(homedir(), '.claude');
+  // ALWAYS use ~/.claude/history for event data (NEVER PAI_DIR/history)
+  const historyDir = join(homedir(), '.claude', 'history');
   const now = new Date();
-  // Convert to PST
-  const pstDate = new Date(now.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
-  const year = pstDate.getFullYear();
-  const month = String(pstDate.getMonth() + 1).padStart(2, '0');
-  const day = String(pstDate.getDate()).padStart(2, '0');
+  // Convert to Australia/Sydney timezone using Intl
+  const formatter = new Intl.DateTimeFormat('en-AU', {
+    timeZone: 'Australia/Sydney',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
+  const parts = formatter.formatToParts(now);
+  const year = parts.find(p => p.type === 'year')!.value;
+  const month = parts.find(p => p.type === 'month')!.value;
+  const day = parts.find(p => p.type === 'day')!.value;
 
-  const monthDir = join(paiDir, 'history', 'raw-outputs', `${year}-${month}`);
+  const monthDir = join(historyDir, 'raw-outputs', `${year}-${month}`);
   return join(monthDir, `${year}-${month}-${day}_all-events.jsonl`);
 }
 
@@ -176,9 +183,8 @@ function watchFile(filePath: string): void {
  */
 export function startFileIngestion(callback?: (events: HookEvent[]) => void): void {
   console.log('🚀 Starting file-based event streaming (in-memory only)');
-  const paiDir = process.env.PAI_DIR || join(homedir(), '.claude');
-  console.log(`📂 PAI_DIR: ${paiDir}`);
-  console.log(`📂 Reading from: ${paiDir}/history/raw-outputs/`);
+  const historyDir = join(homedir(), '.claude', 'history');
+  console.log(`📂 Reading from: ${historyDir}/raw-outputs/`);
 
   // Set the callback for event notifications
   if (callback) {

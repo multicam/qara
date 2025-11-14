@@ -56,9 +56,3 @@ export function getCurrentTimestamp(): string {
   return new Date().toISOString();
 }
 
-/**
- * Helper to get source app name from environment or default to 'PAI'
- */
-export function getSourceApp(): string {
-  return process.env.PAI_SOURCE_APP || 'PAI';
-}

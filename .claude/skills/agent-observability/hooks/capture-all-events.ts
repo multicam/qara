@@ -23,10 +23,10 @@ interface HookEvent {
   timestamp_pst: string;
 }
 
-// Get PST timestamp
+// Get PST timestampw
 function getPSTTimestamp(): string {
   const date = new Date();
-  const pstDate = new Date(date.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
+  const pstDate = new Date(date.toLocaleString('en-AU', { timeZone: 'Australia/Sydney' }));
 
   const year = pstDate.getFullYear();
   const month = String(pstDate.getMonth() + 1).padStart(2, '0');
@@ -40,14 +40,15 @@ function getPSTTimestamp(): string {
 
 // Get current events file path
 function getEventsFilePath(): string {
-  const paiDir = process.env.PAI_DIR || join(homedir(), '.claude');
+  // Always use ~/.claude/history for event data
+  const historyDir = join(homedir(), '.claude');
   const now = new Date();
-  const pstDate = new Date(now.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
+  const pstDate = new Date(now.toLocaleString('en-AU', { timeZone: 'Australia/Sydney' }));
   const year = pstDate.getFullYear();
   const month = String(pstDate.getMonth() + 1).padStart(2, '0');
   const day = String(pstDate.getDate()).padStart(2, '0');
 
-  const monthDir = join(paiDir, 'history', 'raw-outputs', `${year}-${month}`);
+  const monthDir = join(historyDir, 'history', 'raw-outputs', `${year}-${month}`);
 
   // Ensure directory exists
   if (!existsSync(monthDir)) {
@@ -59,8 +60,9 @@ function getEventsFilePath(): string {
 
 // Session-to-agent mapping functions
 function getSessionMappingFile(): string {
-  const paiDir = process.env.PAI_DIR || join(homedir(), '.claude');
-  return join(paiDir, 'agent-sessions.json');
+  // Always use ~/.claude for session mapping
+  const claudeDir = join(homedir(), '.claude');
+  return join(claudeDir, 'agent-sessions.json');
 }
 
 function getAgentForSession(sessionId: string): string {

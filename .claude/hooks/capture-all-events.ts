@@ -24,33 +24,49 @@ interface HookEvent {
   timestamp_pst: string;
 }
 
-// Get PST timestamp (adjust timezone as needed for your location)
+// Get Sydney timestamp
 function getPSTTimestamp(): string {
   const date = new Date();
-  // Change 'America/Los_Angeles' to your preferred timezone
-  const pstDate = new Date(date.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
+  // Use Intl.DateTimeFormat for reliable timezone conversion
+  const formatter = new Intl.DateTimeFormat('en-AU', {
+    timeZone: 'Australia/Sydney',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  });
+  const parts = formatter.formatToParts(date);
+  const year = parts.find(p => p.type === 'year')!.value;
+  const month = parts.find(p => p.type === 'month')!.value;
+  const day = parts.find(p => p.type === 'day')!.value;
+  const hours = parts.find(p => p.type === 'hour')!.value;
+  const minutes = parts.find(p => p.type === 'minute')!.value;
+  const seconds = parts.find(p => p.type === 'second')!.value;
 
-  const year = pstDate.getFullYear();
-  const month = String(pstDate.getMonth() + 1).padStart(2, '0');
-  const day = String(pstDate.getDate()).padStart(2, '0');
-  const hours = String(pstDate.getHours()).padStart(2, '0');
-  const minutes = String(pstDate.getMinutes()).padStart(2, '0');
-  const seconds = String(pstDate.getSeconds()).padStart(2, '0');
-
-  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds} PST`;
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds} AEDT`;
 }
 
 // Get current events file path
 function getEventsFilePath(): string {
-  // Use PAI_DIR environment variable or default to ~/.claude
-  const paiDir = process.env.PAI_DIR || join(homedir(), '.claude');
+  // ALWAYS use ~/.claude/history (NEVER PAI_DIR/history)
+  const historyDir = join(homedir(), '.claude', 'history');
   const now = new Date();
-  const pstDate = new Date(now.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
-  const year = pstDate.getFullYear();
-  const month = String(pstDate.getMonth() + 1).padStart(2, '0');
-  const day = String(pstDate.getDate()).padStart(2, '0');
+  // Use Intl.DateTimeFormat for reliable timezone conversion
+  const formatter = new Intl.DateTimeFormat('en-AU', {
+    timeZone: 'Australia/Sydney',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
+  const parts = formatter.formatToParts(now);
+  const year = parts.find(p => p.type === 'year')!.value;
+  const month = parts.find(p => p.type === 'month')!.value;
+  const day = parts.find(p => p.type === 'day')!.value;
 
-  const monthDir = join(paiDir, 'history', 'raw-outputs', `${year}-${month}`);
+  const monthDir = join(historyDir, 'raw-outputs', `${year}-${month}`);
 
   // Ensure directory exists
   if (!existsSync(monthDir)) {
@@ -62,8 +78,8 @@ function getEventsFilePath(): string {
 
 // Session-to-agent mapping functions
 function getSessionMappingFile(): string {
-  const paiDir = process.env.PAI_DIR || join(homedir(), '.claude');
-  return join(paiDir, 'agent-sessions.json');
+  const claudeDir = join(homedir(), '.claude');
+  return join(claudeDir, 'agent-sessions.json');
 }
 
 function getAgentForSession(sessionId: string): string {
@@ -123,8 +139,8 @@ async function main() {
       agentName = hookData.tool_input.subagent_type;
       setAgentForSession(sessionId, agentName);
     }
-    // If this is a SubagentStop or Stop event, reset to primary agent
-    else if (eventType === 'SubagentStop' || eventType === 'Stop') {
+    // If this is a SubagentStop, Stop, or SessionStart event, reset to primary agent
+    else if (eventType === 'SubagentStop' || eventType === 'Stop' || eventType === 'SessionStart') {
       // Change 'qara' to your primary agent's name
       agentName = 'qara';
       setAgentForSession(sessionId, 'qara');

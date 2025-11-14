@@ -256,7 +256,7 @@ To change where events are stored, edit `~/.claude/settings.json`:
 Then create the required structure:
 
 ```bash
-mkdir -p /path/to/your/custom/directory/history/raw-outputs
+mkdir -p ~/.claude/history/raw-outputs
 ```
 
 ### Filter Events
