@@ -1,5 +1,7 @@
 .env
 settings.json
+.claude/.env
+.claude/settings.json
 
 node_modules
 
