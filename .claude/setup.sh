@@ -207,6 +207,50 @@ else
     HAS_BUN=false
 fi
 
+print_step "Checking for Cargo (Rust)..."
+if command_exists cargo; then
+    cargo_version=$(cargo --version | awk '{print $2}')
+    print_success "Cargo $cargo_version is installed"
+    HAS_CARGO=true
+else
+    print_warning "Cargo is not installed"
+    HAS_CARGO=false
+fi
+
+print_step "Checking for fd..."
+if command_exists fd; then
+    fd_version=$(fd --version | awk '{print $2}')
+    print_success "fd $fd_version is installed"
+    HAS_FD=true
+else
+    print_warning "fd is not installed"
+    HAS_FD=false
+fi
+
+print_step "Checking for ast-grep..."
+if command_exists ast-grep || command_exists sg; then
+    if command_exists ast-grep; then
+        astgrep_version=$(ast-grep --version 2>/dev/null | head -n1 | awk '{print $2}')
+    else
+        astgrep_version=$(sg --version 2>/dev/null | head -n1 | awk '{print $2}')
+    fi
+    print_success "ast-grep $astgrep_version is installed"
+    HAS_ASTGREP=true
+else
+    print_warning "ast-grep is not installed"
+    HAS_ASTGREP=false
+fi
+
+print_step "Checking for ripgrep..."
+if command_exists rg; then
+    rg_version=$(rg --version | head -n1 | awk '{print $2}')
+    print_success "ripgrep $rg_version is installed"
+    HAS_RIPGREP=true
+else
+    print_warning "ripgrep is not installed"
+    HAS_RIPGREP=false
+fi
+
 
 # ============================================
 # Step 2: Install Missing Software
@@ -308,6 +352,80 @@ if [ "$NEEDS_INSTALL" = true ]; then
             HAS_BUN=true
         else
             print_warning "Bun is optional, but recommended. Continuing without it."
+        fi
+    fi
+
+    # Install Cargo if needed
+    if [ "$HAS_CARGO" = false ]; then
+        echo ""
+        print_warning "Cargo (Rust) is not installed. Cargo is needed for modern CLI tools."
+        print_info "It's required to install fd, ripgrep, and ast-grep."
+        echo ""
+
+        if ask_yes_no "Install Cargo (Rust)?"; then
+            print_step "Installing Rust and Cargo..."
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+
+            # Source cargo environment for this session
+            if [ -f "$HOME/.cargo/env" ]; then
+                source "$HOME/.cargo/env"
+            fi
+
+            print_success "Rust and Cargo installed successfully!"
+            HAS_CARGO=true
+        else
+            print_warning "Cargo is needed for fd, ripgrep, and ast-grep. Skipping those tools."
+        fi
+    fi
+
+    # Install fd if needed and cargo is available
+    if [ "$HAS_FD" = false ] && [ "$HAS_CARGO" = true ]; then
+        echo ""
+        print_warning "fd is not installed. fd is a modern, fast file finder."
+        print_info "It's preferred over find for file searches (part of PAI CLI tool preferences)."
+        echo ""
+
+        if ask_yes_no "Install fd?"; then
+            print_step "Installing fd via cargo..."
+            cargo install fd-find
+            print_success "fd installed successfully!"
+            HAS_FD=true
+        else
+            print_warning "fd is optional, but recommended. Continuing without it."
+        fi
+    fi
+
+    # Install ast-grep if needed and cargo is available
+    if [ "$HAS_ASTGREP" = false ] && [ "$HAS_CARGO" = true ]; then
+        echo ""
+        print_warning "ast-grep is not installed. ast-grep is a semantic code search tool."
+        print_info "It's preferred for code refactoring and semantic searches (part of PAI CLI tool preferences)."
+        echo ""
+
+        if ask_yes_no "Install ast-grep?"; then
+            print_step "Installing ast-grep via cargo..."
+            cargo install ast-grep
+            print_success "ast-grep installed successfully!"
+            HAS_ASTGREP=true
+        else
+            print_warning "ast-grep is optional, but recommended for code work. Continuing without it."
+        fi
+    fi
+
+    # Install ripgrep if needed and cargo is available
+    if [ "$HAS_RIPGREP" = false ] && [ "$HAS_CARGO" = true ]; then
+        echo ""
+        print_warning "ripgrep is not installed. ripgrep (rg) is a fast text search tool."
+        print_info "It's preferred over grep for text searches (part of PAI CLI tool preferences)."
+        echo ""
+
+        if ask_yes_no "Install ripgrep?"; then
+            print_step "Installing ripgrep via cargo..."
+            cargo install ripgrep
+            print_success "ripgrep installed successfully!"
+            HAS_RIPGREP=true
+        else
+            print_warning "ripgrep is optional, but recommended. Continuing without it."
         fi
     fi
 else
@@ -721,6 +839,34 @@ if [ -d "$HOME/.claude/scratchpad" ]; then
     print_success "Scratchpad directory exists"
 else
     print_warning "Scratchpad directory not found"
+fi
+
+# Test 10: Cargo (Rust) installation
+if command_exists cargo; then
+    print_success "Cargo (Rust) is available"
+else
+    print_info "Cargo not installed (optional, needed for fd, ripgrep, and ast-grep)"
+fi
+
+# Test 11: fd installation
+if command_exists fd; then
+    print_success "fd is available (preferred file finder)"
+else
+    print_info "fd not installed (optional, but recommended for file searches)"
+fi
+
+# Test 12: ast-grep installation
+if command_exists ast-grep || command_exists sg; then
+    print_success "ast-grep is available (semantic code search)"
+else
+    print_info "ast-grep not installed (optional, but recommended for code work)"
+fi
+
+# Test 13: ripgrep installation
+if command_exists rg; then
+    print_success "ripgrep is available (preferred text search)"
+else
+    print_info "ripgrep not installed (optional, but recommended for text searches)"
 fi
 
 # ============================================

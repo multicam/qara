@@ -200,6 +200,52 @@ source ~/.bashrc
 
 ---
 
+## 🛠️ Modern CLI Tools
+
+PAI uses modern CLI tools that are faster and smarter than traditional Unix tools:
+
+| Traditional | Modern | What it does | Speed |
+|-------------|--------|--------------|-------|
+| `find` | `fd` | Find files | 5-10x faster |
+| `grep` | `ripgrep (rg)` | Search text | 10-50x faster |
+| N/A | `ast-grep` | Search code semantically | AST-aware |
+
+### Quick Examples
+
+```bash
+# Find files (fd is faster than find)
+fd config                     # Find files named "config"
+fd -e ts                      # Find all TypeScript files
+fd -H secret                  # Include hidden files
+
+# Search text (ripgrep is faster than grep)
+rg "TODO"                     # Search for TODO in all files
+rg -i error                   # Case-insensitive search
+rg -t js console.log          # Search only JavaScript files
+
+# Search code structure (ast-grep understands syntax)
+ast-grep -p 'console.log($$$)' # Find all console.log calls
+ast-grep -p 'function $NAME($$$)' # Find function definitions
+```
+
+**Full guide:** See [CLI-TOOLS.md](./CLI-TOOLS.md) for complete documentation
+
+### Installation
+
+These tools are installed automatically by PAI's setup script:
+
+```bash
+cd $PAI_DIR/.claude && ./setup.sh
+```
+
+Or install manually:
+
+```bash
+cargo install fd-find ripgrep ast-grep
+```
+
+---
+
 ## 🛠️ Useful One-Liners
 
 ```bash
@@ -207,16 +253,16 @@ source ~/.bashrc
 echo "PAI: $PAI_DIR" && ls $PAI_DIR/skills | wc -l | xargs echo "Skills:"
 
 # Count commands
-find $PAI_DIR/commands -name "*.md" | wc -l
+fd -e md . $PAI_DIR/commands | wc -l
 
 # Find all skill files
-find $PAI_DIR/skills -name "SKILL.md"
+fd SKILL.md $PAI_DIR/skills
 
 # View recent PAI updates
 cd $PAI_DIR && git log --oneline -10
 
-# Search for a keyword in all skills
-grep -r "keyword" $PAI_DIR/skills/
+# Search for a keyword in all skills (use ripgrep)
+rg "keyword" $PAI_DIR/skills/
 
 # Backup your .env file
 cp $PAI_DIR/.env $PAI_DIR/.env.backup
@@ -273,6 +319,9 @@ cd $PAI_DIR && git log --oneline -20
 ```bash
 # View all documentation
 ls $PAI_DIR/documentation/
+
+# CLI tools guide (fd, ripgrep, ast-grep)
+open $PAI_DIR/documentation/CLI-TOOLS.md
 
 # Getting started guide
 open $PAI_DIR/documentation/how-to-start.md
