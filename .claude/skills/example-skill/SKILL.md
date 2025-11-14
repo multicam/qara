@@ -151,6 +151,7 @@ Use this skill as a template:
 ## Technical Details
 
 ### File Structure
+
 ```
 example-skill/
 ├── SKILL.md              # This file (core definition)
@@ -165,12 +166,14 @@ example-skill/
 ```
 
 ### Loading Behavior
+
 1. Skill metadata always loaded (YAML frontmatter)
 2. SKILL.md body loaded when skill activates
 3. Individual workflows loaded when selected
 4. Assets loaded when referenced
 
 ### Integration Points
+
 - **Natural Language:** Trigger phrases activate skill
 - **Other Skills:** Can reference this skill's workflows
 - **Agents:** Can invoke specific workflows
@@ -185,8 +188,6 @@ example-skill/
 ## References
 
 - **Anthropic Skills:** https://docs.claude.com/en/docs/agents-and-tools/agent-skills/overview
-- **PAI Repository:** https://github.com/danielmiessler/Personal_AI_Infrastructure
-- **v1.2.0 Changes:** Skills-as-Containers migration completed 2025-10-31
 
 ---
 

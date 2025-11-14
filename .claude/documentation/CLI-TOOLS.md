@@ -712,11 +712,6 @@ ast-grep -p 'pattern' --debug
 - **ripgrep guide:** https://github.com/BurntSushi/ripgrep/blob/master/GUIDE.md
 - **ast-grep patterns:** https://ast-grep.github.io/guide/pattern-syntax.html
 
-### Community
-
-- Report issues via GitHub
-- PAI discussions: https://github.com/danielmiessler/Personal_AI_Infrastructure/discussions
-
 ---
 
 ## Quick Reference Card

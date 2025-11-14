@@ -248,9 +248,6 @@ bun run preview
 - [history-structure/](./history-structure/) - Data storage structure
 - [settings.json.example](./settings.json.example) - Hook configuration template
 
-## License
-
-Part of the [PAI (Personal AI Infrastructure)](https://github.com/danielmiessler/PAI) project.
 
 ## Contributing
 

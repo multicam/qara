@@ -26,6 +26,7 @@ fi
 ## When to Activate This Skill
 
 **Primary Use Cases:**
+
 - "Create a threat model for..."
 - "Summarize this article/video/paper..."
 - "Extract wisdom/insights from..."
@@ -43,6 +44,7 @@ When a user requests Fabric processing, follow this decision tree:
 ### 1. Identify Intent Category
 
 **Threat Modeling & Security:**
+
 - Threat model → `create_threat_model` or `create_stride_threat_model`
 - Threat scenarios → `create_threat_scenarios`
 - Security update → `create_security_update`
@@ -50,6 +52,7 @@ When a user requests Fabric processing, follow this decision tree:
 - Threat analysis → `analyze_threat_report`, `analyze_threat_report_trends`
 
 **Summarization:**
+
 - General summary → `summarize`
 - 5-sentence summary → `create_5_sentence_summary`
 - Micro summary → `create_micro_summary` or `summarize_micro`
@@ -60,6 +63,7 @@ When a user requests Fabric processing, follow this decision tree:
 - Code changes → `summarize_git_changes` or `summarize_git_diff`
 
 **Wisdom Extraction:**
+
 - General wisdom → `extract_wisdom`
 - Article wisdom → `extract_article_wisdom`
 - Book ideas → `extract_book_ideas`
@@ -69,6 +73,7 @@ When a user requests Fabric processing, follow this decision tree:
 - Controversial ideas → `extract_controversial_ideas`
 
 **Analysis:**
+
 - Malware → `analyze_malware`
 - Code → `analyze_code` or `review_code`
 - Claims → `analyze_claims`
@@ -80,6 +85,7 @@ When a user requests Fabric processing, follow this decision tree:
 - Sales call → `analyze_sales_call`
 
 **Content Creation:**
+
 - PRD → `create_prd`
 - Design document → `create_design_document`
 - User story → `create_user_story`
@@ -89,6 +95,7 @@ When a user requests Fabric processing, follow this decision tree:
 - Newsletter entry → `create_newsletter_entry`
 
 **Improvement:**
+
 - Writing → `improve_writing`
 - Academic writing → `improve_academic_writing`
 - Prompt → `improve_prompt`
@@ -96,6 +103,7 @@ When a user requests Fabric processing, follow this decision tree:
 - Code → `review_code`
 
 **Rating/Evaluation:**
+
 - AI response → `rate_ai_response`
 - Content quality → `rate_content`
 - Value assessment → `rate_value`
@@ -123,6 +131,7 @@ fabric "your text here" -p [pattern]
 ## 📚 Pattern Categories (242 Total)
 
 ### Threat Modeling & Security (15 patterns)
+
 - `create_threat_model` - General threat modeling
 - `create_stride_threat_model` - STRIDE methodology
 - `create_threat_scenarios` - Threat scenario generation
@@ -140,6 +149,7 @@ fabric "your text here" -p [pattern]
 - `analyze_risk` - Risk analysis
 
 ### Summarization (20 patterns)
+
 - `summarize` - General summarization
 - `create_5_sentence_summary` - Ultra-concise 5-line summary
 - `create_micro_summary` - Micro summary
@@ -162,6 +172,7 @@ fabric "your text here" -p [pattern]
 - `create_cyber_summary` - Cybersecurity summary
 
 ### Extraction (30+ patterns)
+
 - `extract_wisdom` - General wisdom extraction
 - `extract_article_wisdom` - Article-specific wisdom
 - `extract_book_ideas` - Book ideas
@@ -189,6 +200,7 @@ fabric "your text here" -p [pattern]
 - `extract_most_redeeming_thing` - Most valuable aspect
 
 ### Analysis (35+ patterns)
+
 - `analyze_claims` - Claim analysis
 - `analyze_malware` - Malware analysis
 - `analyze_code` - Code analysis
@@ -218,6 +230,7 @@ fabric "your text here" -p [pattern]
 - `analyze_interviewer_techniques` - Interviewer technique analysis
 
 ### Creation (50+ patterns)
+
 - `create_prd` - Product Requirements Document
 - `create_design_document` - Design documentation
 - `create_user_story` - User stories
@@ -366,8 +379,31 @@ fabric -u "URL" -p extract_wisdom > wisdom.txt
 cat wisdom.txt | fabric -p create_5_sentence_summary
 ```
 
+## 🤖 Model Selection
+
+**Comprehensive Model Guide**: `read ${PAI_DIR}/documentation/fabric-model-reference.md`
+
+**Quick Recommendations**:
+
+- **High Volume/Free**: `gemini-2.5-flash` (free, ultra-fast)
+- **Balanced Quality**: `claude-sonnet-4-5-20250929` (best general purpose, recommended)
+- **Maximum Quality**: `claude-opus-4-20250514` (highest quality)
+- **Reasoning Tasks**: `gemini-2.0-flash-thinking-exp` (extended thinking mode)
+- **Cost Sensitive**: `claude-3-5-haiku-20241022` (ultra-low cost)
+
+**List Available Models**: `fabric --listmodels`
+
+**Specify Model**: `fabric "content" -p pattern_name --model claude-sonnet-4-5-20250929`
+
 ## 📖 Supplementary Resources
 
+**Strategy Reference:** `read ${PAI_DIR}/documentation/fabric-strategies-reference.md`
+Task-based pattern selection guide with workflows and test cases
+
+**Pattern Reference (Complete):** `read ${PAI_DIR}/documentation/fabric-patterns-reference.md`
+Comprehensive categorized reference for all 240 patterns
+
+**Model Reference:** `read ${PAI_DIR}/documentation/fabric-model-reference.md`
 **Full Pattern List:** `ls ${PAI_DIR}/skills/fabric/fabric-repo/data/patterns/`
 **Fabric Repo:** `${PAI_DIR}/skills/fabric/fabric-repo/`
 **Fabric Documentation:** https://github.com/danielmiessler/fabric

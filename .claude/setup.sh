@@ -7,9 +7,6 @@
 # This script automates the entire PAI setup process.
 # It's designed to be friendly, informative, and safe.
 #
-# Usage:
-#   curl -fsSL https://raw.githubusercontent.com/danielmiessler/Personal_AI_Infrastructure/main/setup.sh | bash
-#
 # Or download and run manually:
 #   ./setup.sh
 #
@@ -961,17 +958,8 @@ echo ""
 print_header "Resources"
 
 echo "  📖 Documentation: $PAI_DIR/documentation/"
-echo "  🌐 GitHub: https://github.com/danielmiessler/Personal_AI_Infrastructure"
-echo "  📝 Blog: https://danielmiessler.com/blog/personal-ai-infrastructure"
-echo "  🎬 Video: https://youtu.be/iKwRWwabkEc"
 echo ""
 
-print_header "Support"
-
-echo "  🐛 Report issues: https://github.com/danielmiessler/Personal_AI_Infrastructure/issues"
-echo "  💬 Discussions: https://github.com/danielmiessler/Personal_AI_Infrastructure/discussions"
-echo "  ⭐ Star the repo to support the project!"
-echo ""
 
 echo -e "${PURPLE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo -e "${GREEN}${ROCKET} Welcome to PAI! You're now ready to augment your life with AI. ${ROCKET}${NC}"

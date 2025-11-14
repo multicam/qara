@@ -272,9 +272,3 @@ To only capture specific event types, remove unwanted hooks from your `~/.claude
 - Use the filters to focus on specific event types
 - Check the event details panel for full context
 - Monitor agent performance and behavior patterns
-
-## Getting Help
-
-- Review the main README: `~/Projects/PAI/skills/agent-observability/README.md`
-- Check the PAI documentation: `~/Projects/PAI/.claude/documentation/`
-- Open an issue on GitHub: [github.com/danielmiessler/PAI](https://github.com/danielmiessler/PAI)

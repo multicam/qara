@@ -69,7 +69,7 @@ skills/
 ```yaml
 ---
 name: website
-description: Manage danielmiessler.com VitePress blog and website...
+description: Manage wove.tech VitePress blog and website...
 ---
 ```
 

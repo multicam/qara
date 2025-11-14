@@ -140,12 +140,6 @@ This skill integrates with:
 - **Skill Creation:** `~/.claude/skills/create-skill/`
 - **Anthropic Docs:** https://docs.claude.com/en/docs/agents-and-tools/agent-skills/overview
 
-## Support
-
-- **GitHub:** https://github.com/danielmiessler/Personal_AI_Infrastructure
-- **Issues:** https://github.com/danielmiessler/Personal_AI_Infrastructure/issues
-- **Discussions:** https://github.com/danielmiessler/Personal_AI_Infrastructure/discussions
-
 ---
 
 **This is a teaching tool - customize it to create your own powerful skills!**

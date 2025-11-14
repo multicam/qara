@@ -272,34 +272,6 @@ env | grep PAI
 
 ---
 
-## 🆘 Emergency Commands
-
-### Complete Reset
-
-```bash
-# WARNING: This removes your customizations!
-
-# Backup first
-cp $PAI_DIR/.env $PAI_DIR/.env.backup
-cp ~/.bashrc ~/.bashrc.backup
-
-# Re-clone PAI
-cd ~ && mv PAI PAI.old
-git clone https://github.com/danielmiessler/Personal_AI_Infrastructure.git PAI
-
-# Restore your .env
-cp PAI.old/.env PAI/.env
-```
-
-### Reinstall Everything
-
-```bash
-# Re-run setup script
-cd ~ && curl -fsSL https://raw.githubusercontent.com/danielmiessler/Personal_AI_Infrastructure/main/.claude/setup.sh | bash
-```
-
----
-
 ## 📞 Getting Help
 
 ### Check Logs
@@ -331,14 +303,6 @@ open $PAI_DIR/documentation/skills-system.md
 # Architecture overview
 open $PAI_DIR/documentation/architecture.md
 ```
-
-### Community
-
-- 🐛 **Report Issues:** https://github.com/danielmiessler/Personal_AI_Infrastructure/issues
-- 💬 **Discussions:** https://github.com/danielmiessler/Personal_AI_Infrastructure/discussions
-- ⭐ **Star the Repo:** https://github.com/danielmiessler/Personal_AI_Infrastructure
-- 📝 **Blog:** https://danielmiessler.com/blog/personal-ai-infrastructure
-- 🎬 **Video:** https://youtu.be/iKwRWwabkEc
 
 ---
 
@@ -387,26 +351,6 @@ alias pai-status='cd $PAI_DIR && git status'
 - `Ctrl+U` - Clear line
 - `Ctrl+C` - Cancel current command
 - `Ctrl+D` - Exit terminal
-
----
-
-## 📱 Quick Access URLs
-
-Keep these bookmarked:
-
-- **GitHub Repo:** https://github.com/danielmiessler/Personal_AI_Infrastructure
-- **Issues:** https://github.com/danielmiessler/Personal_AI_Infrastructure/issues
-- **Discussions:** https://github.com/danielmiessler/Personal_AI_Infrastructure/discussions
-- **Claude Code:** https://claude.ai/code
-- **Perplexity API:** https://www.perplexity.ai/settings/api
-- **Google AI Studio:** https://aistudio.google.com/app/apikey
-- **Replicate:** https://replicate.com/account/api-tokens
-
----
-
-**Last Updated:** October 2025
-
-**Questions?** File an issue or start a discussion on GitHub!
 
 ---
 
