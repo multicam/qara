@@ -121,8 +121,23 @@ Your description should:
 
 **Good examples:**
 
-- "Multi-source comprehensive research using perplexity-researcher, claude-researcher, and gemini-researcher agents. Launches up to 10 parallel research agents for fast results. USE WHEN user says 'do research', 'research X', 'find information about'..."
-- "Chrome DevTools MCP for web application debugging, visual testing, and browser automation. The ONLY acceptable way to debug web apps - NEVER use curl, fetch, or wget."
+- "Multi-source comprehensive research using perplexity-researcher, claude-researcher, and gemini-researcher agents.
+  Launches up to 10 parallel research agents for fast results. USE WHEN user says 'do research', 'research X',
+  'find information about'..."
+- "Chrome DevTools MCP for web application debugging, visual testing, and browser automation. The ONLY acceptable
+  way to debug web apps - NEVER use curl, fetch, or wget."
+
+## Markdown Standards
+
+When creating or modifying skill files, ensure all markdown complies with markdownlint rules:
+
+- **Code blocks**: Always specify language (bash, json, typescript, etc.)
+- **Blank lines**: Surround code blocks, lists, and fences with blank lines
+- **Line length**: Keep under 120 characters (except code blocks, tables, URLs)
+- **Tables**: Use proper spacing `| Column | Value |`
+- **Headings**: Use proper heading syntax, not bold text
+
+Full standards in CORE skill. Test with: `markdownlint-cli2 path/to/file.md`
 
 ## Templates Available
 
@@ -144,3 +159,4 @@ For templates: `ls ${PAI_DIR}/skills/create-skill/templates/`
 5. **No duplication**: Reference global context, don't duplicate it
 6. **Self-contained**: Skill should work independently
 7. **Discoverable**: Description enables Qara to match user intent
+8. **Markdown compliance**: All generated markdown MUST pass markdownlint validation (see CORE skill for standards)

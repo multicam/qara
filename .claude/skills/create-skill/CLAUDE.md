@@ -2,7 +2,8 @@
 
 ## 🎯 PURPOSE: EXTENDING QARA'S CAPABILITIES THROUGH MODULAR SKILLS
 
-**Skills are modular, self-contained packages that extend Claude's capabilities with specialized knowledge, workflows, and tools.**
+**Skills are modular, self-contained packages that extend Claude's capabilities with specialized knowledge,
+workflows, and tools.**
 
 This guide combines:
 
@@ -228,7 +229,7 @@ description: A skill for development tasks
 5. Does similar skill exist? (Check existing skills)
 6. What resources does it need?
 
-**Decision: Simple vs Complex**
+### Decision: Simple vs Complex
 
 Choose SIMPLE if:
 
@@ -263,25 +264,25 @@ mkdir -p ${PAI_DIR}/skills/[skill-name]/[component-dirs]
 
 ### Phase 3: Content Writing
 
-**Step 1: Write description first**
+#### Step 1: Write description first
 
 - This drives everything else
 - Test by asking: "Would Qara activate this skill for relevant requests?"
 
-**Step 2: Document activation triggers**
+#### Step 2: Document activation triggers
 
 - List explicit user phrases
 - Include natural language variations
 - Think about how users express this need
 
-**Step 3: Write core instructions**
+#### Step 3: Write core instructions
 
 - Use imperative form
 - Be specific and actionable
 - Include examples
 - Reference deeper resources
 
-**Step 4: Add supporting resources (if complex)**
+#### Step 4: Add supporting resources (if complex)
 
 - CLAUDE.md for methodology
 - Component files for reusable pieces
@@ -1077,5 +1078,6 @@ If skill becomes obsolete:
 - [ ] **Templates** - Included if applicable
 - [ ] **Quality** - Reviewed against checklist
 - [ ] **Commit** - Version controlled
+- [ ] **Markdown compliance** - Passes markdownlint validation (see CORE skill for standards)
 
-**If all checked, skill is ready to use! 🚀**
+If all checked, skill is ready to use! 🚀

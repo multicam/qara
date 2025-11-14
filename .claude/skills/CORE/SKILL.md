@@ -46,6 +46,14 @@ description: |
   ➡️ NEXT: Recommended follow-up actions
   🎯 COMPLETED: [Task description in 12 words - NOT "Completed X"]
 
+  === MARKDOWN STANDARDS (Always Active) ===
+  When writing/generating markdown: MUST pass markdownlint validation
+  - Code blocks: specify language (bash, json, etc.)
+  - Blank lines: around code blocks, lists, fences
+  - Line length: max 120 chars (except code/tables)
+  - Tables: proper spacing | Column | Value |
+  See SKILL.md for complete markdown standards
+
   === PAI/QARA SYSTEM ARCHITECTURE ===
   This description provides: core identity + essential contacts + stack preferences + critical security + response format (always in system prompt).
   Full context loaded from SKILL.md for comprehensive tasks, including:
@@ -66,7 +74,8 @@ description: |
 
 # Qara — Personal AI Infrastructure (Extended Context)
 
-**Note:** Core essentials (identity, key contacts, stack preferences, security, response format) are always active via system prompt. This file provides additional details.
+**Note:** Core essentials (identity, key contacts, stack preferences, security, response format) are always active
+via system prompt. This file provides additional details.
 
 ---
 
@@ -97,14 +106,16 @@ When user says these first names:
 
 ### Scratchpad for Test/Random Tasks (Detailed)
 
-When working on test tasks, experiments, or random one-off requests, ALWAYS work in `~/.claude/scratchpad/` with proper timestamp organization:
+When working on test tasks, experiments, or random one-off requests, ALWAYS work in `~/.claude/scratchpad/`
+with proper timestamp organization:
 
 - Create subdirectories using naming: `YYYY-MM-DD-HHMMSS_description/`
 - Example: `~/.claude/scratchpad/2025-10-13-143022_prime-numbers-test/`
 - NEVER drop random projects / content directly in `~/.claude/` directory
 - This applies to both main AI and all sub-agents
 - Clean up scratchpad periodically or when tests complete
-- **IMPORTANT**: Scratchpad is for working files only - valuable outputs (learnings, decisions, research findings) still get captured in the system output (`~/.claude/history/`) via hooks
+- **IMPORTANT**: Scratchpad is for working files only - valuable outputs (learnings, decisions, research findings)
+  still get captured in the system output (`~/.claude/history/`) via hooks
 
 ### Hooks Configuration
 
@@ -196,7 +207,8 @@ grep -i "pattern" file.txt           # Case insensitive
 grep -n "pattern" file.txt           # Show line numbers
 ```
 
-**Note:** Claude Code has a Grep tool built-in that uses ripgrep under the hood - prefer using that tool over bash commands when possible.
+**Note:** Claude Code has a Grep tool built-in that uses ripgrep under the hood - prefer using that tool
+over bash commands when possible.
 
 ### File Viewing: bat over cat
 
@@ -283,6 +295,78 @@ sg scan --rule rule.yml # Use rule file for complex patterns
 - **Text search** (find by content) → Use `ripgrep` (rg)
 - **File viewing** (display file contents) → Use `bat`
 - **Code search** (find by structure) → Use `ast-grep`
+
+---
+
+## Markdown Documentation Standards
+
+### When Writing or Generating Markdown Files
+
+**ALWAYS ensure generated markdown passes markdownlint validation.** Configuration is in `.markdownlint.json`.
+
+**Key Requirements:**
+
+1. **Fenced Code Blocks** - MUST specify language:
+   - ✅ ` ```bash ` or ` ```json ` or ` ```typescript `
+   - ❌ ` ``` ` (no language specified)
+
+2. **Line Length** - Maximum 120 characters (exceptions: code blocks, tables, URLs)
+
+3. **Blank Lines**:
+   - Surround fenced code blocks with blank lines
+   - Surround lists with blank lines
+   - Single blank line between sections (no multiple consecutive blank lines)
+
+4. **Tables** - Use proper spacing:
+   - ✅ `| Column 1 | Column 2 |`
+   - ❌ `|Column 1|Column 2|` (missing spaces)
+
+5. **Headings**:
+   - Use actual headings (`##`) not bold text for structure
+   - Don't use emphasis as headings
+
+6. **File Ending** - Always end files with single newline character
+
+**Quick Validation:**
+
+```bash
+# Test specific file
+markdownlint-cli2 path/to/file.md
+
+# Test all documentation
+markdownlint-cli2 .claude/documentation/*.md
+
+# Auto-fix issues (when possible)
+markdownlint-cli2 --fix path/to/file.md
+```
+
+**Common Fixes:**
+
+Example 1 - Missing language specification:
+
+WRONG: Using triple backticks without specifying a language like ` ```text ` or ` ```bash `
+
+CORRECT: Always specify the language: ` ```bash `, ` ```json `, ` ```typescript `, etc.
+
+Example 2 - Missing blank lines:
+
+WRONG: Text directly adjacent to code fences without blank lines separating them.
+
+CORRECT: Always add blank lines before and after code blocks.
+
+Example 3 - Table spacing:
+
+WRONG: `|Column|Value|` - pipes directly adjacent to text without spaces.
+
+CORRECT: `| Column | Value |` - spaces after opening pipe and before closing pipe.
+
+**When Generating Documentation:**
+
+- Add blank line before and after every code block
+- Specify language for all code blocks (bash, json, typescript, python, etc.)
+- Use `txt` or `text` for plain text blocks
+- Keep lines under 120 characters where practical
+- End file with single newline
 
 ---
 
