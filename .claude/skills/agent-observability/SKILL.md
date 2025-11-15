@@ -198,13 +198,13 @@ Add to `~/.claude/settings.json` (see `settings.json.example` for full template)
 
 1. Check Bun is installed: `bun --version`
 2. Verify dependencies: `cd apps/server && bun install`
-3. Check port 3001 isn't in use: `lsof -i :3001`
+3. Check port 4000 isn't in use: `lsof -i :4000`
 
 ### Client won't connect
 
 1. Ensure server is running first
 2. Check WebSocket connection in browser console
-3. Verify no firewall blocking localhost:3001
+3. Verify no firewall blocking localhost:4000
 
 ## Credits
 

@@ -275,15 +275,15 @@ PAI_DIR="/Users/yourname/.claude" bun run capture-all-events.ts
 **Check server is running:**
 
 ```bash
-# Should show server on port 3001
-lsof -i :3001
+# Should show server on port 4000
+lsof -i :4000
 ```
 
 **Check for port conflicts:**
 
 ```bash
 # Kill conflicting process
-kill -9 $(lsof -ti:3001)
+kill -9 $(lsof -ti:4000)
 ```
 
 **Restart both server and client:**

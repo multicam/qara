@@ -138,7 +138,7 @@ bun run dev
 You should see:
 
 ```txt
-Server running on http://localhost:3001
+Server running on http://localhost:4000
 Watching for events...
 ```
 
@@ -218,8 +218,8 @@ You should see:
 1. **Port already in use**:
 
    ```bash
-   lsof -i :3001
-   # Kill any process using port 3001
+   lsof -i :4000
+   # Kill any process using port 4000
    kill -9 <PID>
    ```
 
