@@ -26,11 +26,11 @@ implements the redesign of swim lanes from bar charts to true event bubble visua
 | Priority | Category | Tasks | Status |
 |----------|----------|-------|--------|
 | 🔴 Critical | Data Collection | 4 | 4/4 complete ✅ |
-| 🔴 Critical | Swim Lane Redesign | 10 | 0/10 complete |
+| 🔴 Critical | Swim Lane Redesign | 10 | 4/10 complete |
 | 🟡 Medium | Performance & Reliability | 6 | 0/6 complete |
 | 🟢 Low | Polish & Enhancement | 5 | 0/5 complete |
 
-**Total Progress:** 4/25 tasks complete (16%)
+**Total Progress:** 8/25 tasks complete (32%)
 
 ---
 
@@ -236,33 +236,39 @@ DESIRED (Event Bubbles):
 
 ### 5. Core Architecture - Event Bubble Renderer
 
-- [ ] **5.1** Create new swim lane renderer
+- [x] **5.1** Create new swim lane renderer
   - File: `apps/client/src/utils/swimLaneRenderer.ts`
   - Class: `SwimLaneRenderer`
   - Methods: `drawEventBubbles()`, `layoutEvents()`, `drawEventBubble()`
+  - ✅ Created with full API
 
-- [ ] **5.2** Implement rounded rectangle helper
+- [x] **5.2** Implement rounded rectangle helper
   ```typescript
   private roundRect(x: number, y: number, w: number, h: number, radius: number) {
     // Canvas path with proper rounded corners
     // Support for different corner radii
   }
   ```
+  - ✅ Implemented using canvas `arcTo()` method
+  - ✅ Supports per-corner radius control
 
-- [ ] **5.3** Implement timestamp-to-X positioning
+- [x] **5.3** Implement timestamp-to-X positioning
   ```typescript
-  private timestampToX(timestamp: number, startTime: number, timeRange: number): number {
-    const age = timestamp - startTime;
-    const progress = age / timeRange;
-    return this.chartArea.x + (progress * this.chartArea.width);
+  private timestampToX(timestamp: number): number {
+    const timeSpan = this.timeRange.end - this.timeRange.start;
+    const normalizedTime = (timestamp - this.timeRange.start) / timeSpan;
+    return chartArea.x + chartArea.width * normalizedTime;
   }
   ```
+  - ✅ Implemented with time range normalization
+  - ✅ Maps timestamps to horizontal positions
 
-- [ ] **5.4** Add event bubble positioning algorithm
-  - Calculate X from exact timestamp (not bucket)
-  - Calculate Y with vertical stacking for overlaps
-  - Maintain minimum gap between bubbles
-  - Handle edge cases (off-screen, boundaries)
+- [x] **5.4** Add event bubble positioning algorithm
+  - ✅ Calculate X from exact timestamp (not bucket)
+  - ✅ Calculate Y with vertical stacking for overlaps
+  - ✅ Maintain minimum gap between bubbles (configurable)
+  - ✅ Handle edge cases (off-screen, boundaries)
+  - ✅ Row-based layout algorithm prevents overlaps
 
 **Acceptance Criteria:**
 
@@ -273,7 +279,7 @@ DESIRED (Event Bubbles):
 
 **Files Created:**
 
-- `apps/client/src/utils/swimLaneRenderer.ts`
+- `apps/client/src/utils/swimLaneRenderer.ts` (495 lines)
 
 ---
 
