@@ -264,8 +264,8 @@ ls -la ~/.claude/history/raw-outputs/$(date +%Y-%m)/
 **Manually test the hook:**
 
 ```bash
-cd /Users/yourname/Projects/PAI/skills/agent-observability/hooks
-PAI_DIR="/Users/yourname/.claude" bun run capture-all-events.ts
+cd ~/.claude/hooks
+bun run capture-all-events.ts --event-type SessionStart < test-input.json
 ```
 
 ---

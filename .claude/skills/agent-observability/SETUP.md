@@ -102,9 +102,9 @@ Copy the capture-all-events hook to your PAI hooks directory:
 # Create hooks directory if it doesn't exist
 mkdir -p ~/.claude/hooks
 
-# Copy the hook script from the skill directory
-cp ~/Projects/PAI/skills/agent-observability/hooks/capture-all-events.ts \
-   ~/.claude/hooks/
+# The hook script should already exist at ~/.claude/hooks/capture-all-events.ts
+# If not, copy it from the qara repo:
+# cp /path/to/qara/.claude/hooks/capture-all-events.ts ~/.claude/hooks/
 
 # Make it executable
 chmod +x ~/.claude/hooks/capture-all-events.ts
