@@ -4,7 +4,7 @@
  *
  * Dashboard: https://github.com/disler/claude-code-hooks-multi-agent-observability
  * Server runs at: localhost:4000
- * Client dashboard: localhost:5173
+ * Client dashboard: localhost:5172
  */
 
 export interface ObservabilityEvent {
