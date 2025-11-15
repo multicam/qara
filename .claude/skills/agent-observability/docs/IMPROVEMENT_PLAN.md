@@ -26,11 +26,11 @@ implements the redesign of swim lanes from bar charts to true event bubble visua
 | Priority | Category | Tasks | Status |
 |----------|----------|-------|--------|
 | 🔴 Critical | Data Collection | 4 | 4/4 complete ✅ |
-| 🔴 Critical | Swim Lane Redesign | 10 | 4/10 complete |
+| 🔴 Critical | Swim Lane Redesign | 10 | 6/10 complete |
 | 🟡 Medium | Performance & Reliability | 6 | 0/6 complete |
 | 🟢 Low | Polish & Enhancement | 5 | 0/5 complete |
 
-**Total Progress:** 8/25 tasks complete (32%)
+**Total Progress:** 10/25 tasks complete (40%)
 
 ---
 
@@ -285,29 +285,33 @@ DESIRED (Event Bubbles):
 
 ### 6. Data Flow - Remove Aggregation
 
-- [ ] **6.1** Create useSwimLaneEvents composable
+- [x] **6.1** Create useSwimLaneEvents composable
   - File: `apps/client/src/composables/useSwimLaneEvents.ts`
-  - NO aggregation into buckets
-  - Filter events by agent and time range
-  - Sort by timestamp
-  - Return individual events
+  - ✅ NO aggregation into buckets
+  - ✅ Filter events by agent and time range
+  - ✅ Sort by timestamp
+  - ✅ Return individual events (computed: `getFilteredEvents`)
 
-- [ ] **6.2** Remove dependency on useAgentChartData
-  - Document old aggregation approach (for reference)
-  - Keep old file for now (don't delete yet)
-  - Update AgentSwimLane.vue to use new composable
+- [x] **6.2** Remove dependency on useAgentChartData
+  - ✅ Document old aggregation approach (for reference)
+  - ✅ Keep old file for now (don't delete yet)
+  - ✅ Update AgentSwimLane.vue to use new composable
+  - ✅ Added temporary adapter for ChartRenderer compatibility (removed in Task 8)
 
-- [ ] **6.3** Add event filtering logic
+- [x] **6.3** Add event filtering logic
   ```typescript
-  const filteredEvents = computed(() => {
+  const getFilteredEvents = computed(() => {
     const now = Date.now();
-    const cutoff = now - getTimeRangeMs(timeRange);
-    return events.value
-      .filter(e => e.source_app === agentName)
-      .filter(e => e.timestamp >= cutoff)
+    const cutoffTime = now - currentConfig.value.duration;
+    return allEvents.value
+      .filter(event => event.timestamp && event.timestamp >= cutoffTime)
       .sort((a, b) => a.timestamp - b.timestamp);
   });
   ```
+  - ✅ Filters by timestamp cutoff
+  - ✅ Filters by agent ID (app:session)
+  - ✅ Sorts chronologically
+  - ✅ Returns HookEvent[] (not aggregated counts)
 
 **Acceptance Criteria:**
 
@@ -317,11 +321,12 @@ DESIRED (Event Bubbles):
 
 **Files Created:**
 
-- `apps/client/src/composables/useSwimLaneEvents.ts`
+- `apps/client/src/composables/useSwimLaneEvents.ts` (193 lines)
 
 **Files Modified:**
 
-- `apps/client/src/components/AgentSwimLane.vue`
+- `apps/client/src/composables/useChartData.ts` (added deprecation notice)
+- `apps/client/src/components/AgentSwimLane.vue` (switched to useSwimLaneEvents with temp adapter)
 
 ---
 

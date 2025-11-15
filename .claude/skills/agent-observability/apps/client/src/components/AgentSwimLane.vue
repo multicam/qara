@@ -100,8 +100,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
-import type { HookEvent, TimeRange, ChartConfig } from '../types';
-import { useAgentChartData } from '../composables/useAgentChartData';
+import type { HookEvent, TimeRange, ChartConfig, ChartDataPoint } from '../types';
+import { useSwimLaneEvents } from '../composables/useSwimLaneEvents';
 import { createChartRenderer, type ChartDimensions } from '../utils/chartRenderer';
 import { useEventEmojis } from '../composables/useEventEmojis';
 import { useEventColors } from '../composables/useEventColors';
@@ -165,14 +165,68 @@ const formatModelName = (name: string | null | undefined): string => {
   return name;
 };
 
+// NEW: Use swim lane events (raw events, no aggregation)
 const {
-  dataPoints,
+  getFilteredEvents,
+  getTimeRangeBounds,
   addEvent,
-  getChartData,
   setTimeRange,
-  cleanup: cleanupChartData,
-  eventTimingMetrics: agentEventTimingMetrics
-} = useAgentChartData(props.agentName);
+  cleanup: cleanupEventData,
+  totalEventCount: eventsCount,
+  toolCallCount: toolsCount,
+  eventTimingMetrics: agentEventTimingMetrics,
+  currentConfig
+} = useSwimLaneEvents(props.agentName);
+
+// TEMPORARY: Adapter to convert raw events back to chart data for ChartRenderer
+// This will be removed in Task 8 when we integrate SwimLaneRenderer
+const getChartData = (): ChartDataPoint[] => {
+  const events = getFilteredEvents.value;
+  const bounds = getTimeRangeBounds.value;
+  const config = currentConfig.value;
+
+  // Determine bucket size based on time range
+  const bucketSizes: Record<TimeRange, number> = {
+    '1m': 1000,   // 1 second
+    '3m': 3000,   // 3 seconds
+    '5m': 5000,   // 5 seconds
+    '10m': 10000  // 10 seconds
+  };
+  const bucketSize = bucketSizes[props.timeRange];
+
+  // Create buckets
+  const buckets = new Map<number, ChartDataPoint>();
+
+  // Initialize all buckets in range
+  for (let time = bounds.start; time <= bounds.end; time += bucketSize) {
+    const bucketTime = Math.floor(time / bucketSize) * bucketSize;
+    buckets.set(bucketTime, {
+      timestamp: bucketTime,
+      count: 0,
+      eventTypes: {},
+      sessions: {},
+      apps: {}
+    });
+  }
+
+  // Aggregate events into buckets
+  events.forEach(event => {
+    const bucketTime = Math.floor(event.timestamp / bucketSize) * bucketSize;
+    const bucket = buckets.get(bucketTime);
+
+    if (bucket) {
+      bucket.count++;
+      bucket.eventTypes[event.hook_event_type] = (bucket.eventTypes[event.hook_event_type] || 0) + 1;
+      bucket.sessions[event.session_id] = (bucket.sessions[event.session_id] || 0) + 1;
+      bucket.apps[event.source_app] = (bucket.apps[event.source_app] || 0) + 1;
+    }
+  });
+
+  // Return buckets as sorted array (last 60 points)
+  return Array.from(buckets.values())
+    .sort((a, b) => a.timestamp - b.timestamp)
+    .slice(-60);
+};
 
 let renderer: ReturnType<typeof createChartRenderer> | null = null;
 let resizeObserver: ResizeObserver | null = null;
@@ -182,17 +236,9 @@ const processedEventIds = new Set<string>();
 const { formatEventTypeLabel } = useEventEmojis();
 const { getHexColorForApp, getHexColorForSession } = useEventColors();
 
-const hasData = computed(() => dataPoints.value.some(dp => dp.count > 0));
-
-const totalEventCount = computed(() => {
-  return dataPoints.value.reduce((sum, dp) => sum + dp.count, 0);
-});
-
-const toolCallCount = computed(() => {
-  return dataPoints.value.reduce((sum, dp) => {
-    return sum + (dp.eventTypes?.['PreToolUse'] || 0);
-  }, 0);
-});
+const hasData = computed(() => eventsCount.value > 0);
+const totalEventCount = computed(() => eventsCount.value);
+const toolCallCount = computed(() => toolsCount.value);
 
 const chartAriaLabel = computed(() => {
   const [app, session] = props.agentName.split(':');
@@ -431,7 +477,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  cleanupChartData();
+  cleanupEventData();
 
   if (renderer) {
     renderer.stopAnimation();

@@ -1,6 +1,24 @@
 import { ref, computed } from 'vue';
 import type { HookEvent, ChartDataPoint, TimeRange } from '../types';
 
+/**
+ * useChartData - DEPRECATED: Bar Chart Aggregation Approach
+ *
+ * This composable aggregates events into time buckets for bar chart visualization.
+ * It's kept for reference but should NOT be used for new swim lane implementation.
+ *
+ * === OLD APPROACH (Bar Charts) ===
+ * - Events aggregated into time buckets (1s, 3s, 5s, 10s)
+ * - Returns ChartDataPoint[] with counts per bucket
+ * - Used with ChartRenderer to draw vertical bars
+ *
+ * === NEW APPROACH (Swim Lanes) ===
+ * - Use useSwimLaneEvents instead
+ * - NO aggregation - returns raw events
+ * - Used with SwimLaneRenderer to draw event bubbles
+ *
+ * @deprecated Use useSwimLaneEvents for new swim lane visualization
+ */
 export function useChartData(agentIdFilter?: string) {
   const timeRange = ref<TimeRange>('1m');
   const dataPoints = ref<ChartDataPoint[]>([]);
