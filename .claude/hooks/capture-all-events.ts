@@ -18,6 +18,16 @@ import { homedir } from 'os';
 // Configuration: Default agent name (configurable via environment variable)
 const DEFAULT_AGENT_NAME = process.env.PAI_AGENT_NAME || 'claude';
 
+// Maximum number of session mappings to keep in memory
+const MAX_SESSION_MAPPINGS = 1000;
+
+// Session mapping with metadata
+interface SessionMapping {
+  agentName: string;
+  createdAt: number;
+  lastAccessAt: number;
+}
+
 interface HookEvent {
   source_app: string;
   session_id: string;
@@ -85,12 +95,46 @@ function getSessionMappingFile(): string {
   return join(claudeDir, 'agent-sessions.json');
 }
 
+function migrateOldFormat(data: any): Record<string, SessionMapping> {
+  const now = Date.now();
+  const result: Record<string, SessionMapping> = {};
+
+  for (const [sessionId, value] of Object.entries(data)) {
+    // Check if already in new format (has createdAt/lastAccessAt)
+    if (typeof value === 'object' && value !== null && 'agentName' in value) {
+      result[sessionId] = value as SessionMapping;
+    } else {
+      // Convert old format (string) to new format (object with metadata)
+      result[sessionId] = {
+        agentName: value as string,
+        createdAt: now,
+        lastAccessAt: now
+      };
+    }
+  }
+
+  return result;
+}
+
 function getAgentForSession(sessionId: string): string {
   try {
     const mappingFile = getSessionMappingFile();
     if (existsSync(mappingFile)) {
-      const mappings = JSON.parse(readFileSync(mappingFile, 'utf-8'));
-      return mappings[sessionId] || DEFAULT_AGENT_NAME;
+      const rawData = JSON.parse(readFileSync(mappingFile, 'utf-8'));
+
+      // Migrate old format if needed
+      let mappings: Record<string, SessionMapping> = migrateOldFormat(rawData);
+
+      const mapping = mappings[sessionId];
+
+      if (mapping) {
+        // Update last access time
+        mapping.lastAccessAt = Date.now();
+        writeFileSync(mappingFile, JSON.stringify(mappings, null, 2), 'utf-8');
+        return mapping.agentName;
+      }
+
+      return DEFAULT_AGENT_NAME;
     }
   } catch (error) {
     // Ignore errors, default to primary agent
@@ -98,16 +142,46 @@ function getAgentForSession(sessionId: string): string {
   return DEFAULT_AGENT_NAME;
 }
 
+function cleanupOldSessions(mappings: Record<string, SessionMapping>): Record<string, SessionMapping> {
+  const entries = Object.entries(mappings);
+
+  // If under the limit, no cleanup needed
+  if (entries.length <= MAX_SESSION_MAPPINGS) {
+    return mappings;
+  }
+
+  // Sort by lastAccessAt (most recent first)
+  const sorted = entries.sort((a, b) => b[1].lastAccessAt - a[1].lastAccessAt);
+
+  // Keep only the most recent MAX_SESSION_MAPPINGS entries
+  const cleaned = sorted.slice(0, MAX_SESSION_MAPPINGS);
+
+  return Object.fromEntries(cleaned);
+}
+
 function setAgentForSession(sessionId: string, agentName: string): void {
   try {
     const mappingFile = getSessionMappingFile();
-    let mappings: Record<string, string> = {};
+    let mappings: Record<string, SessionMapping> = {};
 
     if (existsSync(mappingFile)) {
-      mappings = JSON.parse(readFileSync(mappingFile, 'utf-8'));
+      const rawData = JSON.parse(readFileSync(mappingFile, 'utf-8'));
+      // Migrate old format if needed
+      mappings = migrateOldFormat(rawData);
     }
 
-    mappings[sessionId] = agentName;
+    const now = Date.now();
+
+    // Update or create mapping with metadata
+    mappings[sessionId] = {
+      agentName,
+      createdAt: mappings[sessionId]?.createdAt || now,
+      lastAccessAt: now
+    };
+
+    // Clean up old sessions if needed
+    mappings = cleanupOldSessions(mappings);
+
     writeFileSync(mappingFile, JSON.stringify(mappings, null, 2), 'utf-8');
   } catch (error) {
     // Silently fail - don't block

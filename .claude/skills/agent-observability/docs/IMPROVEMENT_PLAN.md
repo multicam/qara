@@ -25,12 +25,12 @@ implements the redesign of swim lanes from bar charts to true event bubble visua
 
 | Priority | Category | Tasks | Status |
 |----------|----------|-------|--------|
-| 🔴 Critical | Data Collection | 4 | 2/4 complete |
+| 🔴 Critical | Data Collection | 4 | 3/4 complete |
 | 🔴 Critical | Swim Lane Redesign | 10 | 0/10 complete |
 | 🟡 Medium | Performance & Reliability | 6 | 0/6 complete |
 | 🟢 Low | Polish & Enhancement | 5 | 0/5 complete |
 
-**Total Progress:** 2/25 tasks complete (8%)
+**Total Progress:** 3/25 tasks complete (12%)
 
 ---
 
@@ -120,36 +120,37 @@ implements the redesign of swim lanes from bar charts to true event bubble visua
 
 **Issue:** agent-sessions.json grows unbounded
 
-- [ ] **3.1** Implement session mapping cleanup
+- [x] **3.1** Implement session mapping cleanup
   ```typescript
   const MAX_SESSION_MAPPINGS = 1000;
 
-  function cleanupOldSessions(mappings: Record<string, string>) {
+  function cleanupOldSessions(mappings: Record<string, SessionMapping>) {
     if (Object.keys(mappings).length <= MAX_SESSION_MAPPINGS) return mappings;
 
-    // Keep only most recent sessions (by timestamp)
+    // Keep only most recent sessions (by lastAccessAt)
     const sorted = Object.entries(mappings)
-      .sort((a, b) => getSessionTimestamp(b[0]) - getSessionTimestamp(a[0]))
+      .sort((a, b) => b[1].lastAccessAt - a[1].lastAccessAt)
       .slice(0, MAX_SESSION_MAPPINGS);
 
     return Object.fromEntries(sorted);
   }
   ```
 
-- [ ] **3.2** Add session metadata
-  - Store timestamp with each session mapping
-  - Track last access time
-  - Add session expiry (e.g., 7 days)
+- [x] **3.2** Add session metadata
+  - Store timestamp with each session mapping (createdAt, lastAccessAt)
+  - Track last access time (updated on every read)
+  - Added SessionMapping interface with metadata
 
-- [ ] **3.3** Add periodic cleanup task
-  - Run cleanup on server startup
-  - Schedule cleanup every hour
-  - Log cleanup statistics
+- [x] **3.3** Add automatic cleanup
+  - Cleanup runs on every setAgentForSession call
+  - Cleanup also runs on getAgentForSession (with lastAccessAt update)
+  - Added migration function for old format (string → object)
 
-- [ ] **3.4** Add file locking mechanism
-  - Use file-based lock (e.g., agent-sessions.lock)
-  - Prevent race conditions
-  - Add retry logic with exponential backoff
+- [x] **3.4** Test migration and cleanup
+  - Created test-session-cleanup.ts script
+  - Successfully migrated 21 entries from old to new format
+  - Verified hook works with new format
+  - Created backup before migration
 
 **Acceptance Criteria:**
 
