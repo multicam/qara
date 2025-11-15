@@ -32,6 +32,27 @@ Both approaches have merits! Check out [indydevdan's work](https://github.com/in
 
 ---
 
+## 📋 Project Status & Development
+
+**Status:** Active Development 🚧
+
+**Recent Updates (2025-11-16):**
+
+- ✅ Comprehensive system review completed
+- 📋 Improvement plan created with 25 prioritized tasks
+- 🔴 Critical issues identified (event capture, swim lane redesign)
+- 🎯 Sprint 1 focus: Data collection fixes + swim lane architecture
+
+**Documentation:**
+
+- 📊 [Improvement Plan](./docs/IMPROVEMENT_PLAN.md) - Task checklist with priorities
+- 📝 [Review Report](./docs/REVIEW_REPORT_2025-11-16.md) - Detailed findings
+- 🛠️  [Development Guide](./docs/DEVELOPMENT_GUIDE.md) - Contributing guide
+
+**Want to contribute?** Check the [Improvement Plan](./docs/IMPROVEMENT_PLAN.md) for tasks marked 🔴 Critical.
+
+---
+
 ## How It Works
 
 Our implementation leverages Claude Code's hook system to capture events directly to the filesystem, then streams them to a real-time web dashboard:
