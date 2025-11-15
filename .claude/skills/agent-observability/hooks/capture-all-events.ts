@@ -21,11 +21,11 @@ interface HookEvent {
   hook_event_type: string;
   payload: Record<string, any>;
   timestamp: number;
-  timestamp_pst: string;
+  timestamp_aedt: string;
 }
 
-// Get Sydney timestamp
-function getPSTTimestamp(): string {
+// Get Sydney timestamp (AEDT)
+function getAEDTTimestamp(): string {
   const date = new Date();
   // Use Intl.DateTimeFormat for reliable timezone conversion
   const formatter = new Intl.DateTimeFormat('en-AU', {
@@ -172,7 +172,7 @@ async function main() {
       hook_event_type: eventType,
       payload: hookData,
       timestamp: Date.now(),
-      timestamp_pst: getPSTTimestamp()
+      timestamp_aedt: getAEDTTimestamp()
     };
 
     // Append to events file

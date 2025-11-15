@@ -32,6 +32,44 @@ const watchedFiles = new Set<string>();
 let onEventsReceived: ((events: HookEvent[]) => void) | null = null;
 
 /**
+ * Validate event structure to ensure all required fields are present
+ */
+function isValidHookEvent(event: any): event is HookEvent {
+  // Check required fields
+  if (typeof event.source_app !== 'string' || !event.source_app.trim()) {
+    console.warn('⚠️  Invalid event: missing or invalid source_app');
+    return false;
+  }
+
+  if (typeof event.session_id !== 'string' || !event.session_id.trim()) {
+    console.warn('⚠️  Invalid event: missing or invalid session_id');
+    return false;
+  }
+
+  if (typeof event.hook_event_type !== 'string' || !event.hook_event_type.trim()) {
+    console.warn('⚠️  Invalid event: missing or invalid hook_event_type');
+    return false;
+  }
+
+  if (typeof event.payload !== 'object' || event.payload === null) {
+    console.warn('⚠️  Invalid event: missing or invalid payload');
+    return false;
+  }
+
+  if (typeof event.timestamp !== 'number' || event.timestamp <= 0) {
+    console.warn('⚠️  Invalid event: missing or invalid timestamp');
+    return false;
+  }
+
+  if (typeof event.timestamp_aedt !== 'string' || !event.timestamp_aedt.trim()) {
+    console.warn('⚠️  Invalid event: missing or invalid timestamp_aedt');
+    return false;
+  }
+
+  return true;
+}
+
+/**
  * Get the path to today's all-events file
  */
 function getTodayEventsFile(): string {
@@ -90,6 +128,13 @@ function readNewEvents(filePath: string): HookEvent[] {
 
       try {
         const event = JSON.parse(line);
+
+        // Validate event structure before adding
+        if (!isValidHookEvent(event)) {
+          console.error(`⚠️  Skipping invalid event: ${line.slice(0, 100)}...`);
+          continue;
+        }
+
         // Add auto-incrementing ID for UI
         event.id = events.length + newEvents.length + 1;
         newEvents.push(event);

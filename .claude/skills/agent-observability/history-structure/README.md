@@ -33,8 +33,8 @@ mkdir -p ~/.claude/history/raw-outputs
 Events are stored in JSONL (JSON Lines) format - one JSON object per line:
 
 ```jsonl
-{"source_app":"qara","session_id":"abc123","hook_event_type":"PreToolUse","payload":{...},"timestamp":1234567890,"timestamp_pst":"2025-01-28 14:30:00 PST"}
-{"source_app":"designer","session_id":"def456","hook_event_type":"PostToolUse","payload":{...},"timestamp":1234567891,"timestamp_pst":"2025-01-28 14:30:01 PST"}
+{"source_app":"qara","session_id":"abc123","hook_event_type":"PreToolUse","payload":{...},"timestamp":1234567890,"timestamp_aedt":"2025-01-28 14:30:00 AEDT"}
+{"source_app":"designer","session_id":"def456","hook_event_type":"PostToolUse","payload":{...},"timestamp":1234567891,"timestamp_aedt":"2025-01-28 14:30:01 AEDT"}
 ```
 
 This format is:

@@ -112,7 +112,7 @@ Events are stored in JSONL (JSON Lines) format:
 Each line is a complete JSON object:
 
 ```jsonl
-{"source_app":"qara","session_id":"abc123","hook_event_type":"PreToolUse","payload":{...},"timestamp":1234567890,"timestamp_pst":"2025-01-28 14:30:00 PST"}
+{"source_app":"qara","session_id":"abc123","hook_event_type":"PreToolUse","payload":{...},"timestamp":1234567890,"timestamp_aedt":"2025-01-28 14:30:00 AEDT"}
 ```
 
 ### In-Memory Streaming

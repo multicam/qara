@@ -21,11 +21,11 @@ interface HookEvent {
   hook_event_type: string;
   payload: Record<string, any>;
   timestamp: number;
-  timestamp_pst: string;
+  timestamp_aedt: string;
 }
 
-// Get Sydney timestamp
-function getPSTTimestamp(): string {
+// Get Sydney timestamp (AEDT)
+function getAEDTTimestamp(): string {
   const date = new Date();
   // Use Intl.DateTimeFormat for reliable timezone conversion
   const formatter = new Intl.DateTimeFormat('en-AU', {
@@ -113,6 +113,42 @@ function setAgentForSession(sessionId: string, agentName: string): void {
   }
 }
 
+// Validate event before writing to ensure data integrity
+function validateEvent(event: HookEvent): boolean {
+  // Check all required fields are present and valid
+  if (!event.source_app || typeof event.source_app !== 'string') {
+    console.error('Invalid event: missing or invalid source_app');
+    return false;
+  }
+
+  if (!event.session_id || typeof event.session_id !== 'string') {
+    console.error('Invalid event: missing or invalid session_id');
+    return false;
+  }
+
+  if (!event.hook_event_type || typeof event.hook_event_type !== 'string') {
+    console.error('Invalid event: missing or invalid hook_event_type');
+    return false;
+  }
+
+  if (!event.payload || typeof event.payload !== 'object') {
+    console.error('Invalid event: missing or invalid payload');
+    return false;
+  }
+
+  if (!event.timestamp || typeof event.timestamp !== 'number') {
+    console.error('Invalid event: missing or invalid timestamp');
+    return false;
+  }
+
+  if (!event.timestamp_aedt || typeof event.timestamp_aedt !== 'string') {
+    console.error('Invalid event: missing or invalid timestamp_aedt');
+    return false;
+  }
+
+  return true;
+}
+
 async function main() {
   try {
     // Get event type from command line args
@@ -172,8 +208,14 @@ async function main() {
       hook_event_type: eventType,
       payload: hookData,
       timestamp: Date.now(),
-      timestamp_pst: getPSTTimestamp()
+      timestamp_aedt: getAEDTTimestamp()
     };
+
+    // Validate event before writing
+    if (!validateEvent(event)) {
+      console.error('Event validation failed, skipping write');
+      process.exit(0);
+    }
 
     // Append to events file
     const eventsFile = getEventsFilePath();
