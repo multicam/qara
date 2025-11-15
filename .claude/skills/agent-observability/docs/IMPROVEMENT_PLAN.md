@@ -25,12 +25,12 @@ implements the redesign of swim lanes from bar charts to true event bubble visua
 
 | Priority | Category | Tasks | Status |
 |----------|----------|-------|--------|
-| 🔴 Critical | Data Collection | 4 | 0/4 complete |
+| 🔴 Critical | Data Collection | 4 | 2/4 complete |
 | 🔴 Critical | Swim Lane Redesign | 10 | 0/10 complete |
 | 🟡 Medium | Performance & Reliability | 6 | 0/6 complete |
 | 🟢 Low | Polish & Enhancement | 5 | 0/5 complete |
 
-**Total Progress:** 0/25 tasks complete (0%)
+**Total Progress:** 2/25 tasks complete (8%)
 
 ---
 
@@ -40,7 +40,7 @@ implements the redesign of swim lanes from bar charts to true event bubble visua
 
 **Issue:** No events captured Nov 14-16, 2025
 
-- [ ] **1.1** Check hooks configuration in ~/.claude/settings.json
+- [x] **1.1** Check hooks configuration in ~/.claude/settings.json
   - Verify all hook event types are configured
   - Ensure paths point to capture-all-events.ts
   - Confirm PAI_DIR environment variable is set
@@ -81,23 +81,23 @@ implements the redesign of swim lanes from bar charts to true event bubble visua
 
 **Issue:** 'qara' is hardcoded in multiple places
 
-- [ ] **2.1** Create agent configuration system
+- [x] **2.1** Create agent configuration system
   ```typescript
   // apps/server/src/config.ts
   export const DEFAULT_AGENT_NAME = process.env.PAI_AGENT_NAME || 'claude';
   ```
 
-- [ ] **2.2** Update capture-all-events.ts
+- [x] **2.2** Update capture-all-events.ts
   - Replace hardcoded 'qara' strings (lines 91, 97, 182)
   - Read from environment variable
   - Add fallback to 'claude' if not set
 
-- [ ] **2.3** Update documentation
+- [x] **2.3** Update documentation
   - Add PAI_AGENT_NAME to environment variables section
   - Update SETUP.md with configuration example
   - Add to settings.json.example
 
-- [ ] **2.4** Add validation
+- [x] **2.4** Add validation
   - Warn if agent name is default value
   - Log configured agent name on startup
 

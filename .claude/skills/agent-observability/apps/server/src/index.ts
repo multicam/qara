@@ -10,9 +10,13 @@ import {
   getThemeStats
 } from './theme';
 import { startFileIngestion, getRecentEvents, getFilterOptions } from './file-ingest';
+import { logConfiguration, SERVER_PORT } from './config';
 
 // Store WebSocket clients
 const wsClients = new Set<any>();
+
+// Log configuration on startup
+logConfiguration();
 
 // Start file-based ingestion (reads from ~/.claude/history/raw-outputs/)
 // Pass a callback to broadcast new events to connected WebSocket clients
@@ -38,7 +42,7 @@ startFileIngestion((events) => {
 
 // Create Bun server with HTTP and WebSocket support
 const server = Bun.serve({
-  port: 4000,
+  port: SERVER_PORT,
   
   async fetch(req: Request) {
     const url = new URL(req.url);

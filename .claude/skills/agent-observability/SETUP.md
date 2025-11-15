@@ -8,14 +8,15 @@ This guide will help you set up the Agent Observability system to monitor and vi
 - Bun runtime installed (`brew install bun` or see [bun.sh](https://bun.sh))
 - Basic familiarity with terminal commands
 
-## 1. Environment Variable
+## 1. Environment Variables
 
-Add the PAI_DIR environment variable to your shell profile:
+Add the required environment variables to your shell profile:
 
 **For zsh users** (macOS default):
 
 ```bash
 echo 'export PAI_DIR="$HOME/.claude"' >> ~/.zshrc
+echo 'export PAI_AGENT_NAME="your-agent-name"' >> ~/.zshrc  # Optional, defaults to 'claude'
 source ~/.zshrc
 ```
 
@@ -23,14 +24,23 @@ source ~/.zshrc
 
 ```bash
 echo 'export PAI_DIR="$HOME/.claude"' >> ~/.bashrc
+echo 'export PAI_AGENT_NAME="your-agent-name"' >> ~/.bashrc  # Optional, defaults to 'claude'
 source ~/.bashrc
 ```
 
-Verify it's set:
+**Environment Variables:**
+
+- `PAI_DIR` (required): Path to your PAI directory (usually `~/.claude`)
+- `PAI_AGENT_NAME` (optional): Name of your primary agent (defaults to `claude`)
+
+Verify they're set:
 
 ```bash
 echo $PAI_DIR
 # Should output: /Users/yourname/.claude
+
+echo $PAI_AGENT_NAME
+# Should output: your-agent-name (or empty if using default)
 ```
 
 ## 2. Configure Hooks

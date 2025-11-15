@@ -17,9 +17,10 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
 import type { HookEvent } from './types';
+import { MAX_EVENTS_IN_MEMORY, HISTORY_DIR } from './config';
 
 // In-memory event store (last N events only)
-const MAX_EVENTS = 1000;
+const MAX_EVENTS = MAX_EVENTS_IN_MEMORY;
 const events: HookEvent[] = [];
 
 // Track the last read position for each file

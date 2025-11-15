@@ -15,6 +15,9 @@ import { readFileSync, appendFileSync, mkdirSync, existsSync, writeFileSync } fr
 import { join } from 'path';
 import { homedir } from 'os';
 
+// Configuration: Default agent name (configurable via environment variable)
+const DEFAULT_AGENT_NAME = process.env.PAI_AGENT_NAME || 'claude';
+
 interface HookEvent {
   source_app: string;
   session_id: string;
@@ -87,14 +90,12 @@ function getAgentForSession(sessionId: string): string {
     const mappingFile = getSessionMappingFile();
     if (existsSync(mappingFile)) {
       const mappings = JSON.parse(readFileSync(mappingFile, 'utf-8'));
-      // Default agent name - change 'qara' to your primary agent's name
-      return mappings[sessionId] || 'qara';
+      return mappings[sessionId] || DEFAULT_AGENT_NAME;
     }
   } catch (error) {
     // Ignore errors, default to primary agent
   }
-  // Change 'qara' to your primary agent's name
-  return 'qara';
+  return DEFAULT_AGENT_NAME;
 }
 
 function setAgentForSession(sessionId: string, agentName: string): void {
@@ -177,9 +178,8 @@ async function main() {
     }
     // If this is a SubagentStop, Stop, or SessionStart event, reset to primary agent
     else if (eventType === 'SubagentStop' || eventType === 'Stop' || eventType === 'SessionStart') {
-      // Change 'qara' to your primary agent's name
-      agentName = 'qara';
-      setAgentForSession(sessionId, 'qara');
+      agentName = DEFAULT_AGENT_NAME;
+      setAgentForSession(sessionId, DEFAULT_AGENT_NAME);
     }
     // Check if CLAUDE_CODE_AGENT env variable is set (for subagents)
     else if (process.env.CLAUDE_CODE_AGENT) {
