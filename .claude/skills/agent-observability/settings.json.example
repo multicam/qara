@@ -10,7 +10,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${PAI_DIR}/skills/agent-observability/hooks/capture-all-events.ts --event-type PreToolUse"
+            "command": "${PAI_DIR}/hooks/capture-all-events.ts --event-type PreToolUse"
           }
         ]
       }
@@ -21,7 +21,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${PAI_DIR}/skills/agent-observability/hooks/capture-all-events.ts --event-type PostToolUse"
+            "command": "${PAI_DIR}/hooks/capture-all-events.ts --event-type PostToolUse"
           }
         ]
       }
@@ -31,7 +31,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${PAI_DIR}/skills/agent-observability/hooks/capture-all-events.ts --event-type SessionStart"
+            "command": "${PAI_DIR}/hooks/capture-all-events.ts --event-type SessionStart"
           }
         ]
       }
@@ -41,7 +41,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${PAI_DIR}/skills/agent-observability/hooks/capture-all-events.ts --event-type SessionEnd"
+            "command": "${PAI_DIR}/hooks/capture-all-events.ts --event-type SessionEnd"
           }
         ]
       }
@@ -51,7 +51,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${PAI_DIR}/skills/agent-observability/hooks/capture-all-events.ts --event-type Stop"
+            "command": "${PAI_DIR}/hooks/capture-all-events.ts --event-type Stop"
           }
         ]
       }
@@ -61,7 +61,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${PAI_DIR}/skills/agent-observability/hooks/capture-all-events.ts --event-type SubagentStop"
+            "command": "${PAI_DIR}/hooks/capture-all-events.ts --event-type SubagentStop"
           }
         ]
       }
@@ -71,7 +71,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${PAI_DIR}/skills/agent-observability/hooks/capture-all-events.ts --event-type UserPromptSubmit"
+            "command": "${PAI_DIR}/hooks/capture-all-events.ts --event-type UserPromptSubmit"
           }
         ]
       }

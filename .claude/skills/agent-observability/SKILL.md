@@ -177,7 +177,7 @@ Add to `~/.claude/settings.json` (see `settings.json.example` for full template)
       "matcher": "*",
       "hooks": [{
         "type": "command",
-        "command": "${PAI_DIR}/skills/agent-observability/hooks/capture-all-events.ts --event-type PreToolUse"
+        "command": "${PAI_DIR}/hooks/capture-all-events.ts --event-type PreToolUse"
       }]
     }],
     // ... other hooks
@@ -191,7 +191,7 @@ Add to `~/.claude/settings.json` (see `settings.json.example` for full template)
 
 1. Check PAI_DIR is set: `echo $PAI_DIR`
 2. Verify directory exists: `ls ~/.claude/history/raw-outputs/`
-3. Check hook is executable: `ls -l hooks/capture-all-events.ts`
+3. Check hook is executable: `ls -l ~/.claude/hooks/capture-all-events.ts`
 4. Look for today's events file: `ls ~/.claude/history/raw-outputs/$(date +%Y-%m)/`
 
 ### Server won't start

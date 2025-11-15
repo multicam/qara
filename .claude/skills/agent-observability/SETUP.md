@@ -78,7 +78,7 @@ Example merged hook:
       },
       {
         "type": "command",
-        "command": "${PAI_DIR}/skills/agent-observability/hooks/capture-all-events.ts --event-type SessionStart"
+        "command": "${PAI_DIR}/hooks/capture-all-events.ts --event-type SessionStart"
       }
     ]
   }
@@ -96,18 +96,18 @@ mkdir -p ~/.claude/skills/agent-observability/logs
 
 ## 4. Copy Hook Script
 
-Copy the capture-all-events hook to your PAI directory:
+Copy the capture-all-events hook to your PAI hooks directory:
 
 ```bash
 # Create hooks directory if it doesn't exist
-mkdir -p ~/.claude/skills/agent-observability/hooks
+mkdir -p ~/.claude/hooks
 
-# Copy the hook script
+# Copy the hook script from the skill directory
 cp ~/Projects/PAI/skills/agent-observability/hooks/capture-all-events.ts \
-   ~/.claude/skills/agent-observability/hooks/
+   ~/.claude/hooks/
 
 # Make it executable
-chmod +x ~/.claude/skills/agent-observability/hooks/capture-all-events.ts
+chmod +x ~/.claude/hooks/capture-all-events.ts
 ```
 
 ## 5. Install Dashboard Dependencies
@@ -208,7 +208,7 @@ You should see:
 4. **Check hook permissions**:
 
    ```bash
-   ls -l ~/.claude/skills/agent-observability/hooks/capture-all-events.ts
+   ls -l ~/.claude/hooks/capture-all-events.ts
    ```
 
    Should show `-rwxr-xr-x` (executable)

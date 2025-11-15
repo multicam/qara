@@ -39,8 +39,16 @@ Ensure capture-all-events hook is active in settings.json:
 ```json
 {
   "hooks": {
-    "postToolUse": [
-      ".claude/skills/agent-observability/hooks/capture-all-events.ts"
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/capture-all-events.ts --event-type PostToolUse"
+          }
+        ]
+      }
     ]
   }
 }

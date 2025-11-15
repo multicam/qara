@@ -239,7 +239,7 @@ cat ~/.claude/settings.json | grep capture-all-events
 **Make hook executable:**
 
 ```bash
-chmod +x /Users/yourname/Projects/PAI/skills/agent-observability/hooks/capture-all-events.ts
+chmod +x ~/.claude/hooks/capture-all-events.ts
 ```
 
 **Check Claude Code output for errors:**
@@ -306,7 +306,7 @@ Open DevTools (F12) and look for WebSocket connection errors.
 **Make hook executable:**
 
 ```bash
-chmod +x skills/agent-observability/hooks/capture-all-events.ts
+chmod +x ~/.claude/hooks/capture-all-events.ts
 ```
 
 **Check directory permissions:**

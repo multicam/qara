@@ -18,7 +18,7 @@ description: Guide for creating new skills in Qara's personal AI infrastructure.
 
 ### Step 1: Understand the Purpose
 
-Ask these questions:
+Ask these questions:fi
 
 - **What does this skill do?** (Clear, specific purpose)
 - **When should it activate?** (Trigger conditions)
