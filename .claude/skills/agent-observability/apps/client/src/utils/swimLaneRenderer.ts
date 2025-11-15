@@ -210,16 +210,20 @@ export class SwimLaneRenderer {
   }
 
   /**
-   * Calculate bubble width based on label text length
+   * Calculate bubble width based on content
+   * Width now includes: icon + main label + session badge
    */
   private calculateBubbleWidth(label: string): number {
-    this.ctx.font = '11px system-ui, -apple-system, sans-serif';
-    const textMetrics = this.ctx.measureText(label);
-    const textWidth = textMetrics.width;
+    this.ctx.font = 'bold 11px system-ui, -apple-system, sans-serif';
+    const labelWidth = this.ctx.measureText(label).width;
 
-    // Add padding for icon + text + margins
-    const padding = this.config.iconSize + 20; // icon + gaps
-    const totalWidth = textWidth + padding;
+    // Session badge width (fixed size for "12345")
+    this.ctx.font = '9px monospace';
+    const sessionBadgeWidth = this.ctx.measureText('12345').width + 12; // text + padding
+
+    // Total width: icon + label + session badge + gaps
+    const padding = this.config.iconSize + 24; // icon + gaps
+    const totalWidth = labelWidth + sessionBadgeWidth + padding;
 
     // Clamp to min/max
     return Math.max(
@@ -230,10 +234,36 @@ export class SwimLaneRenderer {
 
   /**
    * Get display label for event
+   * Combines event type + tool name (if applicable)
    */
   private getEventLabel(event: HookEvent): string {
-    // Simplified label - just event type
-    return event.hook_event_type;
+    const eventType = event.hook_event_type;
+
+    // For tool events, include tool name
+    if ((eventType === 'PreToolUse' || eventType === 'PostToolUse') && event.payload?.tool_name) {
+      return `${this.formatEventType(eventType)} • ${event.payload.tool_name}`;
+    }
+
+    return this.formatEventType(eventType);
+  }
+
+  /**
+   * Format event type for display (shorter labels)
+   */
+  private formatEventType(eventType: string): string {
+    const shortNames: Record<string, string> = {
+      'PreToolUse': 'Tool',
+      'PostToolUse': 'Done',
+      'UserPromptSubmit': 'Prompt',
+      'SessionStart': 'Start',
+      'SessionEnd': 'End',
+      'SubagentStop': 'Subagent',
+      'PreCompact': 'Compact',
+      'Notification': 'Notify',
+      'Stop': 'Stop'
+    };
+
+    return shortNames[eventType] || eventType;
   }
 
   /**
@@ -361,40 +391,93 @@ export class SwimLaneRenderer {
   }
 
   /**
-   * Draw a single event bubble with icon and label
+   * Draw a single event bubble with enhanced design
+   * Layout: [Icon] Label [SessionBadge]
    */
   private drawEventBubble(bubble: EventBubble): void {
-    const { x, y, width, height, color } = bubble;
+    const { x, y, width, height, color, event } = bubble;
     const radius = height / 2;
+    const bubbleLeft = x - width / 2;
+    const bubbleTop = y - height / 2;
 
-    // Draw bubble background
+    // Draw bubble background with gradient
     this.ctx.save();
-    this.roundRect(x - width / 2, y - height / 2, width, height, radius);
-    this.ctx.fillStyle = color;
-    this.ctx.globalAlpha = 0.9;
+    this.roundRect(bubbleLeft, bubbleTop, width, height, radius);
+
+    // Subtle gradient for depth
+    const gradient = this.ctx.createLinearGradient(bubbleLeft, bubbleTop, bubbleLeft, bubbleTop + height);
+    gradient.addColorStop(0, color);
+    gradient.addColorStop(1, this.adjustColorBrightness(color, -15));
+
+    this.ctx.fillStyle = gradient;
+    this.ctx.globalAlpha = 0.95;
     this.ctx.fill();
 
-    // Draw bubble border
-    this.ctx.strokeStyle = this.adjustColorBrightness(color, -20);
-    this.ctx.lineWidth = 1;
+    // Draw bubble border (darker)
+    this.ctx.strokeStyle = this.adjustColorBrightness(color, -30);
+    this.ctx.lineWidth = 1.5;
     this.ctx.globalAlpha = 1;
+    this.ctx.stroke();
+
+    // Drop shadow for depth
+    this.ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+    this.ctx.shadowBlur = 4;
+    this.ctx.shadowOffsetY = 2;
     this.ctx.stroke();
     this.ctx.restore();
 
-    // Draw icon (left side of bubble)
-    const iconX = x - width / 2 + this.config.iconSize / 2 + 8;
+    // Draw icon (left side)
+    const iconX = bubbleLeft + this.config.iconSize / 2 + 8;
     const iconY = y;
-    this.drawEventIcon(bubble.event, iconX, iconY, this.config.iconSize, '#ffffff');
+    this.drawEventIcon(event, iconX, iconY, this.config.iconSize, '#ffffff');
 
-    // Draw label (right side of bubble)
-    const label = this.getEventLabel(bubble.event);
-    const textX = iconX + this.config.iconSize / 2 + 6;
+    // Draw main label (center)
+    const label = this.getEventLabel(event);
+    const labelX = iconX + this.config.iconSize / 2 + 8;
     this.ctx.save();
     this.ctx.fillStyle = '#ffffff';
     this.ctx.font = 'bold 11px system-ui, -apple-system, sans-serif';
     this.ctx.textAlign = 'left';
     this.ctx.textBaseline = 'middle';
-    this.ctx.fillText(label, textX, y);
+    this.ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+    this.ctx.shadowBlur = 2;
+    this.ctx.fillText(label, labelX, y);
+    this.ctx.restore();
+
+    // Draw session badge (right side)
+    const sessionId = event.session_id.slice(0, 5).toUpperCase();
+    this.ctx.save();
+
+    // Measure session text
+    this.ctx.font = 'bold 9px monospace';
+    const sessionWidth = this.ctx.measureText(sessionId).width;
+
+    // Session badge dimensions
+    const sessionBadgeWidth = sessionWidth + 8;
+    const sessionBadgeHeight = 16;
+    const sessionBadgeX = bubbleLeft + width - sessionBadgeWidth - 6;
+    const sessionBadgeY = y - sessionBadgeHeight / 2;
+    const sessionBadgeRadius = 4;
+
+    // Draw session badge background (semi-transparent white)
+    this.roundRect(sessionBadgeX, sessionBadgeY, sessionBadgeWidth, sessionBadgeHeight, sessionBadgeRadius);
+    this.ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+    this.ctx.fill();
+
+    // Draw session badge border
+    this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+    this.ctx.lineWidth = 1;
+    this.ctx.stroke();
+
+    // Draw session text
+    this.ctx.fillStyle = '#ffffff';
+    this.ctx.font = 'bold 9px monospace';
+    this.ctx.textAlign = 'center';
+    this.ctx.textBaseline = 'middle';
+    this.ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+    this.ctx.shadowBlur = 1;
+    this.ctx.fillText(sessionId, sessionBadgeX + sessionBadgeWidth / 2, y);
+
     this.ctx.restore();
   }
 

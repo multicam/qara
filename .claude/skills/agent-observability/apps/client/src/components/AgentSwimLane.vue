@@ -100,9 +100,9 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
-import type { HookEvent, TimeRange, ChartConfig, ChartDataPoint } from '../types';
+import type { HookEvent, TimeRange } from '../types';
 import { useSwimLaneEvents } from '../composables/useSwimLaneEvents';
-import { createChartRenderer, type ChartDimensions } from '../utils/chartRenderer';
+import { createSwimLaneRenderer, type SwimLaneDimensions, type SwimLaneConfig } from '../utils/swimLaneRenderer';
 import { useEventEmojis } from '../composables/useEventEmojis';
 import { useEventColors } from '../composables/useEventColors';
 import { Brain, Wrench, Clock, X, Zap, Loader2 } from 'lucide-vue-next';
@@ -119,7 +119,7 @@ const emit = defineEmits<{
 
 const canvas = ref<HTMLCanvasElement>();
 const chartContainer = ref<HTMLDivElement>();
-const chartHeight = 80;
+const chartHeight = 120; // Increased from 80 to accommodate stacked bubbles
 const hoveredEventCount = ref(false);
 const hoveredToolCount = ref(false);
 const hoveredAvgTime = ref(false);
@@ -174,61 +174,10 @@ const {
   cleanup: cleanupEventData,
   totalEventCount: eventsCount,
   toolCallCount: toolsCount,
-  eventTimingMetrics: agentEventTimingMetrics,
-  currentConfig
+  eventTimingMetrics: agentEventTimingMetrics
 } = useSwimLaneEvents(props.agentName);
 
-// TEMPORARY: Adapter to convert raw events back to chart data for ChartRenderer
-// This will be removed in Task 8 when we integrate SwimLaneRenderer
-const getChartData = (): ChartDataPoint[] => {
-  const events = getFilteredEvents.value;
-  const bounds = getTimeRangeBounds.value;
-  const config = currentConfig.value;
-
-  // Determine bucket size based on time range
-  const bucketSizes: Record<TimeRange, number> = {
-    '1m': 1000,   // 1 second
-    '3m': 3000,   // 3 seconds
-    '5m': 5000,   // 5 seconds
-    '10m': 10000  // 10 seconds
-  };
-  const bucketSize = bucketSizes[props.timeRange];
-
-  // Create buckets
-  const buckets = new Map<number, ChartDataPoint>();
-
-  // Initialize all buckets in range
-  for (let time = bounds.start; time <= bounds.end; time += bucketSize) {
-    const bucketTime = Math.floor(time / bucketSize) * bucketSize;
-    buckets.set(bucketTime, {
-      timestamp: bucketTime,
-      count: 0,
-      eventTypes: {},
-      sessions: {},
-      apps: {}
-    });
-  }
-
-  // Aggregate events into buckets
-  events.forEach(event => {
-    const bucketTime = Math.floor(event.timestamp / bucketSize) * bucketSize;
-    const bucket = buckets.get(bucketTime);
-
-    if (bucket) {
-      bucket.count++;
-      bucket.eventTypes[event.hook_event_type] = (bucket.eventTypes[event.hook_event_type] || 0) + 1;
-      bucket.sessions[event.session_id] = (bucket.sessions[event.session_id] || 0) + 1;
-      bucket.apps[event.source_app] = (bucket.apps[event.source_app] || 0) + 1;
-    }
-  });
-
-  // Return buckets as sorted array (last 60 points)
-  return Array.from(buckets.values())
-    .sort((a, b) => a.timestamp - b.timestamp)
-    .slice(-60);
-};
-
-let renderer: ReturnType<typeof createChartRenderer> | null = null;
+let renderer: ReturnType<typeof createSwimLaneRenderer> | null = null;
 let resizeObserver: ResizeObserver | null = null;
 let animationFrame: number | null = null;
 const processedEventIds = new Set<string>();
@@ -258,12 +207,14 @@ const getThemeColor = (property: string): string => {
   return color || '#3B82F6';
 };
 
-const getActiveConfig = (): ChartConfig => {
+const getActiveConfig = (): SwimLaneConfig => {
   return {
-    maxDataPoints: 60,
-    animationDuration: 300,
-    barWidth: 3,
-    barGap: 1,
+    bubbleHeight: 32,        // Height of each event bubble
+    bubbleMinWidth: 100,     // Minimum bubble width
+    bubbleMaxWidth: 300,     // Maximum bubble width
+    bubbleSpacing: 8,        // Minimum spacing between bubbles
+    iconSize: 18,            // Size of event type icon
+    animationDuration: 300,  // Duration of entrance animation (ms)
     colors: {
       primary: getThemeColor('primary'),
       glow: getThemeColor('primary-light'),
@@ -273,16 +224,16 @@ const getActiveConfig = (): ChartConfig => {
   };
 };
 
-const getDimensions = (): ChartDimensions => {
+const getDimensions = (): SwimLaneDimensions => {
   const width = chartContainer.value?.offsetWidth || 800;
   return {
     width,
     height: chartHeight,
     padding: {
-      top: 7,
-      right: 7,
-      bottom: 70,  // Increased to accommodate 4-tier staggered labels (6px base + 4 tiers × 13px spacing = ~58px needed)
-      left: 7
+      top: 10,
+      right: 10,
+      bottom: 30,  // Reduced - less needed for swim lanes
+      left: 10
     }
   };
 };
@@ -290,14 +241,25 @@ const getDimensions = (): ChartDimensions => {
 const render = () => {
   if (!renderer || !canvas.value) return;
 
-  const data = getChartData();
-  const maxValue = Math.max(...data.map(d => d.count), 1);
+  // Get raw events and time bounds
+  const events = getFilteredEvents.value;
+  const bounds = getTimeRangeBounds.value;
 
+  // Set time range for X-axis positioning
+  renderer.setTimeRange(bounds.start, bounds.end);
+
+  // Set events with color mapping
+  renderer.setEvents(events, (event: HookEvent) => {
+    // Use event type color from useEventColors
+    return getHexColorForApp(event.source_app);
+  });
+
+  // Render the swim lane
   renderer.clear();
   renderer.drawBackground();
   renderer.drawAxes();
   renderer.drawTimeLabels(props.timeRange);
-  renderer.drawBars(data, maxValue, 1, formatEventTypeLabel, getHexColorForSession, getHexColorForApp);
+  renderer.drawBubbles();
 };
 
 const animateNewEvent = (x: number, y: number) => {
@@ -388,42 +350,36 @@ watch(() => props.timeRange, (newRange) => {
 }, { immediate: true });
 
 const handleMouseMove = (event: MouseEvent) => {
-  if (!canvas.value || !chartContainer.value) return;
+  if (!canvas.value || !chartContainer.value || !renderer) return;
 
   const rect = canvas.value.getBoundingClientRect();
   const x = event.clientX - rect.left;
   const y = event.clientY - rect.top;
 
-  const data = getChartData();
-  const dimensions = getDimensions();
-  const chartArea = {
-    x: dimensions.padding.left,
-    y: dimensions.padding.top,
-    width: dimensions.width - dimensions.padding.left - dimensions.padding.right,
-    height: dimensions.height - dimensions.padding.top - dimensions.padding.bottom
-  };
+  // Check if mouse is over a bubble
+  const bubble = renderer.getBubbleAtPosition(x, y);
 
-  const barWidth = chartArea.width / data.length;
-  const barIndex = Math.floor((x - chartArea.x) / barWidth);
+  if (bubble) {
+    // Build tooltip text
+    const eventType = bubble.event.hook_event_type;
+    const toolName = bubble.event.payload?.tool_name || '';
+    const session = bubble.event.session_id.slice(0, 8);
 
-  if (barIndex >= 0 && barIndex < data.length && y >= chartArea.y && y <= chartArea.y + chartArea.height) {
-    const point = data[barIndex];
-    if (point.count > 0) {
-      const eventTypesText = Object.entries(point.eventTypes || {})
-        .map(([type, count]) => `${type}: ${count}`)
-        .join(', ');
-
-      tooltip.value = {
-        visible: true,
-        x: event.clientX - rect.left,
-        y: event.clientY - rect.top - 30,
-        text: `${point.count} events${eventTypesText ? ` (${eventTypesText})` : ''}`
-      };
-      return;
+    let tooltipText = `${eventType}`;
+    if (toolName) {
+      tooltipText += ` • ${toolName}`;
     }
-  }
+    tooltipText += ` (${session})`;
 
-  tooltip.value.visible = false;
+    tooltip.value = {
+      visible: true,
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top - 30,
+      text: tooltipText
+    };
+  } else {
+    tooltip.value.visible = false;
+  }
 };
 
 const handleMouseLeave = () => {
@@ -443,7 +399,7 @@ onMounted(() => {
   const dimensions = getDimensions();
   const config = getActiveConfig();
 
-  renderer = createChartRenderer(canvas.value, dimensions, config);
+  renderer = createSwimLaneRenderer(canvas.value, dimensions, config);
 
   // Set up resize observer
   resizeObserver = new ResizeObserver(handleResize);
