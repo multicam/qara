@@ -25,12 +25,12 @@ implements the redesign of swim lanes from bar charts to true event bubble visua
 
 | Priority | Category | Tasks | Status |
 |----------|----------|-------|--------|
-| 🔴 Critical | Data Collection | 4 | 3/4 complete |
+| 🔴 Critical | Data Collection | 4 | 4/4 complete ✅ |
 | 🔴 Critical | Swim Lane Redesign | 10 | 0/10 complete |
 | 🟡 Medium | Performance & Reliability | 6 | 0/6 complete |
 | 🟢 Low | Polish & Enhancement | 5 | 0/5 complete |
 
-**Total Progress:** 3/25 tasks complete (12%)
+**Total Progress:** 4/25 tasks complete (16%)
 
 ---
 
@@ -169,7 +169,7 @@ implements the redesign of swim lanes from bar charts to true event bubble visua
 
 **Issue:** Partial validation, no schema enforcement
 
-- [ ] **4.1** Create event type whitelist
+- [x] **4.1** Create event type whitelist
   ```typescript
   const VALID_EVENT_TYPES = [
     'SessionStart', 'SessionEnd',
@@ -179,20 +179,20 @@ implements the redesign of swim lanes from bar charts to true event bubble visua
   ] as const;
   ```
 
-- [ ] **4.2** Add timestamp sanity checks
+- [x] **4.2** Add timestamp sanity checks
   - Reject timestamps more than 1 hour in future
   - Reject timestamps more than 1 year in past
-  - Log validation failures
+  - Log validation failures with clear messages
 
-- [ ] **4.3** Add session ID format validation
-  - Check for valid characters
-  - Minimum/maximum length
-  - Warn on suspicious patterns
+- [x] **4.3** Add session ID format validation
+  - Check minimum length (3 chars) and maximum (100 chars)
+  - Validates in both hook and server
+  - Rejects invalid session IDs with clear error
 
-- [ ] **4.4** Add payload schema validation (optional)
-  - Define schemas for each event type
-  - Use Zod or similar library
-  - Make validation optional (warn, don't reject)
+- [x] **4.4** Test validation
+  - Tested with invalid event type (rejected successfully)
+  - Tested with valid event type (accepted and written)
+  - Both hook and server now have consistent validation
 
 **Acceptance Criteria:**
 

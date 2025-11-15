@@ -21,6 +21,19 @@ import { MAX_EVENTS_IN_MEMORY, HISTORY_DIR } from './config';
 
 // In-memory event store (last N events only)
 const MAX_EVENTS = MAX_EVENTS_IN_MEMORY;
+
+// Valid event types (whitelist) - must match hook configuration
+const VALID_EVENT_TYPES = [
+  'SessionStart',
+  'SessionEnd',
+  'PreToolUse',
+  'PostToolUse',
+  'UserPromptSubmit',
+  'Stop',
+  'SubagentStop',
+  'Notification',
+  'PreCompact'
+] as const;
 const events: HookEvent[] = [];
 
 // Track the last read position for each file
@@ -47,8 +60,20 @@ function isValidHookEvent(event: any): event is HookEvent {
     return false;
   }
 
+  // Validate session ID format
+  if (event.session_id.length < 3 || event.session_id.length > 100) {
+    console.warn(`⚠️  Invalid event: session_id length out of bounds (${event.session_id.length})`);
+    return false;
+  }
+
   if (typeof event.hook_event_type !== 'string' || !event.hook_event_type.trim()) {
     console.warn('⚠️  Invalid event: missing or invalid hook_event_type');
+    return false;
+  }
+
+  // Validate event type is in whitelist
+  if (!VALID_EVENT_TYPES.includes(event.hook_event_type as any)) {
+    console.warn(`⚠️  Invalid event: unknown hook_event_type "${event.hook_event_type}"`);
     return false;
   }
 
@@ -59,6 +84,21 @@ function isValidHookEvent(event: any): event is HookEvent {
 
   if (typeof event.timestamp !== 'number' || event.timestamp <= 0) {
     console.warn('⚠️  Invalid event: missing or invalid timestamp');
+    return false;
+  }
+
+  // Timestamp sanity checks
+  const now = Date.now();
+  const oneHourInFuture = now + (60 * 60 * 1000);
+  const oneYearInPast = now - (365 * 24 * 60 * 60 * 1000);
+
+  if (event.timestamp > oneHourInFuture) {
+    console.warn(`⚠️  Invalid event: timestamp is more than 1 hour in the future`);
+    return false;
+  }
+
+  if (event.timestamp < oneYearInPast) {
+    console.warn(`⚠️  Invalid event: timestamp is more than 1 year in the past`);
     return false;
   }
 

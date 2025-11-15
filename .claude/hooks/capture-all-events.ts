@@ -21,6 +21,21 @@ const DEFAULT_AGENT_NAME = process.env.PAI_AGENT_NAME || 'claude';
 // Maximum number of session mappings to keep in memory
 const MAX_SESSION_MAPPINGS = 1000;
 
+// Valid event types (whitelist)
+const VALID_EVENT_TYPES = [
+  'SessionStart',
+  'SessionEnd',
+  'PreToolUse',
+  'PostToolUse',
+  'UserPromptSubmit',
+  'Stop',
+  'SubagentStop',
+  'Notification',
+  'PreCompact'
+] as const;
+
+type ValidEventType = typeof VALID_EVENT_TYPES[number];
+
 // Session mapping with metadata
 interface SessionMapping {
   agentName: string;
@@ -201,8 +216,20 @@ function validateEvent(event: HookEvent): boolean {
     return false;
   }
 
+  // Validate session ID format (should be UUID or reasonable identifier)
+  if (event.session_id.length < 3 || event.session_id.length > 100) {
+    console.error(`Invalid event: session_id length out of bounds (${event.session_id.length})`);
+    return false;
+  }
+
   if (!event.hook_event_type || typeof event.hook_event_type !== 'string') {
     console.error('Invalid event: missing or invalid hook_event_type');
+    return false;
+  }
+
+  // Validate event type is in whitelist
+  if (!VALID_EVENT_TYPES.includes(event.hook_event_type as ValidEventType)) {
+    console.error(`Invalid event: unknown hook_event_type "${event.hook_event_type}". Valid types: ${VALID_EVENT_TYPES.join(', ')}`);
     return false;
   }
 
@@ -213,6 +240,21 @@ function validateEvent(event: HookEvent): boolean {
 
   if (!event.timestamp || typeof event.timestamp !== 'number') {
     console.error('Invalid event: missing or invalid timestamp');
+    return false;
+  }
+
+  // Timestamp sanity checks
+  const now = Date.now();
+  const oneHourInFuture = now + (60 * 60 * 1000);
+  const oneYearInPast = now - (365 * 24 * 60 * 60 * 1000);
+
+  if (event.timestamp > oneHourInFuture) {
+    console.error(`Invalid event: timestamp is more than 1 hour in the future (${new Date(event.timestamp).toISOString()})`);
+    return false;
+  }
+
+  if (event.timestamp < oneYearInPast) {
+    console.error(`Invalid event: timestamp is more than 1 year in the past (${new Date(event.timestamp).toISOString()})`);
     return false;
   }
 
