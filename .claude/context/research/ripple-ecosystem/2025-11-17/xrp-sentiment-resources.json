@@ -1,0 +1,385 @@
+{
+  "xrp_research_resources": {
+    "research_date": "2025-11-17",
+    "research_type": "XRP Community Platforms & Sentiment Analysis",
+
+    "forums": {
+      "primary": {
+        "name": "XRPChat",
+        "url": "https://www.xrpchat.com/",
+        "type": "dedicated_forum",
+        "status": "active",
+        "members": "large_community",
+        "description": "Largest dedicated XRP community forum",
+        "categories": [
+          "General Discussion",
+          "Technical Analysis",
+          "Price & Trading",
+          "News & Analysis",
+          "XRPL Development",
+          "Peer-to-peer Support",
+          "Products & Services"
+        ]
+      },
+      "secondary": [
+        {
+          "name": "XRP Chat Alternative",
+          "url": "https://xrpch.at/",
+          "type": "discussion_board"
+        },
+        {
+          "name": "Investing.com XRP Chat",
+          "url": "https://www.investing.com/crypto/xrp/chat",
+          "type": "platform_integrated"
+        },
+        {
+          "name": "TradingView Minds",
+          "url": "https://www.tradingview.com/symbols/XRPUSD/minds/",
+          "type": "trading_platform"
+        },
+        {
+          "name": "XRPL Community Hub",
+          "url": "https://xrpl.org/community",
+          "type": "official_hub"
+        }
+      ]
+    },
+
+    "social_media": {
+      "discord": [
+        {
+          "name": "Primary Ripple (XRP) Discord",
+          "url": "https://discord.com/invite/qgfVERN",
+          "members": 11454,
+          "status": "official",
+          "description": "Official Discord for XRP community"
+        },
+        {
+          "name": "XRPL.community Discord",
+          "url": "https://discord.com/invite/KTNmhJDXqa",
+          "members": 3173,
+          "focus": "XRP Ledger ecosystem"
+        }
+      ],
+      "telegram": [
+        {
+          "name": "Official Ripple Telegram",
+          "url": "https://t.me/Ripple",
+          "type": "official_channel",
+          "features": [
+            "Ripple links and updates",
+            "XRPChat access",
+            "Ripple Alerts (@RippleAlerts)"
+          ]
+        },
+        {
+          "name": "XRP Community Groups",
+          "description": "Various regional and language-specific Telegram groups",
+          "note": "Verify legitimacy before joining"
+        }
+      ],
+      "reddit": [
+        {
+          "name": "r/XRP",
+          "url": "https://reddit.com/r/XRP",
+          "type": "primary_subreddit",
+          "focus": "All XRP discussions"
+        },
+        {
+          "name": "r/CryptoCurrency",
+          "url": "https://reddit.com/r/CryptoCurrency",
+          "xrp_mentions_24h": "17-20 average",
+          "sentiment_breakdown": "75-85% positive"
+        }
+      ]
+    },
+
+    "sentiment_analysis_apis": {
+      "lunarcrush": {
+        "name": "LunarCrush",
+        "url": "https://lunarcrush.com/",
+        "api_url": "https://lunarcrush.com/about/api",
+        "type": "social_intelligence_api",
+        "coverage": "4000+ crypto assets, 300+ NFT collections",
+        "metrics": [
+          "Galaxy Score™",
+          "AltRank™",
+          "Average Sentiment",
+          "Social Dominance",
+          "Influencer Tracking"
+        ],
+        "features": [
+          "Real-time social data",
+          "Spam detection",
+          "Sentiment classification",
+          "40+ API endpoints",
+          "Keyword performance tracking",
+          "Trend identification",
+          "Real-time alerts"
+        ],
+        "products": [
+          "API",
+          "Web Platform",
+          "Mobile App (iOS/Android)"
+        ],
+        "v3_release": "2024",
+        "xrp_support": true
+      },
+
+      "santiment": {
+        "name": "Santiment",
+        "url": "https://app.santiment.net/",
+        "api_url": "https://api.santiment.net/",
+        "api_type": "GraphQL",
+        "type": "on_chain_social_dev_data",
+        "coverage": "500+ metrics, 2500+ assets",
+        "established": 2014,
+        "metrics_categories": [
+          "Social Volume",
+          "Sentiment Analysis",
+          "News Sentiment",
+          "GitHub Activity",
+          "Development Metrics",
+          "On-Chain Metrics"
+        ],
+        "xrp_specific_tools": [
+          "XRP Technical Analysis Charts",
+          "Social Volume Spike Detection",
+          "RSI and Moving Averages",
+          "Historical Trend Analysis"
+        ],
+        "developer_metrics": "Event-based tracking (improved methodology)",
+        "academy_url": "https://academy.santiment.net/metrics/"
+      },
+
+      "the_tie": {
+        "name": "The Tie",
+        "url": "https://www.thetie.io/",
+        "api_url": "https://www.thetie.io/solutions/sentiment-api/",
+        "type": "social_sentiment_data",
+        "features": [
+          "Sentiment API",
+          "Social media aggregation",
+          "Multi-platform tracking",
+          "Real-time data feeds"
+        ]
+      },
+
+      "cryptoeq": {
+        "name": "CryptoEQ",
+        "url": "https://www.cryptoeq.io/sentiment-report/sentiment/xrp",
+        "type": "sentiment_signals",
+        "features": [
+          "Social media activity",
+          "News sentiment",
+          "Market edge analysis",
+          "Asset-specific reports"
+        ]
+      },
+
+      "fear_greed_index": {
+        "name": "Ripple Fear and Greed Index",
+        "url": "https://cfgi.io/ripple-fear-greed-index",
+        "type": "sentiment_aggregator",
+        "focus": "Ripple-specific tracking",
+        "factors": [
+          "Social media sentiment",
+          "Popularity algorithms",
+          "Market-wide sentiment",
+          "Multiple timeframes"
+        ]
+      }
+    },
+
+    "sentiment_tracking_tools": {
+      "apewisdom": {
+        "name": "ApeWisdom",
+        "url": "https://apewisdom.io/cryptocurrencies/XRP/",
+        "type": "reddit_4chan_tracker",
+        "functions": "Tracks mention counts and sentiment ratios",
+        "data": "Last 24-hour mentions and sentiment distribution"
+      },
+
+      "social_trends": {
+        "name": "Santiment Social Trends",
+        "url": "https://app.santiment.net/social-trends",
+        "type": "trending_topics",
+        "features": "Real-time trending topics across crypto"
+      }
+    },
+
+    "on_chain_analytics": {
+      "glassnode": {
+        "name": "Glassnode",
+        "url": "https://glassnode.com/",
+        "xrp_url": "https://studio.glassnode.com/charts/?a=XRP",
+        "type": "on_chain_intelligence",
+        "metrics": "3500+ on-chain metrics",
+        "users": "1 million+",
+        "features": [
+          "Wallet activity analysis",
+          "Distribution patterns",
+          "On-chain metrics tracking",
+          "Advanced analytics"
+        ]
+      },
+
+      "nansen": {
+        "name": "Nansen",
+        "url": "https://www.nansen.ai/",
+        "type": "wallet_analytics",
+        "specialization": "Smart money tracking and behavior analysis",
+        "xrp_usage": [
+          "Wallet count tracking",
+          "Distribution analysis",
+          "Whale activity monitoring",
+          "On-chain data intelligence"
+        ]
+      },
+
+      "cryptomiso": {
+        "name": "CryptoMiso",
+        "url": "https://www.cryptomiso.com/",
+        "type": "github_activity_ranking",
+        "methodology": "GitHub commits of past 12 months",
+        "xrp_support": true
+      }
+    },
+
+    "governance_forums": {
+      "xrpl_foundation": {
+        "name": "XRP Ledger Foundation",
+        "founded": "2024-11-26",
+        "country": "France",
+        "governing_law": "French 1901 law",
+        "structure": "Non-profit association",
+        "founding_members": [
+          "XRPL Commons",
+          "XRPL Labs",
+          "Ripple",
+          "XAO DAO"
+        ],
+        "committees": [
+          "Membership",
+          "Audit",
+          "Infrastructure",
+          "Core Development",
+          "UNL (Unique Node List)"
+        ]
+      },
+
+      "github_discussions": {
+        "name": "XRPL Standards GitHub",
+        "url": "https://github.com/XRPLF/XRPL-Standards",
+        "type": "community_governance_forum",
+        "key_discussions": [
+          {
+            "id": 171,
+            "title": "A Member Governed XRPL Foundation",
+            "proposer": "David Fuelling (RippleX)"
+          },
+          {
+            "id": 181,
+            "title": "Hook Developer Requests",
+            "type": "technical_proposal"
+          }
+        ]
+      },
+
+      "governance_model": {
+        "membership_tiers": [
+          {
+            "tier": "Individual Members",
+            "fee": "75 XRP",
+            "eligibility": "Individual contributors"
+          },
+          {
+            "tier": "Corporate Members",
+            "fee": "500 XRP (1-10 employees), up to 500,000 XRP (larger)",
+            "eligibility": "Businesses"
+          },
+          {
+            "tier": "Sustaining Members",
+            "fee": "~1,000,000 XRP",
+            "eligibility": "Long-term commitment"
+          }
+        ],
+        "voting": "Democratic election of rotating chairperson and directors"
+      },
+
+      "xao_dao": {
+        "name": "XAO DAO",
+        "status": "First DAO on XRP Ledger",
+        "governance_token": "XRP (no new token)",
+        "purpose": "Community-led decentralized governance",
+        "significance": "Shift toward deeper decentralization"
+      }
+    },
+
+    "developer_resources": {
+      "xrpl_hooks": {
+        "name": "XRPL Hooks",
+        "documentation": "https://hooks.xrpl.org/",
+        "github": "https://github.com/XRPL-Labs/xrpld-hooks",
+        "type": "smart_contracts",
+        "status": "Public Testnet V3",
+        "builder": "In-browser development environment",
+        "language": "WebAssembly (any Wasm-compilable language)",
+        "implementation": "C++ modification with Wasmer runtime"
+      },
+
+      "xrpl_resources": {
+        "main_site": "https://xrpl.org/",
+        "blog": "https://xrpl.org/blog",
+        "learning_portal": "https://learn.xrpl.org/",
+        "amendments": "https://xrpl.org/resources/known-amendments",
+        "github": "https://github.com/XRPLF"
+      },
+
+      "xrpl_commons": {
+        "name": "XRPL Commons",
+        "url": "https://www.xrpl-commons.org/",
+        "purpose": "Building the commons with XRPL community"
+      }
+    },
+
+    "sentiment_metrics_framework": {
+      "real_time_monitoring": [
+        "Social volume tracking",
+        "Sentiment score ratios",
+        "Trending topics",
+        "Comment tone analysis",
+        "Upvote/downvote patterns"
+      ],
+
+      "daily_checks": [
+        "LunarCrush Galaxy Score",
+        "Santiment sentiment metrics",
+        "Reddit sentiment (r/XRP)",
+        "Fear and Greed Index"
+      ],
+
+      "weekly_analysis": [
+        "Sentiment aggregate across platforms",
+        "Governance participation trends",
+        "Developer activity changes",
+        "Social sentiment vs. price correlation"
+      ],
+
+      "monthly_reporting": [
+        "Comprehensive sentiment reports",
+        "Community health assessment",
+        "Governance analysis",
+        "Trend forecasting"
+      ]
+    },
+
+    "data_quality_notes": {
+      "verification": "All sources verified as of November 2025",
+      "api_status": "All APIs actively maintained and operational",
+      "community_activity": "All forums and channels show active participation",
+      "governance": "Recent restructuring completed with community approval",
+      "developer_activity": "Ongoing development with regular commits and proposals"
+    }
+  }
+}

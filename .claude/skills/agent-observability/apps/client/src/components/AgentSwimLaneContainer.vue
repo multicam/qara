@@ -1,15 +1,13 @@
 <template>
-  <div v-if="selectedAgents.length > 0" class="swim-lane-container">
-    <div class="lanes-wrapper">
-      <AgentSwimLane
-        v-for="agent in selectedAgents"
-        :key="agent"
-        :agent-name="agent"
-        :events="events"
-        :time-range="timeRange"
-        @close="removeAgent(agent)"
-      />
-    </div>
+  <div v-if="selectedAgents.length > 0" class="lanes-wrapper">
+    <AgentSwimLane
+      v-for="agent in selectedAgents"
+      :key="agent"
+      :agent-name="agent"
+      :events="events"
+      :time-range="timeRange"
+      @close="removeAgent(agent)"
+    />
   </div>
 </template>
 
@@ -34,7 +32,10 @@ function removeAgent(agent: string) {
 </script>
 
 <style scoped>
-.swim-lane-container {
+.lanes-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   width: 100%;
   animation: slideIn 0.3s ease;
 }
@@ -48,12 +49,5 @@ function removeAgent(agent: string) {
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-.lanes-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  width: 100%;
 }
 </style>

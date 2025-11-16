@@ -107,11 +107,14 @@ import { useEventEmojis } from '../composables/useEventEmojis';
 import { useEventColors } from '../composables/useEventColors';
 import { Brain, Wrench, Clock, X, Zap, Loader2 } from 'lucide-vue-next';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   agentName: string; // Format: "app:session" (e.g., "claude-code:a1b2c3d4")
   events: HookEvent[];
   timeRange: TimeRange;
-}>();
+  colorMode?: 'app' | 'event-type'; // Color bubbles by app or event type
+}>(), {
+  colorMode: 'event-type' // Default to event-type for better distinction
+});
 
 const emit = defineEmits<{
   close: [];
@@ -119,7 +122,7 @@ const emit = defineEmits<{
 
 const canvas = ref<HTMLCanvasElement>();
 const chartContainer = ref<HTMLDivElement>();
-const chartHeight = 120; // Increased from 80 to accommodate stacked bubbles
+const chartHeight = 300; // Increased to accommodate many vertically stacked bubbles
 const hoveredEventCount = ref(false);
 const hoveredToolCount = ref(false);
 const hoveredAvgTime = ref(false);
@@ -181,8 +184,9 @@ let renderer: ReturnType<typeof createSwimLaneRenderer> | null = null;
 let resizeObserver: ResizeObserver | null = null;
 let animationFrame: number | null = null;
 const processedEventIds = new Set<string>();
+const isDirty = ref(true); // Track if render is needed
 
-const { getHexColorForApp, getHexColorForSession } = useEventColors();
+const { getHexColorForApp, getHexColorForSession, getEventTypeColor } = useEventColors();
 
 const hasData = computed(() => eventsCount.value > 0);
 const totalEventCount = computed(() => eventsCount.value);
@@ -247,10 +251,15 @@ const render = () => {
   // Set time range for X-axis positioning
   renderer.setTimeRange(bounds.start, bounds.end);
 
-  // Set events with color mapping
+  // Set events with color mapping based on colorMode
   renderer.setEvents(events, (event: HookEvent) => {
-    // Use event type color from useEventColors
-    return getHexColorForApp(event.source_app);
+    if (props.colorMode === 'event-type') {
+      // Color by event type for better visual distinction
+      return getEventTypeColor(event.hook_event_type);
+    } else {
+      // Color by app (original behavior)
+      return getHexColorForApp(event.source_app);
+    }
   });
 
   // Render the swim lane
@@ -259,6 +268,9 @@ const render = () => {
   renderer.drawAxes();
   renderer.drawTimeLabels(props.timeRange);
   renderer.drawBubbles();
+
+  // Mark as clean after rendering
+  isDirty.value = false;
 };
 
 const animateNewEvent = (x: number, y: number) => {
@@ -272,7 +284,7 @@ const handleResize = () => {
 
   const dimensions = getDimensions();
   renderer.resize(dimensions);
-  render();
+  isDirty.value = true; // Mark dirty to trigger re-render
 };
 
 const processNewEvents = () => {
@@ -319,16 +331,16 @@ const processNewEvents = () => {
     }
   });
 
-  render();
+  isDirty.value = true; // Mark dirty to trigger re-render
 };
 
 // Watch for new events - immediate: true ensures we process existing events on mount
 watch(() => props.events, processNewEvents, { deep: true, immediate: true });
 
-// Watch for time range changes - update internal timeRange and trigger reaggregation
+// Watch for time range changes - update internal timeRange and trigger re-render
 watch(() => props.timeRange, (newRange) => {
   setTimeRange(newRange);
-  render();
+  isDirty.value = true; // Mark dirty to trigger re-render
 }, { immediate: true });
 
 const handleMouseMove = (event: MouseEvent) => {
@@ -371,7 +383,7 @@ const handleMouseLeave = () => {
 // Watch for theme changes
 const themeObserver = new MutationObserver(() => {
   if (renderer) {
-    render();
+    isDirty.value = true; // Mark dirty to trigger re-render
   }
 });
 
@@ -403,7 +415,7 @@ onMounted(() => {
   // Initial render
   render();
 
-  // Start optimized render loop with FPS limiting
+  // Start optimized render loop with FPS limiting and dirty flag
   let lastRenderTime = 0;
   const targetFPS = 30;
   const frameInterval = 1000 / targetFPS;
@@ -411,7 +423,8 @@ onMounted(() => {
   const renderLoop = (currentTime: number) => {
     const deltaTime = currentTime - lastRenderTime;
 
-    if (deltaTime >= frameInterval) {
+    // Only render if dirty and enough time has passed
+    if (isDirty.value && deltaTime >= frameInterval) {
       render();
       lastRenderTime = currentTime - (deltaTime % frameInterval);
     }
@@ -561,7 +574,29 @@ onUnmounted(() => {
   width: 100%;
   border: 1px solid var(--theme-border-primary);
   border-radius: 6px;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  max-height: 400px;
   background: var(--theme-bg-tertiary);
+  /* Custom scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: var(--theme-primary) transparent;
+}
+
+.chart-wrapper::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chart-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chart-wrapper::-webkit-scrollbar-thumb {
+  background: var(--theme-primary);
+  border-radius: 3px;
+}
+
+.chart-wrapper::-webkit-scrollbar-thumb:hover {
+  background: var(--theme-primary-dark);
 }
 </style>

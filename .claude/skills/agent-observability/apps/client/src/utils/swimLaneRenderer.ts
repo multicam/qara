@@ -48,6 +48,32 @@ export interface EventBubble {
 }
 
 export class SwimLaneRenderer {
+  // Visual constants for consistent styling
+  private static readonly BUBBLE_BORDER_WIDTH = 1.5;
+  private static readonly BUBBLE_SHADOW_COLOR = 'rgba(0, 0, 0, 0.15)';
+  private static readonly BUBBLE_SHADOW_BLUR = 4;
+  private static readonly BUBBLE_SHADOW_OFFSET_Y = 2;
+  private static readonly ICON_PADDING = 8;
+  private static readonly LABEL_PADDING = 8;
+  private static readonly SESSION_BADGE_PADDING = 8;
+  private static readonly SESSION_BADGE_HEIGHT = 16;
+  private static readonly SESSION_BADGE_RADIUS = 4;
+  private static readonly SESSION_BADGE_RIGHT_MARGIN = 6;
+  private static readonly SESSION_BADGE_BACKGROUND = 'rgba(0, 0, 0, 0.3)';
+  private static readonly SESSION_BADGE_TEXT_COLOR = 'rgba(255, 255, 255, 0.9)';
+  private static readonly GRID_DASH_PATTERN = [4, 4];
+  private static readonly GRID_OPACITY = 0.3;
+  private static readonly AXIS_OPACITY = 0.5;
+  private static readonly AXIS_COLOR = '#444444';
+  private static readonly AXIS_LINE_WIDTH = 0.5;
+  private static readonly BORDER_BRIGHTNESS_ADJUSTMENT = -30;
+  private static readonly ICON_COLOR = '#ffffff';
+  private static readonly LABEL_COLOR = '#ffffff';
+  private static readonly LABEL_FONT = 'bold 11px system-ui, -apple-system, sans-serif';
+  private static readonly SESSION_FONT = 'bold 9px monospace';
+  private static readonly TIME_LABEL_FONT = '11px system-ui, -apple-system, sans-serif';
+  private static readonly TIME_LABEL_OFFSET_Y = 5;
+
   private ctx: CanvasRenderingContext2D;
   private dimensions: SwimLaneDimensions;
   private config: SwimLaneConfig;
@@ -146,6 +172,33 @@ export class SwimLaneRenderer {
     const chartArea = this.getChartArea();
     const bubbles: EventBubble[] = [];
 
+    // Handle edge case: no events
+    if (events.length === 0) {
+      return bubbles;
+    }
+
+    // Handle edge case: single event (center it vertically)
+    if (events.length === 1) {
+      const event = events[0];
+      if (!event.timestamp) return bubbles;
+
+      const centerX = this.timestampToX(event.timestamp);
+      const centerY = chartArea.y + chartArea.height / 2;
+      const label = this.getEventLabel(event);
+      const bubbleWidth = this.calculateBubbleWidth(label);
+
+      bubbles.push({
+        event,
+        x: centerX,
+        y: centerY,
+        width: bubbleWidth,
+        height: this.config.bubbleHeight,
+        color: getColorForEvent(event)
+      });
+
+      return bubbles;
+    }
+
     // Track occupied ranges for each row: [{ start: x1, end: x2 }, ...]
     const rows: Array<Array<{ start: number; end: number }>> = [];
 
@@ -217,15 +270,15 @@ export class SwimLaneRenderer {
    * Width now includes: icon + main label + session badge
    */
   private calculateBubbleWidth(label: string): number {
-    this.ctx.font = 'bold 11px system-ui, -apple-system, sans-serif';
+    this.ctx.font = SwimLaneRenderer.LABEL_FONT;
     const labelWidth = this.ctx.measureText(label).width;
 
     // Session badge width (fixed size for "12345")
-    this.ctx.font = '9px monospace';
-    const sessionBadgeWidth = this.ctx.measureText('12345').width + 12; // text + padding
+    this.ctx.font = SwimLaneRenderer.SESSION_FONT;
+    const sessionBadgeWidth = this.ctx.measureText('12345').width + SwimLaneRenderer.SESSION_BADGE_PADDING + 4;
 
     // Total width: icon + label + session badge + gaps
-    const padding = this.config.iconSize + 24; // icon + gaps
+    const padding = this.config.iconSize + SwimLaneRenderer.ICON_PADDING + SwimLaneRenderer.LABEL_PADDING + 8;
     const totalWidth = labelWidth + sessionBadgeWidth + padding;
 
     // Clamp to min/max
@@ -319,9 +372,9 @@ export class SwimLaneRenderer {
   drawAxes(): void {
     const chartArea = this.getChartArea();
 
-    this.ctx.strokeStyle = '#444444';
-    this.ctx.lineWidth = 0.5;
-    this.ctx.globalAlpha = 0.5;
+    this.ctx.strokeStyle = SwimLaneRenderer.AXIS_COLOR;
+    this.ctx.lineWidth = SwimLaneRenderer.AXIS_LINE_WIDTH;
+    this.ctx.globalAlpha = SwimLaneRenderer.AXIS_OPACITY;
 
     // X-axis (horizontal timeline)
     this.ctx.beginPath();
@@ -340,11 +393,12 @@ export class SwimLaneRenderer {
     const labels = this.getTimeLabels(timeRange);
     const spacing = chartArea.width / (labels.length - 1);
 
-    // Draw vertical grid lines
+    // Draw vertical grid lines with dashed pattern for better distinction
     this.ctx.save();
-    this.ctx.strokeStyle = '#444444';
-    this.ctx.lineWidth = 0.5;
-    this.ctx.globalAlpha = 0.5;
+    this.ctx.strokeStyle = SwimLaneRenderer.AXIS_COLOR;
+    this.ctx.lineWidth = SwimLaneRenderer.AXIS_LINE_WIDTH;
+    this.ctx.globalAlpha = SwimLaneRenderer.GRID_OPACITY;
+    this.ctx.setLineDash(SwimLaneRenderer.GRID_DASH_PATTERN);
 
     labels.forEach((_, index) => {
       const x = chartArea.x + index * spacing;
@@ -354,17 +408,18 @@ export class SwimLaneRenderer {
       this.ctx.stroke();
     });
 
+    this.ctx.setLineDash([]); // Reset to solid lines
     this.ctx.restore();
 
     // Draw text labels
     this.ctx.fillStyle = this.config.colors.text;
-    this.ctx.font = '11px system-ui, -apple-system, sans-serif';
+    this.ctx.font = SwimLaneRenderer.TIME_LABEL_FONT;
     this.ctx.textAlign = 'center';
     this.ctx.textBaseline = 'top';
 
     labels.forEach((label, index) => {
       const x = chartArea.x + index * spacing;
-      const y = chartArea.y + chartArea.height + 5;
+      const y = chartArea.y + chartArea.height + SwimLaneRenderer.TIME_LABEL_OFFSET_Y;
       this.ctx.fillText(label, x, y);
     });
   }
@@ -407,7 +462,15 @@ export class SwimLaneRenderer {
     const bubbleTop = y - height / 2;
     const radius = height / 2;
 
-    // Draw bubble shape (rounded corners, solid fill, no gradients)
+    // Draw bubble shape (rounded corners, solid fill, subtle shadow for depth)
+    this.ctx.save();
+
+    // Add subtle drop shadow for depth (without breaking visibility)
+    this.ctx.shadowColor = SwimLaneRenderer.BUBBLE_SHADOW_COLOR;
+    this.ctx.shadowBlur = SwimLaneRenderer.BUBBLE_SHADOW_BLUR;
+    this.ctx.shadowOffsetX = 0;
+    this.ctx.shadowOffsetY = SwimLaneRenderer.BUBBLE_SHADOW_OFFSET_Y;
+
     this.ctx.beginPath();
     this.roundRect(bubbleLeft, bubbleTop, width, height, radius);
 
@@ -415,21 +478,27 @@ export class SwimLaneRenderer {
     this.ctx.fillStyle = color;
     this.ctx.fill();
 
+    // Reset shadow for border (prevent double shadow)
+    this.ctx.shadowColor = 'transparent';
+    this.ctx.shadowBlur = 0;
+
     // Darker border for definition
-    this.ctx.strokeStyle = this.adjustColorBrightness(color, -30);
-    this.ctx.lineWidth = 1.5;
+    this.ctx.strokeStyle = this.adjustColorBrightness(color, SwimLaneRenderer.BORDER_BRIGHTNESS_ADJUSTMENT);
+    this.ctx.lineWidth = SwimLaneRenderer.BUBBLE_BORDER_WIDTH;
     this.ctx.stroke();
 
+    this.ctx.restore();
+
     // Draw icon (left side)
-    const iconX = bubbleLeft + this.config.iconSize / 2 + 8;
+    const iconX = bubbleLeft + this.config.iconSize / 2 + SwimLaneRenderer.ICON_PADDING;
     const iconY = y;
-    this.drawEventIcon(event, iconX, iconY, this.config.iconSize, '#ffffff');
+    this.drawEventIcon(event, iconX, iconY, this.config.iconSize, SwimLaneRenderer.ICON_COLOR);
 
     // Draw main label (right of icon)
     const label = this.getEventLabel(event);
-    const labelX = iconX + this.config.iconSize / 2 + 8;
-    this.ctx.fillStyle = '#ffffff';
-    this.ctx.font = 'bold 11px system-ui, -apple-system, sans-serif';
+    const labelX = iconX + this.config.iconSize / 2 + SwimLaneRenderer.LABEL_PADDING;
+    this.ctx.fillStyle = SwimLaneRenderer.LABEL_COLOR;
+    this.ctx.font = SwimLaneRenderer.LABEL_FONT;
     this.ctx.textAlign = 'left';
     this.ctx.textBaseline = 'middle';
     this.ctx.fillText(label, labelX, y);
@@ -438,24 +507,24 @@ export class SwimLaneRenderer {
     const sessionId = event.session_id.slice(0, 5).toUpperCase();
 
     // Measure session text
-    this.ctx.font = 'bold 9px monospace';
+    this.ctx.font = SwimLaneRenderer.SESSION_FONT;
     const sessionWidth = this.ctx.measureText(sessionId).width;
 
     // Session badge dimensions
-    const sessionBadgeWidth = sessionWidth + 8;
-    const sessionBadgeHeight = 16;
-    const sessionBadgeX = bubbleLeft + width - sessionBadgeWidth - 6;
+    const sessionBadgeWidth = sessionWidth + SwimLaneRenderer.SESSION_BADGE_PADDING;
+    const sessionBadgeHeight = SwimLaneRenderer.SESSION_BADGE_HEIGHT;
+    const sessionBadgeX = bubbleLeft + width - sessionBadgeWidth - SwimLaneRenderer.SESSION_BADGE_RIGHT_MARGIN;
     const sessionBadgeY = y - sessionBadgeHeight / 2;
-    const sessionBadgeRadius = 4;
+    const sessionBadgeRadius = SwimLaneRenderer.SESSION_BADGE_RADIUS;
 
-    // Draw session badge background (darker shade of bubble color)
+    // Draw session badge background (semi-transparent black for consistent contrast)
     this.ctx.beginPath();
     this.roundRect(sessionBadgeX, sessionBadgeY, sessionBadgeWidth, sessionBadgeHeight, sessionBadgeRadius);
-    this.ctx.fillStyle = this.adjustColorBrightness(color, -40);
+    this.ctx.fillStyle = SwimLaneRenderer.SESSION_BADGE_BACKGROUND;
     this.ctx.fill();
 
     // Draw session ID text
-    this.ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+    this.ctx.fillStyle = SwimLaneRenderer.SESSION_BADGE_TEXT_COLOR;
     this.ctx.textAlign = 'center';
     this.ctx.textBaseline = 'middle';
     this.ctx.fillText(sessionId, sessionBadgeX + sessionBadgeWidth / 2, y);

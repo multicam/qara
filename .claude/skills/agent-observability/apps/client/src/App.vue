@@ -23,7 +23,7 @@
     />
 
     <!-- Agent Swim Lane Container (below pulse chart, full width, hidden when empty) -->
-    <div v-if="selectedAgentLanes.length > 0" class="w-full bg-[var(--theme-bg-secondary)] px-3 py-4 mobile:px-2 mobile:py-2 overflow-hidden">
+    <div v-if="selectedAgentLanes.length > 0" class="swim-lanes-scroll-container">
       <AgentSwimLaneContainer
         :selected-agents="selectedAgentLanes"
         :events="events"
@@ -174,3 +174,40 @@ const handleThemeManagerClick = () => {
   showThemeManager.value = true;
 };
 </script>
+
+<style scoped>
+.swim-lanes-scroll-container {
+  width: 100%;
+  background: var(--theme-bg-secondary);
+  padding: 1rem 0.75rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: 40vh;
+  /* Custom scrollbar for better visibility */
+  scrollbar-width: thin;
+  scrollbar-color: var(--theme-primary) transparent;
+}
+
+.swim-lanes-scroll-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.swim-lanes-scroll-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.swim-lanes-scroll-container::-webkit-scrollbar-thumb {
+  background: var(--theme-primary);
+  border-radius: 4px;
+}
+
+.swim-lanes-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: var(--theme-primary-dark);
+}
+
+@media (max-width: 640px) {
+  .swim-lanes-scroll-container {
+    padding: 0.5rem;
+  }
+}
+</style>
