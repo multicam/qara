@@ -182,7 +182,6 @@ let resizeObserver: ResizeObserver | null = null;
 let animationFrame: number | null = null;
 const processedEventIds = new Set<string>();
 
-const { formatEventTypeLabel } = useEventEmojis();
 const { getHexColorForApp, getHexColorForSession } = useEventColors();
 
 const hasData = computed(() => eventsCount.value > 0);
@@ -263,26 +262,9 @@ const render = () => {
 };
 
 const animateNewEvent = (x: number, y: number) => {
-  let radius = 0;
-  let opacity = 0.8;
-
-  const animate = () => {
-    if (!renderer) return;
-
-    render();
-    renderer.drawPulseEffect(x, y, radius, opacity);
-
-    radius += 2;
-    opacity -= 0.02;
-
-    if (opacity > 0) {
-      animationFrame = requestAnimationFrame(animate);
-    } else {
-      animationFrame = null;
-    }
-  };
-
-  animate();
+  // Animation temporarily disabled - pulse effect not yet implemented in SwimLaneRenderer
+  // Will be added in Task 10 (Interactions)
+  render();
 };
 
 const handleResize = () => {
@@ -394,12 +376,19 @@ const themeObserver = new MutationObserver(() => {
 });
 
 onMounted(() => {
-  if (!canvas.value || !chartContainer.value) return;
+  if (!canvas.value || !chartContainer.value) {
+    console.error('❌ Canvas or container not found!', { canvas: canvas.value, container: chartContainer.value });
+    return;
+  }
 
   const dimensions = getDimensions();
   const config = getActiveConfig();
 
-  renderer = createSwimLaneRenderer(canvas.value, dimensions, config);
+  try {
+    renderer = createSwimLaneRenderer(canvas.value, dimensions, config);
+  } catch (error) {
+    console.error('❌ Error creating renderer:', error);
+  }
 
   // Set up resize observer
   resizeObserver = new ResizeObserver(handleResize);
@@ -435,9 +424,8 @@ onMounted(() => {
 onUnmounted(() => {
   cleanupEventData();
 
-  if (renderer) {
-    renderer.stopAnimation();
-  }
+  // No stopAnimation method needed for SwimLaneRenderer
+  // (no persistent animations like in ChartRenderer)
 
   if (resizeObserver && chartContainer.value) {
     resizeObserver.disconnect();

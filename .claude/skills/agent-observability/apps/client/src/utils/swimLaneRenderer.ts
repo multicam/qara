@@ -150,9 +150,12 @@ export class SwimLaneRenderer {
     const rows: Array<Array<{ start: number; end: number }>> = [];
 
     // Sort events by timestamp (oldest first)
-    const sortedEvents = [...events].sort((a, b) => a.timestamp - b.timestamp);
+    const sortedEvents = [...events].sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
 
     sortedEvents.forEach(event => {
+      // Skip events without timestamp
+      if (!event.timestamp) return;
+
       // Calculate bubble dimensions
       const centerX = this.timestampToX(event.timestamp);
       const label = this.getEventLabel(event);
@@ -385,6 +388,10 @@ export class SwimLaneRenderer {
    * Draw all event bubbles
    */
   drawBubbles(): void {
+    if (this.bubbles.length === 0) {
+      return;
+    }
+
     this.bubbles.forEach(bubble => {
       this.drawEventBubble(bubble);
     });
@@ -396,57 +403,39 @@ export class SwimLaneRenderer {
    */
   private drawEventBubble(bubble: EventBubble): void {
     const { x, y, width, height, color, event } = bubble;
-    const radius = height / 2;
     const bubbleLeft = x - width / 2;
     const bubbleTop = y - height / 2;
+    const radius = height / 2;
 
-    // Draw bubble background with gradient
-    this.ctx.save();
+    // Draw bubble shape (rounded corners, solid fill, no gradients)
+    this.ctx.beginPath();
     this.roundRect(bubbleLeft, bubbleTop, width, height, radius);
 
-    // Subtle gradient for depth
-    const gradient = this.ctx.createLinearGradient(bubbleLeft, bubbleTop, bubbleLeft, bubbleTop + height);
-    gradient.addColorStop(0, color);
-    gradient.addColorStop(1, this.adjustColorBrightness(color, -15));
-
-    this.ctx.fillStyle = gradient;
-    this.ctx.globalAlpha = 0.95;
+    // Use solid color (no gradient - gradients break visibility)
+    this.ctx.fillStyle = color;
     this.ctx.fill();
 
-    // Draw bubble border (darker)
+    // Darker border for definition
     this.ctx.strokeStyle = this.adjustColorBrightness(color, -30);
     this.ctx.lineWidth = 1.5;
-    this.ctx.globalAlpha = 1;
     this.ctx.stroke();
-
-    // Drop shadow for depth
-    this.ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
-    this.ctx.shadowBlur = 4;
-    this.ctx.shadowOffsetY = 2;
-    this.ctx.stroke();
-    this.ctx.restore();
 
     // Draw icon (left side)
     const iconX = bubbleLeft + this.config.iconSize / 2 + 8;
     const iconY = y;
     this.drawEventIcon(event, iconX, iconY, this.config.iconSize, '#ffffff');
 
-    // Draw main label (center)
+    // Draw main label (right of icon)
     const label = this.getEventLabel(event);
     const labelX = iconX + this.config.iconSize / 2 + 8;
-    this.ctx.save();
     this.ctx.fillStyle = '#ffffff';
     this.ctx.font = 'bold 11px system-ui, -apple-system, sans-serif';
     this.ctx.textAlign = 'left';
     this.ctx.textBaseline = 'middle';
-    this.ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
-    this.ctx.shadowBlur = 2;
     this.ctx.fillText(label, labelX, y);
-    this.ctx.restore();
 
     // Draw session badge (right side)
     const sessionId = event.session_id.slice(0, 5).toUpperCase();
-    this.ctx.save();
 
     // Measure session text
     this.ctx.font = 'bold 9px monospace';
@@ -459,26 +448,17 @@ export class SwimLaneRenderer {
     const sessionBadgeY = y - sessionBadgeHeight / 2;
     const sessionBadgeRadius = 4;
 
-    // Draw session badge background (semi-transparent white)
+    // Draw session badge background (darker shade of bubble color)
+    this.ctx.beginPath();
     this.roundRect(sessionBadgeX, sessionBadgeY, sessionBadgeWidth, sessionBadgeHeight, sessionBadgeRadius);
-    this.ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+    this.ctx.fillStyle = this.adjustColorBrightness(color, -40);
     this.ctx.fill();
 
-    // Draw session badge border
-    this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
-    this.ctx.lineWidth = 1;
-    this.ctx.stroke();
-
-    // Draw session text
-    this.ctx.fillStyle = '#ffffff';
-    this.ctx.font = 'bold 9px monospace';
+    // Draw session ID text
+    this.ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
     this.ctx.textAlign = 'center';
     this.ctx.textBaseline = 'middle';
-    this.ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
-    this.ctx.shadowBlur = 1;
     this.ctx.fillText(sessionId, sessionBadgeX + sessionBadgeWidth / 2, y);
-
-    this.ctx.restore();
   }
 
   /**

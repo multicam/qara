@@ -85,7 +85,7 @@ export function useSwimLaneEvents(agentIdFilter?: string) {
 
     return allEvents.value
       .filter(event => event.timestamp && event.timestamp >= cutoffTime)
-      .sort((a, b) => a.timestamp - b.timestamp);
+      .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
   });
 
   /**
@@ -151,7 +151,7 @@ export function useSwimLaneEvents(agentIdFilter?: string) {
     // Calculate gaps between consecutive events
     const gaps: number[] = [];
     for (let i = 1; i < events.length; i++) {
-      const gap = events[i].timestamp - events[i - 1].timestamp;
+      const gap = (events[i].timestamp || 0) - (events[i - 1].timestamp || 0);
       if (gap > 0) {
         gaps.push(gap);
       }
