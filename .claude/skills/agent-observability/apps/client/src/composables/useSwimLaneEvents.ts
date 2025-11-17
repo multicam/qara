@@ -50,8 +50,12 @@ export function useSwimLaneEvents(agentIdFilter?: string) {
 
     // Skip if event doesn't match agent ID filter
     if (agentIdParsed) {
-      if (event.source_app !== agentIdParsed.app) return;
-      if (event.session_id.slice(0, 8) !== agentIdParsed.session) return;
+      if (event.source_app !== agentIdParsed.app) {
+        return;
+      }
+      if (event.session_id.slice(0, 8) !== agentIdParsed.session) {
+        return;
+      }
     }
 
     // Add to event store
@@ -83,9 +87,11 @@ export function useSwimLaneEvents(agentIdFilter?: string) {
     const now = Date.now();
     const cutoffTime = now - currentConfig.value.duration;
 
-    return allEvents.value
+    const filtered = allEvents.value
       .filter(event => event.timestamp && event.timestamp >= cutoffTime)
       .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+
+    return filtered;
   });
 
   /**

@@ -211,7 +211,18 @@ const processedEventIds = new Set<string>();
 const { formatEventTypeLabel } = useEventEmojis();
 const { getHexColorForSession } = useEventColors();
 
-const hasData = computed(() => dataPoints.value.some(dp => dp.count > 0));
+const hasData = computed(() => {
+  const result = dataPoints.value.some(dp => dp.count > 0);
+  // console.log(`📊 hasData check: ${dataPoints.value.length} data points, hasData = ${result}`);
+  // if (dataPoints.value.length > 0) {
+  //   console.log(`📈 Data points:`, dataPoints.value.slice(-3).map(dp => ({
+  //     timestamp: dp.timestamp,
+  //     time: new Date(dp.timestamp).toLocaleTimeString(),
+  //     count: dp.count
+  //   })));
+  // }
+  return result;
+});
 
 const totalEventCount = computed(() => {
   return dataPoints.value.reduce((sum, dp) => sum + dp.count, 0);
@@ -269,7 +280,7 @@ const render = () => {
 
   const data = getChartData();
   const maxValue = Math.max(...data.map(d => d.count), 1);
-  
+
   renderer.clear();
   renderer.drawBackground();
   renderer.drawAxes();
@@ -280,23 +291,23 @@ const render = () => {
 const animateNewEvent = (x: number, y: number) => {
   let radius = 0;
   let opacity = 0.8;
-  
+
   const animate = () => {
     if (!renderer) return;
-    
+
     render();
     renderer.drawPulseEffect(x, y, radius, opacity);
-    
+
     radius += 2;
     opacity -= 0.02;
-    
+
     if (opacity > 0) {
       animationFrame = requestAnimationFrame(animate);
     } else {
       animationFrame = null;
     }
   };
-  
+
   animate();
 };
 
@@ -328,7 +339,9 @@ const isEventFiltered = (event: HookEvent): boolean => {
 const processNewEvents = () => {
   const currentEvents = props.events;
   const newEventsToProcess: HookEvent[] = [];
-  
+
+  console.log(`🔍 LivePulseChart processNewEvents: ${currentEvents.length} events received`);
+
   // Find events that haven't been processed yet
   currentEvents.forEach(event => {
     const eventKey = `${event.id}-${event.timestamp}`;
@@ -337,12 +350,15 @@ const processNewEvents = () => {
       newEventsToProcess.push(event);
     }
   });
-  
+
+  console.log(`📝 ${newEventsToProcess.length} new events to process`);
+
   // Process new events
   newEventsToProcess.forEach(event => {
     if (event.hook_event_type !== 'refresh' && event.hook_event_type !== 'initial' && isEventFiltered(event)) {
+      console.log(`✅ LivePulseChart adding event: ${event.hook_event_type}`);
       addEvent(event);
-      
+
       // Trigger pulse animation for new event
       if (renderer && canvas.value) {
         const chartArea = getDimensions();
@@ -350,9 +366,11 @@ const processNewEvents = () => {
         const y = chartArea.height / 2;
         animateNewEvent(x, y);
       }
+    } else {
+      console.log(`❌ LivePulseChart filtered out event: ${event.hook_event_type}`);
     }
   });
-  
+
   // Clean up old event IDs to prevent memory leak
   // Keep only IDs from current events
   const currentEventIds = new Set(currentEvents.map(e => `${e.id}-${e.timestamp}`));
@@ -361,7 +379,7 @@ const processNewEvents = () => {
       processedEventIds.delete(id);
     }
   });
-  
+
   render();
 };
 
@@ -399,11 +417,11 @@ watch(chartHeight, () => {
 
 const handleMouseMove = (event: MouseEvent) => {
   if (!canvas.value || !chartContainer.value) return;
-  
+
   const rect = canvas.value.getBoundingClientRect();
   const x = event.clientX - rect.left;
   const y = event.clientY - rect.top;
-  
+
   const data = getChartData();
   const dimensions = getDimensions();
   const chartArea = {
@@ -412,17 +430,17 @@ const handleMouseMove = (event: MouseEvent) => {
     width: dimensions.width - dimensions.padding.left - dimensions.padding.right,
     height: dimensions.height - dimensions.padding.top - dimensions.padding.bottom
   };
-  
+
   const barWidth = chartArea.width / data.length;
   const barIndex = Math.floor((x - chartArea.x) / barWidth);
-  
+
   if (barIndex >= 0 && barIndex < data.length && y >= chartArea.y && y <= chartArea.y + chartArea.height) {
     const point = data[barIndex];
     if (point.count > 0) {
       const eventTypesText = Object.entries(point.eventTypes || {})
         .map(([type, count]) => `${type}: ${count}`)
         .join(', ');
-      
+
       tooltip.value = {
         visible: true,
         x: event.clientX - rect.left,
@@ -432,7 +450,7 @@ const handleMouseMove = (event: MouseEvent) => {
       return;
     }
   }
-  
+
   tooltip.value.visible = false;
 };
 
@@ -442,7 +460,7 @@ const handleMouseLeave = () => {
 
 const handleTimeRangeKeyDown = (event: KeyboardEvent, currentIndex: number) => {
   let newIndex = currentIndex;
-  
+
   switch (event.key) {
     case 'ArrowLeft':
       newIndex = Math.max(0, currentIndex - 1);
@@ -459,7 +477,7 @@ const handleTimeRangeKeyDown = (event: KeyboardEvent, currentIndex: number) => {
     default:
       return;
   }
-  
+
   if (newIndex !== currentIndex) {
     event.preventDefault();
     setTimeRange(timeRanges[newIndex]);
@@ -498,23 +516,23 @@ onMounted(() => {
 
   // Listen for window height changes
   window.addEventListener('resize', handleWindowResize);
-  
+
   // Initial render
   render();
-  
+
   // Start optimized render loop with FPS limiting
   let lastRenderTime = 0;
   const targetFPS = 30;
   const frameInterval = 1000 / targetFPS;
-  
+
   const renderLoop = (currentTime: number) => {
     const deltaTime = currentTime - lastRenderTime;
-    
+
     if (deltaTime >= frameInterval) {
       render();
       lastRenderTime = currentTime - (deltaTime % frameInterval);
     }
-    
+
     requestAnimationFrame(renderLoop);
   };
   requestAnimationFrame(renderLoop);

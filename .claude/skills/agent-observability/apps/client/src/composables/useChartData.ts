@@ -33,15 +33,15 @@ export function useChartData(agentIdFilter?: string) {
   };
 
   const agentIdParsed = agentIdFilter ? parseAgentId(agentIdFilter) : null;
-  
+
   // Store all events for re-aggregation when time range changes
   const allEvents = ref<HookEvent[]>([]);
-  
+
   // Debounce for high-frequency events
   let eventBuffer: HookEvent[] = [];
   let debounceTimer: number | null = null;
   const DEBOUNCE_DELAY = 50; // 50ms debounce
-  
+
   const timeRangeConfig = {
     '1m': {
       duration: 60 * 1000, // 1 minute in ms
@@ -64,41 +64,50 @@ export function useChartData(agentIdFilter?: string) {
       maxPoints: 60
     }
   };
-  
+
   const currentConfig = computed(() => timeRangeConfig[timeRange.value]);
-  
+
   const getBucketTimestamp = (timestamp: number): number => {
     const config = currentConfig.value;
     return Math.floor(timestamp / config.bucketSize) * config.bucketSize;
   };
-  
+
   const processEventBuffer = () => {
     const eventsToProcess = [...eventBuffer];
     eventBuffer = [];
+
+    // console.log(`📦 processEventBuffer: Processing ${eventsToProcess.length} events`);
 
     // Add events to our complete list
     allEvents.value.push(...eventsToProcess);
 
     eventsToProcess.forEach(event => {
-      if (!event.timestamp) return;
+      if (!event.timestamp) {
+        console.log(`❌ Event missing timestamp:`, event);
+        return;
+      }
 
       // Skip if event doesn't match agent ID filter (check both app and session)
       if (agentIdParsed) {
         if (event.source_app !== agentIdParsed.app) {
+          console.log(`❌ Event filtered by app: ${event.source_app} != ${agentIdParsed.app}`);
           return;
         }
         // Check if session ID matches (first 8 chars)
         if (event.session_id.slice(0, 8) !== agentIdParsed.session) {
+          console.log(`❌ Event filtered by session: ${event.session_id.slice(0, 8)} != ${agentIdParsed.session}`);
           return;
         }
       }
 
       const bucketTime = getBucketTimestamp(event.timestamp);
+      // console.log(`🪣 Event ${event.hook_event_type} -> bucket ${bucketTime ? new Date(bucketTime).toLocaleTimeString() : 'unknown'}`);
 
       // Find existing bucket or create new one
       let bucket = dataPoints.value.find(dp => dp.timestamp === bucketTime);
       if (bucket) {
         bucket.count++;
+        // console.log(`📈 Updated existing bucket: count = ${bucket.count}`);
         // Track event types
         if (!bucket.eventTypes) {
           bucket.eventTypes = {};
@@ -115,6 +124,7 @@ export function useChartData(agentIdFilter?: string) {
         }
         bucket.apps[event.source_app || 'unknown'] = (bucket.apps[event.source_app || 'unknown'] || 0) + 1;
       } else {
+        // console.log(`🆕 Created new bucket at ${bucketTime ? new Date(bucketTime).toLocaleTimeString() : 'unknown'}`);
         dataPoints.value.push({
           timestamp: bucketTime,
           count: 1,
@@ -125,52 +135,65 @@ export function useChartData(agentIdFilter?: string) {
       }
     });
 
+    // console.log(`📊 After processing: ${dataPoints.value.length} data points`);
+
     // Clean old data once after processing all events
     cleanOldData();
     cleanOldEvents();
   };
-  
+
   const addEvent = (event: HookEvent) => {
+    // console.log(`🎯 addEvent: ${event.hook_event_type} at ${event.timestamp ? new Date(event.timestamp).toLocaleTimeString() : 'unknown time'}`);
     eventBuffer.push(event);
-    
+
     // Clear existing timer
     if (debounceTimer !== null) {
       clearTimeout(debounceTimer);
     }
-    
+
     // Set new timer
     debounceTimer = window.setTimeout(() => {
+      console.log(`⏰ Processing ${eventBuffer.length} buffered events`);
       processEventBuffer();
       debounceTimer = null;
     }, DEBOUNCE_DELAY);
   };
-  
+
   const cleanOldData = () => {
     const now = Date.now();
     const cutoffTime = now - currentConfig.value.duration;
-    
+
+    // console.log(`🧹 cleanOldData: keeping events after ${new Date(cutoffTime).toLocaleTimeString()}`);
+    // console.log(`🧹 Before cleaning: ${dataPoints.value.length} data points`);
+
+    const beforeCount = dataPoints.value.length;
     dataPoints.value = dataPoints.value.filter(dp => dp.timestamp >= cutoffTime);
-    
+    const afterCount = dataPoints.value.length;
+
+    // console.log(`🧹 After cleaning: ${afterCount} data points (removed ${beforeCount - afterCount})`);
+
     // Ensure we don't exceed max points
     if (dataPoints.value.length > currentConfig.value.maxPoints) {
+      const removed = dataPoints.value.length - currentConfig.value.maxPoints;
       dataPoints.value = dataPoints.value.slice(-currentConfig.value.maxPoints);
+      // console.log(`🧹 Removed ${removed} old points to stay under max ${currentConfig.value.maxPoints}`);
     }
   };
-  
+
   const cleanOldEvents = () => {
     const now = Date.now();
     const cutoffTime = now - 5 * 60 * 1000; // Keep events for max 5 minutes
-    
-    allEvents.value = allEvents.value.filter(event => 
+
+    allEvents.value = allEvents.value.filter(event =>
       event.timestamp && event.timestamp >= cutoffTime
     );
   };
-  
+
   const getChartData = (): ChartDataPoint[] => {
     const now = Date.now();
     const config = currentConfig.value;
     const startTime = now - config.duration;
-    
+
     // Create array of all time buckets in range
     const buckets: ChartDataPoint[] = [];
     for (let time = startTime; time <= now; time += config.bucketSize) {
@@ -184,17 +207,17 @@ export function useChartData(agentIdFilter?: string) {
         apps: existingBucket?.apps || {}
       });
     }
-    
+
     // Return only the last maxPoints buckets
     return buckets.slice(-config.maxPoints);
   };
-  
+
   const setTimeRange = (range: TimeRange) => {
     timeRange.value = range;
     // Re-aggregate data for new bucket size
     reaggregateData();
   };
-  
+
   const reaggregateData = () => {
     // Clear current data points
     dataPoints.value = [];
@@ -241,13 +264,13 @@ export function useChartData(agentIdFilter?: string) {
     // Clean up
     cleanOldData();
   };
-  
+
   // Auto-clean old data every second
   const cleanupInterval = setInterval(() => {
     cleanOldData();
     cleanOldEvents();
   }, 1000);
-  
+
   // Cleanup on unmount
   const cleanup = () => {
     clearInterval(cleanupInterval);
@@ -267,7 +290,7 @@ export function useChartData(agentIdFilter?: string) {
       debounceTimer = null;
     }
   };
-  
+
   // Helper to create unique agent ID from source_app + session_id
   const createAgentId = (sourceApp: string, sessionId: string): string => {
     return `${sourceApp}:${sessionId.slice(0, 8)}`;

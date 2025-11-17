@@ -3,50 +3,32 @@
     <div class="lane-header">
       <div class="header-left">
         <div class="agent-label-container">
-          <span
-            class="agent-label-app"
-            :style="{
-              backgroundColor: getHexColorForApp(appName),
-              borderColor: getHexColorForApp(appName)
-            }"
-          >
+          <span class="agent-label-app" :style="{
+            backgroundColor: getHexColorForApp(appName),
+            borderColor: getHexColorForApp(appName)
+          }">
             <span class="font-mono text-xs">{{ appName }}</span>
           </span>
-          <span
-            class="agent-label-session"
-            :style="{
-              backgroundColor: getHexColorForSession(sessionId),
-              borderColor: getHexColorForSession(sessionId)
-            }"
-          >
+          <span class="agent-label-session" :style="{
+            backgroundColor: getHexColorForSession(sessionId),
+            borderColor: getHexColorForSession(sessionId)
+          }">
             <span class="font-mono text-xs">{{ sessionId }}</span>
           </span>
         </div>
-        <div
-          v-if="modelName"
-          class="model-badge"
-          :title="`Model: ${modelName}`"
-        >
+        <div v-if="modelName" class="model-badge" :title="`Model: ${modelName}`">
           <Brain :size="14" :stroke-width="2.5" />
           <span class="text-xs font-bold">{{ formatModelName(modelName) }}</span>
         </div>
-        <div
-          class="event-count-badge"
-          @mouseover="hoveredEventCount = true"
-          @mouseleave="hoveredEventCount = false"
-          :title="`Total events in the last ${timeRange === '1m' ? '1 minute' : timeRange === '3m' ? '3 minutes' : '5 minutes'}`"
-        >
+        <div class="event-count-badge" @mouseover="hoveredEventCount = true" @mouseleave="hoveredEventCount = false"
+          :title="`Total events in the last ${timeRange === '1m' ? '1 minute' : timeRange === '3m' ? '3 minutes' : '5 minutes'}`">
           <Zap :size="14" :stroke-width="2.5" class="flex-shrink-0" />
           <span class="text-xs font-bold" :class="hoveredEventCount ? 'min-w-[65px]' : ''">
             {{ hoveredEventCount ? `${totalEventCount} Events` : totalEventCount }}
           </span>
         </div>
-        <div
-          class="tool-call-badge"
-          @mouseover="hoveredToolCount = true"
-          @mouseleave="hoveredToolCount = false"
-          :title="`Tool calls in the last ${timeRange === '1m' ? '1 minute' : timeRange === '3m' ? '3 minutes' : '5 minutes'}`"
-        >
+        <div class="tool-call-badge" @mouseover="hoveredToolCount = true" @mouseleave="hoveredToolCount = false"
+          :title="`Tool calls in the last ${timeRange === '1m' ? '1 minute' : timeRange === '3m' ? '3 minutes' : '5 minutes'}`">
           <Wrench :size="14" :stroke-width="2.5" class="flex-shrink-0" />
           <span class="text-xs font-bold" :class="hoveredToolCount ? 'min-w-[75px]' : ''">
             {{ hoveredToolCount ? `${toolCallCount} Tool Calls` : toolCallCount }}
@@ -54,41 +36,56 @@
         </div>
         <div
           class="avg-time-badge flex items-center gap-1.5 px-2 py-2 bg-[var(--theme-bg-tertiary)] rounded-lg border border-[var(--theme-border-primary)] shadow-sm min-h-[28px]"
-          @mouseover="hoveredAvgTime = true"
-          @mouseleave="hoveredAvgTime = false"
-          :title="`Average time between events in the last ${timeRange === '1m' ? '1 minute' : timeRange === '3m' ? '3 minutes' : '5 minutes'}`"
-        >
+          @mouseover="hoveredAvgTime = true" @mouseleave="hoveredAvgTime = false"
+          :title="`Average time between events in the last ${timeRange === '1m' ? '1 minute' : timeRange === '3m' ? '3 minutes' : '5 minutes'}`">
           <Clock :size="16" :stroke-width="2.5" class="flex-shrink-0" />
-          <span class="text-sm font-bold text-[var(--theme-text-primary)]" :class="hoveredAvgTime ? 'min-w-[90px]' : ''">
-            {{ hoveredAvgTime ? `Avg Gap: ${formatGap(agentEventTimingMetrics.avgGap)}` : formatGap(agentEventTimingMetrics.avgGap) }}
+          <span class="text-sm font-bold text-[var(--theme-text-primary)]"
+            :class="hoveredAvgTime ? 'min-w-[90px]' : ''">
+            {{ hoveredAvgTime ? `Avg Gap: ${formatGap(agentEventTimingMetrics.avgGap)}` :
+              formatGap(agentEventTimingMetrics.avgGap) }}
           </span>
         </div>
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <span class="font-semibold text-sm">{{ appName }}</span>
+            <span class="text-xs text-gray-500 ml-2">{{ sessionId }}</span>
+            <span class="text-xs text-gray-400 ml-2">{{ modelName || 'Unknown model' }}</span>
+          </div>
+          <div class="flex items-center gap-2 text-xs text-gray-500">
+            <span class="cursor-pointer hover:text-gray-700 transition-colors"
+              :class="{ 'text-blue-600 hover:text-blue-700': hoveredEventCount }" @mouseenter="hoveredEventCount = true"
+              @mouseleave="hoveredEventCount = false" title="Total events">
+              <Brain :size="12" :stroke-width="2.5" />
+              {{ totalEventCount }}
+            </span>
+            <span class="cursor-pointer hover:text-gray-700 transition-colors"
+              :class="{ 'text-blue-600 hover:text-blue-700': hoveredToolCount }" @mouseenter="hoveredToolCount = true"
+              @mouseleave="hoveredToolCount = false" title="Tool calls">
+              <Wrench :size="12" :stroke-width="2.5" />
+              {{ toolCallCount }}
+            </span>
+            <span class="cursor-pointer hover:text-gray-700 transition-colors"
+              :class="{ 'text-blue-600 hover:text-blue-700': hoveredAvgTime }" @mouseenter="hoveredAvgTime = true"
+              @mouseleave="hoveredAvgTime = false" title="Average time between events">
+              <Clock :size="12" :stroke-width="2.5" />
+              {{ formatGap(agentEventTimingMetrics.avgGap) }}
+            </span>
+          </div>
+          <button @click="emit('close')" class="close-btn" title="Remove this swim lane">
+            <X :size="16" :stroke-width="2.5" />
+          </button>
+        </div>
       </div>
-      <button @click="emit('close')" class="close-btn" title="Remove this swim lane">
-        <X :size="16" :stroke-width="2.5" />
-      </button>
     </div>
     <div ref="chartContainer" class="chart-wrapper">
-      <canvas
-        ref="canvas"
-        class="w-full cursor-crosshair"
-        :style="{ height: chartHeight + 'px' }"
-        @mousemove="handleMouseMove"
-        @mouseleave="handleMouseLeave"
-        role="img"
-        :aria-label="chartAriaLabel"
-      ></canvas>
-      <div
-        v-if="tooltip.visible"
+      <canvas ref="canvas" class="w-full h-in cursor-crosshair"
+        @mousemove="handleMouseMove" @mouseleave="handleMouseLeave" role="img" :aria-label="chartAriaLabel"></canvas>
+      <div v-if="tooltip.visible"
         class="absolute bg-gradient-to-r from-[var(--theme-primary)] to-[var(--theme-primary-dark)] text-white px-2 py-1.5 rounded-lg text-xs pointer-events-none z-10 shadow-lg border border-[var(--theme-primary-light)] font-bold drop-shadow-md"
-        :style="{ left: tooltip.x + 'px', top: tooltip.y + 'px' }"
-      >
+        :style="{ left: tooltip.x + 'px', top: tooltip.y + 'px' }">
         {{ tooltip.text }}
       </div>
-      <div
-        v-if="!hasData"
-        class="absolute inset-0 flex items-center justify-center"
-      >
+      <div v-if="!hasData" class="absolute inset-0 flex items-center justify-center">
         <p class="flex items-center gap-2 text-[var(--theme-text-tertiary)] text-sm font-semibold">
           <Loader2 :size="16" :stroke-width="2.5" class="animate-spin" />
           Waiting for events...
@@ -103,7 +100,6 @@ import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
 import type { HookEvent, TimeRange } from '../types';
 import { useSwimLaneEvents } from '../composables/useSwimLaneEvents';
 import { createSwimLaneRenderer, type SwimLaneDimensions, type SwimLaneConfig } from '../utils/swimLaneRenderer';
-import { useEventEmojis } from '../composables/useEventEmojis';
 import { useEventColors } from '../composables/useEventColors';
 import { Brain, Wrench, Clock, X, Zap, Loader2 } from 'lucide-vue-next';
 
@@ -122,7 +118,29 @@ const emit = defineEmits<{
 
 const canvas = ref<HTMLCanvasElement>();
 const chartContainer = ref<HTMLDivElement>();
-const chartHeight = 300; // Increased to accommodate many vertically stacked bubbles
+const tick = ref(0); // Force reactivity updates
+
+const chartHeight = computed(() => {
+  const events = getFilteredEvents.value;
+  const baseHeight = 100;
+  const minEventsForExpansion = 4;
+
+  if (events.length <= minEventsForExpansion) {
+    return baseHeight;
+  }
+
+  // Estimate rows needed (rough calculation - events can stack vertically)
+  // Each row can hold about 5-8 events depending on timing overlap
+  const estimatedRows = Math.ceil(events.length / 6);
+  const rowHeight = 32 + 8; // bubbleHeight + bubbleSpacing from config
+  const estimatedHeight = estimatedRows * rowHeight + 120; // Add padding
+
+  console.log('Estimated height:', estimatedHeight);
+  // Cap at reasonable maximum
+  return Math.min(baseHeight * 3, Math.max(baseHeight, estimatedHeight));
+});
+
+
 const hoveredEventCount = ref(false);
 const hoveredToolCount = ref(false);
 const hoveredAvgTime = ref(false);
@@ -158,9 +176,6 @@ const modelName = computed(() => {
 const formatModelName = (name: string | null | undefined): string => {
   if (!name) return '';
 
-  // Extract model family and version
-  // "claude-haiku-4-5-20251001" -> "haiku-4-5"
-  // "claude-sonnet-4-5-20250929" -> "sonnet-4-5"
   const parts = name.split('-');
   if (parts.length >= 4) {
     return `${parts[1]}-${parts[2]}-${parts[3]}`;
@@ -171,18 +186,20 @@ const formatModelName = (name: string | null | undefined): string => {
 // NEW: Use swim lane events (raw events, no aggregation)
 const {
   getFilteredEvents,
-  getTimeRangeBounds,
   addEvent,
   setTimeRange,
   cleanup: cleanupEventData,
   totalEventCount: eventsCount,
   toolCallCount: toolsCount,
-  eventTimingMetrics: agentEventTimingMetrics
+  eventTimingMetrics: agentEventTimingMetrics,
+  currentConfig
 } = useSwimLaneEvents(props.agentName);
+
 
 let renderer: ReturnType<typeof createSwimLaneRenderer> | null = null;
 let resizeObserver: ResizeObserver | null = null;
 let animationFrame: number | null = null;
+let dirtyInterval: number | null = null;
 const processedEventIds = new Set<string>();
 const isDirty = ref(true); // Track if render is needed
 
@@ -212,12 +229,12 @@ const getThemeColor = (property: string): string => {
 
 const getActiveConfig = (): SwimLaneConfig => {
   return {
-    bubbleHeight: 32,        // Height of each event bubble
+    bubbleHeight: 28,        // Height of each event bubble
     bubbleMinWidth: 100,     // Minimum bubble width
     bubbleMaxWidth: 300,     // Maximum bubble width
     bubbleSpacing: 8,        // Minimum spacing between bubbles
-    iconSize: 18,            // Size of event type icon
-    animationDuration: 300,  // Duration of entrance animation (ms)
+    iconSize: 16,            // Size of event type icon
+    animationDuration: 400,  // Duration of entrance animation (ms)
     colors: {
       primary: getThemeColor('primary'),
       glow: getThemeColor('primary-light'),
@@ -227,15 +244,16 @@ const getActiveConfig = (): SwimLaneConfig => {
   };
 };
 
+
 const getDimensions = (): SwimLaneDimensions => {
   const width = chartContainer.value?.offsetWidth || 800;
   return {
     width,
-    height: chartHeight,
+    height: chartHeight.value,
     padding: {
       top: 10,
       right: 10,
-      bottom: 30,  // Reduced - less needed for swim lanes
+      bottom: 10,  // Reduced - less needed for swim lanes
       left: 10
     }
   };
@@ -244,9 +262,16 @@ const getDimensions = (): SwimLaneDimensions => {
 const render = () => {
   if (!renderer || !canvas.value) return;
 
-  // Get raw events and time bounds
+  // Force reactivity by reading tick
+  tick.value;
+
+  // Get raw events
   const events = getFilteredEvents.value;
-  const bounds = getTimeRangeBounds.value;
+
+  // Calculate fresh time bounds (not cached)
+  const now = Date.now();
+  const duration = currentConfig.value.duration;
+  const bounds = { start: now - duration, end: now };
 
   // Set time range for X-axis positioning
   renderer.setTimeRange(bounds.start, bounds.end);
@@ -262,6 +287,10 @@ const render = () => {
     }
   });
 
+  // Force canvas update by resizing and recalculating layout
+  renderer.resize(getDimensions());
+
+
   // Render the swim lane
   renderer.clear();
   renderer.drawBackground();
@@ -271,12 +300,6 @@ const render = () => {
 
   // Mark as clean after rendering
   isDirty.value = false;
-};
-
-const animateNewEvent = (x: number, y: number) => {
-  // Animation temporarily disabled - pulse effect not yet implemented in SwimLaneRenderer
-  // Will be added in Task 10 (Interactions)
-  render();
 };
 
 const handleResize = () => {
@@ -312,14 +335,6 @@ const processNewEvents = () => {
       event.session_id.slice(0, 8) === targetSession
     ) {
       addEvent(event);
-
-      // Trigger pulse animation for new event
-      if (renderer && canvas.value) {
-        const chartArea = getDimensions();
-        const x = chartArea.width - chartArea.padding.right - 10;
-        const y = chartArea.height / 2;
-        animateNewEvent(x, y);
-      }
     }
   });
 
@@ -341,6 +356,25 @@ watch(() => props.events, processNewEvents, { deep: true, immediate: true });
 watch(() => props.timeRange, (newRange) => {
   setTimeRange(newRange);
   isDirty.value = true; // Mark dirty to trigger re-render
+}, { immediate: true });
+
+// Watch for new events to trigger auto-scroll
+watch(() => props.events.length, (newLength, oldLength) => {
+  if (newLength > oldLength) {
+    isDirty.value = true;
+  }
+});
+
+// Watch for height changes to reinitialize renderer
+watch(chartHeight, () => {
+  if (canvas.value && chartContainer.value) {
+    // Reinitialize renderer with new dimensions
+    const dimensions = getDimensions();
+    const config = getActiveConfig();
+
+    renderer = createSwimLaneRenderer(canvas.value, dimensions, config);
+    isDirty.value = true;
+  }
 }, { immediate: true });
 
 const handleMouseMove = (event: MouseEvent) => {
@@ -415,6 +449,12 @@ onMounted(() => {
   // Initial render
   render();
 
+  // Force re-render every 200ms by updating tick (forces time bounds recalc)
+  dirtyInterval = window.setInterval(() => {
+    tick.value++;
+    isDirty.value = true;
+  }, 1000);
+
   // Start optimized render loop with FPS limiting and dirty flag
   let lastRenderTime = 0;
   const targetFPS = 30;
@@ -423,22 +463,24 @@ onMounted(() => {
   const renderLoop = (currentTime: number) => {
     const deltaTime = currentTime - lastRenderTime;
 
-    // Only render if dirty and enough time has passed
-    if (isDirty.value && deltaTime >= frameInterval) {
+    // Always render if dirty, or periodically for auto-scroll
+    const shouldRender = isDirty.value || deltaTime >= frameInterval * 200; // Auto-scroll every 10 frames
+
+    if (shouldRender && deltaTime >= frameInterval) {
       render();
       lastRenderTime = currentTime - (deltaTime % frameInterval);
     }
 
     requestAnimationFrame(renderLoop);
   };
+
   requestAnimationFrame(renderLoop);
+
 });
+
 
 onUnmounted(() => {
   cleanupEventData();
-
-  // No stopAnimation method needed for SwimLaneRenderer
-  // (no persistent animations like in ChartRenderer)
 
   if (resizeObserver && chartContainer.value) {
     resizeObserver.disconnect();
@@ -446,6 +488,10 @@ onUnmounted(() => {
 
   if (animationFrame) {
     cancelAnimationFrame(animationFrame);
+  }
+
+  if (dirtyInterval) {
+    clearInterval(dirtyInterval);
   }
 
   themeObserver.disconnect();
@@ -459,7 +505,8 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  margin-bottom: 12px;  /* Add spacing to prevent label overlap with next swimlane */
+  margin-bottom: 12px;
+  /* Add spacing to prevent label overlap with next swimlane */
 }
 
 .lane-header {
@@ -574,13 +621,8 @@ onUnmounted(() => {
   width: 100%;
   border: 1px solid var(--theme-border-primary);
   border-radius: 6px;
-  overflow-x: hidden;
-  overflow-y: auto;
-  max-height: 400px;
+  overflow: hidden;
   background: var(--theme-bg-tertiary);
-  /* Custom scrollbar */
-  scrollbar-width: thin;
-  scrollbar-color: var(--theme-primary) transparent;
 }
 
 .chart-wrapper::-webkit-scrollbar {

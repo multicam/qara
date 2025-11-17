@@ -3,3 +3,4 @@ events.db
 events.db-*
 events_backup.db
 *.log
+themes.db*

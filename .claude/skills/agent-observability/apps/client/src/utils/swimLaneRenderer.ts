@@ -71,8 +71,7 @@ export class SwimLaneRenderer {
   private static readonly LABEL_COLOR = '#ffffff';
   private static readonly LABEL_FONT = 'bold 11px system-ui, -apple-system, sans-serif';
   private static readonly SESSION_FONT = 'bold 9px monospace';
-  private static readonly TIME_LABEL_FONT = '11px system-ui, -apple-system, sans-serif';
-  private static readonly TIME_LABEL_OFFSET_Y = 5;
+  private static readonly TIME_LABEL_FONT = '10px sans-serif';
 
   private ctx: CanvasRenderingContext2D;
   private dimensions: SwimLaneDimensions;
@@ -385,9 +384,6 @@ export class SwimLaneRenderer {
     this.ctx.globalAlpha = 1.0;
   }
 
-  /**
-   * Draw time labels on X-axis
-   */
   drawTimeLabels(timeRange: string): void {
     const chartArea = this.getChartArea();
     const labels = this.getTimeLabels(timeRange);
@@ -419,7 +415,7 @@ export class SwimLaneRenderer {
 
     labels.forEach((label, index) => {
       const x = chartArea.x + index * spacing;
-      const y = chartArea.y + chartArea.height + SwimLaneRenderer.TIME_LABEL_OFFSET_Y;
+      const y = chartArea.y + chartArea.height + 5;
       this.ctx.fillText(label, x, y);
     });
   }

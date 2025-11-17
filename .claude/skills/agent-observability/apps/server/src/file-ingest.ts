@@ -221,6 +221,51 @@ function storeEvents(newEvents: HookEvent[]): void {
 }
 
 /**
+ * Load all existing events from today's file into memory for initial WebSocket sends
+ */
+function loadExistingEvents(filePath: string): void {
+  if (!existsSync(filePath)) {
+    console.log(`⚠️  Today's file does not exist yet: ${filePath}`);
+    return;
+  }
+
+  try {
+    const content = readFileSync(filePath, 'utf-8');
+    if (!content.trim()) {
+      console.log(`📂 Today's file is empty`);
+      return;
+    }
+
+    const lines = content.trim().split('\n');
+    const loadedEvents: HookEvent[] = [];
+
+    for (const line of lines) {
+      if (!line.trim()) continue;
+      try {
+        const event = JSON.parse(line);
+        if (isValidHookEvent(event)) {
+          // Add auto-incrementing ID for UI
+          event.id = events.length + loadedEvents.length + 1;
+          loadedEvents.push(event);
+        }
+      } catch (err) {
+        console.warn(`⚠️  Failed to parse event line: ${err}`);
+      }
+    }
+
+    // Store in memory (keep most recent MAX_EVENTS_IN_MEMORY)
+    const maxEvents = MAX_EVENTS_IN_MEMORY;
+    events.push(...loadedEvents.slice(-maxEvents));
+    console.log(`📂 Loaded ${loadedEvents.length} existing events into memory (kept last ${events.length})`);
+
+    // Set file position to END so we only read NEW events from now on
+    filePositions.set(filePath, content.length);
+  } catch (error) {
+    console.error(`❌ Failed to load existing events from ${filePath}:`, error);
+  }
+}
+
+/**
  * Watch a file for changes and stream new events
  */
 function watchFile(filePath: string): void {
@@ -286,9 +331,15 @@ export function startFileIngestion(callback?: (events: HookEvent[]) => void): vo
     onEventsReceived = callback;
   }
 
-  // Watch today's file
+  // Determine today's file path
   const todayFile = getTodayEventsFile();
   console.log(`📅 Today's file: ${todayFile}`);
+
+  // Load existing events from today's file into memory (for initial WebSocket sends)
+  console.log('📂 Loading existing events from today\'s file...');
+  loadExistingEvents(todayFile);
+
+  // Watch today's file for NEW events
   watchFile(todayFile);
 
   // Check for new day's file every hour
