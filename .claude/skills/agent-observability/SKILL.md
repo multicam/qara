@@ -27,8 +27,6 @@ description: |
 
 ## Installation
 
-See [SETUP.md](./SETUP.md) for complete installation instructions.
-
 **Quick Setup:**
 
 ```bash
@@ -208,7 +206,7 @@ Add to `~/.claude/settings.json` (see `settings.json.example` for full template)
 
 ## Credits
 
-**Inspired by [@indydevdan](https://github.com/indydevdan)**'s pioneering work on multi-agent observability for Claude Code.
+**Inspired by [@indydevdan](https://github.com/disler)**'s pioneering work on multi-agent observability for Claude Code.
 
 **Our implementation differs** by using filesystem-based event capture and in-memory streaming instead of SQLite database persistence. Both approaches have their merits! Check out indydevdan's work for a database-backed solution with full historical persistence.
 
