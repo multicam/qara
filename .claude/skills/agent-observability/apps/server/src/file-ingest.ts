@@ -15,7 +15,6 @@
 import { watch, existsSync } from 'fs';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { homedir } from 'os';
 import type { HookEvent } from './types';
 import { MAX_EVENTS_IN_MEMORY, HISTORY_DIR } from './config';
 
@@ -35,6 +34,10 @@ const VALID_EVENT_TYPES = [
   'PreCompact'
 ] as const;
 const events: HookEvent[] = [];
+
+// Basic ingestion health tracking
+let ingestionStartedAt: number | null = null;
+let lastEventTimestamp: number | null = null;
 
 // Track the last read position for each file
 const filePositions = new Map<string, number>();
@@ -114,8 +117,8 @@ function isValidHookEvent(event: any): event is HookEvent {
  * Get the path to today's all-events file
  */
 function getTodayEventsFile(): string {
-  // ALWAYS use ~/.claude/history for event data (NEVER PAI_DIR/history)
-  const historyDir = join(homedir(), '.claude', 'history');
+  // Use configured history directory for event data
+  const historyDir = HISTORY_DIR;
   const now = new Date();
   // Convert to Australia/Sydney timezone using Intl
   const formatter = new Intl.DateTimeFormat('en-AU', {
@@ -201,6 +204,9 @@ function storeEvents(newEvents: HookEvent[]): void {
   // Add to in-memory array
   events.push(...newEvents);
 
+  // Track when we most recently saw an event
+  lastEventTimestamp = Date.now();
+
   // Keep only last MAX_EVENTS
   if (events.length > MAX_EVENTS) {
     events.splice(0, events.length - MAX_EVENTS);
@@ -269,8 +275,11 @@ function watchFile(filePath: string): void {
  */
 export function startFileIngestion(callback?: (events: HookEvent[]) => void): void {
   console.log('🚀 Starting file-based event streaming (in-memory only)');
-  const historyDir = join(homedir(), '.claude', 'history');
+  const historyDir = HISTORY_DIR;
   console.log(`📂 Reading from: ${historyDir}/raw-outputs/`);
+
+  // Mark ingestion as started
+  ingestionStartedAt = Date.now();
 
   // Set the callback for event notifications
   if (callback) {
@@ -319,6 +328,17 @@ export function getFilterOptions() {
     source_apps: Array.from(sourceApps).sort(),
     session_ids: Array.from(sessionIds).slice(0, 100),
     hook_event_types: Array.from(hookEventTypes).sort()
+  };
+}
+
+/**
+ * Basic ingestion health for diagnostics
+ */
+export function getIngestionHealth() {
+  return {
+    ingestionStartedAt,
+    eventsInMemory: events.length,
+    lastEventTimestamp
   };
 }
 

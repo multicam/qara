@@ -37,8 +37,9 @@ export const MAX_SESSION_MAPPINGS = 1000;
 
 /**
  * WebSocket server port
+ * Can be overridden with OBS_SERVER_PORT environment variable
  */
-export const SERVER_PORT = 4000;
+export const SERVER_PORT = Number(process.env.OBS_SERVER_PORT || '4000');
 
 /**
  * Get the configured agent name

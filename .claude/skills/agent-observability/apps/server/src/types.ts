@@ -33,7 +33,8 @@ export interface HookEvent {
   payload: Record<string, any>;
   chat?: any[];
   summary?: string;
-  timestamp?: number;
+  timestamp: number;
+  timestamp_aedt: string;
   model_name?: string;
 
   // NEW: Optional HITL data
