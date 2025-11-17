@@ -20,65 +20,35 @@
           <Brain :size="14" :stroke-width="2.5" />
           <span class="text-xs font-bold">{{ formatModelName(modelName) }}</span>
         </div>
-        <div class="event-count-badge" @mouseover="hoveredEventCount = true" @mouseleave="hoveredEventCount = false"
+        <div class="event-count-badge"
           :title="`Total events in the last ${timeRange === '1m' ? '1 minute' : timeRange === '3m' ? '3 minutes' : '5 minutes'}`">
           <Zap :size="14" :stroke-width="2.5" class="flex-shrink-0" />
-          <span class="text-xs font-bold" :class="hoveredEventCount ? 'min-w-[65px]' : ''">
-            {{ hoveredEventCount ? `${totalEventCount} Events` : totalEventCount }}
+          <span class="text-xs font-bold">
+            {{ totalEventCount }} Events
           </span>
         </div>
-        <div class="tool-call-badge" @mouseover="hoveredToolCount = true" @mouseleave="hoveredToolCount = false"
+        <div class="tool-call-badge"
           :title="`Tool calls in the last ${timeRange === '1m' ? '1 minute' : timeRange === '3m' ? '3 minutes' : '5 minutes'}`">
           <Wrench :size="14" :stroke-width="2.5" class="flex-shrink-0" />
-          <span class="text-xs font-bold" :class="hoveredToolCount ? 'min-w-[75px]' : ''">
-            {{ hoveredToolCount ? `${toolCallCount} Tool Calls` : toolCallCount }}
+          <span class="text-xs font-bold">
+            {{ toolCallCount }} Tool Calls
           </span>
         </div>
         <div
           class="avg-time-badge flex items-center gap-1.5 px-2 py-2 bg-[var(--theme-bg-tertiary)] rounded-lg border border-[var(--theme-border-primary)] shadow-sm min-h-[28px]"
-          @mouseover="hoveredAvgTime = true" @mouseleave="hoveredAvgTime = false"
           :title="`Average time between events in the last ${timeRange === '1m' ? '1 minute' : timeRange === '3m' ? '3 minutes' : '5 minutes'}`">
           <Clock :size="16" :stroke-width="2.5" class="flex-shrink-0" />
-          <span class="text-sm font-bold text-[var(--theme-text-primary)]"
-            :class="hoveredAvgTime ? 'min-w-[90px]' : ''">
-            {{ hoveredAvgTime ? `Avg Gap: ${formatGap(agentEventTimingMetrics.avgGap)}` :
-              formatGap(agentEventTimingMetrics.avgGap) }}
+          <span class="text-sm font-bold text-[var(--theme-text-primary)]">
+            Avg Gap: {{ formatGap(agentEventTimingMetrics.avgGap) }}
           </span>
         </div>
-        <div class="flex items-center justify-between mb-3">
-          <div>
-            <span class="font-semibold text-sm">{{ appName }}</span>
-            <span class="text-xs text-gray-500 ml-2">{{ sessionId }}</span>
-            <span class="text-xs text-gray-400 ml-2">{{ modelName || 'Unknown model' }}</span>
-          </div>
-          <div class="flex items-center gap-2 text-xs text-gray-500">
-            <span class="cursor-pointer hover:text-gray-700 transition-colors"
-              :class="{ 'text-blue-600 hover:text-blue-700': hoveredEventCount }" @mouseenter="hoveredEventCount = true"
-              @mouseleave="hoveredEventCount = false" title="Total events">
-              <Brain :size="12" :stroke-width="2.5" />
-              {{ totalEventCount }}
-            </span>
-            <span class="cursor-pointer hover:text-gray-700 transition-colors"
-              :class="{ 'text-blue-600 hover:text-blue-700': hoveredToolCount }" @mouseenter="hoveredToolCount = true"
-              @mouseleave="hoveredToolCount = false" title="Tool calls">
-              <Wrench :size="12" :stroke-width="2.5" />
-              {{ toolCallCount }}
-            </span>
-            <span class="cursor-pointer hover:text-gray-700 transition-colors"
-              :class="{ 'text-blue-600 hover:text-blue-700': hoveredAvgTime }" @mouseenter="hoveredAvgTime = true"
-              @mouseleave="hoveredAvgTime = false" title="Average time between events">
-              <Clock :size="12" :stroke-width="2.5" />
-              {{ formatGap(agentEventTimingMetrics.avgGap) }}
-            </span>
-          </div>
-          <button @click="emit('close')" class="close-btn" title="Remove this swim lane">
-            <X :size="16" :stroke-width="2.5" />
-          </button>
-        </div>
+        <button @click="emit('close')" class="close-btn" title="Remove this swim lane">
+          <X :size="16" :stroke-width="2.5" />
+        </button>
       </div>
     </div>
-    <div ref="chartContainer" class="chart-wrapper">
-      <canvas ref="canvas" class="w-full h-in cursor-crosshair"
+    <div ref="chartContainer" class="chart-wrapper" :style="{ height: chartHeight + 'px' }">
+      <canvas ref="canvas" class="w-full cursor-crosshair" :style="{ height: chartHeight + 'px' }"
         @mousemove="handleMouseMove" @mouseleave="handleMouseLeave" role="img" :aria-label="chartAriaLabel"></canvas>
       <div v-if="tooltip.visible"
         class="absolute bg-gradient-to-r from-[var(--theme-primary)] to-[var(--theme-primary-dark)] text-white px-2 py-1.5 rounded-lg text-xs pointer-events-none z-10 shadow-lg border border-[var(--theme-primary-light)] font-bold drop-shadow-md"
@@ -122,28 +92,21 @@ const tick = ref(0); // Force reactivity updates
 
 const chartHeight = computed(() => {
   const events = getFilteredEvents.value;
-  const baseHeight = 100;
-  const minEventsForExpansion = 4;
+  const baseHeight = 120;
+  const minHeight = 80;
 
-  if (events.length <= minEventsForExpansion) {
-    return baseHeight;
+  if (events.length === 0) {
+    return minHeight;
   }
 
-  // Estimate rows needed (rough calculation - events can stack vertically)
-  // Each row can hold about 5-8 events depending on timing overlap
-  const estimatedRows = Math.ceil(events.length / 6);
-  const rowHeight = 32 + 8; // bubbleHeight + bubbleSpacing from config
-  const estimatedHeight = estimatedRows * rowHeight + 120; // Add padding
+  // Calculate height based on event count
+  // Use logarithmic scaling to prevent excessive growth with many events
+  const densityFactor = Math.log10(events.length + 1) * 30;
+  const calculatedHeight = baseHeight + densityFactor;
 
-  console.log('Estimated height:', estimatedHeight);
-  // Cap at reasonable maximum
-  return Math.min(baseHeight * 3, Math.max(baseHeight, estimatedHeight));
+  // No upper bound - let it grow as needed
+  return Math.max(minHeight, Math.round(calculatedHeight));
 });
-
-
-const hoveredEventCount = ref(false);
-const hoveredToolCount = ref(false);
-const hoveredAvgTime = ref(false);
 
 // Format gap time in ms to readable string (e.g., "125ms" or "1.2s")
 const formatGap = (gapMs: number): string => {
@@ -376,6 +339,7 @@ watch(chartHeight, () => {
     isDirty.value = true;
   }
 }, { immediate: true });
+
 
 const handleMouseMove = (event: MouseEvent) => {
   if (!canvas.value || !chartContainer.value || !renderer) return;

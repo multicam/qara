@@ -356,7 +356,6 @@ const processNewEvents = () => {
   // Process new events
   newEventsToProcess.forEach(event => {
     if (event.hook_event_type !== 'refresh' && event.hook_event_type !== 'initial' && isEventFiltered(event)) {
-      console.log(`✅ LivePulseChart adding event: ${event.hook_event_type}`);
       addEvent(event);
 
       // Trigger pulse animation for new event
