@@ -57,7 +57,7 @@ Ensure capture-all-events hook is active in settings.json:
 ### 5. Verify Capture
 
 - Execute some agent tasks
-- Check dashboard at http://localhost:5172
+- Check dashboard at http://localhost:5173
 - Verify events are being captured
 
 ### 6. Monitor Activity
