@@ -1,764 +1,461 @@
-# PAI CLI Tools Suite
+# PAI Tools Inventory
 
-**Modern, fast, and intelligent command-line tools for developers**
+**Comprehensive directory of all tools used in the Personal AI Infrastructure (PAI) system**
 
-This guide covers the CLI tools that PAI recommends and helps you install. These tools are faster, smarter, and more user-friendly than their traditional Unix counterparts.
+This document provides a complete inventory of tools across the PAI ecosystem, organized by category with quick reference information and links to detailed documentation.
+
+**Last Updated**: 2025-11-18
+**Research Document**: `/thoughts/global/shared/research/2025-11-18-pai-tools-comprehensive-inventory.md`
 
 ---
 
 ## 📋 Table of Contents
 
-- [Overview](#overview)
-- [The Three Pillars](#the-three-pillars)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Detailed Usage](#detailed-usage)
-- [Comparison Tables](#comparison-tables)
-- [Integration with PAI](#integration-with-pai)
-- [Pro Tips](#pro-tips)
+- [Core Infrastructure](#core-infrastructure)
+- [Modern CLI Tools](#modern-cli-tools)
+- [Development & Integration](#development--integration)
+- [Language Runtimes & Package Managers](#language-runtimes--package-managers)
+- [Quick Reference Matrix](#quick-reference-matrix)
+- [Installation Quick Start](#installation-quick-start)
 
 ---
 
-## Overview
+## Core Infrastructure
 
-PAI uses a modern CLI tool stack that provides:
+### Git - Version Control System
 
-- **Speed**: Parallel execution, optimized algorithms
-- **Intelligence**: Respects .gitignore, smart defaults
-- **User Experience**: Colored output, intuitive syntax
-- **Consistency**: All tools share similar design philosophy
+**Purpose**: Distributed version control for tracking code changes and collaboration
 
-### The Modern Stack
+**Key Benefits**: Industry standard, offline work, cryptographic integrity, flexible branching
 
-| Traditional | Modern | Purpose | Speed Improvement |
-|-------------|--------|---------|-------------------|
-| `find` | `fd` | File search | 5-10x faster |
-| `grep` | `ripgrep (rg)` | Text search | 10-50x faster |
-| N/A | `ast-grep` | Code search | AST-aware |
+**Installation**: `brew install git` (usually pre-installed)
+
+**PAI Usage**: Version control for PAI directories, skills, commands, configuration
+
+**Security Note**: Always verify remote with `git remote -v` before commits. ~/.claude/ may contain sensitive data.
 
 ---
 
-## The Three Pillars
+### Homebrew - Package Manager
 
-### 🔍 fd - Modern File Finder
+**Purpose**: Package management for macOS and Linux
 
-**What it does:** Finds files by name, path, or attributes
+**Key Benefits**: Cross-platform consistency, user-level installation, automated dependencies
 
-**Why it's better:**
-
-- 5-10x faster than `find` (parallel execution)
-- Respects .gitignore by default (no clutter)
-- Colored output (easier to scan)
-- Simpler syntax: `fd pattern` vs `find -name pattern`
-- Smart defaults (excludes hidden files)
-
-**Install:**
-
+**Installation**:
 ```bash
-cargo install fd-find
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
 
-**Quick example:**
-
-```bash
-# Find all TypeScript files
-fd -e ts
-
-# Find files named "config"
-fd config
-
-# Include hidden files
-fd -H config
-```
+**PAI Usage**: Primary package manager for setup script, installs Bun and other tools
 
 ---
 
-### ⚡ ripgrep (rg) - Lightning Fast Text Search
+### Bun - JavaScript Runtime
 
-**What it does:** Searches file contents for patterns
+**Purpose**: All-in-one JavaScript runtime, package manager, bundler, test runner
 
-**Why it's better:**
+**Key Benefits**: 15x faster than npm, native TypeScript/JSX support, sub-40ms startup, 70K+ RPS
 
-- 10-50x faster than `grep` (parallelized, optimized)
-- Respects .gitignore by default (searches what matters)
-- Skips binary files automatically (no garbage output)
-- Unicode support out of the box
-- Beautiful colored output with context
-
-**Install:**
-
+**Installation**:
 ```bash
-cargo install ripgrep
+curl -fsSL https://bun.sh/install | bash
+# or: brew install oven-sh/bun/bun
 ```
 
-**Quick example:**
-
-```bash
-# Search for "TODO" in current directory
-rg TODO
-
-# Case-insensitive search
-rg -i error
-
-# Search only JavaScript files
-rg -t js console.log
-
-# Show 3 lines of context
-rg -C 3 function
-```
+**PAI Preference**: Replaces npm + webpack + Babel + Jest, aligns with TypeScript-first approach
 
 ---
 
-### 🌳 ast-grep - Semantic Code Search
+### Cargo/Rust - Rust Toolchain
 
-**What it does:** Searches and refactors code by structure, not just text
+**Purpose**: Rust programming language toolchain and package manager
 
-**Why it's better:**
+**Key Benefits**: Memory-safe, blazing-fast performance, zero-cost abstractions, static binaries
 
-- AST-based (understands code structure)
-- Language-aware (ignores formatting differences)
-- Multi-language (TypeScript, JavaScript, Python, Rust, Go, etc.)
-- Can rewrite code while preserving structure
-- Pattern-based (use code patterns instead of regex)
-
-**Install:**
-
+**Installation**:
 ```bash
-cargo install ast-grep
-```
-
-**Quick example:**
-
-```bash
-# Find all console.log calls
-ast-grep --pattern 'console.log($$$)'
-
-# Find function definitions
-ast-grep -p 'function $NAME($$$) {}'
-
-# Refactor: replace old() with new()
-ast-grep --pattern 'old($A)' --rewrite 'new($A)'
-```
-
----
-
-## Installation
-
-### Automated Installation (Recommended)
-
-PAI's setup script installs everything for you:
-
-```bash
-cd /home/jean-marc/qara/.claude
-./setup.sh
-```
-
-The script will:
-
-1. Check if Rust/Cargo is installed
-2. Offer to install Cargo if missing
-3. Install fd, ripgrep, and ast-grep via Cargo
-4. Verify installations
-
-### Manual Installation
-
-If you prefer to install manually:
-
-```bash
-# Install Rust and Cargo first
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source $HOME/.cargo/env
+```
 
-# Source cargo environment
+**PAI Usage**: Installs fd, ripgrep, ast-grep, bat via `cargo install`
+
+**Why**: Cross-platform consistency, latest versions, user-level install, no dependencies
+
+---
+
+## Modern CLI Tools
+
+### fd (fd-find) - Fast File Finder
+
+**Purpose**: Modern alternative to Unix `find`, 13-23x faster
+
+**Key Features**: Parallel execution, .gitignore aware, colored output, smart case, regex support
+
+**Installation**: `cargo install fd-find` or `brew install fd`
+
+**Why PAI Uses**: Speed for AI agents, reduced noise, simplified commands
+
+**Detailed Docs**: [`~/.claude/documentation/CLI-TOOLS.md`](documentation/CLI-TOOLS.md)
+
+**Common Usage**:
+```bash
+fd pattern                    # Simple search
+fd -e ts                      # Find TypeScript files
+fd -H secret                  # Include hidden files
+```
+
+---
+
+### ripgrep (rg) - Lightning Text Search
+
+**Purpose**: Fast text search tool, 10-50x faster than `grep`
+
+**Key Features**: Parallelized, .gitignore aware, Unicode support, skips binaries, file type filtering
+
+**Installation**: `cargo install ripgrep` or `brew install ripgrep`
+
+**Why PAI Uses**: Critical for AI codebase analysis, reliable filtering, Claude Code integration
+
+**Detailed Docs**: [`~/.claude/documentation/CLI-TOOLS.md`](documentation/CLI-TOOLS.md)
+
+**Common Usage**:
+```bash
+rg "pattern"                  # Search current directory
+rg -i error                   # Case insensitive
+rg -t js console.log          # Search JavaScript files
+```
+
+---
+
+### ast-grep - Semantic Code Search
+
+**Purpose**: AST-aware code search and refactoring
+
+**Key Features**: Structural search, multi-language, format-independent, safe refactoring, custom linting
+
+**Installation**: `cargo install ast-grep`
+
+**Why PAI Uses**: Semantic precision, eliminates false positives, structural transformations
+
+**Detailed Docs**: [`~/.claude/documentation/CLI-TOOLS.md`](documentation/CLI-TOOLS.md)
+
+**Common Usage**:
+```bash
+ast-grep --pattern 'console.log($$$)'              # Find all console.log
+ast-grep -p 'old($A)' -r 'new($A)'                # Refactor code
+```
+
+---
+
+### bat - Enhanced File Viewer
+
+**Purpose**: Modern `cat` alternative with syntax highlighting
+
+**Key Features**: Syntax highlighting, Git integration, line numbers, automatic paging, themes
+
+**Installation**: `cargo install bat` or `brew install bat`
+
+**Why PAI Uses**: Improved code readability, integrated Git context, better developer UX
+
+**Detailed Docs**: [`~/.claude/documentation/CLI-TOOLS.md`](documentation/CLI-TOOLS.md)
+
+**Common Usage**:
+```bash
+bat file.txt                  # View with highlighting
+bat --theme=Github script.py  # Use specific theme
+bat --line-range 10:50 file   # View specific lines
+```
+
+---
+
+## Development & Integration
+
+### GitHub CLI (gh)
+
+**Purpose**: Official command-line tool for GitHub platform operations
+
+**Key Features**: PR management, issue tracking, repo operations, Actions integration, release management
+
+**Installation**: `brew install gh`
+
+**Why PAI Uses**: Terminal-native GitHub ops, AI agent automation, context-aware operations
+
+**Common Usage**:
+```bash
+gh auth login
+gh pr create --title "Feature" --body "Description"
+gh pr checkout 123
+gh workflow run "CI Pipeline"
+```
+
+---
+
+### markdownlint-cli2
+
+**Purpose**: Markdown linting and validation
+
+**Key Features**: Comprehensive rules, auto-fix, flexible config, custom rules, in-file control
+
+**Installation**: `bun add -g markdownlint-cli2`
+
+**PAI Config**: `/home/jean-marc/qara/.markdownlint.json` (120 char lines, language-specified blocks)
+
+**Common Usage**:
+```bash
+markdownlint-cli2 path/to/file.md      # Lint file
+markdownlint-cli2 --fix file.md        # Auto-fix issues
+markdownlint-cli2 .claude/documentation/*.md  # Lint all docs
+```
+
+---
+
+### curl - HTTP Client
+
+**Purpose**: Universal command-line tool for data transfer with URLs
+
+**Key Features**: 20+ protocols, all HTTP methods, multiple auth, custom headers, debugging
+
+**Installation**: Pre-installed on most systems
+
+**PAI Usage**: Installation scripts, API calls (Perplexity), notifications, data pipelines, health checks
+
+**Common Usage**:
+```bash
+curl -X POST https://api.example.com -H "Content-Type: application/json" -d '{"key":"value"}'
+curl -u user:pass https://api.example.com
+curl -s https://example.com | fabric -p summarize
+```
+
+---
+
+### Fabric - AI Pattern System
+
+**Purpose**: 242+ pre-engineered AI prompt templates for task automation
+
+**Key Features**: Model-agnostic, threat modeling, summarization, analysis, pattern composability
+
+**Installation**: See Fabric repository
+
+**PAI Integration**: Intelligent pattern selection via fabric skill, workflow automation
+
+**Common Use Cases**:
+- Threat modeling and security analysis
+- Content summarization and extraction
+- Code analysis and improvement
+- Technical writing assistance
+
+---
+
+## Language Runtimes & Package Managers
+
+### TypeScript/ts-node
+
+**Purpose**: Typed superset of JavaScript with JIT execution
+
+**Key Features**: Static types, type inference, modern features, compile-time error catching
+
+**Installation**: `bun add -d typescript ts-node @types/node`
+
+**Why PAI Prefers**: Error prevention, maintainability, safer refactoring, stack consistency
+
+**PAI Usage**: Git hooks, build scripts, PAI hooks system, automation
+
+---
+
+### Python
+
+**Purpose**: High-level, interpreted, general-purpose language
+
+**Key Strengths**: Easy to learn, large ecosystem, AI/ML dominance, multi-paradigm
+
+**Version**: Python 3.11.13 (PAI system)
+
+**Installation**: Pre-installed on most systems
+
+**PAI Usage**: Hooks and utilities (`/home/jean-marc/qara/.claude/hooks/utils/`), LLM integration, TTS
+
+---
+
+### uv - Fast Python Package Manager
+
+**Purpose**: Rust-based ultra-fast pip replacement
+
+**Key Benefits**: 10-100x faster than pip, unified tool, robust lock files, script execution format
+
+**Installation**:
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+**PAI Usage Pattern**:
+```python
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.8"
+# dependencies = ["anthropic", "python-dotenv"]
+# ///
+```
+
+---
+
+### Playwright
+
+**Purpose**: Cross-browser automation and testing framework
+
+**Key Features**: Chromium/WebKit/Firefox support, auto-wait, network mocking, screenshots, mobile emulation
+
+**Installation**: `bun add -D @playwright/test`
+
+**PAI Usage**: Designer agent visual testing, UI/UX validation, Playwright MCP tools integration
+
+---
+
+## Quick Reference Matrix
+
+| Tool | Category | Speed vs Traditional | PAI Priority | Installation |
+|------|----------|---------------------|--------------|--------------|
+| **Git** | Core | N/A | Critical | Pre-installed / brew |
+| **Homebrew** | Core | N/A | Critical | curl script |
+| **Bun** | Core | 15x (vs npm) | High | curl / brew |
+| **Cargo/Rust** | Core | N/A | High | rustup script |
+| **fd** | CLI | 13-23x (vs find) | High | cargo / brew |
+| **ripgrep** | CLI | 10-50x (vs grep) | High | cargo / brew |
+| **ast-grep** | CLI | AST-aware | Medium | cargo |
+| **bat** | CLI | Visual enhancement | Medium | cargo / brew |
+| **gh** | Dev | N/A | Medium | brew |
+| **markdownlint** | Dev | N/A | Medium | bun |
+| **curl** | Dev | N/A | Medium | Pre-installed |
+| **Fabric** | Dev | N/A | Medium | See docs |
+| **TypeScript** | Runtime | N/A | High | bun |
+| **Python** | Runtime | N/A | Medium | Pre-installed |
+| **uv** | Runtime | 10-100x (vs pip) | Medium | curl script |
+| **Playwright** | Dev | N/A | Low | bun |
+
+---
+
+## Installation Quick Start
+
+### Complete PAI Setup
+
+```bash
+# 1. Run PAI setup script (installs everything)
+cd ~/.claude && ./setup.sh
+
+# 2. Or manual installation in order:
+
+# Install Homebrew (if on macOS/Linux)
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# Install Bun
+brew install oven-sh/bun/bun
+
+# Install Rust/Cargo
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 source $HOME/.cargo/env
 
-# Install the tools
-cargo install fd-find
-cargo install ripgrep
-cargo install ast-grep
+# Install modern CLI tools
+cargo install fd-find ripgrep ast-grep bat
+
+# Install GitHub CLI
+brew install gh
+
+# Install markdownlint
+bun add -g markdownlint-cli2
+
+# Install uv (Python package manager)
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-### Verify Installation
+### Verification Commands
 
 ```bash
-fd --version       # Should show: fd x.x.x
-rg --version       # Should show: ripgrep x.x.x
-ast-grep --version # Should show: ast-grep x.x.x (or sg)
+# Check all tools installed
+git --version
+brew --version
+bun --version
+cargo --version
+fd --version
+rg --version
+ast-grep --version
+bat --version
+gh --version
+markdownlint-cli2 --version
+curl --version
+python --version
+uv --version
 ```
 
 ---
 
-## Quick Start
+## Tool Selection Guidelines
 
-### File Search with fd
+### When to Use Which Tool
 
-```bash
-# Basic search
-fd pattern                    # Find files matching pattern
+**File Search**:
+- Files by name/path → `fd`
+- Text content → `ripgrep` (rg)
+- Code structure → `ast-grep`
+- View files → `bat`
 
-# By extension
-fd -e js                      # Find all .js files
-fd -e ts -e tsx               # Find TypeScript files
+**Package Management**:
+- JavaScript/TypeScript → `bun`
+- Rust tools → `cargo`
+- Python packages → `uv`
+- System packages → `brew`
 
-# By type
-fd -t f pattern               # Files only
-fd -t d pattern               # Directories only
+**Automation**:
+- TypeScript → Build scripts, git hooks, PAI hooks
+- Python → Utilities, LLM integration, TTS
+- Shell → Simple automation, curl scripts
 
-# Including hidden/ignored
-fd -H pattern                 # Include hidden files
-fd -I pattern                 # Don't respect .gitignore
-
-# With depth control
-fd -d 2 pattern               # Max depth of 2 levels
-```
-
-### Text Search with ripgrep
-
-```bash
-# Basic search
-rg "pattern"                  # Search in current directory
-
-# Case handling
-rg -i "pattern"               # Case insensitive
-rg -s "Pattern"               # Case sensitive (default)
-
-# Output control
-rg -l "pattern"               # List filenames only
-rg -n "pattern"               # Show line numbers (default)
-rg -C 3 "pattern"             # Show 3 lines of context
-
-# File type filtering
-rg -t js "pattern"            # Search only JavaScript files
-rg -T js "pattern"            # Exclude JavaScript files
-rg -t rust -t python "TODO"   # Multiple types
-
-# Advanced
-rg --hidden "pattern"         # Include hidden files
-rg --no-ignore "pattern"      # Don't respect .gitignore
-rg -v "pattern"               # Invert match (exclude)
-```
-
-### Code Search with ast-grep
-
-```bash
-# Find patterns
-ast-grep --pattern 'console.log($$$)'              # Any console.log
-ast-grep -p 'function $NAME($$$) {}'              # Function declarations
-ast-grep -p 'import $A from "$B"'                 # Import statements
-
-# Short alias (sg)
-sg -p 'console.log($$$)'                          # Same as above
-
-# Refactoring
-ast-grep --pattern 'old($A)' --rewrite 'new($A)'  # Replace pattern
-
-# Language-specific
-ast-grep -l typescript -p 'const $X = $Y'         # TypeScript only
-ast-grep -l python -p 'def $NAME($$$):'           # Python only
-
-# Rule files (for complex patterns)
-sg scan --rule rule.yml                           # Use rule file
-```
+**GitHub Operations**:
+- CLI → `gh` (PRs, issues, workflows)
+- Version control → `git` (commits, branches)
 
 ---
 
-## Detailed Usage
+## Additional Resources
 
-### fd - Advanced Patterns
+### Detailed Documentation
 
-**Search by name:**
+- **CLI Tools Guide**: `~/.claude/documentation/CLI-TOOLS.md` (fd, ripgrep, ast-grep, bat)
+- **Fabric Patterns**: `~/.claude/documentation/fabric-patterns-reference.md`
+- **Hook System**: `~/.claude/documentation/hook-system.md`
+- **Agent System**: `~/.claude/documentation/agent-system.md`
 
-```bash
-fd config                     # Contains "config"
-fd '^config'                  # Starts with "config"
-fd 'config$'                  # Ends with "config"
-fd '^test.*\.ts$'            # Regex: test*.ts files
-```
+### PAI Configuration
 
-**Excluding patterns:**
+- **Setup Script**: `.claude/setup.sh` - Automated installation
+- **Global Preferences**: `.claude/PAI.md` - TypeScript > Python, Bun > npm
+- **Stack Preferences**: `.claude/skills/CORE/SKILL.md` - CLI tool preferences
 
-```bash
-fd -E node_modules pattern   # Exclude node_modules
-fd -E '*.test.*' -e ts       # Exclude test files
-```
+### Research
 
-**Execute commands:**
-
-```bash
-fd -e js -x prettier --write # Format all JS files
-fd -t f -x chmod 644         # Set permissions on files
-```
-
-**Integration with other tools:**
-
-```bash
-fd -e md | xargs wc -l       # Count lines in markdown files
-fd -e ts | xargs rg TODO     # Find TODOs in TypeScript files
-```
+- **Comprehensive Inventory**: `/thoughts/global/shared/research/2025-11-18-pai-tools-comprehensive-inventory.md`
+- **16 parallel gemini-researcher agents** conducted deep research on each tool
+- **Multi-angle analysis** covering purpose, features, installation, use cases, PAI integration
 
 ---
 
-### ripgrep - Advanced Patterns
+## Updates and Maintenance
 
-**Regex patterns:**
+**Adding New Tools**:
+1. Add entry to appropriate category section above
+2. Update Quick Reference Matrix
+3. Update Installation Quick Start if system-critical
+4. Document PAI-specific usage patterns
+5. Update research document in `/thoughts/global/shared/research/`
 
-```bash
-rg '\b(TODO|FIXME|HACK)\b'   # Find code comments
-rg '^import.*from'            # Lines starting with import
-rg '(error|warning):'         # Error or warning messages
-```
-
-**Multiline search:**
-
-```bash
-rg -U 'function.*\n.*return' # Multiline patterns
-```
-
-**Replace (preview only):**
-
-```bash
-rg -l 'old' | xargs sed -i 's/old/new/g'  # Unix
-```
-
-**Stats and counting:**
-
-```bash
-rg -c 'pattern'              # Count matches per file
-rg --stats 'pattern'         # Show search statistics
-```
-
-**Whitelist/blacklist:**
-
-```bash
-rg -g '*.ts' 'pattern'       # Only .ts files
-rg -g '!*.test.*' 'pattern'  # Exclude test files
-rg -g '!node_modules/**'     # Exclude directory
-```
+**Tool Version Updates**:
+- Modern CLI tools: `cargo install-update -a` (requires cargo-update)
+- JavaScript/TypeScript: `bun update`
+- Python packages: `uv pip list --outdated`
+- System tools: `brew upgrade`
 
 ---
 
-### ast-grep - Advanced Patterns
-
-**Metavariables:**
-
-```bash
-# $$ - single AST node
-# $$$ - multiple AST nodes
-# $A, $B, $NAME - named captures
-
-ast-grep -p 'function $NAME($$$) { $$$ }' # Function body
-ast-grep -p '$OBJ.$METHOD($$$)'           # Method calls
-```
-
-**Complex refactoring:**
-
-```bash
-# Change from callbacks to promises
-ast-grep \
-  --pattern 'fs.readFile($PATH, function(err, data) { $$$ })' \
-  --rewrite 'fs.promises.readFile($PATH).then(data => { $$$ })'
-```
-
-**Rule files for complex searches:**
-
-Create `rule.yml`:
-
-```yaml
-id: no-console-log
-language: typescript
-rule:
-  pattern: console.log($$$)
-message: Avoid using console.log in production
-severity: warning
-```
-
-Run:
-
-```bash
-ast-grep scan --rule rule.yml
-```
-
-**Interactive mode:**
-
-```bash
-ast-grep run                 # Interactive refactoring
-```
-
----
-
-## Comparison Tables
-
-### fd vs find
-
-| Feature | fd | find |
-|---------|-----|------|
-| **Syntax** | `fd pattern` | `find -name pattern` |
-| **Speed** | 5-10x faster | Baseline |
-| **Ignores .gitignore** | ✅ Yes (default) | ❌ No |
-| **Colored output** | ✅ Yes | ❌ No |
-| **Hidden files** | Excluded by default | Included |
-| **Regex** | Default | `-regex` flag |
-| **Parallel** | ✅ Yes | ❌ No |
-| **POSIX standard** | ❌ No | ✅ Yes |
-
-**When to use find:**
-
-- Need POSIX compatibility
-- Complex boolean expressions
-- fd not available
-
----
-
-### ripgrep vs grep
-
-| Feature | ripgrep | grep |
-|---------|---------|------|
-| **Syntax** | `rg pattern` | `grep pattern` |
-| **Speed** | 10-50x faster | Baseline |
-| **Ignores .gitignore** | ✅ Yes (default) | ❌ No |
-| **Colored output** | ✅ Yes (default) | Flag required |
-| **Binary files** | Skips automatically | Shows garbage |
-| **Unicode** | ✅ Full support | Limited |
-| **Parallel** | ✅ Yes | ❌ No |
-| **Type filtering** | `-t js` (built-in) | Complex patterns |
-| **POSIX standard** | ❌ No | ✅ Yes |
-
-**When to use grep:**
-
-- Need POSIX compatibility
-- Specific grep features
-- ripgrep not available
-
----
-
-### ast-grep vs ripgrep
-
-| Feature | ast-grep | ripgrep |
-|---------|----------|---------|
-| **Search type** | Semantic (AST) | Text (regex) |
-| **Understands code** | ✅ Yes | ❌ No |
-| **Language-aware** | ✅ Yes | ❌ No |
-| **Format-independent** | ✅ Yes | ❌ No |
-| **Refactoring** | ✅ Yes | ❌ No |
-| **Speed** | Slower (parses AST) | Faster (text only) |
-| **Use case** | Code structure | Text content |
-
-**When to use ast-grep:**
-
-- Finding code patterns (functions, classes, imports)
-- Semantic refactoring
-- Language-aware searches
-- Need to preserve code structure
-
-**When to use ripgrep:**
-
-- Simple text searches
-- Searching strings, comments, docs
-- Need maximum speed
-- Pattern doesn't depend on syntax
-
----
-
-## Integration with PAI
-
-### PAI Preferences
-
-PAI's CORE skill defines these preferences (loaded automatically):
-
-```
-CLI Tools:
-• File search: fd over find
-• Text search: ripgrep (rg) over grep
-• Code search: ast-grep for semantic operations
-```
-
-### How PAI Uses These Tools
-
-1. **File Search**: When PAI needs to find files, it uses `fd`
-2. **Text Search**: When searching content, PAI uses `ripgrep`
-3. **Code Search**: For semantic code operations, PAI uses `ast-grep`
-
-### Claude Code Integration
-
-Claude Code has a built-in `Grep` tool that uses ripgrep under the hood. When you're in Claude Code, prefer using the Grep tool over bash commands for better integration.
-
----
-
-## Decision Tree
-
-Use this to choose the right tool:
-
-```
-Need to search for...
-
-├─ Files by NAME or PATH
-│  └─ Use: fd
-│     Example: fd -e ts config
-│
-├─ TEXT CONTENT (strings, comments, logs)
-│  └─ Use: ripgrep (rg)
-│     Example: rg -i "error"
-│
-└─ CODE STRUCTURE (functions, classes, patterns)
-   └─ Use: ast-grep
-      Example: ast-grep -p 'function $NAME($$$)'
-```
-
----
-
-## Pro Tips
-
-### 1. Combine Tools
-
-```bash
-# Find TypeScript files, then search for TODOs
-fd -e ts -x rg TODO
-
-# Find all JS files modified today
-fd -e js -t f --changed-within 1d
-
-# Search in specific file types only
-rg -t rust -t python "unsafe"
-```
-
-### 2. Aliases for Speed
-
-Add to your `~/.zshrc` or `~/.bashrc`:
-
-```bash
-# Quick searches
-alias f='fd'
-alias s='rg'
-alias g='rg'
-
-# Common patterns
-alias todos='rg -i "TODO|FIXME|HACK"'
-alias errors='rg -i "error|exception|fail"'
-
-# Find files modified recently
-alias recent='fd -t f --changed-within 1d'
-```
-
-### 3. Ignore Files
-
-All tools respect `.gitignore`, but you can also use:
-
-**Global ignore file:**
-
-```bash
-# Create ~/.rgignore for ripgrep
-echo "node_modules/" >> ~/.rgignore
-echo "*.log" >> ~/.rgignore
-
-# fd uses .fdignore
-echo "*.tmp" >> ~/.fdignore
-```
-
-### 4. Config Files
-
-**ripgrep config:** `~/.ripgreprc`
-
-```
---smart-case
---colors=match:fg:green
---colors=match:style:bold
---max-columns=150
-```
-
-**ast-grep config:** `~/.ast-grep/config.yml`
-
-```yaml
-ruleDirs:
-  - ./rules
-language: typescript
-```
-
-### 5. Performance Tuning
-
-```bash
-# ripgrep with threading control
-rg -j 4 pattern              # Use 4 threads
-
-# fd with max depth for speed
-fd -d 3 pattern              # Stop at depth 3
-```
-
----
-
-## Common Use Cases
-
-### Finding Configuration Files
-
-```bash
-# All config files
-fd config
-
-# Specific formats
-fd -e json -e yaml -e toml config
-
-# In specific directory
-fd config ~/.config/
-```
-
-### Code Refactoring
-
-```bash
-# Find all console.log statements
-ast-grep -p 'console.log($$$)'
-
-# Replace with logger
-ast-grep \
-  --pattern 'console.log($MSG)' \
-  --rewrite 'logger.info($MSG)'
-
-# Preview changes first
-ast-grep -p 'old($A)' --rewrite 'new($A)' --dry-run
-```
-
-### Security Auditing
-
-```bash
-# Find potential secrets
-rg -i '(api[_-]?key|password|secret|token).*=.*["\047]'
-
-# Find eval usage (dangerous)
-ast-grep -p 'eval($$$)'
-
-# Find SQL queries (potential injection)
-rg -i 'select.*from.*where'
-```
-
-### Dependency Analysis
-
-```bash
-# Find all imports
-ast-grep -p 'import $X from "$Y"'
-
-# Find specific dependency usage
-rg -t ts -t js 'from ["\047]lodash'
-
-# Find all package.json files
-fd package.json
-```
-
-### Documentation Search
-
-```bash
-# Find all markdown files with TODOs
-fd -e md -x rg TODO
-
-# Find specific documentation
-rg -t md "## Installation"
-
-# Find broken links in markdown
-rg -t md '\[.*\]\(http.*\)' --only-matching
-```
-
----
-
-## Troubleshooting
-
-### fd not finding files
-
-```bash
-# Check if .gitignore is hiding them
-fd -I pattern                # Ignore .gitignore
-
-# Check if files are hidden
-fd -H pattern                # Include hidden files
-
-# Check depth limit
-fd -d 10 pattern             # Increase depth
-```
-
-### ripgrep missing results
-
-```bash
-# Check ignore files
-rg --no-ignore pattern       # Skip all ignore files
-
-# Check if file type is excluded
-rg -t all pattern            # Search all file types
-
-# Check for binary files
-rg -a pattern                # Include binary files
-```
-
-### ast-grep not matching
-
-```bash
-# Check language
-ast-grep -l typescript -p 'pattern'
-
-# Use more general pattern
-ast-grep -p '$ANY'           # Match anything
-
-# Debug with verbose
-ast-grep -p 'pattern' --debug
-```
-
----
-
-## Resources
-
-### Official Documentation
-
-- **fd:** https://github.com/sharkdp/fd
-- **ripgrep:** https://github.com/BurntSushi/ripgrep
-- **ast-grep:** https://ast-grep.github.io/
-
-### Cheat Sheets
-
-- **fd cheat sheet:** https://github.com/sharkdp/fd#command-line-options
-- **ripgrep guide:** https://github.com/BurntSushi/ripgrep/blob/master/GUIDE.md
-- **ast-grep patterns:** https://ast-grep.github.io/guide/pattern-syntax.html
-
----
-
-## Quick Reference Card
-
-### fd
-
-```bash
-fd pattern           # Find by name
-fd -e ext           # By extension
-fd -t f             # Files only
-fd -H               # Include hidden
-fd -I               # Don't ignore
-fd -d N             # Max depth N
-fd -x cmd           # Execute command
-```
-
-### ripgrep
-
-```bash
-rg pattern          # Search content
-rg -i               # Case insensitive
-rg -l               # Filenames only
-rg -t type          # File type
-rg -T type          # Exclude type
-rg -C N             # N lines context
-rg --hidden         # Include hidden
-rg --no-ignore      # Don't ignore
-rg -v               # Invert match
-```
-
-### ast-grep
-
-```bash
-ast-grep -p 'code'  # Find pattern
-sg -p 'code'        # Short alias
-ast-grep --rewrite  # Replace
-ast-grep -l lang    # Language
-sg scan --rule      # Use rules
-ast-grep run        # Interactive
-```
-
----
-
-**Last Updated:** November 2025
-
-**Questions?** Check PAI documentation or file an issue on GitHub!
-
----
-
-*These tools make you faster, more productive, and happier.* ⚡
+**Maintained By**: PAI System
+**Last Research**: 2025-11-18
+**Tools Documented**: 16 core tools across 4 categories
