@@ -125,176 +125,59 @@ Configured in `~/.claude/settings.json`
 
 ## CLI Tool Preferences
 
-### File Search: fd over find
+### Quick Reference
 
-**Always prefer `fd` when searching for files.** Use `find` only when:
+PAI uses modern CLI tools that are faster and more user-friendly than traditional Unix tools:
 
-- fd is not available on the system
-- You need POSIX-specific features not in fd
-- Complex boolean expressions beyond fd's capabilities
+**File search: fd over find**
 
-**Why fd:**
+- Modern, fast (parallel execution), respects .gitignore by default
+- `fd pattern` vs `find -name pattern`
+- Use `find` only when: fd unavailable, need POSIX features, complex boolean expressions
 
-- Modern, fast (parallel execution), user-friendly
-- Respects .gitignore by default (VCS-aware)
-- Colored output by default
-- Simpler syntax: `fd pattern` vs `find -name pattern`
-- Smart defaults (excludes hidden files unless -H)
+**Text search: ripgrep (rg) over grep**
 
-**Quick Reference:**
+- 10-50x faster, respects .gitignore by default, skips binary files
+- `rg "pattern"` vs `grep -r "pattern"`
+- Use `grep` only when: ripgrep unavailable, need POSIX features
 
-```bash
-# fd (preferred)
-fd pattern                    # Simple search
-fd -H pattern                # Include hidden files
-fd -I pattern                # No ignore files (.gitignore)
-fd -t f pattern              # Files only
-fd -t d pattern              # Directories only
-fd -e ext pattern            # By extension
+**File viewing: bat over cat**
 
-# find (fallback)
-find -name pattern           # Basic search
-find -iname pattern          # Case insensitive
-find -type f -name pattern   # Files only
-```
+- Syntax highlighting, git integration, line numbers
+- `bat file.txt` vs `cat file.txt`
+- Use `cat` only when: bat unavailable, piping output (use `bat --plain`)
 
-### Text Search: ripgrep (rg) over grep
+**Code search: ast-grep for semantic operations**
 
-**Always prefer `ripgrep` (rg) for text content searches.** Use `grep` only as a fallback when ripgrep is unavailable.
+- AST-aware, understands code structure, not just text
+- `ast-grep --pattern 'console.log($$$)'` for semantic searches
+- Use for: code refactoring, finding patterns, language-aware searches
 
-**Why ripgrep:**
+### Decision Tree
 
-- Extremely fast (parallelized, optimized for speed)
-- Respects .gitignore by default (VCS-aware like fd)
-- Smart defaults (skips hidden files, binary files automatically)
-- Powerful regex with Unicode support
-- Better UX with colored output and context
+**Need to search for...**
 
-**When to use ripgrep:**
+- **Files by NAME or PATH** → Use `fd`
+- **TEXT CONTENT** (strings, comments) → Use `ripgrep` (rg)
+- **CODE STRUCTURE** (functions, classes) → Use `ast-grep`
+- **View FILE CONTENTS** → Use `bat`
 
-- Searching for literal strings or patterns in files (default choice)
-- Quick text searches across large codebases
-- When you need regex matching with performance
-- Finding patterns while respecting project ignore rules
+### Full Documentation
 
-**When to fall back to grep:**
+For comprehensive documentation including installation, detailed usage, examples, comparison tables,
+pro tips, and troubleshooting, see:
 
-- ripgrep is not available on the system
-- You need POSIX-specific grep features
-- Working on a system where you can't install tools
+📚 **CLI Tools Guide**: `~/.claude/documentation/CLI-TOOLS.md`
 
-**Quick Reference:**
+**Quick access:**
 
 ```bash
-# ripgrep (preferred)
-rg "pattern"                         # Search in current directory (respects .gitignore)
-rg "pattern" file.txt                # Search in specific file
-rg -i "pattern"                      # Case insensitive
-rg -n "pattern"                      # Show line numbers (default)
-rg -v "pattern"                      # Invert match (exclude)
-rg "pattern1|pattern2"               # Multiple patterns (regex OR)
-rg -l "pattern"                      # List filenames only
-rg --hidden "pattern"                # Include hidden files
-rg --no-ignore "pattern"             # Don't respect .gitignore
-rg -t js "pattern"                   # Search only JavaScript files
-rg -T js "pattern"                   # Exclude JavaScript files
-rg -C 3 "pattern"                    # Show 3 lines of context
+# Read the full documentation
+cat ~/.claude/documentation/CLI-TOOLS.md
 
-# grep (fallback)
-grep "pattern" file.txt              # Search in file
-grep -r "pattern" dir/               # Recursive search
-grep -i "pattern" file.txt           # Case insensitive
-grep -n "pattern" file.txt           # Show line numbers
+# Or in your editor
+code ~/.claude/documentation/CLI-TOOLS.md
 ```
-
-**Note:** Claude Code has a Grep tool built-in that uses ripgrep under the hood - prefer using that tool
-over bash commands when possible.
-
-### File Viewing: bat over cat
-
-**Always prefer `bat` for viewing file contents.** Use `cat` only as a fallback when bat is unavailable.
-
-**Why bat:**
-
-- Syntax highlighting (supports 200+ languages)
-- Git integration (shows modifications in gutter)
-- Automatic paging for long files
-- Line numbers by default
-- Non-printable character display
-- Better readability with themes
-
-**When to use bat:**
-
-- Viewing source code files (default choice)
-- Quick file inspection with syntax highlighting
-- Reviewing files with Git changes highlighted
-- Reading configuration files with better formatting
-
-**When to fall back to cat:**
-
-- bat is not available on the system
-- Piping output to another command (use `bat --plain` or `cat`)
-- Performance-critical scripts where syntax highlighting is unnecessary
-- Binary file inspection (though both should be avoided)
-
-**Quick Reference:**
-
-```bash
-# bat (preferred)
-bat file.txt                         # View file with syntax highlighting
-bat file.py file.js                  # View multiple files
-bat -n file.txt                      # Show line numbers (default)
-bat --plain file.txt                 # Plain output (like cat, for piping)
-bat -p file.txt                      # Plain output, short form
-bat -l python file.txt               # Force specific language
-bat --theme=ansi                     # Use specific theme
-bat -A file.txt                      # Show all characters (tabs, newlines)
-
-# cat (fallback)
-cat file.txt                         # View file
-cat file1.txt file2.txt              # View multiple files
-cat -n file.txt                      # Show line numbers
-```
-
-**Note:** Claude Code has a Read tool for reading files - prefer using that tool over bash commands when possible.
-
-### Code Search: ast-grep for Semantic Operations
-
-**Use `ast-grep` for semantic code search and refactoring.** This is AST-aware (Abstract Syntax Tree), not just text matching.
-
-**When to use ast-grep:**
-
-- Finding code patterns (function calls, class definitions, etc.)
-- Semantic code refactoring that understands syntax
-- Language-aware searches that ignore formatting differences
-- Complex code transformations that need to preserve structure
-
-**Why ast-grep:**
-
-- AST-based: Understands code structure, not just text
-- Multi-language: TypeScript, JavaScript, Python, Rust, Go, etc.
-- Pattern-based: Use code patterns instead of regex
-- Refactoring-safe: Can rewrite code while preserving structure
-
-**Quick Reference:**
-
-```bash
-# ast-grep
-ast-grep --pattern 'console.log($$$)' # Find all console.log calls
-ast-grep -p 'function $NAME($$$) {}' src/ # Find function definitions
-sg -p 'import $A from "$B"' # Find imports (sg is short alias)
-
-# Refactoring
-ast-grep --pattern 'old($A)' --rewrite 'new($A)' # Replace pattern
-sg scan --rule rule.yml # Use rule file for complex patterns
-```
-
-**Decision Tree:**
-
-- **File search** (find by name) → Use `fd`
-- **Text search** (find by content) → Use `ripgrep` (rg)
-- **File viewing** (display file contents) → Use `bat`
-- **Code search** (find by structure) → Use `ast-grep`
 
 ---
 

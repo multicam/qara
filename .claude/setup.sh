@@ -362,6 +362,13 @@ if [ "$NEEDS_INSTALL" = true ]; then
         fi
     fi
 
+    # ============================================
+    # CLI Tools Installation
+    # ============================================
+    # For full documentation on these tools, see:
+    # ~/.claude/documentation/CLI-TOOLS.md
+    # ============================================
+
     # Install Cargo if needed
     if [ "$HAS_CARGO" = false ]; then
         echo ""
