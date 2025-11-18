@@ -9,3 +9,5 @@ bun.lock
 
 history/
 thoughts/
+
+.venv/
