@@ -258,6 +258,130 @@ else
     HAS_BAT=false
 fi
 
+print_step "Checking for GitHub CLI (gh)..."
+if command_exists gh; then
+    gh_version=$(gh --version | head -n1 | awk '{print $3}')
+    print_success "GitHub CLI $gh_version is installed"
+    HAS_GH=true
+else
+    print_warning "GitHub CLI is not installed"
+    HAS_GH=false
+fi
+
+print_step "Checking for markdownlint-cli2..."
+if command_exists markdownlint-cli2; then
+    markdownlint_version=$(markdownlint-cli2 --version 2>/dev/null | head -n1)
+    print_success "markdownlint-cli2 $markdownlint_version is installed"
+    HAS_MARKDOWNLINT=true
+else
+    print_warning "markdownlint-cli2 is not installed"
+    HAS_MARKDOWNLINT=false
+fi
+
+print_step "Checking for curl..."
+if command_exists curl; then
+    curl_version=$(curl --version | head -n1 | awk '{print $2}')
+    print_success "curl $curl_version is installed"
+    HAS_CURL=true
+else
+    print_warning "curl is not installed"
+    HAS_CURL=false
+fi
+
+print_step "Checking for Fabric..."
+if command_exists fabric; then
+    fabric_version=$(fabric --version 2>/dev/null || echo "unknown")
+    print_success "Fabric is installed"
+    HAS_FABRIC=true
+else
+    print_info "Fabric is not installed (optional)"
+    HAS_FABRIC=false
+fi
+
+print_step "Checking for Gemini CLI..."
+if command_exists gemini; then
+    gemini_version=$(gemini --version 2>/dev/null | head -n1 || echo "unknown")
+    print_success "Gemini CLI is installed"
+    HAS_GEMINI=true
+else
+    print_info "Gemini CLI is not installed (optional)"
+    HAS_GEMINI=false
+fi
+
+print_step "Checking for Grok CLI..."
+if command_exists grok; then
+    grok_version=$(grok --version 2>/dev/null | head -n1 || echo "unknown")
+    print_success "Grok CLI is installed"
+    HAS_GROK=true
+else
+    print_info "Grok CLI is not installed (optional)"
+    HAS_GROK=false
+fi
+
+print_step "Checking for Ollama..."
+if command_exists ollama; then
+    ollama_version=$(ollama --version 2>/dev/null | awk '{print $NF}')
+    print_success "Ollama $ollama_version is installed"
+    HAS_OLLAMA=true
+else
+    print_info "Ollama is not installed (optional)"
+    HAS_OLLAMA=false
+fi
+
+print_step "Checking for TypeScript..."
+if command_exists tsc; then
+    ts_version=$(tsc --version | awk '{print $2}')
+    print_success "TypeScript $ts_version is installed"
+    HAS_TYPESCRIPT=true
+else
+    print_info "TypeScript is not installed (optional)"
+    HAS_TYPESCRIPT=false
+fi
+
+print_step "Checking for ts-node..."
+if command_exists ts-node; then
+    tsnode_version=$(ts-node --version | head -n1 | awk '{print $2}')
+    print_success "ts-node $tsnode_version is installed"
+    HAS_TSNODE=true
+else
+    print_info "ts-node is not installed (optional)"
+    HAS_TSNODE=false
+fi
+
+print_step "Checking for Python..."
+if command_exists python3; then
+    python_version=$(python3 --version | awk '{print $2}')
+    print_success "Python $python_version is installed"
+    HAS_PYTHON=true
+elif command_exists python; then
+    python_version=$(python --version | awk '{print $2}')
+    print_success "Python $python_version is installed"
+    HAS_PYTHON=true
+else
+    print_warning "Python is not installed"
+    HAS_PYTHON=false
+fi
+
+print_step "Checking for uv (Python package manager)..."
+if command_exists uv; then
+    uv_version=$(uv --version | awk '{print $2}')
+    print_success "uv $uv_version is installed"
+    HAS_UV=true
+else
+    print_info "uv is not installed (optional)"
+    HAS_UV=false
+fi
+
+print_step "Checking for Playwright..."
+if command_exists playwright; then
+    playwright_version=$(playwright --version 2>/dev/null | head -n1 || echo "unknown")
+    print_success "Playwright is installed"
+    HAS_PLAYWRIGHT=true
+else
+    print_info "Playwright is not installed (optional)"
+    HAS_PLAYWRIGHT=false
+fi
+
 
 # ============================================
 # Step 2: Install Missing Software
@@ -471,6 +595,8 @@ fi
 print_header "Step 3: Choose Installation Directory -- Skipped"
 
 # Derive PAI_DIR from script location
+# Script is in: /path/to/.claude/install/
+# PAI_DIR is:   /path/to/.claude/
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PAI_DIR="$(dirname "$SCRIPT_DIR")"
 print_info "Using PAI directory: $PAI_DIR"
@@ -761,6 +887,23 @@ else
     print_success "Skills linked to PAI!"
 fi
 
+# Create commands symlink (PAI-global commands)
+print_step "Linking commands to Claude Code..."
+if [ -L "$HOME/.claude/commands" ]; then
+    print_info "Commands already linked to PAI"
+elif [ -d "$HOME/.claude/commands" ]; then
+    print_warning "Commands directory already exists"
+    if ask_yes_no "Replace it with PAI's commands?"; then
+        mv "$HOME/.claude/commands" "$HOME/.claude/commands.backup"
+        print_info "Backed up existing commands to commands.backup"
+        ln -sf "$PAI_DIR/commands" "$HOME/.claude/commands"
+        print_success "Commands linked to PAI!"
+    fi
+else
+    ln -sf "$PAI_DIR/commands" "$HOME/.claude/commands"
+    print_success "Commands linked to PAI!"
+fi
+
 # Create scratchpad directory (required by PAI.md)
 print_step "Creating scratchpad directory..."
 if [ -d "$HOME/.claude/scratchpad" ]; then
@@ -865,46 +1008,142 @@ else
     print_info "Skills symlink not found (optional)"
 fi
 
-# Test 9: Scratchpad directory
+# Test 9: Commands symlink
+if [ -L "$HOME/.claude/commands" ]; then
+    commands_target=$(readlink "$HOME/.claude/commands")
+    if [ "$commands_target" = "$PAI_DIR/commands" ]; then
+        print_success "Commands symlink configured correctly"
+    else
+        print_warning "Commands symlink points to wrong location: $commands_target"
+    fi
+else
+    print_info "Commands symlink not found (optional)"
+fi
+
+# Test 10: Scratchpad directory
 if [ -d "$HOME/.claude/scratchpad" ]; then
     print_success "Scratchpad directory exists"
 else
     print_warning "Scratchpad directory not found"
 fi
 
-# Test 10: Cargo (Rust) installation
+# Test 11: Cargo (Rust) installation
 if command_exists cargo; then
     print_success "Cargo (Rust) is available"
 else
     print_info "Cargo not installed (optional, needed for fd, ripgrep, bat, and ast-grep)"
 fi
 
-# Test 11: fd installation
+# Test 12: fd installation
 if command_exists fd; then
     print_success "fd is available (preferred file finder)"
 else
     print_info "fd not installed (optional, but recommended for file searches)"
 fi
 
-# Test 12: ast-grep installation
+# Test 13: ast-grep installation
 if command_exists ast-grep || command_exists sg; then
     print_success "ast-grep is available (semantic code search)"
 else
     print_info "ast-grep not installed (optional, but recommended for code work)"
 fi
 
-# Test 13: ripgrep installation
+# Test 14: ripgrep installation
 if command_exists rg; then
     print_success "ripgrep is available (preferred text search)"
 else
     print_info "ripgrep not installed (optional, but recommended for text searches)"
 fi
 
-# Test 14: bat installation
+# Test 15: bat installation
 if command_exists bat; then
     print_success "bat is available (preferred file viewer)"
 else
     print_info "bat not installed (optional, but recommended for viewing files)"
+fi
+
+# Test 16: GitHub CLI installation
+if command_exists gh; then
+    print_success "GitHub CLI is available"
+else
+    print_info "GitHub CLI not installed (optional, but recommended for GitHub operations)"
+fi
+
+# Test 17: markdownlint-cli2 installation
+if command_exists markdownlint-cli2; then
+    print_success "markdownlint-cli2 is available"
+else
+    print_info "markdownlint-cli2 not installed (optional, but recommended for documentation)"
+fi
+
+# Test 18: curl installation
+if command_exists curl; then
+    print_success "curl is available"
+else
+    print_warning "curl not installed (required for many PAI features)"
+fi
+
+# Test 19: Fabric installation
+if command_exists fabric; then
+    print_success "Fabric is available (AI pattern system)"
+else
+    print_info "Fabric not installed (optional)"
+fi
+
+# Test 20: Gemini CLI installation
+if command_exists gemini; then
+    print_success "Gemini CLI is available"
+else
+    print_info "Gemini CLI not installed (optional)"
+fi
+
+# Test 21: Grok CLI installation
+if command_exists grok; then
+    print_success "Grok CLI is available"
+else
+    print_info "Grok CLI not installed (optional)"
+fi
+
+# Test 22: Ollama installation
+if command_exists ollama; then
+    print_success "Ollama is available (local LLM server)"
+else
+    print_info "Ollama not installed (optional)"
+fi
+
+# Test 23: TypeScript installation
+if command_exists tsc; then
+    print_success "TypeScript is available"
+else
+    print_info "TypeScript not installed (optional, but recommended for PAI development)"
+fi
+
+# Test 24: ts-node installation
+if command_exists ts-node; then
+    print_success "ts-node is available"
+else
+    print_info "ts-node not installed (optional, but recommended for PAI hooks)"
+fi
+
+# Test 25: Python installation
+if command_exists python3 || command_exists python; then
+    print_success "Python is available"
+else
+    print_warning "Python not installed (required for some PAI utilities)"
+fi
+
+# Test 26: uv installation
+if command_exists uv; then
+    print_success "uv is available (fast Python package manager)"
+else
+    print_info "uv not installed (optional, but recommended for Python packages)"
+fi
+
+# Test 27: Playwright installation
+if command_exists playwright; then
+    print_success "Playwright is available"
+else
+    print_info "Playwright not installed (optional, needed for UI testing)"
 fi
 
 # ============================================

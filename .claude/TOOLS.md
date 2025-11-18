@@ -248,6 +248,177 @@ curl -s https://example.com | fabric -p summarize
 
 ---
 
+### Gemini CLI - Terminal AI Agent
+
+**Purpose**: Google's open-source AI agent bringing Gemini 2.5 Pro directly into the terminal
+
+**Key Features**: 1M token context window, Google Search grounding, MCP support, multimodal capabilities, conversation checkpointing
+
+**Installation**:
+
+```bash
+npm install -g @google/gemini-cli
+# or: npx https://github.com/google-gemini/gemini-cli
+# or: brew install gemini-cli
+```
+
+**Version**: 0.15.4 (installed on system)
+
+**Why PAI Uses**: Free access to Gemini 2.5 Pro (60 req/min, 1K req/day), terminal-native AI coding, complements Claude Code
+
+**Authentication Options**:
+
+- Google OAuth (free tier)
+- Gemini API Key (100 req/day free)
+- Vertex AI (enterprise)
+
+**Common Usage**:
+
+```bash
+gemini                                    # Start interactive mode
+gemini -p "Explain this codebase"         # Non-interactive prompt
+gemini -m gemini-2.5-flash                # Use specific model
+gemini --output-format json               # JSON output
+gemini --resume latest                    # Resume previous session
+gemini mcp                                # Manage MCP servers
+```
+
+**PAI Integration**: Alternative AI perspective, research tasks, multimodal analysis (PDFs/images),
+complementary to Claude
+
+**Documentation**: [github.com/google-gemini/gemini-cli](https://github.com/google-gemini/gemini-cli) | [geminicli.com/docs](https://geminicli.com/docs)
+
+---
+
+### Grok CLI - xAI Terminal Agent
+
+**Purpose**: Open-source conversational AI tool bringing xAI's Grok models into the terminal
+
+**Key Features**: Natural language interface, smart file operations, bash integration, MCP support, fast code editing
+(4,500+ tokens/sec), OpenAI-compatible API
+
+**Installation**:
+
+```bash
+bun add -g @vibe-kit/grok-cli
+```
+
+**Version**: 1.0.1 (installed on system)
+
+**Why PAI Uses**: Access to Grok models (grok-4-latest, grok-code-fast-1), fast editing capabilities, MCP integration,
+complements Claude/Gemini
+
+**Authentication**: Requires xAI API key from X.AI
+
+**Available Models**:
+
+- grok-4-latest (latest flagship)
+- grok-code-fast-1 (optimized for code)
+- grok-3-latest, grok-3-fast, grok-3-mini-fast
+
+**Common Usage**:
+
+```bash
+grok                                      # Start interactive mode
+grok --prompt "show me the package.json"  # Headless/scripting mode
+grok --model grok-4-latest                # Use specific model
+grok --directory /path/to/project         # Set working directory
+grok --max-tool-rounds 50                 # Control tool usage
+grok mcp add NAME                         # Add MCP server
+grok mcp list                             # List MCP servers
+grok git                                  # Git operations with AI
+```
+
+**PAI Integration**: Alternative AI perspective, fast code editing, scripting automation,
+MCP-based workflows
+
+**Documentation**: [github.com/superagent-ai/grok-cli](https://github.com/superagent-ai/grok-cli)
+
+---
+
+### Ollama - Local LLM Server
+
+**Purpose**: Lightweight framework for running large language models locally with client-server architecture
+
+**Architecture Type**: **Client-Server Model** (unlike direct CLI tools)
+
+- **Server**: `ollama serve` runs backend on localhost:11434 (processes model inference)
+- **Client**: CLI communicates with server via REST API
+- **Key Difference**: Server runs continuously, handles multiple requests, manages model lifecycle
+
+**Key Features**: Local model execution (no cloud), model management (pull/push/list/rm), multimodal support
+(vision models), REST API, embedding generation, custom Modelfiles, GGUF/Safetensors import
+
+**Installation**:
+
+```bash
+# macOS/Linux
+curl -fsSL https://ollama.com/install.sh | sh
+
+# Or download from ollama.com
+```
+
+**Version**: 0.1.18 (installed on system)
+
+**Why PAI Uses**: Privacy-first local inference, no API costs, offline capability, supports multiple model families
+(Llama, Gemma, DeepSeek), MCP integration for local AI workflows
+
+**System Requirements**: 8GB+ RAM recommended, GPU acceleration supported (NVIDIA CUDA, AMD ROCm, Apple Metal)
+
+**Client-Server Workflow**:
+
+```bash
+# 1. Start server (runs in background)
+ollama serve                              # Starts server on localhost:11434
+
+# 2. Client commands (in separate terminal)
+ollama pull llama3.2                      # Download model
+ollama list                               # Show installed models
+ollama run llama3.2 "Hello world"         # Run model with prompt
+ollama run llama3.2                       # Interactive chat mode
+
+# 3. Model management
+ollama show llama3.2                      # Show model info
+ollama cp llama3.2 my-llama               # Copy model
+ollama rm my-llama                        # Remove model
+
+# 4. Advanced usage
+ollama run llama3.2 --format json         # JSON output
+ollama create mymodel -f Modelfile        # Create custom model
+echo "prompt" | ollama run llama3.2       # Pipe input
+```
+
+**REST API Access**:
+
+```bash
+# Direct API calls (when server is running)
+curl http://localhost:11434/api/generate -d '{
+  "model": "llama3.2",
+  "prompt": "Why is the sky blue?"
+}'
+
+curl http://localhost:11434/api/chat -d '{
+  "model": "llama3.2",
+  "messages": [{"role": "user", "content": "Hello"}]
+}'
+```
+
+**Popular Model Families**:
+
+- Llama (Meta): llama3.2, llama3.1, llama2
+- Gemma (Google): gemma2, gemma
+- DeepSeek: deepseek-r1, deepseek-coder
+- Phi (Microsoft): phi3, phi
+- Vision: llava, bakllava
+
+**PAI Integration**: Local AI inference without cloud dependency, privacy-sensitive workloads, offline development,
+MCP server integration for local LLM tool use, cost-free experimentation
+
+**Documentation**: [github.com/ollama/ollama](https://github.com/ollama/ollama) |
+[ollama.com/library](https://ollama.com/library)
+
+---
+
 ## Language Runtimes & Package Managers
 
 ### TypeScript/ts-node
@@ -328,6 +499,9 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 | **markdownlint** | Dev | N/A | Medium | bun |
 | **curl** | Dev | N/A | Medium | Pre-installed |
 | **Fabric** | Dev | N/A | Medium | See docs |
+| **Gemini CLI** | Dev | N/A | Medium | npm / brew |
+| **Grok CLI** | Dev | N/A | Medium | bun |
+| **Ollama** | Dev | Local inference | Medium | curl script |
 | **TypeScript** | Runtime | N/A | High | bun |
 | **Python** | Runtime | N/A | Medium | Pre-installed |
 | **uv** | Runtime | 10-100x (vs pip) | Medium | curl script |
@@ -383,6 +557,9 @@ bat --version
 gh --version
 markdownlint-cli2 --version
 curl --version
+gemini --version
+grok --version
+ollama --version
 python --version
 uv --version
 ```
@@ -458,4 +635,4 @@ uv --version
 
 **Maintained By**: PAI System
 **Last Research**: 2025-11-18
-**Tools Documented**: 16 core tools across 4 categories
+**Tools Documented**: 19 core tools across 4 categories
