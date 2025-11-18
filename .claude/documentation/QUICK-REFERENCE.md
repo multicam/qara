@@ -227,7 +227,7 @@ ast-grep -p 'console.log($$$)' # Find all console.log calls
 ast-grep -p 'function $NAME($$$)' # Find function definitions
 ```
 
-**Full guide:** See [CLI-TOOLS.md](./CLI-TOOLS.md) for complete documentation
+**Full guide:** See [TOOLS.md](../TOOLS.md) for complete documentation
 
 ### Installation
 
@@ -288,11 +288,12 @@ cd $PAI_DIR && git log --oneline -20
 ### Documentation
 
 ```bash
-# View all documentation
-ls $PAI_DIR/documentation/
 
 # CLI tools guide (fd, ripgrep, ast-grep)
-open $PAI_DIR/documentation/CLI-TOOLS.md
+open $PAI_DIR/TOOLS.md
+
+# View all documentation
+ls $PAI_DIR/documentation/
 
 # Getting started guide
 open $PAI_DIR/documentation/how-to-start.md

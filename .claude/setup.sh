@@ -366,7 +366,7 @@ if [ "$NEEDS_INSTALL" = true ]; then
     # CLI Tools Installation
     # ============================================
     # For full documentation on these tools, see:
-    # ~/.claude/documentation/CLI-TOOLS.md
+    # ~/.claude/TOOLS.md
     # ============================================
 
     # Install Cargo if needed

@@ -167,16 +167,16 @@ PAI uses modern CLI tools that are faster and more user-friendly than traditiona
 For comprehensive documentation including installation, detailed usage, examples, comparison tables,
 pro tips, and troubleshooting, see:
 
-📚 **CLI Tools Guide**: `~/.claude/documentation/CLI-TOOLS.md`
+📚 **CLI Tools Guide**: `~/.claude/TOOLS.md`
 
 **Quick access:**
 
 ```bash
 # Read the full documentation
-cat ~/.claude/documentation/CLI-TOOLS.md
+cat ~/.claude/TOOLS.md
 
 # Or in your editor
-code ~/.claude/documentation/CLI-TOOLS.md
+code ~/.claude/TOOLS.md
 ```
 
 ---
