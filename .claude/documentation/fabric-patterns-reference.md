@@ -581,8 +581,6 @@ fabric "your text here" -p create_5_sentence_summary
 **To refresh pattern list**:
 
 ```bash
-cd ~/.claude/skills/fabric/fabric-repo
-git pull origin main
 fabric --listpatterns
 ```
 
@@ -590,7 +588,6 @@ fabric --listpatterns
 
 - Model Reference: `~/.claude/documentation/fabric-model-reference.md`
 - Fabric Skill: `~/.claude/skills/fabric/SKILL.md`
-- Fabric Repository: `~/.claude/skills/fabric/fabric-repo/`
 
 ---
 

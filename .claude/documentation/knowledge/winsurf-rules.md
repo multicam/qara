@@ -48,8 +48,8 @@
 
 ### Running Research
 - **Method 1 (preferred):** Launch Task tool with researcher, claude-researcher, or gemini-researcher agents (parallel agents encouraged for depth).
-- **Method 2:** `Skill(research)` loads research patterns (note `/conduct-research` command is not implemented).
-- **Modes:** Quick (3 agents, ~2–5 min), Standard (9 agents, ~10–20 min), Extensive (24 agents, ~60–180 min).
+- **Method 2:** `Skill(research)` loads research patterns.
+- **Modes:** Quick (3 agents), Standard (9 agents), Extensive (24 agents).
 
 ### Documentation Standards
 - Core docs: `.claude/documentation/knowledge/`, plans in `.claude/documentation/plans/`, domain contexts inside `.claude/context/*/`.
@@ -69,13 +69,9 @@
 - Store experiments in `~/.claude/scratchpad/YYYY-MM-DD-HHMMSS_description/`, not in core directories.
 
 ## Known Issues & Limitations
-- `perplexity-researcher` agent is referenced but absent – substitute claude-researcher or gemini-researcher and update docs when fixed.
-- `/conduct-research` command is documented but unimplemented – launch Task tool manually until resolved.
-- Research timeouts (2–10 minute claims) are inaccurate; no enforcement exists yet.
 - Multi-agent research lacks progress visibility; expect silent runs and plan mitigations.
 - Recovery gaps: ~33% agent failure observed; add validation and fallback logic when possible.
 - Result deduplication missing – anticipate duplicate sources and handle downstream.
-- Reserved directories (`.claude/commands/`, `.claude/context/projects/`, `.claude/context/tools/`) are empty by design; do not rely on them yet.
 
 ## Useful Commands Reference
 - Verify remotes: `git remote -v`.
@@ -89,6 +85,5 @@
 ## When Uncertain
 - Check `.claude/documentation/knowledge/` for conceptual guidance.
 - Read the relevant skill's `SKILL.md` for usage patterns before invoking.
-- Review `RESEARCH_POST_MORTEM.md` for research learnings when dealing with multi-agent tasks.
 - Always re-verify git remotes before committing or pushing any change.
 - Default to concise, actionable communication aligned with CORE formatting rules.

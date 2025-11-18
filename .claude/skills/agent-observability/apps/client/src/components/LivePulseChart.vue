@@ -213,14 +213,6 @@ const { getHexColorForSession } = useEventColors();
 
 const hasData = computed(() => {
   const result = dataPoints.value.some(dp => dp.count > 0);
-  // console.log(`📊 hasData check: ${dataPoints.value.length} data points, hasData = ${result}`);
-  // if (dataPoints.value.length > 0) {
-  //   console.log(`📈 Data points:`, dataPoints.value.slice(-3).map(dp => ({
-  //     timestamp: dp.timestamp,
-  //     time: new Date(dp.timestamp).toLocaleTimeString(),
-  //     count: dp.count
-  //   })));
-  // }
   return result;
 });
 
@@ -340,7 +332,7 @@ const processNewEvents = () => {
   const currentEvents = props.events;
   const newEventsToProcess: HookEvent[] = [];
 
-  console.log(`🔍 LivePulseChart processNewEvents: ${currentEvents.length} events received`);
+  // console.log(`🔍 LivePulseChart processNewEvents: ${currentEvents.length} events received`);
 
   // Find events that haven't been processed yet
   currentEvents.forEach(event => {
@@ -351,7 +343,7 @@ const processNewEvents = () => {
     }
   });
 
-  console.log(`📝 ${newEventsToProcess.length} new events to process`);
+  // console.log(`📝 ${newEventsToProcess.length} new events to process`);
 
   // Process new events
   newEventsToProcess.forEach(event => {

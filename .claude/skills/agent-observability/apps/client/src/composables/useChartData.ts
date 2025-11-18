@@ -76,8 +76,6 @@ export function useChartData(agentIdFilter?: string) {
     const eventsToProcess = [...eventBuffer];
     eventBuffer = [];
 
-    // console.log(`📦 processEventBuffer: Processing ${eventsToProcess.length} events`);
-
     // Add events to our complete list
     allEvents.value.push(...eventsToProcess);
 
@@ -101,13 +99,12 @@ export function useChartData(agentIdFilter?: string) {
       }
 
       const bucketTime = getBucketTimestamp(event.timestamp);
-      // console.log(`🪣 Event ${event.hook_event_type} -> bucket ${bucketTime ? new Date(bucketTime).toLocaleTimeString() : 'unknown'}`);
 
       // Find existing bucket or create new one
       let bucket = dataPoints.value.find(dp => dp.timestamp === bucketTime);
       if (bucket) {
         bucket.count++;
-        // console.log(`📈 Updated existing bucket: count = ${bucket.count}`);
+
         // Track event types
         if (!bucket.eventTypes) {
           bucket.eventTypes = {};
@@ -124,7 +121,6 @@ export function useChartData(agentIdFilter?: string) {
         }
         bucket.apps[event.source_app || 'unknown'] = (bucket.apps[event.source_app || 'unknown'] || 0) + 1;
       } else {
-        // console.log(`🆕 Created new bucket at ${bucketTime ? new Date(bucketTime).toLocaleTimeString() : 'unknown'}`);
         dataPoints.value.push({
           timestamp: bucketTime,
           count: 1,
@@ -135,15 +131,12 @@ export function useChartData(agentIdFilter?: string) {
       }
     });
 
-    // console.log(`📊 After processing: ${dataPoints.value.length} data points`);
-
     // Clean old data once after processing all events
     cleanOldData();
     cleanOldEvents();
   };
 
   const addEvent = (event: HookEvent) => {
-    // console.log(`🎯 addEvent: ${event.hook_event_type} at ${event.timestamp ? new Date(event.timestamp).toLocaleTimeString() : 'unknown time'}`);
     eventBuffer.push(event);
 
     // Clear existing timer
@@ -153,7 +146,6 @@ export function useChartData(agentIdFilter?: string) {
 
     // Set new timer
     debounceTimer = window.setTimeout(() => {
-      console.log(`⏰ Processing ${eventBuffer.length} buffered events`);
       processEventBuffer();
       debounceTimer = null;
     }, DEBOUNCE_DELAY);
@@ -163,20 +155,10 @@ export function useChartData(agentIdFilter?: string) {
     const now = Date.now();
     const cutoffTime = now - currentConfig.value.duration;
 
-    // console.log(`🧹 cleanOldData: keeping events after ${new Date(cutoffTime).toLocaleTimeString()}`);
-    // console.log(`🧹 Before cleaning: ${dataPoints.value.length} data points`);
-
-    const beforeCount = dataPoints.value.length;
     dataPoints.value = dataPoints.value.filter(dp => dp.timestamp >= cutoffTime);
-    const afterCount = dataPoints.value.length;
 
-    // console.log(`🧹 After cleaning: ${afterCount} data points (removed ${beforeCount - afterCount})`);
-
-    // Ensure we don't exceed max points
     if (dataPoints.value.length > currentConfig.value.maxPoints) {
-      const removed = dataPoints.value.length - currentConfig.value.maxPoints;
       dataPoints.value = dataPoints.value.slice(-currentConfig.value.maxPoints);
-      // console.log(`🧹 Removed ${removed} old points to stay under max ${currentConfig.value.maxPoints}`);
     }
   };
 

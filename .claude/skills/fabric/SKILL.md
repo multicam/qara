@@ -10,18 +10,12 @@ description: Intelligent pattern selection for Fabric CLI. Automatically selects
 **IMPORTANT: Before using this skill, verify the Fabric repository is available:**
 
 ```bash
-# Check if Fabric repo exists
-if [ ! -d "$HOME/.claude/skills/fabric/fabric-repo" ]; then
-  echo "Fabric repository not found. Cloning..."
-  cd "$HOME/.claude/skills/fabric"
-  git clone https://github.com/danielmiessler/fabric.git fabric-repo
-  echo "Fabric repository cloned successfully."
-else
-  echo "Fabric repository found at $HOME/.claude/skills/fabric/fabric-repo"
-fi
+# Check if Fabric exists
+fabric --version && \
+test -f ~/.config/fabric/patterns/pattern_explanations.md && echo 'Fabric is properly installed and configured'
 ```
 
-**If the repo doesn't exist, clone it immediately before proceeding with any pattern selection.**
+**If Fabric is not installed, alert the user, make sure it is installed.**
 
 ## When to Activate This Skill
 
@@ -38,6 +32,8 @@ fi
 **The Goal:** Select the RIGHT pattern from 242+ available patterns based on what you're trying to accomplish.
 
 ## 🎯 Pattern Selection Strategy
+
+Before choosing a pattern, load `~/.config/fabric/patterns/pattern_explanations.md` for updated information about all available patterns.
 
 When a user requests Fabric processing, follow this decision tree:
 
@@ -285,20 +281,12 @@ fabric "your text here" -p [pattern]
 
 ## 🔄 Updating Patterns
 
-The Fabric repository is included in this skill at `${PAI_DIR}/skills/fabric/fabric-repo/`.
+The Fabric patterns exists here: `~/.config/fabric/patterns/`.
 
-**To update patterns:**
-
-```bash
-cd ${PAI_DIR}/skills/fabric/fabric-repo
-git pull origin main
-```
 
 **To see all available patterns:**
 
 ```bash
-ls ${PAI_DIR}/skills/fabric/fabric-repo/data/patterns/
-# OR from your local Fabric install:
 ls ~/.config/fabric/patterns/
 ```
 
@@ -404,10 +392,9 @@ Task-based pattern selection guide with workflows and test cases
 Comprehensive categorized reference for all 240 patterns
 
 **Model Reference:** `read ${PAI_DIR}/documentation/fabric-model-reference.md`
-**Full Pattern List:** `ls ${PAI_DIR}/skills/fabric/fabric-repo/data/patterns/`
-**Fabric Repo:** `${PAI_DIR}/skills/fabric/fabric-repo/`
+**Full Pattern List:** `ls ~/.config/fabric/patterns/`
 **Fabric Documentation:** https://github.com/danielmiessler/fabric
-**Pattern Templates:** See `${PAI_DIR}/skills/fabric/fabric-repo/data/patterns/official_pattern_template/`
+**Pattern Templates:** See `~/.config/fabric/patterns/official_pattern_template/`
 
 ## 🔑 Key Insight
 
