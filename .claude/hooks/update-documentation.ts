@@ -150,10 +150,6 @@ function analyzeChanges(fileChanges: FileChange[]): ChangeAnalysis {
       if (!affectedAreas.has('agents')) affectedAreas.set('agents', []);
       affectedAreas.get('agents')!.push(change);
       needsDocUpdate.set('documentation/agent-system.md', true);
-    } else if (path.startsWith('voice-server/')) {
-      if (!affectedAreas.has('voice')) affectedAreas.set('voice', []);
-      affectedAreas.get('voice')!.push(change);
-      needsDocUpdate.set('documentation/voice-system.md', true);
     } else if (path === 'package.json' || path === 'bun.lockb') {
       if (!affectedAreas.has('dependencies')) affectedAreas.set('dependencies', []);
       affectedAreas.get('dependencies')!.push(change);

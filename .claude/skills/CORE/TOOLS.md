@@ -97,7 +97,7 @@ source $HOME/.cargo/env
 
 **Why PAI Uses**: Speed for AI agents, reduced noise, simplified commands
 
-**Detailed Docs**: [`~/.claude/documentation/CLI-TOOLS.md`](documentation/CLI-TOOLS.md)
+**Detailed Docs**: [`~/.claude/skills/CORE/TOOLS.md`](skills/CORE/TOOLS.md)
 
 **Common Usage**:
 ```bash
@@ -118,7 +118,7 @@ fd -H secret                  # Include hidden files
 
 **Why PAI Uses**: Critical for AI codebase analysis, reliable filtering, Claude Code integration
 
-**Detailed Docs**: [`~/.claude/documentation/CLI-TOOLS.md`](documentation/CLI-TOOLS.md)
+**Detailed Docs**: [`~/.claude/skills/CORE/TOOLS.md`](skills/CORE/TOOLS.md)
 
 **Common Usage**:
 ```bash
@@ -139,7 +139,7 @@ rg -t js console.log          # Search JavaScript files
 
 **Why PAI Uses**: Semantic precision, eliminates false positives, structural transformations
 
-**Detailed Docs**: [`~/.claude/documentation/CLI-TOOLS.md`](documentation/CLI-TOOLS.md)
+**Detailed Docs**: [`~/.claude/skills/CORE/TOOLS.md`](skills/CORE/TOOLS.md)
 
 **Common Usage**:
 ```bash
@@ -159,7 +159,7 @@ ast-grep -p 'old($A)' -r 'new($A)'                # Refactor code
 
 **Why PAI Uses**: Improved code readability, integrated Git context, better developer UX
 
-**Detailed Docs**: [`~/.claude/documentation/CLI-TOOLS.md`](documentation/CLI-TOOLS.md)
+**Detailed Docs**: [`~/.claude/skills/CORE/TOOLS.md`](skills/CORE/TOOLS.md)
 
 **Common Usage**:
 ```bash
@@ -597,9 +597,9 @@ uv --version
 
 ### Detailed Documentation
 
-- **CLI Tools Guide**: `~/.claude/documentation/CLI-TOOLS.md` (fd, ripgrep, ast-grep, bat)
-- **Fabric Patterns**: `~/.claude/documentation/fabric-patterns-reference.md`
-- **Hook System**: `~/.claude/documentation/hook-system.md`
+- **CLI Tools Guide**: `~/.claude/skills/CORE/TOOLS.md` (fd, ripgrep, ast-grep, bat)
+- **Fabric Patterns**: `~/.claude/skills/fabric/fabric-patterns-reference.md`
+- **Hook System**: `~/.claude/skills/CORE/hook-system.md`
 - **Agent System**: `~/.claude/documentation/agent-system.md`
 
 ### PAI Configuration

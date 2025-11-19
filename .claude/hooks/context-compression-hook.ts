@@ -5,8 +5,6 @@
  */
 
 import { readFileSync } from 'fs';
-import { join } from 'path';
-import { homedir } from 'os';
 
 
 
@@ -111,10 +109,9 @@ async function main() {
           ? `Auto-compressing large context with ${stats.messageCount} messages`
           : `Compressing context with ${stats.messageCount} messages`;
       }
+      console.log(message);
     }
   }
-  
-  // Voice notification removed - voice server is no longer used
 
   process.exit(0);
 }

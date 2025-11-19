@@ -490,7 +490,7 @@ if [ "$NEEDS_INSTALL" = true ]; then
     # CLI Tools Installation
     # ============================================
     # For full documentation on these tools, see:
-    # ~/.claude/TOOLS.md
+    # ~/.claude/skills/code/TOOLS.md
     # ============================================
 
     # Install Cargo if needed
@@ -762,12 +762,6 @@ if ask_yes_no "Would you like to add API keys now?" "n"; then
 else
     print_info "You can add API keys later by editing: $PAI_DIR/.env"
 fi
-
-# ============================================
-# Step 7: Voice Server Setup (Optional)
-# ============================================
-
-print_header "Step 7: Voice Server -- disabled"
 
 
 # ============================================

@@ -369,7 +369,7 @@ cat wisdom.txt | fabric -p create_5_sentence_summary
 
 ## 🤖 Model Selection
 
-**Comprehensive Model Guide**: `read ${PAI_DIR}/documentation/fabric-model-reference.md`
+**Comprehensive Model Guide**: `read ${PAI_DIR}/skils/fabric/fabric-model-reference.md`
 
 **Quick Recommendations**:
 
@@ -385,13 +385,13 @@ cat wisdom.txt | fabric -p create_5_sentence_summary
 
 ## 📖 Supplementary Resources
 
-**Strategy Reference:** `read ${PAI_DIR}/documentation/fabric-strategies-reference.md`
+**Strategy Reference:** `read ${PAI_DIR}/skils/fabric/fabric-strategies-reference.md`
 Task-based pattern selection guide with workflows and test cases
 
-**Pattern Reference (Complete):** `read ${PAI_DIR}/documentation/fabric-patterns-reference.md`
+**Pattern Reference (Complete):** `read ${PAI_DIR}/skils/fabric/fabric-patterns-reference.md`
 Comprehensive categorized reference for all 240 patterns
 
-**Model Reference:** `read ${PAI_DIR}/documentation/fabric-model-reference.md`
+**Model Reference:** `read ${PAI_DIR}/skils/fabric/fabric-model-reference.md`
 **Full Pattern List:** `ls ~/.config/fabric/patterns/`
 **Fabric Documentation:** https://github.com/danielmiessler/fabric
 **Pattern Templates:** See `~/.config/fabric/patterns/official_pattern_template/`
