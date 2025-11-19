@@ -299,7 +299,7 @@ For more information, see:
 
 - **PAI Overview**: `$PAI_DIR/PAI.md`
 - **Tools Inventory**: `$PAI_DIR/.claude/TOOLS.md`
-- **CLI Tools Guide**: `$PAI_DIR/.claude/documentation/CLI-TOOLS.md`
+- **CLI Tools Guide**: `$PAI_DIR/.claude/skills/CORE/TOOLS.md`
 - **Getting Started**: `$PAI_DIR/documentation/how-to-start.md`
 
 ---

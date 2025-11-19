@@ -875,8 +875,8 @@ fabric --listpatterns | fabric -p show_fabric_options_markmap --model claude-son
 
 **See Also**:
 
-- Complete Pattern Reference: `~/.claude/documentation/fabric-patterns-reference.md`
-- Model Reference: `~/.claude/documentation/fabric-model-reference.md`
+- Complete Pattern Reference: `~/.claude/skills/fabic/fabric-patterns-reference.md`
+- Model Reference: `~/.claude/skills/fabic/fabric-model-reference.md`
 - Fabric Skill: `~/.claude/skills/fabric/SKILL.md`
 
 ---

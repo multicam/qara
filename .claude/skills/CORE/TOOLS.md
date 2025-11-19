@@ -206,7 +206,7 @@ gh workflow run "CI Pipeline"
 ```bash
 markdownlint-cli2 path/to/file.md      # Lint file
 markdownlint-cli2 --fix file.md        # Auto-fix issues
-markdownlint-cli2 .claude/documentation/*.md  # Lint all docs
+markdownlint-cli2 .claude/skills/CORE/*.md  # Lint all docs
 ```
 
 ---
@@ -600,7 +600,7 @@ uv --version
 - **CLI Tools Guide**: `~/.claude/skills/CORE/TOOLS.md` (fd, ripgrep, ast-grep, bat)
 - **Fabric Patterns**: `~/.claude/skills/fabric/fabric-patterns-reference.md`
 - **Hook System**: `~/.claude/skills/CORE/hook-system.md`
-- **Agent System**: `~/.claude/documentation/agent-system.md`
+- **Agent System**: `~/.claude/skills/CORE/agent-system.md`
 
 ### PAI Configuration
 

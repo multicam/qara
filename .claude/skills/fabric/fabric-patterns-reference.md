@@ -586,7 +586,7 @@ fabric --listpatterns
 
 **See also**:
 
-- Model Reference: `~/.claude/documentation/fabric-model-reference.md`
+- Model Reference: `~/.claude/skills/fabric/fabric-model-reference.md`
 - Fabric Skill: `~/.claude/skills/fabric/SKILL.md`
 
 ---

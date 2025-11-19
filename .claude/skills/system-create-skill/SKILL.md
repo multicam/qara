@@ -1,5 +1,5 @@
 ---
-name: system-createskill
+name: system-create-skill
 description: |
   Skill creation and validation framework ensuring compliance with PAI architectural standards.
 
@@ -14,25 +14,25 @@ description: |
 **When user requests creating a new skill:**
 Examples: "create skill", "create a skill", "new skill", "build skill", "make skill", "skill for X", "Create-A-Skill"
 → **READ:** ~/.claude/skills/CORE/SKILL-STRUCTURE-AND-ROUTING.md
-→ **READ:** ~/.claude/skills/system-createskill/workflows/create-skill.md
+→ **READ:** ~/.claude/skills/system-create-skill/workflows/create-skill.md
 → **EXECUTE:** Complete skill creation workflow with architectural validation
 
 **When user requests validating existing skill:**
 Examples: "validate skill", "check skill compliance", "audit skill", "verify skill structure"
 → **READ:** ~/.claude/skills/CORE/SKILL-STRUCTURE-AND-ROUTING.md
-→ **READ:** ~/.claude/skills/system-createskill/workflows/validate-skill.md
+→ **READ:** ~/.claude/skills/system-create-skill/workflows/validate-skill.md
 → **EXECUTE:** Skill compliance audit workflow
 
 **When user requests updating existing skill:**
 Examples: "update skill", "refactor skill", "fix skill routing", "add workflow to skill"
 → **READ:** ~/.claude/skills/CORE/SKILL-STRUCTURE-AND-ROUTING.md
-→ **READ:** ~/.claude/skills/system-createskill/workflows/update-skill.md
+→ **READ:** ~/.claude/skills/system-create-skill/workflows/update-skill.md
 → **EXECUTE:** Skill update workflow with compliance checking
 
 **When user requests canonicalizing a skill:**
 Examples: "canonicalize skill", "canonicalize this skill", "canonicalize [skill-name]", "rebuild skill to standards", "refactor skill to canonical structure"
 → **READ:** ~/.claude/skills/CORE/SKILL-STRUCTURE-AND-ROUTING.md
-→ **READ:** ~/.claude/skills/system-createskill/workflows/canonicalize-skill.md
+→ **READ:** ~/.claude/skills/system-create-skill/workflows/canonicalize-skill.md
 → **EXECUTE:** Complete skill canonicalization workflow - analyze current skill structure and rebuild according to canonical architecture while preserving functionality
 
 ---
@@ -421,20 +421,20 @@ Before considering a skill complete, verify:
 
 ### Workflow Files
 
-**~/.claude/skills/system-createskill/workflows/create-skill.md**
+**~/.claude/skills/system-create-skill/workflows/create-skill.md**
 - Complete skill creation workflow
 - Step-by-step process with validation gates
 - Template generation
 - Quality assurance checks
 
-**~/.claude/skills/system-createskill/workflows/validate-skill.md**
+**~/.claude/skills/system-create-skill/workflows/validate-skill.md**
 - Skill compliance audit workflow
 - Structural validation
 - Routing validation
 - Documentation validation
 - Integration validation
 
-**~/.claude/skills/system-createskill/workflows/update-skill.md**
+**~/.claude/skills/system-create-skill/workflows/update-skill.md**
 - Skill update and refactoring workflow
 - Adding workflows to existing skills
 - Reorganizing skill structure
@@ -448,7 +448,7 @@ Before considering a skill complete, verify:
 
 **User:** "Create a skill for generating API documentation"
 
-**System-CreateSkill Response:**
+**System-create-skill Response:**
 1. Read SKILL-STRUCTURE-AND-ROUTING.md
 2. Determine archetype: Minimal (single workflow)
 3. Create structure:
@@ -471,7 +471,7 @@ Before considering a skill complete, verify:
 
 **User:** "Create a skill for database operations - migrations, backups, queries, optimization"
 
-**System-CreateSkill Response:**
+**System-create-skill Response:**
 1. Read SKILL-STRUCTURE-AND-ROUTING.md
 2. Determine archetype: Standard (4 workflows)
 3. Create structure:
@@ -497,7 +497,7 @@ Before considering a skill complete, verify:
 
 **User:** "Validate the research skill for compliance"
 
-**System-CreateSkill Response:**
+**System-create-skill Response:**
 1. Read SKILL-STRUCTURE-AND-ROUTING.md
 2. Read ~/.claude/skills/research/SKILL.md
 3. Run validation:
@@ -512,7 +512,7 @@ Before considering a skill complete, verify:
 
 ## Summary
 
-**system-createskill ensures:**
+**system-create-skill ensures:**
 - Every created skill follows architectural standards
 - Compliance is validated automatically
 - Templates drive consistency

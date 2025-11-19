@@ -337,7 +337,7 @@ grep -A 3 '"[skill-name]"' ~/.claude/mcp_settings.json
 # Skill Validation Report: [skill-name]
 
 **Date:** [YYYY-MM-DD]
-**Validator:** system-createskill
+**Validator:** system-create-skill
 **Overall Status:** [PASS / FAIL / NEEDS IMPROVEMENT]
 
 ---
