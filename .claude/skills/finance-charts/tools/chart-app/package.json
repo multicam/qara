@@ -1,0 +1,19 @@
+{
+  "name": "chart-app",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "bun run server.ts",
+    "serve": "bun run server.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "lightweight-charts": "^5.0.9"
+  }
+}
