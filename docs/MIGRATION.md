@@ -495,7 +495,7 @@ After migration, verify:
 
 - **Architecture Guide:** `/docs/ARCHITECTURE.md`
 - **Example Skill:** `.claude/skills/example-skill/`
-- **PAI Repository:** https://github.com/danielmiessler/PAI
+- **PAI Repository:** https://github.com/multicam/qara
 
 ### Common Questions
 
@@ -532,7 +532,7 @@ The v1.2.0 Skills-as-Containers migration:
 
 ---
 
-**Questions or issues?** Create an issue on GitHub: https://github.com/danielmiessler/PAI/issues
+**Questions or issues?** Create an issue on GitHub: https://github.com/multicam/qara/issues
 
 ---
 

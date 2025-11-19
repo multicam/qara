@@ -27,8 +27,8 @@ Follow the installation instructions at [code.claude.com](https://code.claude.co
 ### 1. Clone PAI
 
 ```bash
-git clone https://github.com/danielmiessler/Personal_AI_Infrastructure.git
-cd Personal_AI_Infrastructure
+git clone https://github.com/multicam/qara.git
+cd qara
 ```
 
 ### 2. Configure Environment
@@ -208,9 +208,6 @@ Skills auto-activate based on their description triggers.
 ## Resources
 
 - **Full Documentation:** `.claude/skills/CORE/`
-- **Video Overview:** [PAI Video](https://youtu.be/iKwRWwabkEc)
-- **GitHub Issues:** [Report Problems](https://github.com/danielmiessler/Personal_AI_Infrastructure/issues)
-- **Discussions:** [Ask Questions](https://github.com/danielmiessler/Personal_AI_Infrastructure/discussions)
 
 ---
 

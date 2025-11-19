@@ -738,7 +738,7 @@ This architecture:
 ## References
 
 - **Anthropic Skills Documentation:** https://docs.claude.com/en/docs/agents-and-tools/agent-skills/overview
-- **PAI Repository:** https://github.com/danielmiessler/PAI
+- **PAI Repository:** https://github.com/multicam/qara
 - **Analysis Date:** 2025-10-30
 - **Validated Against:** Anthropic's official Skills framework
 
