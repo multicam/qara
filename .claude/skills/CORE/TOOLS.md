@@ -605,12 +605,12 @@ uv --version
 ### PAI Configuration
 
 - **Setup Script**: `.claude/setup.sh` - Automated installation
-- **Global Preferences**: `.claude/PAI.md` - TypeScript > Python, Bun > npm
-- **Stack Preferences**: `.claude/skills/CORE/SKILL.md` - CLI tool preferences
+- **Global Preferences**: `.claude/skills/CORE/SKILL.md` - TypeScript > Python, Bun > npm
+- **Stack Preferences**: `.claude/skills/CORE/stack-preferences.md` - CLI tool preferences
 
 ### Research
 
-- **Comprehensive Inventory**: `/thoughts/global/shared/research/2025-11-18-pai-tools-comprehensive-inventory.md`
+- **Comprehensive Inventory**: `/skills/CORE/TOOLS.md`
 - **16 parallel gemini-researcher agents** conducted deep research on each tool
 - **Multi-angle analysis** covering purpose, features, installation, use cases, PAI integration
 

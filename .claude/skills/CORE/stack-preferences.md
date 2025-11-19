@@ -32,13 +32,12 @@
 - Automation workflows
 - Build tools
 
-**Use Python ONLY when**:
-- Explicitly approved by Jean-Marc
+**Use Python when**:
 - Required by external dependency (e.g., machine learning library with no TS alternative)
 - Contributing to existing Python codebase
 
 **Why we avoid Python**:
-<!-- TODO: Jean-Marc, add your specific reasoning here -->
+- I am not specifically against python, but mindful of the following:
 - Slower execution than TypeScript/Node
 - Dependency management complexity (pip, conda, virtualenv, poetry...)
 - Indentation-based syntax leads to subtle bugs

@@ -297,7 +297,8 @@ fi
 
 For more information, see:
 
-- **PAI Overview**: `$PAI_DIR/PAI.md`
+- **PAI Overview**: `$PAI_DIR/skills/CORE/SKILL.md`
+- **Constitution**: `$PAI_DIR/skills/CORE/SKILL.md`
 - **Tools Inventory**: `$PAI_DIR/.claude/TOOLS.md`
 - **CLI Tools Guide**: `$PAI_DIR/.claude/skills/CORE/TOOLS.md`
 - **Getting Started**: `$PAI_DIR/documentation/how-to-start.md`

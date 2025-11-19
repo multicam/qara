@@ -952,10 +952,10 @@ Qara uses mandatory structured output format that integrates with voice server f
 ⚡ ACTIONS: Steps taken with tools used
 ✅ RESULTS: Outcomes and changes
 📊 STATUS: Current state
-📁 CAPTURE: [Required - context for this session]
+📁 CAPTURE: [Required - context for this session, separate paragraphs]
 ➡️ NEXT: Recommended follow-ups
-📖 STORY EXPLANATION: [8 lines - narrative summary of what happened]
-🎯 COMPLETED: [What finished - 12 words max]
+📖 STORY EXPLANATION: [8 paragraphs - narrative summary of what happened. Make paragraphs for each item]
+🎯 COMPLETED: [What finished - 15 words max]
 ```
 
 **Why COMPLETED Line Is Critical:**
