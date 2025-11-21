@@ -226,19 +226,15 @@ project/
 ## 🔧 Development Tools
 
 ### Editor
-<!-- TODO: Jean-Marc, specify your preferred editor -->
-- [ ] VS Code
-- [ ] Cursor
-- [ ] Vim/Neovim
-- [ ] Other: ___________
+- [x] PHPStorm
+- [x] Windsurf
+- [x] VS Code
+
 
 ### Terminal
-<!-- TODO: Jean-Marc, specify your preferred terminal -->
-- [ ] iTerm2 (macOS)
-- [ ] Alacritty
-- [ ] WezTerm
-- [ ] Kitty
-- [ ] Other: ___________
+- [x] Warp
+- [x] iTerm2 (macOS)
+- [x] Konsole (Linux)
 
 ### Shell
 - **Bash** (default for scripts)
@@ -382,20 +378,18 @@ services:
 
 ## 🗄️ Database Preferences
 
-<!-- TODO: Jean-Marc, specify your database preferences -->
-
 ### Relational
+- [x] SQLite
+- [ ] MySQL
 - [ ] PostgreSQL
-- [ ] SQLite
 - [ ] Other: ___________
 
 ### NoSQL
-- [ ] MongoDB
-- [ ] Redis
+- [x] MongoDB
 - [ ] Other: ___________
 
 ### ORM/Query Builders
-- [ ] Prisma
+- [x] Prisma
 - [ ] Drizzle
 - [ ] Other: ___________
 
@@ -404,6 +398,8 @@ services:
 ## 🌐 Web Framework Preferences
 
 ### Frontend
+- **Vue** - Component-based UI
+- **Svelte** - Component-based UI
 - **React** - Component-based UI
 - **Next.js** - React with SSR/SSG
 - **Tailwind CSS** - Utility-first styling

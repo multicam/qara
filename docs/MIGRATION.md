@@ -75,7 +75,7 @@ Start fresh with the new structure:
 mv ~/.claude ~/.claude.old
 
 # Run setup from PAI repo
-cd ~/Projects/PAI
+cd ~/qara
 ./setup.sh
 
 # Manually migrate any custom content from ~/.claude.old

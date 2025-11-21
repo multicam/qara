@@ -8,14 +8,15 @@
   "_comment_6": "",
   "_comment_7": "IMPORTANT: Update these values:",
   "_comment_8": "  - MCP_API_KEY: Your actual MCP API key",
-  "_comment_9": "  - PAI_DIR: Path to your .claude directory",
+  "_comment_9": "  - PAI_DIR: Absolute path to your .claude directory (e.g., /home/username/.claude)",
   "_comment_10": "  - DA: Your digital assistant name",
-  "_comment_11": "=================================================================",
+  "_comment_11": "  - NOTE: PAI_DIR must be an ABSOLUTE path, not $HOME or ~",
+  "_comment_12": "=================================================================",
 
   "env": {
     "MCP_API_KEY": "your_mcp_api_key_here",
     "DA": "Qara",
-    "PAI_DIR": "$HOME/.claude",
+    "PAI_DIR": "/home/username/.claude",
     "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "64000"
   },
 
@@ -62,7 +63,6 @@
       "Bash(rm -rf /*)",
       "Bash(rm -rf ~)",
       "Bash(rm -rf $HOME)",
-      "Bash(rm -rf $PAI_HOME)",
       "Bash(rm -rf $PAI_DIR)",
       "Bash(sudo rm -rf /)",
       "Bash(sudo rm -rf /*)",

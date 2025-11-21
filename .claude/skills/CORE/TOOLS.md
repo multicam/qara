@@ -108,6 +108,35 @@ fd -H secret                  # Include hidden files
 
 ---
 
+### fzf - Fuzzy Finder
+
+**Purpose**: Command-line fuzzy finder for interactive filtering and selection
+
+**Key Features**: Blazing fast, portable, minimal dependencies, flexible layout, vim/emacs key bindings, multi-select, preview window, integration with shell history/files/processes
+
+**Installation**: `brew install fzf` or `git clone https://github.com/junegunn/fzf.git && ~/.fzf/install`
+
+**Why PAI Uses**: Interactive file selection, command history search, rapid navigation, shell integration, improved developer workflow
+
+**Detailed Docs**: [`~/.claude/skills/CORE/TOOLS.md`](skills/CORE/TOOLS.md)
+
+**Common Usage**:
+```bash
+fzf                           # Interactive file finder
+history | fzf                 # Search command history
+fd -t f | fzf                 # Fuzzy find files with fd
+kill -9 $(ps aux | fzf)       # Interactive process killer
+```
+
+**Shell Integration**:
+```bash
+# CTRL-T: Paste selected file paths
+# CTRL-R: Command history search
+# ALT-C: cd into selected directory
+```
+
+---
+
 ### ripgrep (rg) - Lightning Text Search
 
 **Purpose**: Fast text search tool, 10-50x faster than `grep`
@@ -492,6 +521,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 | **Bun** | Core | 15x (vs npm) | High | curl / brew |
 | **Cargo/Rust** | Core | N/A | High | rustup script |
 | **fd** | CLI | 13-23x (vs find) | High | cargo / brew |
+| **fzf** | CLI | Interactive fuzzy | High | brew / git |
 | **ripgrep** | CLI | 10-50x (vs grep) | High | cargo / brew |
 | **ast-grep** | CLI | AST-aware | Medium | cargo |
 | **bat** | CLI | Visual enhancement | Medium | cargo / brew |
@@ -531,6 +561,7 @@ source $HOME/.cargo/env
 
 # Install modern CLI tools
 cargo install fd-find ripgrep ast-grep bat
+brew install fzf
 
 # Install GitHub CLI
 brew install gh
@@ -551,6 +582,7 @@ brew --version
 bun --version
 cargo --version
 fd --version
+fzf --version
 rg --version
 ast-grep --version
 bat --version
@@ -570,8 +602,9 @@ uv --version
 
 ### When to Use Which Tool
 
-**File Search**:
+**File Search & Navigation**:
 - Files by name/path → `fd`
+- Interactive fuzzy selection → `fzf`
 - Text content → `ripgrep` (rg)
 - Code structure → `ast-grep`
 - View files → `bat`
@@ -604,13 +637,13 @@ uv --version
 
 ### PAI Configuration
 
-- **Setup Script**: `.claude/setup.sh` - Automated installation
-- **Global Preferences**: `.claude/skills/CORE/SKILL.md` - TypeScript > Python, Bun > npm
-- **Stack Preferences**: `.claude/skills/CORE/stack-preferences.md` - CLI tool preferences
+- **Setup Script**: `~/.claude/setup.sh` - Automated installation
+- **Global Preferences**: `~/.claude/skills/CORE/SKILL.md` - TypeScript > Python, Bun > npm
+- **Stack Preferences**: `~/.claude/skills/CORE/stack-preferences.md` - CLI tool preferences
 
 ### Research
 
-- **Comprehensive Inventory**: `/skills/CORE/TOOLS.md`
+- **Comprehensive Inventory**: `~/.claude/skills/CORE/TOOLS.md`
 - **16 parallel gemini-researcher agents** conducted deep research on each tool
 - **Multi-angle analysis** covering purpose, features, installation, use cases, PAI integration
 
@@ -635,4 +668,4 @@ uv --version
 
 **Maintained By**: PAI System
 **Last Research**: 2025-11-18
-**Tools Documented**: 19 core tools across 4 categories
+**Tools Documented**: 20 core tools across 4 categories

@@ -66,7 +66,7 @@ This plan outlines the strategy for populating stub files created during the Qar
 
 ## Two Repository Strategy
 - PRIVATE QARA: ~/.claude/ - Never commit to public
-- PUBLIC PAI: ~/Projects/PAI/ - Sanitized template only
+- PUBLIC PAI: ~/qara/ - Sanitized template only
 
 ## Pre-Commit Checklist
 1. Run `git remote -v` before every commit
