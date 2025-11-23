@@ -1176,7 +1176,7 @@ workflows/
 ```
 workflows/
 ├── check-sensitive.md          # Core (flat)
-├── update-kai-repo.md          # Core (flat)
+├── update-qara-repo.md          # Core (flat)
 ├── website/                    # Category (nested)
 │   ├── get-analytics.md
 │   └── sync-content.md
