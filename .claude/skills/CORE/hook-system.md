@@ -381,7 +381,7 @@ All hooks receive JSON data on stdin:
 
 ## Common Patterns
 
-### 2. History Capture (UOCS Pattern)
+### 1. History Capture (UOCS Pattern)
 
 **Pattern:** Parse structured response → Save to appropriate history directory
 
@@ -423,7 +423,7 @@ writeFileSync(join(targetDir, filename), content);
 
 ---
 
-### 3. Agent Type Detection
+### 2. Agent Type Detection
 
 **Pattern:** Identify which agent is executing → Route appropriately
 
@@ -459,7 +459,7 @@ else if (hookData.cwd && hookData.cwd.includes('/agents/')) {
 
 ---
 
-### 4. Observability Integration
+### 3. Observability Integration
 
 **Pattern:** Send event to dashboard → Fail silently if offline
 
@@ -485,7 +485,7 @@ await sendEventToObservability({
 
 ---
 
-### 5. Async Non-Blocking Execution
+### 4. Async Non-Blocking Execution
 
 **Pattern:** Hook executes quickly → Launch background processes for slow operations
 
@@ -508,7 +508,7 @@ process.exit(0);  // Exit immediately
 
 ---
 
-### 6. Graceful Failure
+### 5. Graceful Failure
 
 **Pattern:** Wrap everything in try/catch → Log errors → Exit successfully
 
@@ -696,29 +696,6 @@ setTimeout(() => {
   process.exit(0);
 }, 5000);  // 5 second max
 ```
-
----
-
-### Voice Notifications Not Working
-
-**Check:**
-1. Is voice server running? `curl http://localhost:8888/health`
-2. Is voice_id correct? See `skills/CORE/SKILL.md` for mappings
-3. Is message format correct? `{"message":"...", "voice_id":"...", "title":"..."}`
-4. Is ElevenLabs API key in `~/.claude/.env`?
-
-**Debug:**
-```bash
-# Test voice server directly
-curl -X POST http://localhost:8888/notify \
-  -H "Content-Type: application/json" \
-  -d '{"message":"Test message","voice_id":"s3TPKV1kjDlVtZbl4Ksh","title":"Test"}'
-```
-
-**Common Issues:**
-- Wrong voice_id → Silent failure (invalid ID)
-- Voice server offline → Hook continues (graceful failure)
-- No `🎯 COMPLETED:` line → No voice notification extracted
 
 ---
 
