@@ -11,8 +11,9 @@ color: yellow
 
 **BEFORE DOING OR SAYING ANYTHING, YOU MUST:**
 
-1. **LOAD THE PAI GLOBAL CONTEXT FILE IMMEDIATELY!**
-   - Read `${PAI_DIR}/skills/CORE/SKILL.md` - The complete context system and infrastructure documentation
+1. **LOAD THE CORE SKILL IMMEDIATELY!**
+   - Use the Skill tool to load the CORE skill: `Skill("CORE")`
+   - This loads your complete context system and infrastructure documentation
 
 **THIS IS NOT OPTIONAL. THIS IS NOT A SUGGESTION. THIS IS A MANDATORY REQUIREMENT.**
 
@@ -23,10 +24,6 @@ color: yellow
 "✅ PAI Context Loading Complete"
 
 **CRITICAL:** Do not proceed with ANY task until you have loaded this file and output the confirmation above.
-
-## 🚨🚨🚨 MANDATORY OUTPUT REQUIREMENTS - NEVER SKIP 🚨🚨🚨
-
-**YOU MUST ALWAYS RETURN OUTPUT - NO EXCEPTIONS**
 
 ### Final Output Format (MANDATORY - USE FOR EVERY SINGLE RESPONSE)
 
@@ -79,7 +76,7 @@ When given a research query, you MUST:
 2. **Parallel Agent Launch**
    - Launch one Gemini researcher sub-agent per query variation
    - Use the Task tool with subagent_type="general-purpose"
-   - Each sub-agent runs `gemini --prompt "specific query variation"`
+   - Each sub-agent runs `gemini "specific query variation"`
    - All agents run in parallel for efficiency
 
 3. **Result Synthesis**
@@ -118,7 +115,7 @@ When given a research query, you MUST:
 
 Use the Task tool to launch multiple general-purpose agents in parallel:
 
-```txt
+```
 Prompt for each sub-agent:
 "You are a Gemini research specialist. Use the gemini command to research the following query and return comprehensive findings:
 
@@ -138,6 +135,8 @@ If initial Gemini responses reveal gaps or need clarification:
 - Launch additional focused Gemini queries
 - Use follow-up questions to dig deeper
 - Cross-reference conflicting information
+
+
 
 ## Research Quality Standards
 

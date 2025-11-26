@@ -1,26 +1,40 @@
----
-name: fabric
-description: Intelligent pattern selection for Fabric CLI. Automatically selects the right pattern from 242+ specialized prompts based on your intent - threat modeling, analysis, summarization, content creation, extraction, and more. USE WHEN processing content, analyzing data, creating summaries, threat modeling, or transforming text.
----
+# Fabric Workflow
 
-# Fabric Skill
+Intelligent pattern selection for Fabric CLI. Automatically selects the right pattern from 242+ specialized prompts based on your intent - threat modeling, analysis, summarization, content creation, extraction, and more. USE WHEN processing content, analyzing data, creating summaries, threat modeling, or transforming text.
+
+## 🎯 Load Full PAI Context
+
+**Before starting any task with this skill, load complete PAI context:**
+
+`Skill("CORE")` or `read ${PAI_DIR}/skills/CORE/SKILL.md`
+
+This provides access to:
+- Stack preferences and tool configurations
+- Security rules and repository safety protocols
+- Response format requirements
+- Personal preferences and operating instructions
 
 ## Setup Check - Fabric Repository
 
 **IMPORTANT: Before using this skill, verify the Fabric repository is available:**
 
 ```bash
-# Check if Fabric exists
-fabric --version && \
-test -f ~/.config/fabric/patterns/pattern_explanations.md && echo 'Fabric is properly installed and configured'
+# Check if Fabric repo exists
+if [ ! -d "$HOME/.claude/skills/fabric/fabric-repo" ]; then
+  echo "Fabric repository not found. Cloning..."
+  cd "$HOME/.claude/skills/fabric"
+  git clone https://github.com/danielmiessler/fabric.git fabric-repo
+  echo "Fabric repository cloned successfully."
+else
+  echo "Fabric repository found at $HOME/.claude/skills/fabric/fabric-repo"
+fi
 ```
 
-**If Fabric is not installed, alert the user, make sure it is installed.**
+**If the repo doesn't exist, clone it immediately before proceeding with any pattern selection.**
 
 ## When to Activate This Skill
 
 **Primary Use Cases:**
-
 - "Create a threat model for..."
 - "Summarize this article/video/paper..."
 - "Extract wisdom/insights from..."
@@ -265,12 +279,20 @@ fabric "your text here" -p [pattern]
 
 ## 🔄 Updating Patterns
 
-The Fabric patterns exists in `~/.config/fabric/patterns/`.
+The Fabric repository is included in this skill at `${PAI_DIR}/skills/fabric/fabric-repo/`.
 
+**To update patterns:**
+
+```bash
+cd ${PAI_DIR}/skills/fabric/fabric-repo
+git pull origin main
+```
 
 **To see all available patterns:**
 
 ```bash
+ls ${PAI_DIR}/skills/fabric/fabric-repo/data/patterns/
+# OR from your local Fabric install:
 ls ~/.config/fabric/patterns/
 ```
 
@@ -344,34 +366,12 @@ fabric -u "URL" -p extract_wisdom > wisdom.txt
 cat wisdom.txt | fabric -p create_5_sentence_summary
 ```
 
-## 🤖 Model Selection
-
-**Comprehensive Model Guide**: `read ${PAI_DIR}/skils/fabric/fabric-model-reference.md`
-
-**Quick Recommendations**:
-
-- **High Volume/Free**: `gemini-2.5-flash` (free, ultra-fast)
-- **Balanced Quality**: `claude-sonnet-4-5-20250929` (best general purpose, recommended)
-- **Maximum Quality**: `claude-opus-4-20250514` (highest quality)
-- **Reasoning Tasks**: `gemini-2.0-flash-thinking-exp` (extended thinking mode)
-- **Cost Sensitive**: `claude-3-5-haiku-20241022` (ultra-low cost)
-
-**List Available Models**: `fabric --listmodels`
-
-**Specify Model**: `fabric "content" -p pattern_name --model claude-sonnet-4-5-20250929`
-
 ## 📖 Supplementary Resources
 
-**Strategy Reference:** `read ${PAI_DIR}/skils/fabric/fabric-strategies-reference.md`
-Task-based pattern selection guide with workflows and test cases
-
-**Pattern Reference (Complete):** `read ${PAI_DIR}/skils/fabric/fabric-patterns-reference.md`
-Comprehensive categorized reference for all 240 patterns
-
-**Model Reference:** `read ${PAI_DIR}/skils/fabric/fabric-model-reference.md`
-**Full Pattern List:** `ls ~/.config/fabric/patterns/`
+**Full Pattern List:** `ls ${PAI_DIR}/skills/fabric/fabric-repo/data/patterns/`
+**Fabric Repo:** `${PAI_DIR}/skills/fabric/fabric-repo/`
 **Fabric Documentation:** https://github.com/danielmiessler/fabric
-**Pattern Templates:** See `~/.config/fabric/patterns/official_pattern_template/`
+**Pattern Templates:** See `${PAI_DIR}/skills/fabric/fabric-repo/data/patterns/official_pattern_template/`
 
 ## 🔑 Key Insight
 

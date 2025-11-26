@@ -16,7 +16,7 @@
 ```markdown
 When user requests [action]:
 Examples: "actual user phrases", "variations they say", "synonyms"
-→ READ: ~/.claude/skills/[skill]/workflows/[workflow-file].md
+→ READ: ${PAI_DIR}/skills/[skill]/workflows/[workflow-file].md
 → EXECUTE: Brief description of what to do
 ```
 
@@ -71,12 +71,12 @@ description: |
 
 **When user requests [action 1]:**
 Examples: "actual user phrases", "variations", "synonyms"
-→ **READ:** ~/.claude/skills/skill-name/workflows/workflow1.md
+→ **READ:** ${PAI_DIR}/skills/skill-name/workflows/workflow1.md
 → **EXECUTE:** What to do with this workflow
 
 **When user requests [action 2]:**
 Examples: "actual user phrases", "variations", "synonyms"
-→ **READ:** ~/.claude/skills/skill-name/workflows/workflow2.md
+→ **READ:** ${PAI_DIR}/skills/skill-name/workflows/workflow2.md
 → **EXECUTE:** What to do with this workflow
 
 [Route EVERY workflow file in workflows/ directory]
@@ -786,22 +786,22 @@ Three distinct routing patterns emerge from production skills:
 
 **When user requests person/individual research:**
 Examples: "do OSINT on [person]", "research [person]", "background check on [person]", "who is [person]", "find info about [person]", "investigate this person"
-→ **READ:** ~/.claude/skills/security-OSINT/workflows/people/lookup.md
+→ **READ:** ${PAI_DIR}/skills/security-OSINT/workflows/people/lookup.md
 → **EXECUTE:** Complete person OSINT workflow
 
 **When user requests company due diligence:**
 Examples: "due diligence on [company]", "check out [company] before partnership", "vet [company]", "should we work with [company]", "is [company] legitimate"
-→ **READ:** ~/.claude/skills/security-OSINT/workflows/company/due-diligence.md
+→ **READ:** ${PAI_DIR}/skills/security-OSINT/workflows/company/due-diligence.md
 → **EXECUTE:** Comprehensive company due diligence workflow
 
 **When user requests company research (general):**
 Examples: "do OSINT on [company]", "research [company]", "company intelligence on [company]", "what can you find about [company]", "look up [company]"
-→ **READ:** ~/.claude/skills/security-OSINT/workflows/company/lookup.md
+→ **READ:** ${PAI_DIR}/skills/security-OSINT/workflows/company/lookup.md
 → **EXECUTE:** Complete company OSINT workflow
 
 **When user requests entity/domain investigation:**
 Examples: "investigate [domain]", "threat intelligence on [entity]", "is this domain malicious", "research this threat actor", "look up [domain]"
-→ **READ:** ~/.claude/skills/security-OSINT/workflows/entity/lookup.md
+→ **READ:** ${PAI_DIR}/skills/security-OSINT/workflows/entity/lookup.md
 → **EXECUTE:** Complete entity OSINT workflow
 ```
 
@@ -815,7 +815,7 @@ Level 2: Loads SKILL.md, activation conditions match
     ↓
 Level 3: Semantic understanding (vetting/validation intent) → Routes to company due diligence
     ↓
-Level 4: READ ~/.claude/skills/security-OSINT/workflows/company/due-diligence.md
+Level 4: READ ${PAI_DIR}/skills/security-OSINT/workflows/company/due-diligence.md
     ↓
 EXECUTE workflow steps
 ```
@@ -1253,24 +1253,24 @@ Ask yourself:
 
 **For Minimal Skill:**
 ```bash
-mkdir ~/.claude/skills/skill-name
-touch ~/.claude/skills/skill-name/SKILL.md
-mkdir ~/.claude/skills/skill-name/workflows
+mkdir ${PAI_DIR}/skills/skill-name
+touch ${PAI_DIR}/skills/skill-name/SKILL.md
+mkdir ${PAI_DIR}/skills/skill-name/workflows
 ```
 
 **For Standard Skill:**
 ```bash
-mkdir ~/.claude/skills/skill-name
-touch ~/.claude/skills/skill-name/SKILL.md
-mkdir ~/.claude/skills/skill-name/workflows
-mkdir ~/.claude/skills/skill-name/documentation  # if needed
+mkdir ${PAI_DIR}/skills/skill-name
+touch ${PAI_DIR}/skills/skill-name/SKILL.md
+mkdir ${PAI_DIR}/skills/skill-name/workflows
+mkdir ${PAI_DIR}/skills/skill-name/documentation  # if needed
 ```
 
 **For Complex Skill:**
 ```bash
-mkdir ~/.claude/skills/skill-name
-touch ~/.claude/skills/skill-name/SKILL.md
-mkdir ~/.claude/skills/skill-name/{workflows,documentation,references,state,tools}
+mkdir ${PAI_DIR}/skills/skill-name
+touch ${PAI_DIR}/skills/skill-name/SKILL.md
+mkdir ${PAI_DIR}/skills/skill-name/{workflows,documentation,references,state,tools}
 ```
 
 **Step 3: Write SKILL.md**
@@ -1308,25 +1308,16 @@ Skill: Routes to workflow-2.md
 **Step 4: Create First Workflow**
 
 ```bash
-touch ~/.claude/skills/skill-name/workflows/primary-action.md
+touch ${PAI_DIR}/skills/skill-name/workflows/primary-action.md
 ```
 
 Follow workflow file structure (see above)
 
 **Step 5: Register Skill**
 
-Add to `~/.claude/mcp_settings.json` skills section:
+Skills are automatically discovered from the `${PAI_DIR}/skills/` directory based on their SKILL.md files. The skill description in the YAML frontmatter determines when the skill activates.
 
-```json
-{
-  "skills": {
-    "skill-name": {
-      "description": "Brief description. USE WHEN user says 'trigger', 'pattern', or requests 'task type'.",
-      "location": "user"
-    }
-  }
-}
-```
+No manual registration is required - PAI discovers skills at runtime by scanning the skills directory.
 
 **Step 6: Test Activation**
 
@@ -1343,7 +1334,7 @@ Expected: Qara activates skill-name, loads SKILL.md
 
 1. Create workflow file in appropriate location
    ```bash
-   touch ~/.claude/skills/skill-name/workflows/new-action.md
+   touch ${PAI_DIR}/skills/skill-name/workflows/new-action.md
    ```
 
 2. Update SKILL.md to reference new workflow
@@ -1365,11 +1356,11 @@ When you hit 10+ workflows, consider nesting:
 
 ```bash
 # Create category directories
-mkdir ~/.claude/skills/skill-name/workflows/{category1,category2}
+mkdir ${PAI_DIR}/skills/skill-name/workflows/{category1,category2}
 
 # Move workflows to categories
-mv ~/.claude/skills/skill-name/workflows/category1-*.md \
-   ~/.claude/skills/skill-name/workflows/category1/
+mv ${PAI_DIR}/skills/skill-name/workflows/category1-*.md \
+   ${PAI_DIR}/skills/skill-name/workflows/category1/
 
 # Update SKILL.md
 ```
@@ -1391,7 +1382,7 @@ mv ~/.claude/skills/skill-name/workflows/category1-*.md \
 When SKILL.md becomes too large (>500 lines):
 
 ```bash
-mkdir ~/.claude/skills/skill-name/documentation
+mkdir ${PAI_DIR}/skills/skill-name/documentation
 ```
 
 Move extended documentation to documentation/, keep SKILL.md as routing hub
@@ -1401,8 +1392,8 @@ Move extended documentation to documentation/, keep SKILL.md as routing hub
 When workflow needs to persist state:
 
 ```bash
-mkdir ~/.claude/skills/skill-name/state
-touch ~/.claude/skills/skill-name/.gitignore
+mkdir ${PAI_DIR}/skills/skill-name/state
+touch ${PAI_DIR}/skills/skill-name/.gitignore
 ```
 
 Add to .gitignore:
@@ -1426,7 +1417,7 @@ logs/
 
 **Step 1: Archive Current State**
 ```bash
-mkdir ~/.claude/skills/skill-name/.archive/$(date +%Y%m%d)
+mkdir ${PAI_DIR}/skills/skill-name/.archive/$(date +%Y%m%d)
 # Copy current structure to archive
 ```
 
@@ -1443,7 +1434,7 @@ mkdir ~/.claude/skills/skill-name/.archive/$(date +%Y%m%d)
 
 **Step 4: Document Migration**
 ```bash
-touch ~/.claude/skills/skill-name/MIGRATION-$(date +%Y-%m-%d).md
+touch ${PAI_DIR}/skills/skill-name/MIGRATION-$(date +%Y-%m-%d).md
 ```
 
 Include:
@@ -1613,7 +1604,7 @@ Complete Qara system infrastructure and operational tooling.
 
 **When to use:** System operations, communications, website work, creative prompting
 **Workflows:** 17 workflows + 3 reference guides
-**Location:** `~/.claude/skills/system/`
+**Location:** `${PAI_DIR}/skills/system/`
 
 ---
 
@@ -1634,7 +1625,7 @@ Build applications using spec-driven development with test-driven methodology.
 **When to use:** "add a feature", "build app", "implement", any feature/app development
 **Workflows:** 15 SDD workflows + product discovery + utilities
 **Critical:** NEVER do work directly - always orchestrate specialized agents
-**Location:** `~/.claude/skills/development/`
+**Location:** `${PAI_DIR}/skills/development/`
 
 ---
 
@@ -1655,7 +1646,7 @@ Complete content creation workflow from drafting to publication.
 **When to use:** "write blog post", "publish blog", "newsletter suggestions", storytelling
 **Workflows:** 13 workflows (blog 5, newsletter 3, storytelling 5)
 **Critical:** ALWAYS verify repository before git operations
-**Location:** `~/.claude/skills/writing/`
+**Location:** `${PAI_DIR}/skills/writing/`
 
 ---
 
@@ -1671,7 +1662,7 @@ Create social media posts with casual, community-focused tone.
 
 **When to use:** "create tweet", "x post", "twitter thread", "linkedin post"
 **Workflows:** 6 workflows (3 X platform, 3 LinkedIn platform)
-**Location:** `~/.claude/skills/social/`
+**Location:** `${PAI_DIR}/skills/social/`
 
 ---
 
@@ -1688,7 +1679,7 @@ Complete media creation and curation system.
 
 **When to use:** "create image", "generate video", "find music", "make diagram"
 **Workflows:** 14 workflows (images 8, video 2, music 4)
-**Location:** `~/.claude/skills/media/`
+**Location:** `${PAI_DIR}/skills/media/`
 
 ---
 
@@ -1707,7 +1698,7 @@ Complete business operations infrastructure.
 
 **When to use:** "consulting proposal", "hormozi framework", "check finances", "create linear ticket"
 **Workflows:** 16 workflows (consulting 1, hormozi 10, finances 1, benefits 1, project-management 3)
-**Location:** `~/.claude/skills/business/`
+**Location:** `${PAI_DIR}/skills/business/`
 
 ---
 
@@ -1727,7 +1718,7 @@ Comprehensive research, analysis, and content extraction system.
 
 **When to use:** "do research", "analyze content", "can't get this content", "use fabric", YouTube URLs
 **Workflows:** 12 workflows (parallel research 5, deep analysis 1, retrieval 1, fabric 1, enhancement 2, web/youtube 2)
-**Location:** `~/.claude/skills/research/`
+**Location:** `${PAI_DIR}/skills/research/`
 
 ---
 
@@ -1747,7 +1738,7 @@ Extract highest-alpha insights with optional count specification.
 **When to use:** "extract alpha", "EA", "/ea", "highest-alpha ideas", "EA15", "/ea 30"
 **Workflows:** Single skill file (no workflows directory - skill itself is the workflow)
 **Philosophy:** Real information is what's different - prioritize novelty and surprise over comprehensiveness
-**Location:** `~/.claude/skills/extract-alpha/`
+**Location:** `${PAI_DIR}/skills/extract-alpha/`
 
 ---
 
@@ -1765,7 +1756,7 @@ Daniel's personal context and knowledge management.
 
 **When to use:** Life philosophy discussions, "get life log", "capture this learning"
 **Workflows:** 6 workflows (life-logs 1, learning 5)
-**Location:** `~/.claude/skills/personal/`
+**Location:** `${PAI_DIR}/skills/personal/`
 
 ---
 
@@ -1785,7 +1776,7 @@ Overview of Daniel's active projects.
 - **dashboard** - Dashboard system architecture
 
 **When to use:** Need project-specific context, understanding project structure
-**Location:** `~/.claude/skills/projects/`
+**Location:** `${PAI_DIR}/skills/projects/`
 
 ---
 
@@ -1801,7 +1792,7 @@ Stay current with AI industry news and updates.
 
 **When to use:** "get ai news", "check smol.ai", "anthropic updates", "latest ai news"
 **Workflows:** 7 workflows (news monitoring + anthropic tracking + industry intelligence)
-**Location:** `~/.claude/skills/news/`
+**Location:** `${PAI_DIR}/skills/news/`
 
 ---
 
@@ -1817,7 +1808,7 @@ Comprehensive document processing toolkit.
 
 **When to use:** Document creation/editing, "tracked changes", "fill PDF form", "create presentation", spreadsheets
 **Workflows:** Reference-based organization by document type (4 complete guides)
-**Location:** `~/.claude/skills/documents/`
+**Location:** `${PAI_DIR}/skills/documents/`
 
 ---
 
@@ -1990,9 +1981,9 @@ Complete framework for creating new skills or updating existing ones, following 
 **Quick Start:**
 ```bash
 # Automated skill creation (recommended)
-~/.claude/skills/create-skill/scripts/init-skill.sh my-skill --type simple
-~/.claude/skills/create-skill/scripts/init-skill.sh my-skill --type complex
-~/.claude/skills/create-skill/scripts/init-skill.sh my-skill --type with-agents
+${PAI_DIR}/skills/create-skill/scripts/init-skill.sh my-skill --type simple
+${PAI_DIR}/skills/create-skill/scripts/init-skill.sh my-skill --type complex
+${PAI_DIR}/skills/create-skill/scripts/init-skill.sh my-skill --type with-agents
 ```
 
 **Key Creation Steps:**
@@ -2354,7 +2345,7 @@ After research, install recommended skills:
 ---
 
 **Related Documentation:**
-- `~/.claude/skills/CORE/CONSTITUTION.md` - Overall Qara architecture and philosophy
+- `${PAI_DIR}/skills/CORE/CONSTITUTION.md` - Overall Qara architecture and philosophy
 - Skill-specific METHODOLOGY.md files for workflow processes
 
 **Last Updated:** 2025-11-16

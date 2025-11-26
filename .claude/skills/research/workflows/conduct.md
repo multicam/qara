@@ -14,25 +14,61 @@ This command provides instructions for YOU to orchestrate comprehensive multi-so
 
 When a user asks for research, YOU must deliver **FAST RESULTS** through massive parallelization:
 
+## 🏷️ AGENT INSTANCE IDS (For Observability)
+
+**When launching parallel agents of the same type, assign unique instance IDs for tracking:**
+
+Format: `[agent-type-N]` where N is the sequence number (1, 2, 3, etc.)
+
+**How to assign:**
+1. For each researcher type, maintain a counter (starts at 0)
+2. When launching an agent, increment the counter and create instance ID
+3. Include the instance ID in the Task description: `"Query description [perplexity-researcher-1]"`
+
+**Example:**
+```typescript
+// Launching 3 perplexity-researchers:
+Task({
+  subagent_type: "perplexity-researcher",
+  description: "Quantum computing breakthroughs [perplexity-researcher-1]",
+  prompt: "Research recent breakthroughs..."
+})
+Task({
+  subagent_type: "perplexity-researcher",
+  description: "Quantum computing applications [perplexity-researcher-2]",
+  prompt: "Research practical applications..."
+})
+Task({
+  subagent_type: "perplexity-researcher",
+  description: "Quantum computing companies [perplexity-researcher-3]",
+  prompt: "Research leading companies..."
+})
+```
+
+**Why this matters:**
+- Hooks automatically capture these IDs to JSONL logs
+- Enables distinguishing parallel agents in observability dashboard
+- Helps debug specific agent failures or performance issues
+- Optional but recommended for extensive research (8+ agents per type)
+
 **THREE RESEARCH MODES:**
 
-1. **Quick Research: 3 agents (1 of each type)**
-   - 1 perplexity-researcher + 1 claude-researcher + 1 gemini-researcher
-   - Use when user says "quick research" or simple queries
-   - Fastest mode: ~15-20 seconds
+1. **Quick Research: 1 agent per researcher type**
+    - Automatically uses all available *-researcher agents (1 of each)
+    - Use when user says "quick research" or simple queries
+    - Fastest mode: ~15-20 seconds
 
-2. **Standard Research: 9 agents (3 of each type)**
-   - 3 perplexity-researcher + 3 claude-researcher + 3 gemini-researcher
-   - Default mode for most research requests
-   - Balanced coverage: ~30 seconds
+2. **Standard Research: 3 agents per researcher type**
+    - Automatically uses all available *-researcher agents (3 of each)
+    - Default mode for most research requests
+    - Balanced coverage: ~30 seconds
 
-3. **Extensive Research: 24 agents (8 of each type)**
-   - 8 perplexity-researcher + 8 claude-researcher + 8 gemini-researcher
-   - Use when user says "extensive research"
-   - Exhaustive coverage: ~45-60 seconds
+3. **Extensive Research: 8 agents per researcher type**
+    - Automatically uses all available *-researcher agents (8 of each)
+    - Use when user says "extensive research"
+    - Exhaustive coverage: ~45-60 seconds
 
 **Workflow for all modes:**
-
 1. Decompose question into focused sub-questions (appropriate to mode)
 2. Launch all agents in parallel (SINGLE message with multiple Task calls)
 3. Each agent does ONE query + ONE follow-up max
@@ -41,7 +77,6 @@ When a user asks for research, YOU must deliver **FAST RESULTS** through massive
 6. Report back using mandatory response format
 
 **Speed Strategy:**
-
 - Each agent handles a specific angle/sub-question
 - Parallel execution = results in under 1 minute
 - Follow-up queries only when critical information is missing
@@ -52,16 +87,11 @@ When a user asks for research, YOU must deliver **FAST RESULTS** through massive
 
 **WORKFLOW:**
 
-### Step 0: Activate Creative Query Generation
+### Step 0: Generate Creative Research Angles
 
-**Use be-creative skill to generate 24 diverse research angles:**
+**Use UltraThink to generate diverse research angles (8 per researcher type):**
 
-```
-<instructions>
-ULTRATHINK + VERBALIZED SAMPLING MODE:
-
-STEP 1 - ULTRATHINK:
-Think deeply and extensively about this research topic:
+Think deeply and extensively about the research topic:
 - Explore multiple unusual perspectives and domains
 - Question all assumptions about what's relevant
 - Make unexpected connections across different fields
@@ -69,58 +99,33 @@ Think deeply and extensively about this research topic:
 - Think about historical context, future implications, and cross-disciplinary angles
 - What questions would experts from different fields ask?
 
-STEP 2 - GENERATE 24 DIVERSE RESEARCH QUERIES:
-Based on your deep thinking, generate 24 unique research angles/sub-questions.
-Each should be distinct, creative, and explore a different facet of the topic.
-Mix different types: technical, historical, practical, controversial, emerging, comparative, etc.
+Generate 8 unique research angles per researcher type. Each should be distinct, creative, and explore a different facet of the topic. Mix different types: technical, historical, practical, controversial, emerging, comparative, etc.
 
-Organize them into 3 groups of 8:
-- Group 1 (Perplexity): [8 queries optimized for broad web search]
-- Group 2 (Claude): [8 queries optimized for academic/detailed analysis]
-- Group 3 (Gemini): [8 queries optimized for multi-perspective synthesis]
-</instructions>
+Organize them by researcher type with 8 queries each, optimizing queries for each researcher's specific strengths and capabilities.
 
-[User's research topic]
-```
+### Step 1: Launch All Research Agents in Parallel (8 per type)
 
-### Step 1: Launch 24 Research Agents in Parallel
-
-**CRITICAL: Use a SINGLE message with 24 Task tool calls**
+**CRITICAL: Use a SINGLE message with all Task tool calls (8 per researcher type)**
 
 ```typescript
-// Launch 8 perplexity-researcher agents
-Task({ subagent_type: "perplexity-researcher", description: "Query 1", prompt: "..." })
-Task({ subagent_type: "perplexity-researcher", description: "Query 2", prompt: "..." })
-Task({ subagent_type: "perplexity-researcher", description: "Query 3", prompt: "..." })
-Task({ subagent_type: "perplexity-researcher", description: "Query 4", prompt: "..." })
-Task({ subagent_type: "perplexity-researcher", description: "Query 5", prompt: "..." })
-Task({ subagent_type: "perplexity-researcher", description: "Query 6", prompt: "..." })
-Task({ subagent_type: "perplexity-researcher", description: "Query 7", prompt: "..." })
-Task({ subagent_type: "perplexity-researcher", description: "Query 8", prompt: "..." })
+// For EACH researcher type discovered (matching pattern *-researcher):
+// Launch 8 agents of that type with optimized queries
+// Include instance IDs in descriptions: [researcher-type-N]
 
-// Launch 8 claude-researcher agents
-Task({ subagent_type: "claude-researcher", description: "Query 9", prompt: "..." })
-Task({ subagent_type: "claude-researcher", description: "Query 10", prompt: "..." })
-Task({ subagent_type: "claude-researcher", description: "Query 11", prompt: "..." })
-Task({ subagent_type: "claude-researcher", description: "Query 12", prompt: "..." })
-Task({ subagent_type: "claude-researcher", description: "Query 13", prompt: "..." })
-Task({ subagent_type: "claude-researcher", description: "Query 14", prompt: "..." })
-Task({ subagent_type: "claude-researcher", description: "Query 15", prompt: "..." })
-Task({ subagent_type: "claude-researcher", description: "Query 16", prompt: "..." })
+// Example for researcher type A (with instance IDs):
+Task({ subagent_type: "[researcher-type-A]", description: "Query 1 [researcher-type-A-1]", prompt: "..." })
+Task({ subagent_type: "[researcher-type-A]", description: "Query 2 [researcher-type-A-2]", prompt: "..." })
+// ... (8 total for this researcher type: [researcher-type-A-3] through [researcher-type-A-8])
 
-// Launch 8 gemini-researcher agents
-Task({ subagent_type: "gemini-researcher", description: "Query 17", prompt: "..." })
-Task({ subagent_type: "gemini-researcher", description: "Query 18", prompt: "..." })
-Task({ subagent_type: "gemini-researcher", description: "Query 19", prompt: "..." })
-Task({ subagent_type: "gemini-researcher", description: "Query 20", prompt: "..." })
-Task({ subagent_type: "gemini-researcher", description: "Query 21", prompt: "..." })
-Task({ subagent_type: "gemini-researcher", description: "Query 22", prompt: "..." })
-Task({ subagent_type: "gemini-researcher", description: "Query 23", prompt: "..." })
-Task({ subagent_type: "gemini-researcher", description: "Query 24", prompt: "..." })
+// Example for researcher type B (with instance IDs):
+Task({ subagent_type: "[researcher-type-B]", description: "Query 9 [researcher-type-B-1]", prompt: "..." })
+Task({ subagent_type: "[researcher-type-B]", description: "Query 10 [researcher-type-B-2]", prompt: "..." })
+// ... (8 total for this researcher type: [researcher-type-B-3] through [researcher-type-B-8])
+
+// Continue for ALL available *-researcher agents (8 of each type with instance IDs)
 ```
 
 **Each agent prompt should:**
-
 - Include the specific creative query angle
 - **Instruct: "Do 1-2 focused searches and return findings. YOU HAVE UP TO 3 MINUTES - return results as soon as you have useful findings."**
 - Keep it concise but thorough
@@ -140,16 +145,14 @@ Task({ subagent_type: "gemini-researcher", description: "Query 24", prompt: "...
 ### Step 3: Synthesize Extensive Research Results
 
 **Enhanced synthesis requirements for extensive research:**
-
-- Identify themes across all 24 research angles
+- Identify themes across all research angles (8 per researcher type)
 - Cross-validate findings from multiple agents and perspectives
 - Highlight unique insights from each agent type
 - Map coverage across different domains/aspects
 - Identify gaps or conflicting information
-- Calculate comprehensive metrics (24 agents, ~48+ queries, 3 services)
+- Calculate comprehensive metrics (8 per type, ~16+ queries per type, all available services)
 
 **Report structure:**
-
 ```markdown
 ## Executive Summary
 [1-2 paragraph overview of comprehensive findings]
@@ -184,34 +187,33 @@ Task({ subagent_type: "gemini-researcher", description: "Query 24", prompt: "...
 [Note any disagreements or gaps]
 
 ## Research Metrics
-- Total Agents: 24 (8 perplexity, 8 claude, 8 gemini)
-- Total Queries: ~48+ (each agent 1-2 queries)
-- Services Used: 3 (Perplexity API, Claude WebSearch, Gemini Research)
+- Total Agents: [N] (8 per researcher type)
+- Total Queries: ~[2N]+ (each agent 1-2 queries)
+- Services Used: [Count] ([List all researcher services used])
 - Total Output: ~[X] words
 - Confidence Level: [High/Medium] ([%])
 ```
 
-## 🚀 QUICK RESEARCH WORKFLOW (3 AGENTS - 1 OF EACH TYPE)
+## 🚀 QUICK RESEARCH WORKFLOW (1 AGENT PER TYPE)
 
 **ACTIVATION:** User says "quick research" or simple/straightforward queries
 
 **Workflow:**
 
-### Step 1: Identify 3 Core Angles
+### Step 1: Identify Core Angles (1 per researcher type)
 
-Break the question into 3 focused sub-questions - one optimized for each agent type:
+Break the question into focused sub-questions - one optimized for each available researcher type (discovered via *-researcher pattern). Tailor each query to leverage that researcher's specific strengths and data sources.
 
-- **Angle 1 (Perplexity):** Current/web-based information
-- **Angle 2 (Claude):** Detailed/analytical perspective
-- **Angle 3 (Gemini):** Multi-perspective synthesis
-
-### Step 2: Launch 3 Agents in Parallel
+### Step 2: Launch All Researcher Agents in Parallel (1 of each)
 
 ```typescript
-// SINGLE message with 3 Task calls
-Task({ subagent_type: "perplexity-researcher", description: "Current info", prompt: "..." })
-Task({ subagent_type: "claude-researcher", description: "Deep analysis", prompt: "..." })
-Task({ subagent_type: "gemini-researcher", description: "Multi-perspective", prompt: "..." })
+// SINGLE message with 1 Task call per available researcher type
+// For each *-researcher agent discovered, launch 1 agent with optimized query
+
+Task({ subagent_type: "[researcher-type-A]", description: "...", prompt: "..." })
+Task({ subagent_type: "[researcher-type-B]", description: "...", prompt: "..." })
+Task({ subagent_type: "[researcher-type-C]", description: "...", prompt: "..." })
+// ... continue for ALL available *-researcher agents (1 of each type)
 ```
 
 ### Step 3: Quick Synthesis (2 MINUTE TIMEOUT)
@@ -224,61 +226,51 @@ Task({ subagent_type: "gemini-researcher", description: "Multi-perspective", pro
 - Note any non-responsive agents in report
 - Report with standard format
 
-## 📋 STANDARD RESEARCH WORKFLOW (9 AGENTS - 3 OF EACH TYPE)
+## 📋 STANDARD RESEARCH WORKFLOW (3 AGENTS PER TYPE)
 
 **ACTIVATION:** Default mode for most research requests
 
 **Workflow:**
 
-### Step 1: Decompose Question & Launch 9 Agents
+### Step 1: Decompose Question & Launch All Research Agents
 
 **Step 1a: Break Down the Research Question**
 
-Decompose the user's question into 9 specific sub-questions:
+Decompose the user's question into specific sub-questions (3 per researcher type discovered via *-researcher pattern).
 
-- 3 questions optimized for Perplexity (web/current)
-- 3 questions optimized for Claude (academic/detailed)
-- 3 questions optimized for Gemini (multi-perspective)
+Each question should:
+- Cover different angles of the topic
+- Target specific aspects to investigate
+- Explore related areas that provide context
+- Consider edge cases or controversies
+- Be optimized for each researcher's specific strengths and data sources
 
-Each question should cover:
+**Step 1b: Launch All Research Agents in Parallel (3 of each type)**
 
-- Different angles of the topic
-- Specific aspects to investigate
-- Related areas that provide context
-- Potential edge cases or controversies
-
-**Step 1b: Launch 9 Research Agents in Parallel**
-
-Use the **Task tool** - SINGLE message with 9 Task calls:
+Use the **Task tool** - SINGLE message with all Task calls:
 
 ```typescript
-// Launch 3 perplexity-researcher agents
-Task({ subagent_type: "perplexity-researcher", description: "Query 1", prompt: "..." })
-Task({ subagent_type: "perplexity-researcher", description: "Query 2", prompt: "..." })
-Task({ subagent_type: "perplexity-researcher", description: "Query 3", prompt: "..." })
+// For EACH researcher type discovered (matching pattern *-researcher):
+// Launch 3 agents of that type with optimized queries
+// Include instance IDs in descriptions: [researcher-type-N]
 
-// Launch 3 claude-researcher agents
-Task({ subagent_type: "claude-researcher", description: "Query 4", prompt: "..." })
-Task({ subagent_type: "claude-researcher", description: "Query 5", prompt: "..." })
-Task({ subagent_type: "claude-researcher", description: "Query 6", prompt: "..." })
+// Example for researcher type A (3 agents with instance IDs):
+Task({ subagent_type: "[researcher-type-A]", description: "Query 1 [researcher-type-A-1]", prompt: "..." })
+Task({ subagent_type: "[researcher-type-A]", description: "Query 2 [researcher-type-A-2]", prompt: "..." })
+Task({ subagent_type: "[researcher-type-A]", description: "Query 3 [researcher-type-A-3]", prompt: "..." })
 
-// Launch 3 gemini-researcher agents
-Task({ subagent_type: "gemini-researcher", description: "Query 7", prompt: "..." })
-Task({ subagent_type: "gemini-researcher", description: "Query 8", prompt: "..." })
-Task({ subagent_type: "gemini-researcher", description: "Query 9", prompt: "..." })
+// Example for researcher type B (3 agents with instance IDs):
+Task({ subagent_type: "[researcher-type-B]", description: "Query 4 [researcher-type-B-1]", prompt: "..." })
+Task({ subagent_type: "[researcher-type-B]", description: "Query 5 [researcher-type-B-2]", prompt: "..." })
+Task({ subagent_type: "[researcher-type-B]", description: "Query 6 [researcher-type-B-3]", prompt: "..." })
+
+// Continue for ALL available *-researcher agents (3 of each type with instance IDs)
 ```
 
-**Available Research Agents:**
-
-- **perplexity-researcher**: Fast Perplexity API searches
-- **claude-researcher**: Claude WebSearch with intelligent query decomposition
-- **gemini-researcher**: Google Gemini multi-perspective research
-
 **CRITICAL RULES FOR SPEED:**
-
-1. ✅ **Launch ALL 9 agents in ONE message** (parallel execution)
+1. ✅ **Launch ALL agents in ONE message** (parallel execution)
 2. ✅ **Each agent gets ONE specific sub-question** (focused research)
-3. ✅ **3 agents per type** (balanced coverage)
+3. ✅ **3 agents per researcher type** (balanced coverage across all available types)
 4. ✅ **Each agent does 1 query + 1 follow-up max** (quick cycles)
 5. ✅ **Results return in ~30 seconds** (parallel processing)
 6. ❌ **DON'T launch sequentially** (kills speed benefit)
@@ -296,7 +288,6 @@ Task({ subagent_type: "gemini-researcher", description: "Query 9", prompt: "..."
 - **TIMELY RESULTS > PERFECT COMPLETENESS**
 
 Each agent returns:
-
 - Focused findings from their specific sub-question
 - Source citations
 - Confidence indicators
@@ -307,13 +298,11 @@ Each agent returns:
 Create a comprehensive report that:
 
 **A. Identifies Confidence Levels:**
-
 - **HIGH CONFIDENCE**: Findings corroborated by multiple sources
 - **MEDIUM CONFIDENCE**: Found by one source, seems reliable
 - **LOW CONFIDENCE**: Single source, needs verification
 
 **B. Structures Information:**
-
 ```markdown
 ## Key Findings
 
@@ -337,7 +326,6 @@ Create a comprehensive report that:
 ```
 
 **C. Calculate Research Metrics:**
-
 - **Total Queries**: Count all queries across all research commands
 - **Services Used**: List unique services (Perplexity API, Claude WebSearch, etc.)
 - **Total Output**: Estimated character/word count of all research
@@ -354,9 +342,9 @@ Create a comprehensive report that:
 **📊 STATUS:** Research coverage, confidence levels, data quality
 **➡️ NEXT:** Recommended follow-up research or verification needed
 **🎯 COMPLETED:** Completed multi-source [topic] research
+**🗣️ CUSTOM COMPLETED:** [Optional: Voice-optimized under 8 words]
 
 **📈 RESEARCH METRICS:**
-
 - **Total Queries:** [X] (Primary: [Y], Secondary: [Z])
 - **Services Used:** [N] (List: [service1, service2])
 - **Total Output:** [~X words/characters]
@@ -366,12 +354,10 @@ Create a comprehensive report that:
 ## 🚨 CRITICAL RULES FOR QARA
 
 ### ⏱️ TIMEOUT RULES (MOST IMPORTANT):
-
 **After the timeout period, STOP WAITING and synthesize with whatever results you have.**
-- **Quick (3 agents): 2 minute timeout**
-
-- **Standard (9 agents): 3 minute timeout**
-- **Extensive (24 agents): 10 minute timeout**
+- **Quick (1 per type): 2 minute timeout**
+- **Standard (3 per type): 3 minute timeout**
+- **Extensive (8 per type): 10 minute timeout**
 - ✅ Proceed with partial results after timeout
 - ✅ Note non-responsive agents in final report
 - ✅ TIMELY RESULTS > COMPLETENESS
@@ -379,53 +365,48 @@ Create a comprehensive report that:
 - ❌ DO NOT let one slow agent block the entire research
 
 ### MODE SELECTION:
+- **QUICK:** User says "quick research" → 1 agent per researcher type → **2 min timeout**
+- **STANDARD:** Default for most requests → 3 agents per researcher type → **3 min timeout**
+- **EXTENSIVE:** User says "extensive research" → 8 agents per researcher type → **10 min timeout**
 
-- **QUICK:** User says "quick research" → 3 agents (1 of each type) → **2 min timeout**
-- **STANDARD:** Default for most requests → 9 agents (3 of each type) → **3 min timeout**
-- **EXTENSIVE:** User says "extensive research" → 24 agents (8 of each type) → **10 min timeout**
-
-### QUICK RESEARCH (3 agents - 1 of each type):
-
-1. **3 FOCUSED ANGLES** - One per agent type
-2. **LAUNCH 3 AGENTS IN PARALLEL** - SINGLE message with 3 Task calls
-3. **OPTIMIZE per agent** - Perplexity (current), Claude (detailed), Gemini (multi-perspective)
+### QUICK RESEARCH (1 agent per type):
+1. **FOCUSED ANGLES** - One per available researcher type
+2. **LAUNCH ALL RESEARCHER AGENTS IN PARALLEL** - SINGLE message with 1 Task call per type
+3. **OPTIMIZE per agent** - Tailor queries to each researcher's specific strengths
 4. **FAST RESULTS** - ~15-20 seconds
 
-### STANDARD RESEARCH (9 agents - 3 of each type):
-
-1. **LAUNCH 9 AGENTS IN PARALLEL** - Use a SINGLE message with 9 Task tool calls
-2. **DECOMPOSE the question** - Create 9 focused sub-questions (3 per agent type)
+### STANDARD RESEARCH (3 agents per type):
+1. **LAUNCH ALL RESEARCHER AGENTS IN PARALLEL** - Use a SINGLE message with all Task tool calls
+2. **DECOMPOSE the question** - Create focused sub-questions (3 per researcher type)
 3. **ONE QUERY + ONE FOLLOW-UP per agent** - Quick, focused research cycles
-4. **BALANCE across agent types** - 3 perplexity + 3 claude + 3 gemini
+4. **BALANCE across agent types** - 3 agents per discovered researcher type
 5. **WAIT for ALL agents** (~30 seconds) before synthesizing
 6. **SYNTHESIZE results** - Don't just concatenate outputs
-7. **CALCULATE accurate metrics** - Count queries, agents, output size
-8. **ATTRIBUTE sources** - Show which agent/method found each insight
-9. **MARK confidence levels** - Based on multi-source agreement
+7. **USE the mandatory response format** - This triggers voice notifications
+8. **CALCULATE accurate metrics** - Count queries, agents, output size
+9. **ATTRIBUTE sources** - Show which agent/method found each insight
+10. **MARK confidence levels** - Based on multi-source agreement
 
-### EXTENSIVE RESEARCH (24 agents - 8 of each type):
-
-1. **DETECT "extensive research" request** - Activate 24-agent mode
-2. **USE be-creative skill with UltraThink** - Generate 24 diverse query angles
-3. **LAUNCH 24 AGENTS IN PARALLEL** - 8 perplexity + 8 claude + 8 gemini (SINGLE message)
+### EXTENSIVE RESEARCH (8 agents per type):
+1. **DETECT "extensive research" request** - Activate extensive mode
+2. **USE UltraThink** - Generate diverse query angles through deep thinking (8 per type)
+3. **LAUNCH ALL RESEARCHER AGENTS IN PARALLEL** - 8 per type (SINGLE message)
 4. **ORGANIZE queries by agent type** - Optimize each group for that agent's strengths
-5. **WAIT for ALL 24 agents** (30-60 seconds) - Parallel execution
+5. **WAIT for ALL agents** (30-60 seconds) - Parallel execution
 6. **ENHANCED SYNTHESIS** - Comprehensive cross-validation and domain mapping
-7. **COMPREHENSIVE METRICS** - 24 agents, ~48+ queries, extensive output
+7. **COMPREHENSIVE METRICS** - Total agents, queries, extensive output
 8. **COVERAGE MAP** - Show aspects, perspectives, and domains explored
 
 **SPEED CHECKLIST:**
-
 - ✅ Launched agents in ONE message? (parallel execution)
 - ✅ Each agent has ONE focused sub-question?
-- ✅ Using up to 10 agents for broad coverage?
+- ✅ Using all available researcher types for broad coverage?
 - ✅ Agents instructed to do 1 query + 1 follow-up max?
 - ✅ Expected results in under 1 minute?
 
 ## 🚧 HANDLING BLOCKED OR FAILED CRAWLS
 
 If research commands report being blocked, encountering CAPTCHAs, or facing bot detection, note this in your synthesis and recommend using:
-
 - `mcp__Brightdata__scrape_as_markdown` - Scrape single URLs that bypass bot detection
 - `mcp__Brightdata__scrape_batch` - Scrape multiple URLs (up to 10)
 - `mcp__Brightdata__search_engine` - Search Google, Bing, or Yandex with CAPTCHA bypass
@@ -433,114 +414,93 @@ If research commands report being blocked, encountering CAPTCHAs, or facing bot 
 
 ## 💡 EXAMPLE EXECUTION
 
-### Example 1: Standard Research (9 agents - 3 of each type)
+### Example 1: Standard Research (3 agents per type)
 
 **User asks:** "Research the latest developments in quantum computing"
 
 **Your workflow:**
-
 1. ✅ Recognize research intent (hook loaded this command)
-2. ✅ **Decompose into 9 focused sub-questions (3 per agent type):**
+2. ✅ **Decompose into focused sub-questions (3 per researcher type):**
+    - Create 3 questions optimized for each available researcher type
+    - Each question tailored to that researcher's specific strengths
+    - Cover different angles: breakthroughs, applications, news, companies, research state, algorithms, limitations, advantages, cryptography, etc.
 
-   **Perplexity (web/current):**
-   - What are the major quantum computing breakthroughs in 2025?
-   - What practical quantum applications are emerging?
-   - Latest quantum computing news and developments?
-
-   **Claude (academic/detailed):**
-   - Which companies are leading quantum computing development?
-   - What's the state of quantum error correction research?
-   - What are the latest quantum algorithms?
-
-   **Gemini (multi-perspective):**
-   - What are the current limitations and challenges?
-   - How close are we to quantum advantage?
-   - What's happening in quantum cryptography?
-
-3. ✅ **Launch 9 agents in PARALLEL (ONE message with 9 Task calls):**
-
+3. ✅ **Launch ALL researcher agents in PARALLEL (ONE message with all Task calls):**
    ```
-   // 3 Perplexity
-   Task(perplexity-researcher, "2025 quantum breakthroughs")
-   Task(perplexity-researcher, "Practical quantum applications")
-   Task(perplexity-researcher, "Latest quantum news")
+   // 3 agents per researcher type (with instance IDs)
+   Task([researcher-type-A], "Query 1 [researcher-type-A-1] optimized for this type")
+   Task([researcher-type-A], "Query 2 [researcher-type-A-2] optimized for this type")
+   Task([researcher-type-A], "Query 3 [researcher-type-A-3] optimized for this type")
 
-   // 3 Claude
-   Task(claude-researcher, "Leading quantum companies")
-   Task(claude-researcher, "Quantum error correction state")
-   Task(claude-researcher, "Latest quantum algorithms")
-
-   // 3 Gemini
-   Task(gemini-researcher, "Quantum limitations 2025")
-   Task(gemini-researcher, "Quantum advantage timeline")
-   Task(gemini-researcher, "Quantum cryptography developments")
+   Task([researcher-type-B], "Query 4 [researcher-type-B-1] optimized for this type")
+   // ... continue for all available researcher types (3 each with instance IDs)
    ```
 
 4. ✅ **Wait for ALL agents to complete** (~30 seconds)
 5. ✅ **Synthesize their findings:**
-   - Common themes → High confidence
-   - Unique insights → Medium confidence
-   - Disagreements → Note and flag
-6. ✅ **Calculate metrics** (9 agents, ~18 queries, 3 services, output size, confidence %)
+    - Common themes → High confidence
+    - Unique insights → Medium confidence
+    - Disagreements → Note and flag
+6. ✅ **Calculate metrics** (total agents, ~2x queries per agent, all services, output size, confidence %)
 7. ✅ **Return comprehensive report** with mandatory format
+8. ✅ **Voice notification** automatically triggered by your 🎯 COMPLETED line
 
-**Result:** User gets comprehensive quantum computing research from 9 parallel agents (3 of each type) in ~30 seconds, with balanced multi-source validation, source attribution, and confidence levels.
+**Result:** User gets comprehensive quantum computing research from parallel agents (3 per researcher type) in ~30 seconds, with balanced multi-source validation, source attribution, and confidence levels.
 
-### Example 2: Extensive Research (24 agents)
+### Example 2: Extensive Research (8 agents per type)
 
 **User asks:** "Do extensive research on AI consciousness and sentience"
 
 **Your workflow:**
-
 1. ✅ Recognize **"extensive research"** trigger
-2. ✅ **Use be-creative skill with UltraThink** to generate 24 diverse query angles:
-   
-   ```
-   <instructions>
-   ULTRATHINK + VERBALIZED SAMPLING:
-   Think deeply about AI consciousness research from multiple perspectives.
-   Generate 24 unique research angles covering: neuroscience, philosophy, computer science,
-   ethics, current AI capabilities, theoretical frameworks, controversies, tests/metrics,
-   historical context, future implications, cross-cultural perspectives, etc.
-   </instructions>
-   ```
+2. ✅ **Use UltraThink** to generate diverse query angles (8 per researcher type):
+    - Think deeply about AI consciousness research from multiple perspectives
+    - Generate unique research angles covering: neuroscience, philosophy, computer science, ethics, current AI capabilities, theoretical frameworks, controversies, tests/metrics, historical context, future implications, cross-cultural perspectives, etc.
 
-3. ✅ **Generate 24 creative queries organized by agent type:**
+3. ✅ **Organize creative queries by researcher type (8 each):**
+    - For each available researcher type, create 8 queries optimized for that researcher's specific strengths
+    - Tailor questions to leverage each researcher's unique data sources and capabilities
+    - Cover complementary angles across all researcher types
 
-   - **Perplexity (web/current):** Latest AI consciousness claims, current research papers, industry perspectives, consciousness tests, recent breakthroughs, ethical debates, etc.
-   - **Claude (academic/detailed):** Philosophical frameworks, integrated information theory, neuroscience parallels, computational theories, historical evolution, etc.
-   - **Gemini (multi-perspective):** Cross-cultural views on consciousness, interdisciplinary connections, consciousness in nature, emergence theories, etc.
+4. ✅ **Launch ALL researcher agents in PARALLEL (ONE message with all Task calls - 8 per type)**
 
-4. ✅ **Launch 24 agents in PARALLEL (ONE message with 24 Task calls)**
-
-5. ✅ **Wait for ALL 24 agents** (30-60 seconds)
+5. ✅ **Wait for ALL agents** (30-60 seconds)
 
 6. ✅ **Enhanced synthesis with domain mapping:**
-   - Executive summary of comprehensive findings
-   - Key findings organized by domain (philosophy, neuroscience, AI, ethics)
-   - Unique insights from each agent type
-   - Coverage map showing all perspectives explored
-   - High-confidence findings (5+ sources agree)
-   - Conflicting theories and uncertainties
+    - Executive summary of comprehensive findings
+    - Key findings organized by domain (philosophy, neuroscience, AI, ethics)
+    - Unique insights from each agent type
+    - Coverage map showing all perspectives explored
+    - High-confidence findings (multiple sources agree)
+    - Conflicting theories and uncertainties
 
-7. ✅ **Comprehensive metrics** (24 agents, ~48+ queries, extensive cross-validation)
+7. ✅ **Comprehensive metrics** (total agents, ~2x queries per agent, extensive cross-validation)
 
-**Result:** User gets exhaustive AI consciousness research from 24 parallel agents covering philosophy, neuroscience, computer science, ethics, and more - with extensive cross-validation and domain coverage mapping in under 1 minute.
+8. ✅ **Voice notification** automatically triggered
+
+**Result:** User gets exhaustive AI consciousness research from parallel agents (8 per type) covering philosophy, neuroscience, computer science, ethics, and more - with extensive cross-validation and domain coverage mapping in under 1 minute.
+
+## 🎤 VOICE NOTIFICATIONS
+
+Voice notifications are AUTOMATIC when you use the mandatory response format. The stop-hook will:
+- Extract your 🎯 COMPLETED line
+- Send it to the voice server with Jamie (Premium) voice at 228 wpm
+- Announce "Completed multi-source [topic] research"
+
+**YOU DO NOT NEED TO MANUALLY SEND VOICE NOTIFICATIONS** - just use the format.
 
 ## 🔄 BENEFITS OF THIS ARCHITECTURE
 
 **Why parallel agent execution delivers speed:**
-
-1. ✅ **10 agents working simultaneously** - Not sequential, truly parallel
+1. ✅ **All researchers working simultaneously** - Not sequential, truly parallel
 2. ✅ **Results in under 1 minute** - Each agent does 1-2 quick searches
-3. ✅ **Complete coverage** - Multiple perspectives from different services
+3. ✅ **Complete coverage** - Multiple perspectives from all available services
 4. ✅ **Focused research** - Each agent has ONE specific sub-question
 5. ✅ **No iteration delays** - All agents launch at once in ONE message
 6. ✅ **Multi-source validation** - High confidence from cross-agent agreement
 
 **Speed Comparison:**
-
 - ❌ **Old way:** Sequential searches → 5-10 minutes
-- ✅ **New way:** 10 parallel agents → Under 1 minute
+- ✅ **New way:** Parallel agents (all available types) → Under 1 minute
 
 **This is the correct architecture. Use it for FAST research.**

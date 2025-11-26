@@ -1,170 +1,232 @@
 ---
 name: research
-description: Multi-source comprehensive research using perplexity-researcher, claude-researcher, and gemini-researcher agents. Three modes - Quick (3 agents), Standard (9 agents), Extensive (24 agents with be-creative skill). USE WHEN user says 'do research', 'quick research', 'extensive research', 'find information about', 'investigate', 'analyze trends', 'current events', or any research-related request.
+description: Comprehensive research, analysis, and content extraction system. Multi-source parallel research using available researcher agents. Deep content analysis with extended thinking. Intelligent retrieval for difficult sites. Fabric pattern selection for 242+ specialized prompts. USE WHEN user says 'do research', 'extract wisdom', 'analyze content', 'find information about', or requests web/content research.
 ---
 
 # Research Skill
 
-## 🎯 Load Full PAI Context
+## API Keys Required
 
-**Before starting any task with this skill, load complete PAI context:**
+**This skill works best with these optional API keys configured in `~/.env`:**
 
-`read ${PAI_DIR}/skills/CORE/SKILL.md`
+| Feature | API Key | Get It From |
+|---------|---------|-------------|
+| Perplexity Research | `PERPLEXITY_API_KEY` | https://perplexity.ai/settings/api |
+| Gemini Research | `GOOGLE_API_KEY` | https://aistudio.google.com/app/apikey |
+| BrightData Scraping | `BRIGHTDATA_API_KEY` | https://brightdata.com |
 
-This provides access to:
+**Works without API keys:**
+- Claude-based research (uses built-in WebSearch)
+- Basic web fetching (uses built-in WebFetch)
+- Fabric patterns (if Fabric CLI installed)
 
-- Complete contact list and team members
-- Stack preferences (TypeScript>Python, bun>npm, uv>pip)
-- Security rules and repository safety protocols
-- Response format requirements (structured emoji format)
-- Personal preferences and operating instructions
+---
 
-## When to Use This Skill
+## Workflow Routing
 
-This skill activates when the user requests research or information gathering:
+### Multi-Source Research Workflows
 
-- "Do research on X"
-- "Research this topic"
-- "Find information about X"
-- "Investigate this subject"
-- "Analyze trends in X"
-- "Current events research"
-- Any comprehensive information gathering request
+**When user requests comprehensive parallel research:**
+Examples: "do research on X", "research this topic", "find information about Y", "investigate this subject"
+→ **READ:** `~/.claude/skills/research/workflows/conduct.md`
+→ **EXECUTE:** Parallel multi-agent research using available researcher agents
 
-**THREE RESEARCH MODES:**
+**When user requests Claude-based research (FREE - no API keys):**
+Examples: "use claude for research", "claude research on X", "use websearch to research Y"
+→ **READ:** `~/.claude/skills/research/workflows/claude-research.md`
+→ **EXECUTE:** Intelligent query decomposition with Claude's WebSearch
+
+**When user requests Perplexity research (requires PERPLEXITY_API_KEY):**
+Examples: "use perplexity to research X", "perplexity research on Y"
+→ **READ:** `~/.claude/skills/research/workflows/perplexity-research.md`
+→ **EXECUTE:** Fast web search with query decomposition via Perplexity API
+
+**When user requests interview preparation:**
+Examples: "prepare interview questions for X", "interview research on Y"
+→ **READ:** `~/.claude/skills/research/workflows/interview-research.md`
+→ **EXECUTE:** Interview prep with diverse question generation
+
+### Content Retrieval Workflows
+
+**When user indicates difficulty accessing content:**
+Examples: "can't get this content", "site is blocking me", "CAPTCHA blocking"
+→ **READ:** `~/.claude/skills/research/workflows/retrieve.md`
+→ **EXECUTE:** Escalation through layers (WebFetch → BrightData → Apify)
+
+**When user provides YouTube URL:**
+Examples: "get this youtube video", "extract from youtube URL"
+→ **READ:** `~/.claude/skills/research/workflows/youtube-extraction.md`
+→ **EXECUTE:** YouTube content extraction using fabric -y
+
+**When user requests web scraping:**
+Examples: "scrape this site", "extract data from this website"
+→ **READ:** `~/.claude/skills/research/workflows/web-scraping.md`
+→ **EXECUTE:** Web scraping techniques and tools
+
+### Fabric Pattern Processing
+
+**When user requests Fabric pattern usage:**
+Examples: "use fabric to X", "create threat model", "summarize with fabric"
+→ **READ:** `~/.claude/skills/research/workflows/fabric.md`
+→ **EXECUTE:** Auto-select best pattern from 242+ Fabric patterns
+
+### Content Enhancement Workflows
+
+**When user requests content enhancement:**
+Examples: "enhance this content", "improve this draft"
+→ **READ:** `~/.claude/skills/research/workflows/enhance.md`
+→ **EXECUTE:** Content improvement and refinement
+
+**When user requests knowledge extraction:**
+Examples: "extract knowledge from X", "get insights from this"
+→ **READ:** `~/.claude/skills/research/workflows/extract-knowledge.md`
+→ **EXECUTE:** Knowledge extraction and synthesis
+
+---
+
+## Multi-Source Research
+
+### Three Research Modes
 
 **QUICK RESEARCH MODE:**
-
-- User says "quick research" → Launch 3 agents (1 of each type)
-- **Timeout: 2 minutes** | Main Qara waits 2 minutes then synthesizes
+- User says "quick research" → Launch 1 agent per researcher type
+- **Timeout: 2 minutes**
 - Best for: Simple queries, straightforward questions
 
 **STANDARD RESEARCH MODE (Default):**
-
-- Default for most research requests → Launch 9 agents (3 of each type)
-- **Timeout: 3 minutes** | Main Qara waits 3 minutes then synthesizes
+- Default for most research requests → Launch 3 agents per researcher type
+- **Timeout: 3 minutes**
 - Best for: Most research needs, comprehensive coverage
 
 **EXTENSIVE RESEARCH MODE:**
+- User says "extensive research" → Launch 8 agents per researcher type
+- **Timeout: 10 minutes**
+- Best for: Deep-dive research, comprehensive reports
 
-- User says "extensive research" → Launch 24 agents (8 of each type)
-- Use be-creative skill with UltraThink for maximum query diversity
-- Generate 24 unique, creative research angles
-- **Timeout: 10 minutes** | Main Qara waits 10 minutes then synthesizes
-- Best for: Deep-dive research, multi-domain analysis, comprehensive reports
+### Available Research Agents
 
-**⏱️ CRITICAL TIMEOUT RULES:**
+Check `~/.claude/agents/` for agents with "researcher" in their name:
+- `claude-researcher` - Uses Claude's WebSearch (FREE, no API key needed)
+- `perplexity-researcher` - Uses Perplexity API (requires PERPLEXITY_API_KEY)
+- `gemini-researcher` - Uses Gemini API (requires GOOGLE_API_KEY)
 
-- **Quick (3 agents): 2 minute timeout**
-- **Standard (9 agents): 3 minute timeout**
-- **Extensive (24 agents): 10 minute timeout**
-- After timeout, main Qara STOPS WAITING and synthesizes with whatever results are available
-- Proceed with partial results - don't wait indefinitely for stragglers
-
-## How to Execute
-
-**Execute the `/conduct-research` slash command**, which handles the complete workflow:
-
-1. Decomposing research questions into 3-24 sub-questions
-2. Launching up to 24 parallel research agents (perplexity, claude, gemini)
-3. Collecting results in 15-60 seconds (**HARD TIMEOUT: 3 minutes max**)
-4. Synthesizing findings with confidence levels (even with partial results)
-5. Formatting comprehensive report with source attribution
-
-## Available Research Agents
-
-- **perplexity-researcher**: Fast Perplexity API searches (web/current)
-- **claude-researcher**: Claude WebSearch with intelligent query decomposition (academic/detailed)
-- **gemini-researcher**: Google Gemini multi-perspective research (synthesis)
-
-## Speed Benefits
+### Speed Benefits
 
 - ❌ **Old approach**: Sequential searches → 5-10 minutes
-- ✅ **Quick mode**: 3 parallel agents → **2 minute timeout**
-- ✅ **Standard mode**: 9 parallel agents → **3 minute timeout**
-- ✅ **Extensive mode**: 24 parallel agents → **10 minute timeout**
+- ✅ **Quick mode**: 1 agent per type → **2 minute timeout**
+- ✅ **Standard mode**: 3 agents per type → **3 minute timeout**
+- ✅ **Extensive mode**: 8 agents per type → **10 minute timeout**
 
-**⏱️ CRITICAL: After timeout, proceed with whatever results are available. DO NOT wait indefinitely for slow agents.**
+---
 
-## 📁 Scratchpad → History Pattern
+## Intelligent Content Retrieval
 
-**Working Directory (Scratchpad):** `${PAI_DIR}/scratchpad/YYYY-MM-DD-HHMMSS_research-[topic]/`
+### Three-Layer Escalation System
 
-**Process:**
+**Layer 1: Built-in Tools (Try First - FREE)**
+- WebFetch - Standard web content fetching
+- WebSearch - Search engine queries
+- When to use: Default for all content retrieval
 
-1. **Scratchpad (Working Files - Temporary):**
-   - Create timestamped directory for each research project
-   - Store raw research outputs from all agents
-   - Keep intermediate synthesis notes
-   - Save query decomposition and analysis
-   - Draft reports and iterations
+**Layer 2: BrightData MCP (requires BRIGHTDATA_API_KEY)**
+- CAPTCHA solving via Scraping Browser
+- Advanced JavaScript rendering
+- When to use: Bot detection blocking, CAPTCHA protection
 
-2. **History (Permanent Archive):**
-   - Move to `${PAI_DIR}/history/research/YYYY-MM-DD_[topic]/` when complete
-   - Include: `README.md`, final research report, key data files
-   - Archive for future reference and reuse
+**Layer 3: Apify MCP (requires Apify account)**
+- Specialized site scrapers (Instagram, LinkedIn, etc.)
+- Complex extraction logic
+- When to use: Layers 1 and 2 both failed
 
-3. **Verification (MANDATORY):**
-   - Check if hooks captured output to history automatically
-   - If hooks failed, manually save to history
-   - Confirm all files present in history directory
+**Critical Rules:**
+- Always try simplest approach first (Layer 1)
+- Escalate only when previous layer fails
+- Document which layers were used and why
 
-**File Structure Example:**
+---
 
-**Scratchpad (temporary workspace):**
+## Fabric Pattern Selection
 
+### Categories (242+ Patterns)
+
+**Threat Modeling & Security:**
+- `create_threat_model`, `create_stride_threat_model`
+- `analyze_threat_report`, `analyze_incident`
+
+**Summarization:**
+- `summarize`, `create_5_sentence_summary`
+- `summarize_meeting`, `summarize_paper`, `youtube_summary`
+
+**Wisdom Extraction:**
+- `extract_wisdom`, `extract_article_wisdom`
+- `extract_insights`, `extract_main_idea`
+
+**Analysis:**
+- `analyze_claims`, `analyze_code`, `analyze_debate`
+- `analyze_logs`, `analyze_paper`
+
+**Content Creation:**
+- `create_prd`, `create_design_document`
+- `create_mermaid_visualization`, `create_user_story`
+
+**Improvement:**
+- `improve_writing`, `improve_prompt`, `review_code`
+
+### Usage
+
+```bash
+# Auto-select pattern based on intent
+fabric [input] -p [selected_pattern]
+
+# From URL
+fabric -u "URL" -p [pattern]
+
+# From YouTube
+fabric -y "YOUTUBE_URL" -p [pattern]
 ```
-${PAI_DIR}/scratchpad/2025-10-26-143022_research-agi-frameworks/
+
+---
+
+## File Organization
+
+### Working Directory (Scratchpad)
+```
+~/.claude/scratchpad/YYYY-MM-DD-HHMMSS_research-[topic]/
 ├── raw-outputs/
-│   ├── perplexity-001.md
-│   ├── claude-001.md
-│   └── gemini-001.md
 ├── synthesis-notes.md
-├── query-decomposition.md
 └── draft-report.md
 ```
 
-**History (permanent archive):**
-
+### Permanent Storage (History)
 ```
-${PAI_DIR}/history/research/2025-10-26_agi-frameworks/
-├── README.md (research documentation)
-├── research-report.md (final comprehensive report)
-├── key-findings.md (executive summary)
-└── metadata.json (sources, agents used, timestamps)
+~/.claude/history/research/YYYY-MM/YYYY-MM-DD_[topic]/
+├── README.md
+├── research-report.md
+└── metadata.json
 ```
 
-**README.md Template:**
+---
 
-```markdown
-# Research: [Topic]
+## Key Principles
 
-**Date:** YYYY-MM-DD
-**Research Mode:** Quick/Standard/Extensive
-**Agents Used:** X perplexity, Y claude, Z gemini
+1. **Parallel execution** - Launch multiple agents simultaneously
+2. **Hard timeouts** - Don't wait indefinitely, proceed with partial results
+3. **Simplest first** - Always try free tools before paid services
+4. **Auto-routing** - Skill analyzes intent and activates appropriate workflow
 
-## Research Question
-[Original question or topic]
+---
 
-## Key Findings
-- Finding 1
-- Finding 2
-- Finding 3
+## Workflow Files
 
-## Methodology
-- Query decomposition: [How questions were split]
-- Agents deployed: [Which agents, how many]
-- Sources consulted: [Number and types]
-
-## Output Files
-- research-report.md: Full comprehensive report
-- key-findings.md: Executive summary
-- metadata.json: Source tracking
-
-## Notes
-[Any limitations, gaps, or follow-up needed]
-```
-
-## Full Workflow Reference
-
-For complete step-by-step instructions: `read ${PAI_DIR}/commands/conduct-research.md`
+| Workflow | File | API Keys Needed |
+|----------|------|-----------------|
+| Multi-Source Research | `workflows/conduct.md` | Varies by agent |
+| Claude Research | `workflows/claude-research.md` | None (FREE) |
+| Perplexity Research | `workflows/perplexity-research.md` | PERPLEXITY_API_KEY |
+| Interview Prep | `workflows/interview-research.md` | None |
+| Content Retrieval | `workflows/retrieve.md` | Optional: BRIGHTDATA_API_KEY |
+| YouTube Extraction | `workflows/youtube-extraction.md` | None (uses Fabric) |
+| Web Scraping | `workflows/web-scraping.md` | Optional: BRIGHTDATA_API_KEY |
+| Fabric Patterns | `workflows/fabric.md` | None |
+| Content Enhancement | `workflows/enhance.md` | None |
+| Knowledge Extraction | `workflows/extract-knowledge.md` | None |

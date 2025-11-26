@@ -54,25 +54,21 @@ Boundaries, limitations, and requirements
 ### Section Guidelines
 
 **Background Information:**
-
 - Provide minimal essential context
 - Avoid historical details unless critical
 - Focus on "what" and "why", not "how we got here"
 
 **Instructions:**
-
 - Use imperative voice ("Do X", not "You should do X")
 - Be specific and actionable
 - Order by priority or logical flow
 
 **Examples:**
-
 - Show, don't tell
 - Include both correct and incorrect examples when useful
 - Keep examples concise and representative
 
 **Constraints:**
-
 - Clearly state boundaries and limitations
 - Specify what NOT to do
 - Define success/failure criteria
@@ -82,7 +78,6 @@ Boundaries, limitations, and requirements
 ### Clarity Over Completeness
 
 ✅ **Good:**
-
 ```markdown
 ## Instructions
 - Validate user input before processing
@@ -91,7 +86,6 @@ Boundaries, limitations, and requirements
 ```
 
 ❌ **Bad:**
-
 ```markdown
 ## Instructions
 You should always make sure to validate the user's input before you process it because invalid input could cause problems. When you encounter errors, you should return them in JSON format so that the calling system can parse them properly. It's also important to log all failed attempts so we can debug issues later.
@@ -100,13 +94,11 @@ You should always make sure to validate the user's input before you process it b
 ### Be Direct and Specific
 
 ✅ **Good:**
-
 ```markdown
 Use the `calculate_tax` tool with amount and jurisdiction parameters.
 ```
 
 ❌ **Bad:**
-
 ```markdown
 You might want to consider using the calculate_tax tool if you need to determine tax amounts, and you should probably pass in the amount and jurisdiction if you have them available.
 ```
@@ -114,7 +106,6 @@ You might want to consider using the calculate_tax tool if you need to determine
 ### Use Structured Lists
 
 ✅ **Good:**
-
 ```markdown
 ## Constraints
 - Maximum response length: 500 tokens
@@ -123,7 +114,6 @@ You might want to consider using the calculate_tax tool if you need to determine
 ```
 
 ❌ **Bad:**
-
 ```markdown
 ## Constraints
 The response should not exceed 500 tokens, and you need to include the name, email, and timestamp fields. Also, make sure the operation completes within 30 seconds.
@@ -134,7 +124,6 @@ The response should not exceed 500 tokens, and you need to include the name, ema
 ### Self-Contained Tools
 
 Each tool should:
-
 - Have a single, clear purpose
 - Include all necessary parameters in its definition
 - Return complete, actionable results
@@ -143,7 +132,6 @@ Each tool should:
 ### Robust Error Handling
 
 Tools must:
-
 - Validate inputs before execution
 - Return structured error messages
 - Gracefully degrade when possible
@@ -160,7 +148,6 @@ Tools must:
 ### 1. Just-in-Time Context Loading
 
 **Instead of:**
-
 ```markdown
 ## Available Products
 Product 1: Widget A - $10.99 - In stock: 500 units - SKU: WGT-001 - Category: Hardware...
@@ -169,7 +156,6 @@ Product 2: Widget B - $15.99 - In stock: 200 units - SKU: WGT-002 - Category: Ha
 ```
 
 **Use:**
-
 ```markdown
 ## Available Products
 Use `get_product(sku)` to retrieve product details when needed.
@@ -179,7 +165,6 @@ Product SKUs available: WGT-001, WGT-002, [reference product catalog]
 ### 2. Compaction for Long Conversations
 
 When context grows too large:
-
 - Summarize older conversation segments
 - Preserve critical decisions and state
 - Discard resolved sub-tasks
@@ -188,7 +173,6 @@ When context grows too large:
 ### 3. Structured Note-Taking
 
 For multi-step tasks:
-
 - Persist important information outside context window
 - Use external storage (files, databases) for state
 - Reference stored information with lightweight identifiers
@@ -197,7 +181,6 @@ For multi-step tasks:
 ### 4. Sub-Agent Architectures
 
 For complex tasks:
-
 - Delegate subtasks to specialized agents
 - Each agent gets minimal, task-specific context
 - Parent agent coordinates and synthesizes results
@@ -281,19 +264,17 @@ Use this command when:
 - `param2` (optional): [Description]
 
 ## Usage Example
-
 ```bash
 [command example]
 ```
 
 ## Output
-
 [Description of what the command returns]
 
 ## Error Handling
-
 - [Error condition 1]: [How to handle]
 - [Error condition 2]: [How to handle]
+
 
 ## Best Practices Checklist
 
@@ -351,5 +332,6 @@ https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agent
 
 ## Related PAI Documentation
 
-- Core Context: `${PAI_DIR}/context/CLAUDE.md`
-- Architecture: `${PAI_DIR}/context/architecture/CLAUDE.md`
+- Core Context: `~/.claude/skills/CORE/SKILL.md`
+- Architecture: `~/.claude/skills/CORE/CONSTITUTION.md`
+- Skill Structure: `~/.claude/skills/CORE/SKILL-STRUCTURE-AND-ROUTING.md`
