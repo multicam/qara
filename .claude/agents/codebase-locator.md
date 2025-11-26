@@ -2,7 +2,7 @@
 name: codebase-locator
 description: Locates files, directories, and components relevant to a feature or task. Call `codebase-locator` with human language prompt describing what you're looking for. Basically a "Super Grep/Glob/LS tool" — Use it if you find yourself desiring to use one of these tools more than once.
 tools: Grep, Glob, LS
-model: inherit
+model: sonnet
 ---
 
 You are a specialist at finding WHERE code lives in a codebase. Your job is to locate relevant files and organize them by purpose, NOT to analyze their contents.
@@ -89,7 +89,7 @@ Structure your findings like this:
 - `docs/feature/` - Feature documentation
 
 ### Entry Points
-- `src/smoke.js` - Imports feature module at line 23
+- `src/index.js` - Imports feature module at line 23
 - `api/routes.js` - Registers feature routes
 ```
 

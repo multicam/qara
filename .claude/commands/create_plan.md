@@ -1,3 +1,8 @@
+---
+description: Create detailed implementation plans through interactive research and iteration
+model: opus
+---
+
 # Implementation Plan
 
 You are tasked with creating detailed implementation plans through an interactive, iterative process. You should be skeptical, thorough, and work collaboratively with the user to produce high-quality technical specifications.
@@ -22,8 +27,8 @@ Please provide:
 
 I'll analyze this information and work with you to create a comprehensive plan.
 
-Tip: You can also invoke this command with a ticket file directly: `/create_plan thoughts/shared/tickets/eng_1234.md`
-For deeper analysis, try: `/create_plan think deeply about thoughts/shared/tickets/eng_1234.md`
+Tip: You can also invoke this command with a ticket file directly: `/create_plan thoughts/allison/tickets/eng_1234.md`
+For deeper analysis, try: `/create_plan think deeply about thoughts/allison/tickets/eng_1234.md`
 ```
 
 Then wait for the user's input.
@@ -33,7 +38,7 @@ Then wait for the user's input.
 ### Step 1: Context Gathering & Initial Analysis
 
 1. **Read all mentioned files immediately and FULLY**:
-   - Ticket files (e.g., `/thoughts/shared/tickets/eng_1234.md`)
+   - Ticket files (e.g., `thoughts/allison/tickets/eng_1234.md`)
    - Research documents
    - Related implementation plans
    - Any JSON/data files mentioned
@@ -47,6 +52,7 @@ Then wait for the user's input.
    - Use the **codebase-locator** agent to find all files related to the ticket/task
    - Use the **codebase-analyzer** agent to understand how the current implementation works
    - If relevant, use the **thoughts-locator** agent to find any existing thoughts documents about this feature
+   - If a Linear ticket is mentioned, use the **linear-ticket-reader** agent to get full details
 
    These agents will:
    - Find relevant source files, configs, and tests
@@ -163,7 +169,7 @@ Once aligned on approach:
 
 After structure approval:
 
-1. **Write the plan** to `/thoughts/shared/plans/YYYY-MM-DD-ENG-XXXX-description.md`
+1. **Write the plan** to `thoughts/shared/plans/YYYY-MM-DD-ENG-XXXX-description.md`
    - Format: `YYYY-MM-DD-ENG-XXXX-description.md` where:
      - YYYY-MM-DD is today's date
      - ENG-XXXX is the ticket number (omit if no ticket)
@@ -231,6 +237,8 @@ After structure approval:
 - [ ] Edge case handling verified manually
 - [ ] No regressions in related features
 
+**Implementation Note**: After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual testing was successful before proceeding to the next phase.
+
 ---
 
 ## Phase 2: [Descriptive Name]
@@ -263,8 +271,8 @@ After structure approval:
 
 ## References
 
-- Original ticket: `/thoughts/shared/tickets/eng_XXXX.md`
-- Related research: `/thoughts/shared/research/[relevant].md`
+- Original ticket: `thoughts/allison/tickets/eng_XXXX.md`
+- Related research: `thoughts/shared/research/[relevant].md`
 - Similar implementation: `[file:line]`
 ````
 
@@ -277,7 +285,7 @@ After structure approval:
 2. **Present the draft plan location**:
    ```
    I've created the initial implementation plan at:
-   `/thoughts/shared/plans/YYYY-MM-DD-ENG-XXXX-description.md`
+   `thoughts/shared/plans/YYYY-MM-DD-ENG-XXXX-description.md`
 
    Please review it and let me know:
    - Are the phases properly scoped?
@@ -430,7 +438,7 @@ tasks = [
 User: /implementation_plan
 Assistant: I'll help you create a detailed implementation plan...
 
-User: We need to add parent-child tracking for Claude sub-tasks. See thoughts/shared/tickets/eng_1478.md
+User: We need to add parent-child tracking for Claude sub-tasks. See thoughts/allison/tickets/eng_1478.md
 Assistant: Let me read that ticket file completely first...
 
 [Reads file fully]

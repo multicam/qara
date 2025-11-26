@@ -1,3 +1,8 @@
+---
+description: Document codebase as-is with thoughts directory for historical context
+model: opus
+---
+
 # Research Codebase
 
 You are tasked with conducting comprehensive research across the codebase to answer user questions by spawning parallel sub-agents and synthesizing their findings.
@@ -78,8 +83,8 @@ Then wait for the user's research query.
    - Answer the user's specific questions with concrete evidence
 
 5. **Gather metadata for the research document:**
-   - generate all relevant metadata
-   - Filename: `/thoughts/shared/research/YYYY-MM-DD-ENG-XXXX-description.md`
+   - Run the `hack/spec_metadata.sh` script to generate all relevant metadata
+   - Filename: `thoughts/shared/research/YYYY-MM-DD-ENG-XXXX-description.md`
      - Format: `YYYY-MM-DD-ENG-XXXX-description.md` where:
        - YYYY-MM-DD is today's date
        - ENG-XXXX is the ticket number (omit if no ticket)
@@ -138,8 +143,8 @@ Then wait for the user's research query.
 
      ## Historical Context (from thoughts/)
      [Relevant insights from thoughts/ directory with references]
-     - `/thoughts/shared/something.md` - Historical decision about X
-     - `/thoughts/local/notes.md` - Past exploration of Y
+     - `thoughts/shared/something.md` - Historical decision about X
+     - `thoughts/local/notes.md` - Past exploration of Y
      Note: Paths exclude "searchable/" even if found there
 
      ## Related Research
@@ -157,6 +162,7 @@ Then wait for the user's research query.
    - Replace local file references with permalinks in the document
 
 8. **Sync and present findings:**
+   - Run `npx humanlayer thoughts sync` to sync the thoughts directory
    - Present a concise summary of findings to the user
    - Include key file references for easy navigation
    - Ask if they have follow-up questions or need clarification
@@ -194,9 +200,9 @@ Then wait for the user's research query.
 - **Path handling**: The thoughts/searchable/ directory contains hard links for searching
   - Always document paths by removing ONLY "searchable/" - preserve all other subdirectories
   - Examples of correct transformations:
-    - `/thoughts/searchable/allison/old_stuff/notes.md` → `/thoughts/allison/old_stuff/notes.md`
-    - `/thoughts/searchable/shared/prs/123.md` → `/thoughts/shared/prs/123.md`
-    - `/thoughts/searchable/global/shared/templates.md` → `/thoughts/global/shared/templates.md`
+    - `thoughts/searchable/allison/old_stuff/notes.md` → `thoughts/allison/old_stuff/notes.md`
+    - `thoughts/searchable/shared/prs/123.md` → `thoughts/shared/prs/123.md`
+    - `thoughts/searchable/global/shared/templates.md` → `thoughts/global/shared/templates.md`
   - NEVER change allison/ to shared/ or vice versa - preserve the exact directory structure
   - This ensures paths are correct for editing and navigation
 - **Frontmatter consistency**:
