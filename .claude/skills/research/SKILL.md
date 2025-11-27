@@ -28,58 +28,58 @@ description: Comprehensive research, analysis, and content extraction system. Mu
 
 **When user requests comprehensive parallel research:**
 Examples: "do research on X", "research this topic", "find information about Y", "investigate this subject"
-→ **READ:** `~/.claude/skills/research/workflows/conduct.md`
+→ **READ:** `${PAI_DIR}/skills/research/workflows/conduct.md`
 → **EXECUTE:** Parallel multi-agent research using available researcher agents
 
 **When user requests Claude-based research (FREE - no API keys):**
 Examples: "use claude for research", "claude research on X", "use websearch to research Y"
-→ **READ:** `~/.claude/skills/research/workflows/claude-research.md`
+→ **READ:** `${PAI_DIR}/skills/research/workflows/claude-research.md`
 → **EXECUTE:** Intelligent query decomposition with Claude's WebSearch
 
 **When user requests Perplexity research (requires PERPLEXITY_API_KEY):**
 Examples: "use perplexity to research X", "perplexity research on Y"
-→ **READ:** `~/.claude/skills/research/workflows/perplexity-research.md`
+→ **READ:** `${PAI_DIR}/skills/research/workflows/perplexity-research.md`
 → **EXECUTE:** Fast web search with query decomposition via Perplexity API
 
 **When user requests interview preparation:**
 Examples: "prepare interview questions for X", "interview research on Y"
-→ **READ:** `~/.claude/skills/research/workflows/interview-research.md`
+→ **READ:** `${PAI_DIR}/skills/research/workflows/interview-research.md`
 → **EXECUTE:** Interview prep with diverse question generation
 
 ### Content Retrieval Workflows
 
 **When user indicates difficulty accessing content:**
 Examples: "can't get this content", "site is blocking me", "CAPTCHA blocking"
-→ **READ:** `~/.claude/skills/research/workflows/retrieve.md`
+→ **READ:** `${PAI_DIR}/skills/research/workflows/retrieve.md`
 → **EXECUTE:** Escalation through layers (WebFetch → BrightData → Apify)
 
 **When user provides YouTube URL:**
 Examples: "get this youtube video", "extract from youtube URL"
-→ **READ:** `~/.claude/skills/research/workflows/youtube-extraction.md`
+→ **READ:** `${PAI_DIR}/skills/research/workflows/youtube-extraction.md`
 → **EXECUTE:** YouTube content extraction using fabric -y
 
 **When user requests web scraping:**
 Examples: "scrape this site", "extract data from this website"
-→ **READ:** `~/.claude/skills/research/workflows/web-scraping.md`
+→ **READ:** `${PAI_DIR}/skills/research/workflows/web-scraping.md`
 → **EXECUTE:** Web scraping techniques and tools
 
 ### Fabric Pattern Processing
 
 **When user requests Fabric pattern usage:**
 Examples: "use fabric to X", "create threat model", "summarize with fabric"
-→ **READ:** `~/.claude/skills/research/workflows/fabric.md`
+→ **READ:** `${PAI_DIR}/skills/research/workflows/fabric.md`
 → **EXECUTE:** Auto-select best pattern from 242+ Fabric patterns
 
 ### Content Enhancement Workflows
 
 **When user requests content enhancement:**
 Examples: "enhance this content", "improve this draft"
-→ **READ:** `~/.claude/skills/research/workflows/enhance.md`
+→ **READ:** `${PAI_DIR}/skills/research/workflows/enhance.md`
 → **EXECUTE:** Content improvement and refinement
 
 **When user requests knowledge extraction:**
 Examples: "extract knowledge from X", "get insights from this"
-→ **READ:** `~/.claude/skills/research/workflows/extract-knowledge.md`
+→ **READ:** `${PAI_DIR}/skills/research/workflows/extract-knowledge.md`
 → **EXECUTE:** Knowledge extraction and synthesis
 
 ---
@@ -105,7 +105,7 @@ Examples: "extract knowledge from X", "get insights from this"
 
 ### Available Research Agents
 
-Check `~/.claude/agents/` for agents with "researcher" in their name:
+Check `${PAI_DIR}/agents/` for agents with "researcher" in their name:
 - `claude-researcher` - Uses Claude's WebSearch (FREE, no API key needed)
 - `perplexity-researcher` - Uses Perplexity API (requires PERPLEXITY_API_KEY)
 - `gemini-researcher` - Uses Gemini API (requires GOOGLE_API_KEY)
@@ -191,7 +191,7 @@ fabric -y "YOUTUBE_URL" -p [pattern]
 
 ### Working Directory (Scratchpad)
 ```
-~/.claude/scratchpad/YYYY-MM-DD-HHMMSS_research-[topic]/
+${PAI_DIR}/scratchpad/YYYY-MM-DD-HHMMSS_research-[topic]/
 ├── raw-outputs/
 ├── synthesis-notes.md
 └── draft-report.md
@@ -199,7 +199,7 @@ fabric -y "YOUTUBE_URL" -p [pattern]
 
 ### Permanent Storage (History)
 ```
-~/.claude/history/research/YYYY-MM/YYYY-MM-DD_[topic]/
+${PAI_DIR}/history/research/YYYY-MM/YYYY-MM-DD_[topic]/
 ├── README.md
 ├── research-report.md
 └── metadata.json

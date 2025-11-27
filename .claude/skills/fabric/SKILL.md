@@ -20,7 +20,6 @@ test -f ~/.config/fabric/patterns/pattern_explanations.md && echo 'Fabric is pro
 ## When to Activate This Skill
 
 **Primary Use Cases:**
-
 - "Create a threat model for..."
 - "Summarize this article/video/paper..."
 - "Extract wisdom/insights from..."

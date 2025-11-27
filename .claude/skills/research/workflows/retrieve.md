@@ -96,7 +96,7 @@ WebFetch({
 - Gets rate-limited (429 status)
 - Receives CAPTCHA challenge
 - Returns empty/broken content
-  → **Escalate to Layer 2 (BrightData)**
+→ **Escalate to Layer 2 (BrightData)**
 
 ### WebSearch Tool
 
@@ -114,7 +114,7 @@ WebSearch({
 **When it fails:**
 - Need more comprehensive search results
 - Need specific search engine (Google, Bing, Yandex)
-  → **Escalate to Layer 2 (BrightData search_engine)**
+→ **Escalate to Layer 2 (BrightData search_engine)**
 
 ## Layer 2: BrightData MCP
 
@@ -154,7 +154,7 @@ mcp__Brightdata__scrape_batch({
 **When it fails:**
 - Site requires very specialized extraction logic
 - Need social media specific scraping
-  → **Escalate to Layer 3 (Apify Actors)**
+→ **Escalate to Layer 3 (Apify Actors)**
 
 ### search_engine Tool
 
@@ -399,32 +399,32 @@ mcp__Apify__apify-slash-rag-web-browser({
 
 ## 📁 Scratchpad → History Pattern
 
-**Working Directory (Scratchpad):** `~/.claude/scratchpad/YYYY-MM-DD-HHMMSS_retrieve-[site-or-topic]/`
+**Working Directory (Scratchpad):** `${PAI_DIR}/scratchpad/YYYY-MM-DD-HHMMSS_retrieve-[site-or-topic]/`
 
 **Process:**
 
 1. **Scratchpad (Working Files - Temporary):**
-    - Create timestamped directory for each retrieval task
-    - Store raw scraped content (HTML, markdown, JSON)
-    - Keep intermediate processing notes
-    - Save error logs and retry attempts
-    - Draft extracted data and transformations
+   - Create timestamped directory for each retrieval task
+   - Store raw scraped content (HTML, markdown, JSON)
+   - Keep intermediate processing notes
+   - Save error logs and retry attempts
+   - Draft extracted data and transformations
 
 2. **History (Permanent Archive):**
-    - Move to `~/.claude/history/research/YYYY-MM-DD_[description]/` when complete
-    - Include: `README.md`, final extracted content, metadata
-    - Archive for future reference and reuse
+   - Move to `${PAI_DIR}/history/research/YYYY-MM-DD_[description]/` when complete
+   - Include: `README.md`, final extracted content, metadata
+   - Archive for future reference and reuse
 
 3. **Verification (MANDATORY):**
-    - Check if hooks captured output to history automatically
-    - If hooks failed, manually save to history
-    - Confirm all files present in history directory
+   - Check if hooks captured output to history automatically
+   - If hooks failed, manually save to history
+   - Confirm all files present in history directory
 
 **File Structure Example:**
 
 **Scratchpad (temporary workspace):**
 ```
-~/.claude/scratchpad/2025-10-26-143022_retrieve-react19-docs/
+${PAI_DIR}/scratchpad/2025-10-26-143022_retrieve-react19-docs/
 ├── raw-content/
 │   ├── page1.md (Layer 2 output)
 │   ├── page2.md (Layer 2 output)
@@ -438,7 +438,7 @@ mcp__Apify__apify-slash-rag-web-browser({
 
 **History (permanent archive):**
 ```
-~/.claude/history/research/2025-10-26_react19-documentation/
+${PAI_DIR}/history/research/2025-10-26_react19-documentation/
 ├── README.md (retrieval documentation)
 ├── content.md (final extracted content)
 ├── metadata.json (sources, layers used, timestamps)

@@ -97,7 +97,7 @@ source $HOME/.cargo/env
 
 **Why PAI Uses**: Speed for AI agents, reduced noise, simplified commands
 
-**Detailed Docs**: [`~/.claude/skills/CORE/TOOLS.md`](skills/CORE/TOOLS.md)
+**Detailed Docs**: [`${PAI_DIR}/skills/CORE/TOOLS.md`](skills/CORE/TOOLS.md)
 
 **Common Usage**:
 ```bash
@@ -118,7 +118,7 @@ fd -H secret                  # Include hidden files
 
 **Why PAI Uses**: Interactive file selection, command history search, rapid navigation, shell integration, improved developer workflow
 
-**Detailed Docs**: [`~/.claude/skills/CORE/TOOLS.md`](skills/CORE/TOOLS.md)
+**Detailed Docs**: [`${PAI_DIR}/skills/CORE/TOOLS.md`](skills/CORE/TOOLS.md)
 
 **Common Usage**:
 ```bash
@@ -147,7 +147,7 @@ kill -9 $(ps aux | fzf)       # Interactive process killer
 
 **Why PAI Uses**: Critical for AI codebase analysis, reliable filtering, Claude Code integration
 
-**Detailed Docs**: [`~/.claude/skills/CORE/TOOLS.md`](skills/CORE/TOOLS.md)
+**Detailed Docs**: [`${PAI_DIR}/skills/CORE/TOOLS.md`](skills/CORE/TOOLS.md)
 
 **Common Usage**:
 ```bash
@@ -168,7 +168,7 @@ rg -t js console.log          # Search JavaScript files
 
 **Why PAI Uses**: Semantic precision, eliminates false positives, structural transformations
 
-**Detailed Docs**: [`~/.claude/skills/CORE/TOOLS.md`](skills/CORE/TOOLS.md)
+**Detailed Docs**: [`${PAI_DIR}/skills/CORE/TOOLS.md`](skills/CORE/TOOLS.md)
 
 **Common Usage**:
 ```bash
@@ -188,7 +188,7 @@ ast-grep -p 'old($A)' -r 'new($A)'                # Refactor code
 
 **Why PAI Uses**: Improved code readability, integrated Git context, better developer UX
 
-**Detailed Docs**: [`~/.claude/skills/CORE/TOOLS.md`](skills/CORE/TOOLS.md)
+**Detailed Docs**: [`${PAI_DIR}/skills/CORE/TOOLS.md`](skills/CORE/TOOLS.md)
 
 **Common Usage**:
 ```bash
@@ -630,20 +630,19 @@ uv --version
 
 ### Detailed Documentation
 
-- **CLI Tools Guide**: `~/.claude/skills/CORE/TOOLS.md` (fd, ripgrep, ast-grep, bat)
-- **Fabric Patterns**: `~/.claude/skills/fabric/fabric-patterns-reference.md`
-- **Hook System**: `~/.claude/skills/CORE/hook-system.md`
-- **Agent System**: `~/.claude/skills/CORE/agent-system.md`
+- **CLI Tools Guide**: `${PAI_DIR}/skills/CORE/TOOLS.md` (fd, ripgrep, ast-grep, bat)
+- **Fabric Patterns**: `${PAI_DIR}/skills/fabric/fabric-patterns-reference.md`
+- **Hook System**: `${PAI_DIR}/skills/CORE/hook-system.md`
+- **Agent System**: `${PAI_DIR}/skills/CORE/agent-system.md`
 
 ### PAI Configuration
 
-- **Setup Script**: `~/.claude/setup.sh` - Automated installation
-- **Global Preferences**: `~/.claude/skills/CORE/SKILL.md` - TypeScript > Python, Bun > npm
-- **Stack Preferences**: `~/.claude/skills/CORE/stack-preferences.md` - CLI tool preferences
+- **Global Preferences**: `${PAI_DIR}/skills/CORE/SKILL.md` - TypeScript > Python, Bun > npm
+- **Stack Preferences**: `${PAI_DIR}/skills/CORE/stack-preferences.md` - CLI tool preferences
 
 ### Research
 
-- **Comprehensive Inventory**: `~/.claude/skills/CORE/TOOLS.md`
+- **Comprehensive Inventory**: `${PAI_DIR}/skills/CORE/TOOLS.md`
 - **16 parallel gemini-researcher agents** conducted deep research on each tool
 - **Multi-angle analysis** covering purpose, features, installation, use cases, PAI integration
 

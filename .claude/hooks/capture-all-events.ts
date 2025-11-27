@@ -6,7 +6,7 @@
  *
  * SETUP REQUIRED:
  * 1. Install Bun: https://bun.sh
- * 2. Set PAI_DIR environment variable (defaults to ~/.claude)
+ * 2. Set PAI_DIR environment variable (defaults to ${PAI_DIR})
  * 3. Make this file executable: chmod +x capture-all-events.ts
  * 4. Configure in settings.json under "hooks" section
  */

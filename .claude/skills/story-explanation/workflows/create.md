@@ -47,7 +47,7 @@ WebFetch(url, "Extract full content of this article")
 Create scratchpad directory and save raw content:
 
 ```bash
-mkdir -p ~/.claude/scratchpad/$(date +%Y-%m-%d-%H%M%S)_story-explanation-[topic]/
+mkdir -p ${PAI_DIR}/scratchpad/$(date +%Y-%m-%d-%H%M%S)_story-explanation-[topic]/
 ```
 
 Save extracted content for reference.
@@ -196,10 +196,10 @@ In this [content type], [opening hook that sets up the content - 15-25 words, fi
 ## STEP 8: Save Output to Scratchpad
 
 Save final story explanation to scratchpad:
-- `~/.claude/scratchpad/YYYY-MM-DD-HHMMSS_story-explanation-[topic]/final-story-explanation.md`
+- `${PAI_DIR}/scratchpad/YYYY-MM-DD-HHMMSS_story-explanation-[topic]/final-story-explanation.md`
 
 **Optional:** If analysis methodology is exceptionally valuable, archive to:
-- `~/.claude/history/research/YYYY-MM/YYYY-MM-DD-HHMMSS_AGENT-default_RESEARCH_[topic]-narrative-framing-analysis.md`
+- `${PAI_DIR}/history/research/YYYY-MM/YYYY-MM-DD-HHMMSS_AGENT-default_RESEARCH_[topic]-narrative-framing-analysis.md`
 
 Include:
 - Final story explanation

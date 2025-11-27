@@ -113,7 +113,7 @@ The concept should be describable in ONE sentence with 2-3 PHYSICAL elements tha
 
 ### Read the Aesthetic Source
 
-**Always read:** `~/.claude/skills/CORE/aesthetic.md`
+**Always read:** `${PAI_DIR}/skills/CORE/aesthetic.md`
 
 ### Core Visual Rules
 
@@ -241,7 +241,7 @@ Before generating, verify:
 ### Default Model: nano-banana-pro
 
 ```bash
-bun run ~/.claude/skills/art/tools/generate-ulart-image.ts \
+bun run ${PAI_DIR}/skills/art/tools/generate-ulart-image.ts \
   --model nano-banana-pro \
   --prompt "[YOUR PROMPT]" \
   --size 2K \

@@ -11,7 +11,7 @@
 ## See Main Contact File
 
 **Primary contact information is maintained in:**
-`~/.claude/skills/CORE/contacts.md`
+`${PAI_DIR}/skills/CORE/contacts.md`
 
 That file contains:
 - Primary contacts

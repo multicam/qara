@@ -725,7 +725,6 @@ CORE/
 ├── history-system.md
 ├── hook-system.md
 ├── TESTING.md
-├── VOICE.md               # Reference pointer to ~/.claude/voice-server/
 ├── ... (all other docs at CORE root)
 └── workflows/
     └── ... (flat or nested as needed)
@@ -1579,13 +1578,13 @@ Personal AI Infrastructure core context skill - loads at every session start.
 **Domain:** Qara identity, contacts, preferences, security, architecture
 **Key Capabilities:**
 - Daniel's complete context (contacts, preferences, voice IDs)
-- Repository safety protocols (private ~/.claude/ vs public ~/Projects/PAI/)
+- Repository safety protocols (private ${PAI_DIR}/ vs public ~/Projects/PAI/)
 - Response format standards (structured emoji format with voice)
 - Architectural references (Skills/Commands/Agents/MCPs framework)
 - Extended security procedures (prompt injection defense, sanitization)
 
 **When to use:** Automatically loaded - provides foundation for all Qara operations
-**Location:** `~/.claude/skills/CORE/`
+**Location:** `${PAI_DIR}/skills/CORE/`
 
 ---
 
@@ -1751,7 +1750,7 @@ Daniel's personal context and knowledge management.
 - **Life Logs** - Limitless.ai pendant recording retrieval, transcript extraction, blog post creation from ideas
 - **Learning Capture** - 6-element narrative framework (Problem → Assumption → Reality → Journey → Solution → Takeaway)
   - Automatic capture from conversation context
-  - Permanent storage in `~/.claude/history/learnings/YYYY-MM/`
+  - Permanent storage in `${PAI_DIR}/history/learnings/YYYY-MM/`
   - Searchable, cross-referenced, UFC-integrated knowledge base
 
 **When to use:** Life philosophy discussions, "get life log", "capture this learning"
@@ -2267,7 +2266,7 @@ After research, install recommended skills:
 2. **Review** - Audit code and configuration
 3. **Adapt** - Modify for Qara patterns if needed
 4. **Test** - Validate in isolated environment
-5. **Install** - Copy to `~/.claude/skills/`
+5. **Install** - Copy to `${PAI_DIR}/skills/`
 6. **Register** - Add to mcp_settings.json available_skills
 7. **Validate** - Test activation and workflow
 8. **Document** - Add to skill inventory
