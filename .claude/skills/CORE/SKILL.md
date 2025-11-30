@@ -136,7 +136,7 @@ description: |
 
   **When user requests parallel delegation:**
   Examples: "use parallel interns", "have the interns", "delegate to interns", "parallelize this"
-  → **READ:** ${PAI_DIR}/skills/CORE/workflows/delegation-patterns.md
+  → **READ:** ${PAI_DIR}/skills/CORE/delegation-guide.md
   → **EXECUTE:** Deploy multiple parallel intern agents with full context and spotcheck
 
   **When user requests switching MCP profiles:**
@@ -183,8 +183,8 @@ description: |
 - `parallel-execution.md` - Parallel execution patterns
 
 **Agent System:**
-- `agent-protocols.md` - Agent interaction protocols
-- `delegation-patterns.md` - Delegation & parallel execution | See delegation section below for critical always-active rules
+- `agent-guide.md` - Agent hierarchy, roles, escalation patterns | Triggers: "agent roles", "escalation", "invoke engineer"
+- `delegation-guide.md` - Task decomposition and delegation patterns | See delegation section below for critical always-active rules
 
 **Response & Communication:**
 - `prompting.md` - Prompt engineering, Fabric system | Triggers: "fabric patterns", "prompt engineering"
@@ -281,9 +281,9 @@ The intern agent is your high-agency genius generalist - perfect for parallel ex
 - Launch as many as needed (no artificial limit)
 - **ALWAYS launch a spotcheck intern after parallel work completes**
 
-**📚 Complete Delegation Guide:**
-For advanced delegation strategies, spotcheck patterns, and when interns can invoke engineers:
-`${PAI_DIR}/skills/CORE/workflows/delegation-patterns.md`
+**📚 Complete Guides:**
+- **Agent hierarchy & escalation:** `${PAI_DIR}/skills/CORE/agent-guide.md`
+- **Task decomposition & delegation:** `${PAI_DIR}/skills/CORE/delegation-guide.md`
 
 ---
 

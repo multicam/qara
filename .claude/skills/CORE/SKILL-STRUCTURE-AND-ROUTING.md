@@ -720,7 +720,7 @@ CORE/
 ├── SKILL.md
 ├── CONSTITUTION.md           # PRIMARY - System architecture and philosophy
 ├── MY_DEFINITIONS.md         # Canonical definitions
-├── agent-protocols.md
+├── agent-guide.md            # Agent hierarchy and roles
 ├── contacts.md
 ├── history-system.md
 ├── hook-system.md

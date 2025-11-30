@@ -245,7 +245,7 @@ The most important pattern for token efficiency and cognitive clarity.
 - Flat .md files at skill directory root
 - Individual deep-dive topics
 - Loaded only when specific detail needed
-- Examples: `security-protocols.md`, `delegation-patterns.md`
+- Examples: `security-protocols.md`, `delegation-guide.md`
 
 ### Example: CORE Skill Loading
 
@@ -261,7 +261,7 @@ description: |
 
 **Loading Sequence:**
 1. **Session Start** → CORE description loads → Auto-active
-2. **User Question** → "How do I parallelize?" → Reads delegation-patterns.md
+2. **User Question** → "How do I parallelize?" → Reads delegation-guide.md
 3. **Complex Task** → "Publish blog" → Loads writing skill → Follows workflow
 
 ### Why Progressive Disclosure?
@@ -937,8 +937,8 @@ Qara → [10 Interns update files] → Spotcheck Intern (verifies all 10)
 ```
 
 **Reference:**
-- `${PAI_DIR}/skills/CORE/delegation-patterns.md`
-- `${PAI_DIR}/skills/CORE/agent-protocols.md`
+- `${PAI_DIR}/skills/CORE/delegation-guide.md`
+- `${PAI_DIR}/skills/CORE/agent-guide.md`
 
 ### 5. MCP Profile Management
 
@@ -1146,7 +1146,7 @@ voice_id: [ElevenLabs voice ID]
 [Use standard COMPLETED format]
 ```
 
-**Reference:** `${PAI_DIR}/skills/CORE/agent-protocols.md`
+**Reference:** `${PAI_DIR}/skills/CORE/agent-guide.md`
 
 ---
 
@@ -1256,8 +1256,8 @@ voice_id: [ElevenLabs voice ID]
 - Testing guide: `TESTING.md`
 - Security protocols: `security-protocols.md`
 - Voice system: `${PAI_DIR}/voice-server/USAGE.md`
-- Agent protocols: `agent-protocols.md`
-- Delegation patterns: `delegation-patterns.md`
+- Agent system: `agent-guide.md`
+- Delegation patterns: `delegation-guide.md`
 
 ---
 

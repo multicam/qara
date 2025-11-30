@@ -507,7 +507,7 @@ List all files in ACTIONS, summarize impact in RESULTS.
 ## 🔗 Related Documentation
 - See `SKILL.md` lines 42-76 for format definition and enforcement
 - See `CONSTITUTION.md` for why this format matters
-- See `delegation-patterns.md` for agent response formats
+- See `delegation-guide.md` for agent response formats
 
 ---
 

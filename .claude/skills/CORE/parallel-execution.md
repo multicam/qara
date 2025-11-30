@@ -20,7 +20,7 @@
 
 ## Overview
 
-This document covers **technical parallel execution** patterns. For **agent delegation** patterns, see `delegation-patterns.md`.
+This document covers **technical parallel execution** patterns (Promise.all, concurrency, error handling). For **agent delegation** patterns, see `delegation-guide.md`.
 
 ### When to Use Parallel Execution
 
@@ -742,7 +742,8 @@ await Promise.race([
 
 ## Related Documentation
 
-- **delegation-patterns.md** - Agent-based parallel execution
+- **delegation-guide.md** - Agent-based parallel execution and task decomposition
+- **agent-guide.md** - Agent hierarchy and escalation patterns
 - **cli-first-guide.md** - Building deterministic tools for parallel execution
 - **TESTING.md** - Testing parallel code
 - **CONSTITUTION.md** - Deterministic code principles
