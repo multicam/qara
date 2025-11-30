@@ -68,7 +68,6 @@ A well-structured system with good scaffolding will outperform a more powerful m
 - Routing systems that activate the right context
 - Quality gates that verify outputs
 - History systems that enable learning
-- Voice feedback that provides awareness
 
 **Key Takeaway:** Build the scaffolding first, then add the AI.
 
@@ -254,7 +253,7 @@ The most important pattern for token efficiency and cognitive clarity.
 name: CORE
 description: |
   Qara core identity and infrastructure. Loaded at session start.
-  Essential context: identity, contacts, stack prefs, security, voice routing
+  Essential context: identity, contacts, stack prefs, security
   Deep references: CONSTITUTION.md, security-protocols.md, etc.
 ---
 ```
@@ -511,7 +510,7 @@ User says: "write a blog", "create a post", "write an article"
 ## Workflow
 1. Get content from user
 2. Apply frontmatter template
-3. Format in Daniel's voice
+3. Format content appropriately
 4. Start dev server
 5. Open in Chrome for preview
 ```
@@ -535,7 +534,6 @@ User says: "write a blog", "create a post", "write an article"
 ${PAI_DIR}/agents/engineer.md
 
 Frontmatter:
-- voice_id: [ElevenLabs voice ID]
 - capabilities: [what agent can do]
 
 Body:
@@ -650,11 +648,11 @@ MCPs are for exploration. Once you understand an API, build a TypeScript wrapper
 
 ## Critical Systems
 
-### 1. Structured Output Format + Voice Integration
+### 1. Structured Output Format
 
-**THE VOICE FEEDBACK ARCHITECTURE**
+**THE RESPONSE FORMAT**
 
-Qara uses mandatory structured output format that integrates with voice server for spoken feedback.
+Qara uses a mandatory structured output format for all responses.
 
 **The Format (MANDATORY):**
 ```markdown
@@ -670,42 +668,9 @@ Qara uses mandatory structured output format that integrates with voice server f
 ```
 
 **Why COMPLETED Line Is Critical:**
-- **Voice Integration:** This line is spoken aloud via ElevenLabs
-- **User Feedback:** Daniel hears completion via agent-specific voice
 - **Event Logging:** Captured to history/raw-outputs/
 - **Status Tracking:** Enables observability dashboard
-
-**Voice Integration Flow:**
-
-1. **Qara/Agent completes task**
-   ```markdown
-   🎯 COMPLETED: Blog post published and verified live on production
-   ```
-
-2. **Stop hook fires** (`${PAI_DIR}/hooks/stop-hook.ts`)
-   - Reads transcript after response
-   - Extracts COMPLETED line text
-   - Determines entity (Qara vs specific agent)
-
-3. **Voice request sent** to server
-   ```bash
-   curl -X POST http://localhost:8888/notify \
-     -H "Content-Type: application/json" \
-     -d '{
-       "message": "Blog post published and verified live on production",
-       "voice_id": "s3TPKV1kjDlVtZbl4Ksh",
-       "title": "Qara"
-     }'
-   ```
-
-4. **Voice server processes** (`${PAI_DIR}/voice-server/server.ts`)
-   - Sanitizes message (security)
-   - Calls ElevenLabs API with voice_id
-   - Receives MP3 audio
-   - Plays via afplay (macOS)
-   - Shows macOS notification
-
-5. **Daniel hears completion** in agent-specific voice
+- **Completion Summary:** Clear final status
 
 **COMPLETED Line Writing Standards:**
 
@@ -724,12 +689,10 @@ Qara uses mandatory structured output format that integrates with voice server f
 ```
 
 **Rules:**
-- Target 8-12 words (spoken aloud, must sound natural)
-- NEVER say "Completed" in the line (sounds terrible: "Completed completed...")
+- Target 8-12 words
+- NEVER say "Completed" in the line (redundant)
 - Direct answer for questions, not meta-descriptions
 - Describe WHAT finished, not THAT you finished
-
-**Complete voice routing: `${PAI_DIR}/voice-server/USAGE.md`**
 
 ### 2. History System
 
@@ -776,7 +739,7 @@ ${PAI_DIR}/history/
 
 1. **Automatic (via Hooks)**
    - `start-hook.ts` - Logs session start
-   - `stop-hook.ts` - Logs completion + voice
+   - `stop-hook.ts` - Logs completion
    - `tool-hook.ts` - Logs tool usage
    - All events → `raw-outputs/YYYY-MM/YYYY-MM-DD_all-events.jsonl`
 
@@ -824,7 +787,6 @@ ${PAI_DIR}/history/
 
 2. **stop-hook.ts** - Fires after every response
    - Parses COMPLETED line
-   - Routes to voice server
    - Logs completion event
    - Updates observability
 
@@ -947,7 +909,7 @@ ${PAI_DIR}/
 │
 ├── hooks/                           # Event-driven automation
 │   ├── start-hook.ts               # Session start
-│   ├── stop-hook.ts                # Voice + logging
+│   ├── stop-hook.ts                # Completion logging
 │   ├── tool-hook.ts                # Tool tracking
 │   └── prompt-submit-hook.ts       # Prompt pre-processing
 │
@@ -961,11 +923,6 @@ ${PAI_DIR}/
 │
 ├── scratchpad/                      # Temporary working files
 │   └── YYYY-MM-DD-HHMMSS_*/        # Dated subdirectories
-│
-├── voice-server/                    # ElevenLabs TTS integration
-│   ├── server.ts                   # Main server
-│   ├── manage.sh                   # Control script
-│   └── macos-service/              # LaunchAgent
 │
 ├── MCPs/                           # MCP profile management
 │   ├── swap-mcp                    # Profile switcher
@@ -983,7 +940,6 @@ ${PAI_DIR}/
 - **hooks/** - Event-driven automation
 - **history/** - Permanent knowledge (NEVER delete)
 - **scratchpad/** - Temporary workspace (DELETE when done)
-- **voice-server/** - Text-to-speech system
 
 ---
 
@@ -1066,7 +1022,6 @@ read ${PAI_DIR}/skills/CORE/SKILL.md
 ```markdown
 ---
 name: agent-name
-voice_id: [ElevenLabs voice ID]
 ---
 
 # Agent Name
@@ -1078,10 +1033,6 @@ voice_id: [ElevenLabs voice ID]
 - [What agent can do]
 - [Specialized knowledge]
 - [Tool access]
-
-## Voice Configuration
-**Voice ID:** [ElevenLabs voice ID]
-**When to use voice:** ALWAYS (mandatory)
 
 ## Instructions
 [Detailed behavior and patterns]
@@ -1192,7 +1143,6 @@ All code must be tested before integration. No exceptions.
 - MCP strategy: `mcp-guide.md`
 - Testing guide: `testing-guide.md`
 - Security protocols: `security-protocols.md`
-- Voice system: `${PAI_DIR}/voice-server/USAGE.md`
 - Agent system: `agent-guide.md`
 - Delegation patterns: `delegation-guide.md`
 

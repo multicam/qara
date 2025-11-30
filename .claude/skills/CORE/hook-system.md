@@ -14,9 +14,8 @@ The PAI hook system is an event-driven automation infrastructure built on Claude
 
 **Core Capabilities:**
 - **Session Management** - Auto-load context, capture summaries, manage state
-- **Voice Notifications** - Text-to-speech announcements for task completions
 - **History Capture** - Automatic work/learning documentation to `${PAI_DIR}/history/`
-- **Multi-Agent Support** - Agent-specific hooks with voice routing
+- **Multi-Agent Support** - Agent-specific hooks for task tracking
 - **Observability** - Real-time event streaming to dashboard
 - **Tab Titles** - Dynamic terminal tab updates with task context
 
@@ -136,9 +135,9 @@ Claude Code supports the following hook events (from `${PAI_DIR}/hooks/lib/obser
 ### 4. **Stop**
 **When:** Main agent (Qara) completes a response
 **Use Cases:**
-- Voice notifications for task completion
 - Capture work summaries and learnings
 - Update terminal tab with completion status
+- Log completion events
 
 **Current Hooks:**
 ```json
@@ -174,9 +173,9 @@ Claude Code supports the following hook events (from `${PAI_DIR}/hooks/lib/obser
 ### 5. **SubagentStop**
 **When:** Subagent (Task tool) completes execution
 **Use Cases:**
-- Agent-specific voice notifications
 - Capture agent outputs
 - Track multi-agent workflows
+- Log subagent completions
 
 **Current Hooks:**
 ```json
@@ -202,15 +201,8 @@ Claude Code supports the following hook events (from `${PAI_DIR}/hooks/lib/obser
 - `subagent-stop-hook.ts` - Agent-specific completion handling
   - Waits for Task tool result in transcript
   - Extracts `[AGENT:type]` tag and completion message
-  - Routes to agent-specific voice (via agent's own voice notification in response)
   - Captures agent output to appropriate history category
   - Sends to observability dashboard
-
-**Agent-Specific Routing:**
-- `[AGENT:engineer]` → Engineer voice ID
-- `[AGENT:researcher]` → Researcher voice ID
-- `[AGENT:pentester]` → Pentester voice ID
-- etc.
 
 ---
 
@@ -418,7 +410,7 @@ writeFileSync(join(targetDir, filename), content);
 - `✅ RESULTS:` - Outcomes
 - `📊 STATUS:` - Current state
 - `➡️ NEXT:` - Follow-up actions
-- `🎯 COMPLETED:` - **Voice notification line**
+- `🎯 COMPLETED:` - **Completion summary line**
 
 ---
 
@@ -741,7 +733,6 @@ grep '"event_type":"PostToolUse"' ${PAI_DIR}/history/raw-outputs/$(date +%Y-%m)/
 **Impact:**
 - Automatic work summaries NOT captured to history (despite Stop hook logic being correct)
 - Learning moments NOT auto-detected
-- Voice notifications from main agent responses NOT sent
 - Manual verification and capture REQUIRED
 
 **Root Cause:**
@@ -973,7 +964,6 @@ Hooks in same event execute **sequentially** in order defined in settings.json:
 
 ## Related Documentation
 
-- **Voice System:** `${PAI_DIR}/voice-server/USAGE.md`
 - **Agent Architecture:** `${PAI_DIR}/skills/CORE/agent-guide.md`
 - **History/UOCS:** `${PAI_DIR}/skills/CORE/history-system.md`
 - **Observability Dashboard:** `${PAI_DIR}/skills/system-observability/`
@@ -988,7 +978,7 @@ HOOK LIFECYCLE:
 2. Claude Code writes hook data to stdin
 3. Hook script executes
 4. Hook reads stdin (with timeout)
-5. Hook performs actions (voice, capture, etc.)
+5. Hook performs actions (capture, logging, etc.)
 6. Hook exits 0 (always succeeds)
 7. Claude Code continues
 
@@ -1002,8 +992,8 @@ ${PAI_DIR}/history/learnings/      Learning captures
 ${PAI_DIR}/agent-sessions.json     Session→Agent mapping
 
 CRITICAL HOOKS:
-stop-hook.ts          Voice + history capture (main agent)
-subagent-stop-hook.ts Voice + history capture (subagents)
+stop-hook.ts          History capture (main agent)
+subagent-stop-hook.ts History capture (subagents)
 load-core-context.ts  PAI context loading
 capture-all-events.ts Universal event logger
 

@@ -161,7 +161,7 @@ description: |
 **All documentation files are in `${PAI_DIR}/skills/CORE/` (flat structure). Read these files when you need deeper context.**
 
 **Core Architecture & Philosophy:**
-- `CONSTITUTION.md` - System architecture and philosophy, foundational principles (CLI-First, Deterministic Code, Prompts Wrap Code) | ⭐ PRIMARY REFERENCE | Triggers: "Kai architecture", "how does Kai work", "system principles"
+- `CONSTITUTION.md` - System architecture and philosophy, foundational principles (CLI-First, Deterministic Code, Prompts Wrap Code) | ⭐ PRIMARY REFERENCE | Triggers: "Qara architecture", "how does Qara work", "system principles"
 - `cli-first-guide.md` - CLI-First implementation patterns and best practices | Triggers: "build CLI tool", "API integration"
 - `cli-first-examples.md` - CLI-First real-world examples and anti-patterns | Triggers: "CLI examples", "migration patterns"
 - `SKILL-STRUCTURE-AND-ROUTING.md` - Skill structure, routing, ecosystem | Triggers: "how to structure a skill", "skill routing", "create new skill"

@@ -395,14 +395,14 @@ Good example from production:
 - User says "write a blog post", "create a blog post", "blog about X"
 - User says "publish blog", "deploy blog", "push blog live"
 - User mentions "blog post creation", "blog writing", "blogging"
-- User requests "canonicalize post", "rewrite blog in my voice"
+- User requests "canonicalize post", "rewrite blog"
 ```
 
 This is comprehensive because it covers:
 - Action verbs: "write", "create", "publish", "deploy"
 - Casual phrasing: "blog about X"
 - Synonyms: "blog post creation", "blogging"
-- Use cases: "canonicalize", "rewrite in my voice"
+- Use cases: "canonicalize", "rewrite"
 
 **When to Update Existing Skills:**
 
@@ -1577,9 +1577,9 @@ Personal AI Infrastructure core context skill - loads at every session start.
 
 **Domain:** Qara identity, contacts, preferences, security, architecture
 **Key Capabilities:**
-- Daniel's complete context (contacts, preferences, voice IDs)
+- Complete context (contacts, preferences)
 - Repository safety protocols (private ${PAI_DIR}/ vs public ~/Projects/PAI/)
-- Response format standards (structured emoji format with voice)
+- Response format standards (structured emoji format)
 - Architectural references (Skills/Commands/Agents/MCPs framework)
 - Extended security procedures (prompt injection defense, sanitization)
 
@@ -1640,7 +1640,7 @@ Complete content creation workflow from drafting to publication.
 - **Story Explanations** - UltraThink-powered compelling narratives (5 formats)
 - **Content MCP Integration** - Related posts discovery, quote finding, opinion characterization
 - **VitePress Stack** - Vue 3 + TypeScript + TailwindCSS + Cloudflare Pages deployment
-- **Voice & Style** - Direct, conversational, Daniel's authentic voice with custom components
+- **Style** - Direct, conversational writing with custom components
 
 **When to use:** "write blog post", "publish blog", "newsletter suggestions", storytelling
 **Workflows:** 13 workflows (blog 5, newsletter 3, storytelling 5)
