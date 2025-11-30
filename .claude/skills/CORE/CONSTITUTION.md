@@ -616,86 +616,33 @@ AI should orchestrate deterministic tools, not replace them with ad-hoc promptin
 
 ## Two-Tier MCP Strategy
 
-### The Problem with Traditional MCPs
+### Core Principle
 
-Traditional MCP-only architectures have fatal flaws for production use:
+> **Discovery via MCP → Production via CLI-First TypeScript**
 
-❌ **Token Explosion**
-- Pass full schemas (1000s of tokens per call)
-- Return unfiltered datasets (50,000+ tokens)
-- No ability to filter before model context
-- Costs spiral quickly with frequent use
+MCPs are for exploration. Once you understand an API, build a TypeScript wrapper.
 
-❌ **No Type Safety**
-- Dynamic schemas discovered at runtime
-- No IDE autocomplete or validation
-- Runtime errors instead of compile-time checks
+### The Two Tiers
 
-❌ **No Code-Time Optimization**
-- Can't filter data before it reaches model
-- Can't reuse transformation logic
-- Every call starts from scratch
+**Tier 1: Legacy MCPs (Discovery)**
+- **Use for:** First-time API exploration, discovering capabilities
+- **Problem:** High token cost, no type safety, no filtering
+- **Good for:** Learning what an API can do
 
-### The Two-Tier Solution
+**Tier 2: System MCPs (Production)**
+- **Use for:** Repeated operations (>10 times), type-safe code
+- **Implementation:** TypeScript wrappers in `system-mcp` skill
+- **Benefits:** 99% token savings, type safety, pre-filtering
 
-**Tier 1: Legacy MCPs - Discovery Phase**
+### Migration Path
 
-**Location:** `${PAI_DIR}/MCPs/`
-
-**When to Use:**
-- ✅ First time using an API/service
-- ✅ Discovering what endpoints/actors exist
-- ✅ Understanding capabilities and schemas
-- ✅ One-time exploration tasks
-- ✅ Prototyping new integrations
-
-**Characteristics:**
-- High token cost (schemas + full datasets)
-- No type safety
-- Dynamic discovery
-- Flexible but inefficient
-- Great for learning, bad for production
-
-**Tier 2: System MCPs - Execution Phase**
-
-**Location:** `${PAI_DIR}/skills/system-mcp/`
-
-**When to Use:**
-- ✅ API will be called >10 times
-- ✅ Need to filter large datasets
-- ✅ Token costs are significant
-- ✅ Want type safety and autocomplete
-- ✅ Need reusable helper functions
-
-**Implementation:**
-- File-based TypeScript wrappers
-- Direct API calls (not MCP protocol)
-- Type-safe interfaces
-- Pre-filter data before model context
-- 99% token savings
-
-**Example:**
-```typescript
-// system-mcp/providers/brightdata/actors.ts
-import { scrapeAsMarkdown } from './api';
-
-// Type-safe, token-efficient
-const result = await scrapeAsMarkdown(url);
-// Data filtered BEFORE entering model context
+```
+1. Explore with Legacy MCP → Document what you learned
+2. Build TypeScript wrapper → Type-safe, filtered, efficient
+3. Retire Legacy MCP → Move to unused/
 ```
 
-**Workflow:**
-1. **Discovery** - Use legacy MCP to explore API
-2. **Document** - Record actor IDs, schemas, examples
-3. **Implement** - Create TypeScript wrapper in system-mcp
-4. **Execute** - Use `bun run script.ts` for deterministic calls
-5. **Retire MCP** - Move legacy MCP to `unused/` directory
-
-### Key Principle
-
-**Discovery via MCP → Production via CLI-First TypeScript**
-
-This follows the CLI-First principle: Build deterministic tools, wrap with AI orchestration.
+**For complete MCP strategy and examples:** See `${PAI_DIR}/skills/CORE/mcp-guide.md`
 
 ---
 
@@ -1242,7 +1189,7 @@ All code must be tested before integration. No exceptions.
 - Skill structure patterns: `SKILL-STRUCTURE-AND-ROUTING.md`
 - CLI-First implementation: `cli-first-guide.md`
 - CLI-First examples: `cli-first-examples.md`
-- MCP strategy: `mcp-strategy.md`
+- MCP strategy: `mcp-guide.md`
 - Testing guide: `testing-guide.md`
 - Security protocols: `security-protocols.md`
 - Voice system: `${PAI_DIR}/voice-server/USAGE.md`

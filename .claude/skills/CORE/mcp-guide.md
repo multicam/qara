@@ -1,246 +1,77 @@
-# Two-Tier MCP Strategy
+# MCP Strategy Guide
 
-**Purpose**: Guide to Qara's dual-tier MCP architecture - using legacy MCPs for discovery and TypeScript wrappers for production.
+**Purpose**: Practical guide to Qara's two-tier MCP approach - explore with MCPs, build with TypeScript.
 
-**Last Updated**: 2025-11-19
-
----
-
-## Table of Contents
-1. [Overview](#overview)
-2. [The Problem with Traditional MCPs](#the-problem-with-traditional-mcps)
-3. [The Two-Tier Solution](#the-two-tier-solution)
-4. [Tier 1: Legacy MCPs](#tier-1-legacy-mcps-discovery-phase)
-5. [Tier 2: System MCPs](#tier-2-system-mcps-execution-phase)
-6. [Migration Path](#migration-path)
-7. [Real-World Examples](#real-world-examples)
-8. [Best Practices](#best-practices)
+**When to read**: Integrating external APIs, migrating from MCPs to TypeScript wrappers.
 
 ---
 
-## Overview
+## Core Principle
 
-From CONSTITUTION.md:
-> **Two-Tier MCP Strategy**: Discovery via MCP → Production via CLI-First TypeScript
+> **Discovery via MCP → Production via CLI-First TypeScript**
 
-### The Core Insight
+**The insight:** MCPs are great for exploring APIs, but expensive for production. Once you understand an API, build a TypeScript wrapper.
 
-**Traditional MCP-only architectures are expensive and inflexible for production use.**
+**Two tiers:**
+- **Tier 1 (Legacy MCPs)**: First-time exploration, learning capabilities
+- **Tier 2 (System MCPs)**: Production TypeScript wrappers (99% token savings)
 
-Qara uses a two-tier approach:
-- **Tier 1 (Legacy MCPs)**: Explore and discover APIs/services
-- **Tier 2 (System MCPs)**: Production-ready TypeScript wrappers
-
-This combines the **flexibility of MCPs** with the **efficiency of deterministic code**.
-
-### When to Use Each Tier
-
+**Decision tree:**
 ```
-┌─────────────────────────────────────────────────────┐
-│ Exploration & Discovery → Tier 1 (Legacy MCPs)     │
-│ - First time using API                              │
-│ - Understanding capabilities                        │
-│ - One-off tasks                                     │
-└─────────────────────────────────────────────────────┘
-                        ↓
-                   Learn & Document
-                        ↓
-┌─────────────────────────────────────────────────────┐
-│ Production & Efficiency → Tier 2 (System MCPs)     │
-│ - Repeated operations (>10 times)                   │
-│ - Type safety required                              │
-│ - Token cost matters                                │
-│ - Need filtering/transformation                     │
-└─────────────────────────────────────────────────────┘
+First time using API? → Tier 1 (Legacy MCP) → Learn & document
+Using API >10 times? → Tier 2 (System MCP) → TypeScript wrapper
 ```
 
 ---
 
-## The Problem with Traditional MCPs
+## Why Two Tiers?
 
-### Issue 1: Token Explosion
+**Problems with MCP-only:**
+- ❌ **Token explosion**: Full schemas (1K tokens) + unfiltered data (50K tokens) = expensive
+- ❌ **No type safety**: Runtime errors, no autocomplete
+- ❌ **No pre-filtering**: Model gets all data, then filters (wasteful)
 
-**Legacy MCPs pass full schemas every call:**
-```
-Tool call: brightdata_run_actor
-↓
-MCP sends entire schema (1000+ tokens)
-↓
-Model processes schema
-↓
-Returns unfiltered dataset (50,000+ tokens)
-↓
-Model processes all data
-↓
-💸 Expensive! (51,000+ tokens per call)
-```
-
-**Result**: $$$$ for repeated operations
-
-### Issue 2: No Type Safety
-
-```typescript
-// ❌ MCP: Dynamic schemas at runtime
-const result = await use_mcp_tool('brightdata_run_actor', {
-  actorId: 'web-scraper', // Typo - no error until runtime!
-  input: { url: 'https://example.com' }
-});
-
-// No IDE autocomplete
-// No type checking
-// Runtime errors only
-```
-
-### Issue 3: No Pre-Filtering
-
-**MCP returns everything:**
-```json
-{
-  "results": [
-    { "id": 1, "data": "...", "metadata": "...", "extra": "..." },
-    { "id": 2, "data": "...", "metadata": "...", "extra": "..." },
-    // ... 1000 more items
-  ],
-  "total": 1002,
-  "pagination": { ... },
-  "debug": { ... }
-}
-```
-
-**You only need:**
-```json
-[
-  { "id": 1, "data": "..." },
-  { "id": 2, "data": "..." }
-]
-```
-
-**But MCP sends all 50K tokens to model first**, then model filters.
+**Example:** BrightData web scraper
+- MCP approach: 51,000 tokens per call
+- TypeScript wrapper: 500 tokens per call (99% savings!)
 
 ---
 
-## The Two-Tier Solution
+## Tier 1: Legacy MCPs (Discovery)
 
-### Tier 1: Discovery (Legacy MCPs)
-
-**Purpose**: Explore and learn
-**Location**: `~/.claude/MCPs/` (if you use them)
-**When**: First-time API exploration
+**Use for:** First-time API exploration, understanding capabilities
 
 **Characteristics:**
-- ✅ Flexible discovery
-- ✅ Easy to try new services
-- ✅ No code required
-- ❌ High token cost
-- ❌ No type safety
-- ❌ Can't filter before model
+- ✅ No code required, flexible discovery
+- ❌ High token cost, no type safety, can't pre-filter
 
-### Tier 2: Production (System MCPs)
+**Example:**
+```typescript
+use_mcp_tool('brightdata_list_actors') // What actors exist?
+use_mcp_tool('brightdata_run_actor', { actorId: 'web-scraper', ... })
+// Returns full dataset - learn what fields are useful
+```
 
-**Purpose**: Efficient, repeated use
-**Location**: `~/.claude/skills/system-mcp/`
-**When**: API will be called >10 times
+## Tier 2: System MCPs (Production)
+
+**Use for:** Repeated operations (>10 times), type-safe code
+
+**Location:** `~/.claude/skills/system-mcp/`
 
 **Characteristics:**
-- ✅ Type-safe TypeScript
-- ✅ Filter before model context (99% token savings!)
-- ✅ Reusable helper functions
-- ✅ Version controlled
-- ✅ Testable independently
-- ❌ Requires code (worth it!)
+- ✅ TypeScript, filter before model (99% token savings), testable
+- ❌ Requires code (but worth it!)
 
----
 
-## Tier 1: Legacy MCPs (Discovery Phase)
+### System MCP Example
 
-### When to Use Legacy MCPs
-
-**✅ Use Legacy MCPs for:**
-1. **First-time exploration**: "What can this API do?"
-2. **Discovering endpoints**: "What actors exist?"
-3. **Understanding schemas**: "What fields are available?"
-4. **One-off tasks**: "Just need this once"
-5. **Prototyping**: "Testing if this works"
-
-### Example: Exploring BrightData
-
-```typescript
-// Via MCP tool call
-use_mcp_tool('brightdata_list_actors')
-// Returns: All available actors with descriptions
-
-use_mcp_tool('brightdata_get_actor_input_schema', {
-  actorId: 'web-scraper'
-})
-// Returns: Schema showing what inputs web-scraper accepts
-
-use_mcp_tool('brightdata_run_actor', {
-  actorId: 'web-scraper',
-  input: { url: 'https://example.com' }
-})
-// Returns: Full result dataset
+**Structure:**
 ```
-
-**Perfect for discovery!** Now you know:
-- What actors exist
-- What inputs they need
-- What outputs they return
-
-### Legacy MCP Configuration
-
-**Example `.mcp.json` (if using):**
-```json
-{
-  "mcpServers": {
-    "brightdata": {
-      "command": "npx",
-      "args": ["-y", "@brightdata/mcp-server"],
-      "env": {
-        "BRIGHTDATA_API_KEY": "${BRIGHTDATA_API_KEY}"
-      }
-    }
-  }
-}
+system-mcp/providers/brightdata/
+  ├── types.ts   # Interfaces
+  ├── api.ts     # API client
+  └── actors.ts  # Helper functions
 ```
-
----
-
-## Tier 2: System MCPs (Execution Phase)
-
-### When to Create System MCPs
-
-**✅ Create System MCP when:**
-1. **Frequency**: Will call API >10 times
-2. **Token cost**: API returns large datasets
-3. **Type safety**: Need autocomplete and type checking
-4. **Filtering**: Need to filter data before model context
-5. **Reusability**: Multiple skills need same API
-
-### System MCP Structure
-
-```
-~/.claude/skills/system-mcp/
-├── SKILL.md                    # Skill routing
-├── providers/
-│   ├── brightdata/
-│   │   ├── types.ts           # TypeScript interfaces
-│   │   ├── api.ts             # API client
-│   │   ├── actors.ts          # Actor helpers
-│   │   └── filters.ts         # Data filtering
-│   ├── github/
-│   │   ├── types.ts
-│   │   ├── api.ts
-│   │   └── repos.ts
-│   └── notion/
-│       ├── types.ts
-│       ├── api.ts
-│       └── pages.ts
-└── scripts/
-    ├── scrape-web.ts          # Executable scripts
-    └── fetch-repos.ts
-```
-
-### Example: BrightData System MCP
 
 **types.ts:**
 ```typescript
@@ -711,7 +542,7 @@ Need to use external API?
 - **CONSTITUTION.md** - Two-Tier MCP Strategy principle
 - **cli-first-guide.md** - Building CLI wrappers for APIs
 - **cli-first-examples.md** - API CLI tool examples (see llcli)
-- **mcp-profile-management.md** - Legacy MCP configuration (if needed)
+- **workflows/mcp-profile-management.md** - MCP profile switching (if needed)
 - **system-mcp skill** - Live example of Tier 2 implementation
 
 ---
