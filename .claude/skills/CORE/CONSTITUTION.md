@@ -1154,48 +1154,38 @@ voice_id: [ElevenLabs voice ID]
 
 ### Core Principle
 
-**If it can be tested, it must be tested.**
+> **If it can be tested, it must be tested.**
 
-### The Testing Hierarchy
-
-1. **CLI Tools** - Unit test independently of AI
-2. **Workflows** - Integration test with real tool calls
-3. **AI Layer** - End-to-end test with real user requests
-4. **Regression** - Automated test suite for all critical paths
-
-### CLI-First Testing Benefits
-
-**Because we build CLI tools first:**
-- ✅ Tools can be tested without AI
-- ✅ Tests are deterministic (no prompt variations)
-- ✅ Fast feedback loops (no model calls needed)
-- ✅ Comprehensive coverage (test every command)
-- ✅ Regression detection (CLI behavior locked in)
+All code must be tested before integration. No exceptions.
 
 ### Test-Driven Development (TDD)
 
-**Standard workflow for all implementations:**
+**The Red-Green-Refactor Cycle:**
 
-1. **Write test first** - Define expected behavior
-2. **Run test (fails)** - Verify test actually tests something
-3. **Implement** - Write minimal code to pass test
-4. **Run test (passes)** - Verify implementation works
-5. **Refactor** - Clean up while tests still pass
-6. **Repeat** - Build feature incrementally
+1. **🔴 Write test first** - Define expected behavior
+2. **Run test** - Should fail (red)
+3. **🟢 Implement** - Write minimal code to pass
+4. **Run test** - Should pass (green)
+5. **🔵 Refactor** - Improve while tests still pass
+
+**Why TDD:** Tests written before code ensure we test behavior (what it should do), not implementation (how it does it).
+
+### Testing Hierarchy
+
+1. **CLI Tools** - Unit test independently of AI (fast, reliable)
+2. **Workflows** - Integration test with real tool calls (medium)
+3. **AI Layer** - E2E test with real user requests (slow, critical paths only)
+
+**CLI-First enables testing:** Tools work without AI → Tools can be tested without AI → Fast, deterministic test suites.
 
 ### Quality Gates
 
-**Before declaring work complete:**
+**Never skip:**
+- Unit tests pass
+- Integration tests pass
+- Documentation updated
 
-1. **Unit Tests Pass** - All CLI commands tested
-2. **Integration Tests Pass** - Workflows execute correctly
-3. **Visual Validation** - Screenshots verify appearance (for web)
-4. **Deployment Verified** - Production site checked (for deployed systems)
-5. **Documentation Updated** - Changes documented
-
-**Never skip quality gates.** If testing reveals issues, fix them before completion.
-
-**Reference:** `${PAI_DIR}/skills/CORE/TESTING.md`
+**For complete testing guide:** See `${PAI_DIR}/skills/CORE/testing-guide.md`
 
 ---
 
@@ -1253,7 +1243,7 @@ voice_id: [ElevenLabs voice ID]
 - CLI-First implementation: `cli-first-guide.md`
 - CLI-First examples: `cli-first-examples.md`
 - MCP strategy: `mcp-strategy.md`
-- Testing guide: `TESTING.md`
+- Testing guide: `testing-guide.md`
 - Security protocols: `security-protocols.md`
 - Voice system: `${PAI_DIR}/voice-server/USAGE.md`
 - Agent system: `agent-guide.md`

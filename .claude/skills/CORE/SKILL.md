@@ -178,9 +178,8 @@ description: |
 
 **Development & Testing:**
 - `stack-preferences.md` - Extended stack preferences | Triggers: "what stack do I use", "TypeScript or Python", "bun or npm"
-- `TESTING.md` - Testing standards, philosophy, TDD | Triggers: "testing philosophy", "TDD approach", "test coverage"
-- `playwright-config.md` - Playwright configuration
-- `parallel-execution.md` - Parallel execution patterns
+- `testing-guide.md` - Testing standards, TDD, Vitest, Playwright | Triggers: "testing philosophy", "write tests", "TDD approach", "E2E testing"
+- `parallel-execution.md` - Technical parallel execution patterns (Promise.all, concurrency)
 
 **Agent System:**
 - `agent-guide.md` - Agent hierarchy, roles, escalation patterns | Triggers: "agent roles", "escalation", "invoke engineer"
