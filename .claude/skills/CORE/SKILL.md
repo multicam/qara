@@ -191,7 +191,7 @@ description: |
 **Configuration & Systems:**
 - `hook-system.md` - Hook configuration | Triggers: "hooks configuration", "create custom hooks"
 - `history-system.md` - UOCS automatic documentation | Canonical: `${PAI_DIR}/history/CLAUDE.md` | Triggers: "history system", "capture system"
-- `mcp-strategy.md` - MCP strategy and architecture
+- `mcp-guide.md` - MCP strategy and architecture | Triggers: "MCP strategy", "when to use MCP", "MCP vs CLI"
 - `terminal-tabs.md` - Terminal tab management
 - `macos-fixes.md` - macOS-specific fixes
 

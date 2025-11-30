@@ -246,7 +246,7 @@ echo "Restart Claude Code for changes to take effect"
 ---
 
 ## 🔗 Related Documentation
-- See `mcp-strategy.md` for two-tier MCP strategy
+- See `mcp-guide.md` for two-tier MCP strategy
 - See `system-mcp/` skill for TypeScript wrapper examples
 - See `.mcp.json` for current MCP configuration
 - See `TOOLS.md` for complete tool inventory

@@ -249,7 +249,7 @@ project/
 
 ## 🧪 Testing Philosophy
 
-See `TESTING.md` for comprehensive guide. Quick reference:
+See `testing-guide.md` for comprehensive guide. Quick reference:
 
 ### Test Hierarchy (Preference Order)
 1. **Unit tests** - Fast, isolated, many
@@ -445,9 +445,8 @@ bun run eslint .
 ---
 
 ## 🔗 Related Documentation
-- See `TESTING.md` for comprehensive testing guide
+- See `testing-guide.md` for comprehensive testing guide (includes Playwright E2E setup)
 - See `CONSTITUTION.md` for CLI-First and Deterministic Code principles
-- See `playwright-config.md` for E2E testing setup
 - See `TOOLS.md` for complete tool inventory
 
 ---

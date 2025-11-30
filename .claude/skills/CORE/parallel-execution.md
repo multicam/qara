@@ -745,7 +745,7 @@ await Promise.race([
 - **delegation-guide.md** - Agent-based parallel execution and task decomposition
 - **agent-guide.md** - Agent hierarchy and escalation patterns
 - **cli-first-guide.md** - Building deterministic tools for parallel execution
-- **TESTING.md** - Testing parallel code
+- **testing-guide.md** - Testing parallel code
 - **CONSTITUTION.md** - Deterministic code principles
 
 ---

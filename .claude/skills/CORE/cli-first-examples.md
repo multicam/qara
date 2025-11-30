@@ -749,4 +749,4 @@ Never skip the middle step.
 - **CONSTITUTION.md** - Core CLI-First principle
 - **cli-first-guide.md** - Implementation patterns and best practices
 - **stack-preferences.md** - TypeScript over Python, Bun runtime
-- **TESTING.md** - Testing CLI tools independently
+- **testing-guide.md** - Testing CLI tools independently

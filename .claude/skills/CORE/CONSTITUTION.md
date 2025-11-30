@@ -918,7 +918,7 @@ ${PAI_DIR}/MCPs/swap-mcp chrome-enabled
 # MUST restart Claude Code to apply!
 ```
 
-**Reference:** `${PAI_DIR}/skills/CORE/mcp-strategy.md`
+**Reference:** `${PAI_DIR}/skills/CORE/mcp-guide.md`
 
 ---
 

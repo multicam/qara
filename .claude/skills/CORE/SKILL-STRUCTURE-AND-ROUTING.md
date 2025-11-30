@@ -724,7 +724,7 @@ CORE/
 ├── contacts.md
 ├── history-system.md
 ├── hook-system.md
-├── TESTING.md
+├── testing-guide.md
 ├── ... (all other docs at CORE root)
 └── workflows/
     └── ... (flat or nested as needed)

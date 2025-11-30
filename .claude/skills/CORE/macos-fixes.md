@@ -150,7 +150,7 @@ git config --global core.autocrlf true   # Windows
 
 - **stack-preferences.md** - Development tools and preferences
 - **cli-first-guide.md** - CLI tool best practices and implementation
-- **TESTING.md** - Cross-platform testing considerations
+- **testing-guide.md** - Cross-platform testing considerations
 
 ---
 

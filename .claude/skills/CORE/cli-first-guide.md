@@ -710,7 +710,7 @@ Every CLI tool needs:
 - **CONSTITUTION.md** - Core CLI-First principle
 - **cli-first-examples.md** - Real-world examples and anti-patterns
 - **stack-preferences.md** - TypeScript over Python, Bun for runtimes
-- **TESTING.md** - How to test CLI tools independently
+- **testing-guide.md** - How to test CLI tools independently
 
 ---
 
