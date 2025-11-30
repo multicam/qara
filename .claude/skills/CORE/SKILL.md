@@ -123,12 +123,6 @@ description: |
   WORKFLOW ROUTING
   ═══════════════════════════════════════════════════════════
 
-  ⚠️ NOTE: Workflow files are being created. Routing will be enabled as files are completed.
-  See MIGRATION.md for implementation status.
-
-  <!--
-  COMMENTED OUT UNTIL WORKFLOW FILES ARE CREATED:
-
   **When user requests updating Qara repository:**
   Examples: "update the Qara repo", "commit and push to Qara", "push to Qara repo", "push these changes"
   → **READ:** ${PAI_DIR}/skills/CORE/workflows/git-update-repo.md
@@ -148,10 +142,6 @@ description: |
   Examples: "merge conflict", "complex decision", "trade-offs", "/plan mode for this"
   → **READ:** ${PAI_DIR}/skills/CORE/workflows/merge-conflict-resolution.md
   → **EXECUTE:** Use /plan mode with UltraThink for analysis and recommendation
-
-  **For voice routing workflow reference:**
-  → **READ:** ${PAI_DIR}/skills/CORE/workflows/voice-routing-full.md
-  → Complete voice routing table and commands
 
   **For file organization details:**
   → **READ:** ${PAI_DIR}/skills/CORE/workflows/file-organization-detailed.md
@@ -202,6 +192,97 @@ description: |
 
 **Workflows:**
 - `workflows/` - Operational procedures (git, delegation, MCP, blog deployment, etc.)
+
+---
+
+## 🎯 When to Read Additional Context (Just-In-Time Loading)
+
+**Load reference files only when actually needed to minimize token usage and maximize relevance.**
+
+### Core Architecture & Patterns
+
+**CLI-First Implementation** → READ `cli-first-guide.md` when:
+- Building a new CLI tool or command
+- Integrating with external APIs
+- Wrapping AI functionality with deterministic code
+- Jean-Marc asks about CLI-First architecture or patterns
+
+**CLI-First Examples** → READ `cli-first-examples.md` when:
+- Need real-world examples of CLI-First pattern
+- Migrating from prompt-based to CLI-based approach
+- Looking for anti-patterns to avoid
+- Need before/after comparison examples
+
+**System Architecture** → READ `CONSTITUTION.md` when:
+- Jean-Marc asks about fundamental principles
+- Need clarification on core philosophy
+- Making architectural decisions
+- Understanding why Qara works a certain way
+
+### Development & Quality
+
+**Testing Implementation** → READ `testing-guide.md` when:
+- Jean-Marc requests test implementation
+- Writing or modifying CLI tools (tests required)
+- Setting up test infrastructure (Vitest, Playwright)
+- Need testing best practices or patterns
+
+**Stack Decisions** → READ `stack-preferences.md` when:
+- Choosing between technologies (TypeScript vs Python, etc.)
+- Selecting tools or libraries
+- Jean-Marc asks "what stack should I use"
+- Need extended tooling information
+
+**Technical Parallelization** → READ `parallel-execution.md` when:
+- Implementing Promise.all patterns
+- Need concurrency control strategies
+- Handling parallel I/O operations
+- Error handling in parallel code (separate from agent delegation)
+
+### Agent & Delegation System
+
+**Agent Hierarchy** → READ `agent-guide.md` when:
+- Need to invoke Engineer or Principal agents
+- Unclear about escalation paths
+- Questions about agent capabilities or authority
+- Setting up quality gates for agent work
+
+**Task Decomposition** → READ `delegation-guide.md` when:
+- Jean-Marc requests parallel intern delegation
+- Breaking down complex tasks into parallel subtasks
+- Implementing spotcheck patterns
+- Scaling delegation strategies
+
+### Integration & Tools
+
+**MCP Strategy** → READ `mcp-guide.md` when:
+- Deciding between MCP server vs CLI wrapper
+- Jean-Marc mentions MCP or asks about integration strategy
+- Migrating from MCP to production CLI
+- Setting up Tier 1 (discovery) vs Tier 2 (production) tools
+
+**Personal Context** → READ `MY_DEFINITIONS.md` when:
+- Jean-Marc uses terms that might have specific definitions
+- Need his perspective on AGI, consciousness, or other concepts
+- Clarifying philosophical positions
+
+### Configuration & Systems
+
+**Hook Configuration** → READ `hook-system.md` when:
+- Creating or modifying hooks
+- Jean-Marc asks about hook system
+- Need hook implementation patterns
+
+**History System** → READ `history-system.md` when:
+- Questions about UOCS or automatic documentation
+- Modifying history capture system
+- Need to understand session context preservation
+
+**Security** → READ `security-protocols.md` when:
+- Handling API keys or sensitive data
+- Working with multiple repositories (Qara vs PAI)
+- Jean-Marc asks about security practices
+- Potential prompt injection scenarios
 
 ---
 
