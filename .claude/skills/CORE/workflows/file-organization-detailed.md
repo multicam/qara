@@ -9,7 +9,7 @@
 ## Directory Overview
 
 ```
-${PAI_DIR}/
+~/.claude/
 ├── skills/          # Domain expertise packages (PERMANENT)
 ├── history/         # Permanent valuable outputs (PERMANENT)
 ├── scratchpad/      # Temporary working files (TEMPORARY)
