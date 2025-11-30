@@ -911,7 +911,7 @@ bun test user.test.ts
 
 ## Related Documentation
 
-- **cli-first-architecture.md** - Testing CLI tools independently
+- **cli-first-guide.md** - Building and testing CLI tools independently
 - **playwright-config.md** - Playwright setup and configuration
 - **CONSTITUTION.md** - Principle #6 (Spec/Test/Evals First)
 - **stack-preferences.md** - Vitest and Playwright preferences

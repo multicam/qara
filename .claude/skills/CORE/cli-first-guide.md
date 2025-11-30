@@ -1,98 +1,17 @@
-# CLI-First Architecture
+# CLI-First Implementation Guide
 
-**Purpose**: Comprehensive guide to building deterministic CLI tools before adding AI orchestration, following Qara's core principle: "Code Before Prompts."
+**Purpose**: Practical patterns and best practices for building deterministic CLI tools that AI can orchestrate.
 
-**Last Updated**: 2025-11-19
+**When to read**: Building a new CLI tool, refactoring prompts to CLI-First, or integrating external APIs.
 
 ---
 
 ## Table of Contents
-1. [The Core Principle](#the-core-principle)
-2. [Why CLI-First?](#why-cli-first)
-3. [The Three-Step Pattern](#the-three-step-pattern)
-4. [CLI Design Best Practices](#cli-design-best-practices)
-5. [CLI-First for API Calls](#cli-first-for-api-calls)
-6. [When to Apply CLI-First](#when-to-apply-cli-first)
-7. [Prompting Layer Responsibilities](#prompting-layer-responsibilities)
-8. [Real-World Examples](#real-world-examples)
-9. [Anti-Patterns](#anti-patterns)
-
----
-
-## The Core Principle
-
-> **Build tools that work perfectly without AI, then add AI to make them easier to use.**
-
-AI should orchestrate deterministic tools, not replace them with ad-hoc prompting.
-
-**Key Insight**: Code is cheaper, faster, and more reliable than prompts.
-
-### The Fundamental Pattern
-```
-Requirements → CLI Tool → Prompting Layer
-   (what)      (how)       (orchestration)
-```
-
-From CONSTITUTION.md Principle #3:
-> **Code Before Prompts**: Write code to solve problems, use prompts to orchestrate code.
-
----
-
-## Why CLI-First?
-
-### Old Way (Prompt-Driven) ❌
-```
-User Request → AI generates code/actions ad-hoc → Inconsistent results
-```
-
-**Problems:**
-- ❌ Inconsistent outputs (prompts drift, model variations)
-- ❌ Hard to debug (what exactly happened?)
-- ❌ Not reproducible (same request, different results)
-- ❌ Difficult to test (prompts change, behavior changes)
-- ❌ No version control (prompt changes don't track behavior)
-- ❌ Token wasteful (re-explaining same logic every time)
-- ❌ Model-dependent (breaks when model changes)
-
-### New Way (CLI-First) ✅
-```
-User Request → AI uses deterministic CLI → Consistent results
-```
-
-**Advantages:**
-- ✅ Consistent outputs (same command = same result)
-- ✅ Easy to debug (inspect CLI command that was run)
-- ✅ Reproducible (CLI commands are deterministic)
-- ✅ Testable (test CLI directly, independently of AI)
-- ✅ Version controlled (CLI changes are explicit code changes)
-- ✅ Token efficient (no re-explaining in prompts)
-- ✅ Model agnostic (works with any AI that can call commands)
-
-### Command Line Interfaces Provide
-
-**Discoverability**:
-- `--help` shows all commands, options, examples
-- Users can explore capabilities without AI
-
-**Scriptability**:
-- Commands can be automated in bash/scripts
-- Compose with pipes and other Unix tools
-- Build complex workflows from simple commands
-
-**Testability**:
-- Test CLI independently of AI
-- Write unit tests for command logic
-- Integration tests for command composition
-
-**Flexibility**:
-- Use with or without AI
-- Works in scripts, cron jobs, CI/CD
-- Human can run directly if AI fails
-
-**Transparency**:
-- See exactly what was executed
-- Audit trail of commands run
-- Understand system behavior
+1. [The Three-Step Pattern](#the-three-step-pattern)
+2. [CLI Design Best Practices](#cli-design-best-practices)
+3. [CLI-First for API Calls](#cli-first-for-api-calls)
+4. [Prompting Layer Responsibilities](#prompting-layer-responsibilities)
+5. [Quick Reference](#quick-reference)
 
 ---
 
@@ -145,13 +64,11 @@ import { parseArgs } from "util";
 import { existsSync } from "fs";
 import { exec } from "child_process";
 
-// Full TypeScript implementation with:
-// - Input validation
-// - Error handling
-// - --help documentation
-// - Type safety
-// - Testability
-// - Clean separation from prompts
+/**
+ * CLI tool for publishing blog posts
+ * 
+ * Usage: blog-publish <file> [options]
+ */
 
 interface PublishOptions {
   file: string;
@@ -226,14 +143,14 @@ await publish({
 
 ### Step 3: Wrap with Prompting
 
-**AI Orchestration Layer:**
+**AI Orchestration Layer (in skill workflow):**
 ```markdown
-# Writing Skill - Publish Blog Workflow
+## Workflow: Publish Blog Post
 
-## When to Use
+### When to Use
 User says: "publish blog", "push post to production", "deploy article"
 
-## Workflow
+### Steps
 
 1. **Identify post file**
    - Ask user which post or use current file
@@ -627,45 +544,6 @@ if (command === "fetch" || command === "search") {
 - ✅ Composable (pipes to jq, grep, etc.)
 - ✅ Reusable across skills
 
-### Canonical Example: llcli
-
-**Location:** `~/.claude/bin/llcli/`
-
-The Limitless.ai CLI demonstrates perfect CLI-First API integration.
-
-**Structure:**
-```
-~/.claude/bin/llcli/
-├── llcli.ts          # Main CLI (TypeScript)
-├── package.json      # Dependencies
-└── README.md         # Full documentation
-```
-
-**Usage:**
-```bash
-# Documented commands
-$ llcli --help
-$ llcli today --limit 20
-$ llcli date 2025-11-17
-$ llcli search "keyword" --limit 50
-
-# Clean JSON output (pipes to jq)
-$ llcli today | jq '.data.lifelogs[].title'
-
-# Composable with other tools
-$ llcli search "consulting" | grep -i "quorum"
-```
-
-**Features:**
-- ✅ Full --help system
-- ✅ Input validation (date formats, required args)
-- ✅ Error messages to stderr
-- ✅ Exit codes (0 success, 1 error)
-- ✅ JSON output to stdout
-- ✅ TypeScript with types
-- ✅ Environment config (`~/.claude/.env`)
-- ✅ Composable (pipes to jq, grep, etc.)
-
 ### CLI Tool Checklist
 
 Every API CLI tool must have:
@@ -682,80 +560,6 @@ Every API CLI tool must have:
 - [ ] Executable with shebang (`#!/usr/bin/env bun`)
 - [ ] Composable with Unix tools (pipes, filters)
 - [ ] Testable independently of AI
-
----
-
-## When to Apply CLI-First
-
-### ✅ Apply CLI-First When:
-
-**1. Repeated Operations**
-- Task will be performed multiple times
-- Want consistent results every time
-- *Example*: Publishing blog posts, running evals
-
-**2. Deterministic Results**
-- Same input should always produce same output
-- No random or probabilistic behavior
-- *Example*: Data transformations, file processing
-
-**3. Complex State Management**
-- Managing files, databases, configurations
-- Need to track changes over time
-- *Example*: Evaluation system, content management
-
-**4. Query Requirements**
-- Need to search, filter, aggregate data
-- Want composable operations (pipes, filters)
-- *Example*: Log analysis, data exploration
-
-**5. Version Control**
-- Operations should be tracked and reproducible
-- Want git history of tool changes
-- *Example*: Infrastructure management, deployment scripts
-
-**6. Testing Needs**
-- Want to test independently of AI
-- Need reliable regression tests
-- *Example*: Critical workflows, business logic
-
-**7. User Flexibility**
-- Users might want to script or automate
-- Need to work without AI
-- *Example*: CI/CD integration, scheduled tasks
-
-### ❌ Don't Need CLI-First When:
-
-**1. One-Off Operations**
-- Will only be done once or rarely
-- No need for reproducibility
-- *Example*: Migrating data one time, emergency fix
-
-**2. Simple File Operations**
-- Just reading or writing a single file
-- No complex logic or validation
-- *Example*: Creating README, quick formatting
-
-**3. Pure Computation**
-- No state management or side effects
-- Simple calculation or transformation
-- *Example*: Converting units, basic math
-
-**4. Exploratory Work**
-- Still figuring out what you need
-- Requirements not clear yet
-- *Example*: Prototyping, research, investigation
-
-### Decision Framework
-
-Ask these questions:
-1. **Will this be run more than 5 times?** → CLI-First
-2. **Do I need the same result every time?** → CLI-First
-3. **Will others need to use this?** → CLI-First
-4. **Do I need to test this?** → CLI-First
-5. **Will requirements change?** → CLI-First (easier to update code than prompts)
-
-If you answered "yes" to 2+ questions → Build CLI tool
 
 ---
 
@@ -862,214 +666,6 @@ file-tool copy src dest --verify
 
 ---
 
-## Real-World Examples
-
-### Example 1: Evaluation System
-
-**Before (Prompt-Driven):**
-```markdown
-AI manually:
-- Creates JSON files
-- Updates directory structure
-- Runs comparisons ad-hoc
-- Formats output inconsistently
-```
-
-**After (CLI-First):**
-```bash
-# Create use case
-$ evals use-case create --name newsletter-summary
-
-# Add test case
-$ evals test-case add \
-  --use-case newsletter-summary \
-  --file test.json
-
-# Run evaluation
-$ evals run \
-  --use-case newsletter-summary \
-  --model claude-3-5-sonnet \
-  --json
-
-# Compare results
-$ evals compare \
-  --use-case newsletter-summary \
-  --models claude-3-5-sonnet,gpt-4
-```
-
-**Benefits:**
-- Consistent file structure
-- Reproducible results
-- Version controlled
-- Testable independently
-- AI just orchestrates
-
-### Example 2: Blog Publishing
-
-**Before (Prompt-Driven):**
-```markdown
-AI ad-hoc:
-- Copies file to blog directory
-- Runs Hugo build with varying commands
-- Deployment steps inconsistent
-- Verification sometimes skipped
-```
-
-**After (CLI-First):**
-```bash
-# Single deterministic command
-$ blog-publish ./posts/my-post.md --verify
-
-# Always does:
-# 1. Validates frontmatter
-# 2. Copies to correct location
-# 3. Runs Hugo build
-# 4. Deploys via git
-# 5. Verifies deployment
-# 6. Returns live URL
-```
-
-**Benefits:**
-- Never miss verification step
-- Same process every time
-- Easy to add to CI/CD
-- Can run manually if needed
-
-### Example 3: API Integration (Limitless.ai)
-
-**Before (Bash Scripts in Prompt):**
-```bash
-#!/bin/bash
-# Various bash scripts embedded in skill prompts
-# Different scripts for different skills
-# No validation, poor error handling
-```
-
-**After (llcli Tool):**
-```bash
-# Single CLI tool, used across all skills
-$ llcli today --limit 20
-$ llcli search "keyword"
-$ llcli date 2025-11-19
-
-# Composable
-$ llcli today | jq '.data.lifelogs[] | select(.duration > 3600)'
-```
-
-**Benefits:**
-- Reusable across skills
-- Type-safe TypeScript
-- Comprehensive validation
-- Well-documented (--help)
-- Independently testable
-
----
-
-## Anti-Patterns
-
-### ❌ Anti-Pattern 1: Code in Prompts
-
-**Bad:**
-```markdown
-# In skill workflow
-Run this bash command:
-  curl -H "X-API-Key: $KEY" https://api.service.com/data | jq '.results'
-```
-
-**Why Bad:**
-- Not version controlled
-- Hard to test
-- Can't evolve easily
-- Duplicated across skills
-
-**Good:**
-```markdown
-# In skill workflow
-Run: api-tool fetch --limit 50
-```
-
-### ❌ Anti-Pattern 2: Skipping to AI
-
-**Bad:**
-```
-Requirements → AI Prompt (no CLI layer)
-```
-
-**Why Bad:**
-- Inconsistent results
-- Can't test independently
-- Behavior changes with model updates
-- Hard to debug
-
-**Good:**
-```
-Requirements → CLI Tool → AI Orchestration
-```
-
-### ❌ Anti-Pattern 3: Complex Bash Logic
-
-**Bad:**
-```bash
-#!/bin/bash
-# 200 lines of bash with loops, conditionals
-# Embedded in skill prompt
-```
-
-**Why Bad:**
-- Bash is hard to maintain
-- No type safety
-- Poor error handling
-- Can't test easily
-
-**Good:**
-```typescript
-// TypeScript CLI with proper structure
-// In ~/.claude/bin/tool-name/
-```
-
-### ❌ Anti-Pattern 4: One-Off CLI for Simple Tasks
-
-**Bad:**
-```bash
-# Create CLI for single file read
-$ read-file ./data.txt
-```
-
-**Why Bad:**
-- Overhead not justified
-- Simple task doesn't need CLI
-- Just adds complexity
-
-**Good:**
-```bash
-# Direct file operation
-$ cat ./data.txt
-```
-
-**Rule of Thumb:** Only create CLI if task will be done 5+ times or needs determinism.
-
-### ❌ Anti-Pattern 5: CLI Without --help
-
-**Bad:**
-```typescript
-// CLI tool with no documentation
-// Users have to read code to understand
-```
-
-**Why Bad:**
-- Not discoverable
-- Can't remember syntax
-- Hard for new users
-- Looks unprofessional
-
-**Good:**
-```bash
-$ tool --help
-# Comprehensive help with examples
-```
-
----
-
 ## Quick Reference
 
 ### The CLI-First Checklist
@@ -1111,10 +707,10 @@ Every CLI tool needs:
 
 ## Related Documentation
 
-- **CONSTITUTION.md** - Founding principle #3 (Code Before Prompts)
+- **CONSTITUTION.md** - Core CLI-First principle
+- **cli-first-examples.md** - Real-world examples and anti-patterns
 - **stack-preferences.md** - TypeScript over Python, Bun for runtimes
 - **TESTING.md** - How to test CLI tools independently
-- **system-mcp skill** - Example of CLI-First for API integration
 
 ---
 

@@ -709,7 +709,8 @@ Need to use external API?
 ## Related Documentation
 
 - **CONSTITUTION.md** - Two-Tier MCP Strategy principle
-- **cli-first-architecture.md** - Building CLI wrappers
+- **cli-first-guide.md** - Building CLI wrappers for APIs
+- **cli-first-examples.md** - API CLI tool examples (see llcli)
 - **mcp-profile-management.md** - Legacy MCP configuration (if needed)
 - **system-mcp skill** - Live example of Tier 2 implementation
 

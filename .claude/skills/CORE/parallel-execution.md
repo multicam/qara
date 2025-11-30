@@ -743,7 +743,7 @@ await Promise.race([
 ## Related Documentation
 
 - **delegation-patterns.md** - Agent-based parallel execution
-- **cli-first-architecture.md** - Building deterministic tools
+- **cli-first-guide.md** - Building deterministic tools for parallel execution
 - **TESTING.md** - Testing parallel code
 - **CONSTITUTION.md** - Deterministic code principles
 

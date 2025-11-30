@@ -69,29 +69,18 @@
 ## 💻 Software Development Concepts
 
 ### CLI-First Architecture
+
 **Jean-Marc's Definition**:
-**Definition**: Build deterministic command-line tools first, wrap them with prompts second.
+> Build deterministic command-line tools first, wrap them with prompts second.
 
-**Core Principles** (from CONSTITUTION.md):
-- Commands that can be run standalone
-- Prompts that invoke these commands
-- Testable, reproducible, scriptable
-- No hidden state in prompts
+**Reference**: See `CONSTITUTION.md` for the core principle and philosophy.
 
-**Why This Matters**:
-- Debugging: Can test tools without LLM
-- Reliability: Deterministic behavior
-- Composability: Tools work together
-- Transparency: Clear what's happening
+**For implementation**: 
+- See `cli-first-guide.md` - Practical patterns, API integration, design best practices
+- See `cli-first-examples.md` - Real-world examples, anti-patterns, migration strategies
 
-**Example**:
-```bash
-# ✅ Good: CLI tool that can be tested
-./scripts/analyze-code.ts file.ts
-
-# ❌ Bad: Functionality only in prompt
-"Analyze this code: [paste code]"
-```
+**Quick Summary**:
+Build tools that work perfectly without AI, then add AI to make them easier to use. Code is cheaper, faster, and more reliable than prompts.
 
 ---
 

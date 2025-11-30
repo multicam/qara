@@ -172,7 +172,8 @@ description: |
 
 **Core Architecture & Philosophy:**
 - `CONSTITUTION.md` - System architecture and philosophy, foundational principles (CLI-First, Deterministic Code, Prompts Wrap Code) | ⭐ PRIMARY REFERENCE | Triggers: "Kai architecture", "how does Kai work", "system principles"
-- `cli-first-architecture.md` - CLI-First pattern details
+- `cli-first-guide.md` - CLI-First implementation patterns and best practices | Triggers: "build CLI tool", "API integration"
+- `cli-first-examples.md` - CLI-First real-world examples and anti-patterns | Triggers: "CLI examples", "migration patterns"
 - `SKILL-STRUCTURE-AND-ROUTING.md` - Skill structure, routing, ecosystem | Triggers: "how to structure a skill", "skill routing", "create new skill"
 
 **Development & Testing:**

@@ -565,289 +565,52 @@ Body:
 
 ## CLI-First Architecture
 
-### The Pattern
+### The Core Principle
 
+> **Build tools that work perfectly without AI, then add AI to make them easier to use.**
+
+**The Pattern:**
 ```
 Requirements → CLI Tool → Prompting Layer
    (what)      (how)       (orchestration)
 ```
 
-**The Three-Step Process:**
-
-1. **Understand Requirements** - Document everything the tool needs to do
-2. **Build Deterministic CLI** - Create command-line tool with explicit commands
-3. **Wrap with Prompting** - AI orchestrates the CLI, doesn't replace it
-
-### Why CLI-First?
-
-#### Old Way (Prompt-Driven)
-```
-User Request → AI generates code/actions ad-hoc → Inconsistent results
-```
-
-**Problems:**
-- ❌ Inconsistent outputs (prompts drift, model variations)
-- ❌ Hard to debug (what exactly happened?)
-- ❌ Not reproducible (same request, different results)
-- ❌ Difficult to test (prompts change, behavior changes)
-- ❌ No version control (prompt changes don't track behavior)
-
-#### New Way (CLI-First)
-```
-User Request → AI uses deterministic CLI → Consistent results
-```
-
-**Advantages:**
-- ✅ Consistent outputs (same command = same result)
-- ✅ Easy to debug (inspect CLI command that was run)
-- ✅ Reproducible (CLI commands are deterministic)
-- ✅ Testable (test CLI directly, independently of AI)
-- ✅ Version controlled (CLI changes are explicit code changes)
-
-### CLI Design Best Practices
-
-**1. Command Structure**
-```bash
-# Good: Hierarchical, clear structure
-tool command subcommand --flag value
-
-# Examples:
-evals use-case create --name foo
-evals test-case add --use-case foo --file test.json
-evals run --use-case foo --model claude-3-5-sonnet
-```
-
-**2. Idempotency**
-```bash
-# Same command multiple times = same result
-evals use-case create --name foo  # Creates
-evals use-case create --name foo  # Already exists, no error
-```
-
-**3. Output Formats**
-```bash
-# Human-readable by default
-evals list use-cases
-
-# JSON for scripting
-evals list use-cases --json
-```
-
-**4. Progressive Disclosure**
-```bash
-# Simple for common cases
-evals run --use-case newsletter-summary
-
-# Advanced options available
-evals run --use-case newsletter-summary \
-  --model claude-3-5-sonnet \
-  --prompt v2.0.0 \
-  --verbose
-```
-
-### Prompting Layer Responsibilities
-
-**The prompting layer should:**
-- Understand user intent
-- Map intent to appropriate CLI commands
-- Execute CLI commands in correct order
-- Handle errors and retry logic
-- Summarize results for user
-- Ask clarifying questions when needed
-
-**The prompting layer should NOT:**
-- Replicate CLI functionality in ad-hoc code
-- Generate solutions without using CLI
-- Perform operations that should be CLI commands
-- Bypass the CLI for "simple" operations
-
-### When to Apply CLI-First
-
-**✅ Apply CLI-First When:**
-1. **Repeated Operations** - Task will be performed multiple times
-2. **Deterministic Results** - Same input should always produce same output
-3. **Complex State** - Managing files, databases, configurations
-4. **Query Requirements** - Need to search, filter, aggregate data
-5. **Version Control** - Operations should be tracked and reproducible
-6. **Testing Needs** - Want to test independently of AI
-7. **User Flexibility** - Users might want to script or automate
-
-**Examples:** Evaluation systems, content management, infrastructure management, data processing
-
-**❌ Don't Need CLI-First When:**
-1. **One-Off Operations** - Will only be done once or rarely
-2. **Simple File Operations** - Just reading or writing a single file
-3. **Pure Computation** - No state management or side effects
-
-**Examples:** Reading a specific file once, quick data exploration, one-time refactoring
-
-### Key Takeaway
-
-**Build tools that work perfectly without AI, then add AI to make them easier to use.**
-
 AI should orchestrate deterministic tools, not replace them with ad-hoc prompting.
 
-**For complete CLI-First guide, see:** `${PAI_DIR}/skills/CORE/cli-first-architecture.md`
+### Why This Matters
 
-### CLI-First for API Calls
+**The Problem with Prompt-Driven Development:**
+- Inconsistent outputs (prompts drift, models change)
+- Hard to debug (what exactly happened?)
+- Not reproducible or testable
+- No version control of behavior
 
-**CRITICAL PATTERN: Never write API calls directly in prompts or bash scripts.**
+**The CLI-First Solution:**
+- Same command = same result (deterministic)
+- Easy to debug (inspect the command)
+- Testable independently of AI
+- Version controlled and explicit
 
-When integrating external APIs, always follow this pattern:
+### When to Apply
 
-#### The Old Way (Ad-Hoc Scripts) ❌
+**Build a CLI tool when:**
+- Task will run >5 times (repeated operations)
+- Need consistent, deterministic results
+- Managing complex state (files, configs, databases)
+- Need independent testing or automation
 
-```bash
-#!/bin/bash
-# fetch-data.sh - fragile bash script
+**Skip CLI-First when:**
+- One-off operations
+- Simple file read/write
+- Pure computation with no side effects
 
-API_KEY=$LIMITLESS_API_KEY
-URL="https://api.service.com/v1/data?param=$1"
-curl -H "X-API-Key: $API_KEY" "$URL"
-```
+### Implementation Guide
 
-**Problems:**
-- ❌ No validation of inputs
-- ❌ No error handling
-- ❌ No documentation (--help)
-- ❌ Hard to test
-- ❌ Difficult to maintain
-- ❌ No type safety
-- ❌ Code embedded in prompts
+**For detailed patterns, examples, and best practices:**
+→ See `${PAI_DIR}/skills/CORE/cli-first-guide.md` - Implementation patterns and CLI design
+→ See `${PAI_DIR}/skills/CORE/cli-first-examples.md` - Real-world examples and anti-patterns
 
-#### The New Way (CLI Tool) ✅
-
-```typescript
-#!/usr/bin/env bun
-// cli-tool.ts - documented, testable CLI
-
-/**
- * CLI tool for Service API
- * @author JM
- */
-
-// Full TypeScript implementation with:
-// - Input validation
-// - Error handling
-// - --help documentation
-// - Type safety
-// - Testability
-// - Clean separation from prompts
-```
-
-**Benefits:**
-- ✅ Validated inputs (date formats, required fields)
-- ✅ Comprehensive error handling
-- ✅ Full --help documentation
-- ✅ Type-safe TypeScript
-- ✅ Independently testable
-- ✅ Version controlled
-- ✅ Zero code in prompts
-
-#### Canonical Example: llcli
-
-**Location:** `${PAI_DIR}/bin/llcli/`
-
-The Limitless.ai CLI demonstrates perfect CLI-First API integration:
-
-**Structure:**
-```
-${PAI_DIR}/bin/llcli/
-├── llcli.ts          # Main CLI implementation (TypeScript)
-├── package.json      # Dependencies and metadata
-└── README.md         # Full documentation
-```
-
-**Usage:**
-```bash
-# Documented commands
-llcli --help
-llcli today --limit 20
-llcli date 2025-11-17
-llcli search "keyword" --limit 50
-
-# Clean JSON output (pipes to jq)
-llcli today | jq '.data.lifelogs[].title'
-
-# Composable with other tools
-llcli search "consulting" | grep -i "quorum"
-```
-
-**Features:**
-- ✅ Full --help system
-- ✅ Input validation (date formats, required args)
-- ✅ Error messages to stderr
-- ✅ Exit codes (0 success, 1 error)
-- ✅ JSON output to stdout
-- ✅ TypeScript with types
-- ✅ Environment config (${PAI_DIR}/.env)
-- ✅ Composable (pipes to jq, grep, etc.)
-
-#### Migration Pattern
-
-**Before (Bash Script):**
-```bash
-# In skill prompt:
-${PAI_DIR}/skills/skill-name/scripts/fetch-data.sh today "" 20
-```
-
-**After (CLI Tool):**
-```bash
-# In skill prompt:
-${PAI_DIR}/bin/toolname/toolname.ts today --limit 20
-```
-
-**Key Differences:**
-1. **Location:** `/bin/` not `/skills/.../scripts/`
-2. **Language:** TypeScript not Bash
-3. **Documentation:** --help not comments
-4. **Validation:** Type-checked not string parsing
-5. **Reusability:** System-wide not skill-specific
-
-#### When to Create API CLI Tools
-
-**✅ Create CLI Tool When:**
-1. API will be called >5 times
-2. Need to validate inputs (dates, formats, etc.)
-3. Want composability (pipe to jq, grep)
-4. API has multiple endpoints/modes
-5. Need error handling and retries
-6. Want independent testing
-7. Future skills might use same API
-
-**❌ Use MCP When:**
-1. First time exploring API (Tier 1 MCP for discovery)
-2. One-off API call
-3. API changes frequently (discovery phase)
-
-**Then migrate:** MCP → CLI tool (once you understand the API)
-
-#### CLI Tool Checklist
-
-Every API CLI tool must have:
-
-- [ ] Full --help documentation
-- [ ] Input validation with clear errors
-- [ ] TypeScript with proper types
-- [ ] Error messages to stderr
-- [ ] JSON output to stdout
-- [ ] Exit codes (0/1)
-- [ ] README.md with examples
-- [ ] Environment config (API keys in ${PAI_DIR}/.env)
-- [ ] Located in ${PAI_DIR}/bin/toolname/
-- [ ] Executable with shebang (#!/usr/bin/env bun)
-
-#### Examples in Qara
-
-Current CLI API tools:
-- **llcli** - Limitless.ai API (`${PAI_DIR}/bin/llcli/`)
-
-Future candidates:
-- **ghcli** - GitHub API wrapper (cleaner than `gh`)
-- **linearcli** - Linear issue management
-- **notecli** - Notion API wrapper
-
-**Key Principle:** API calls are infrastructure. Build them once as CLI tools, use them reliably forever.
+**Key principle:** Code is cheaper, faster, and more reliable than prompts.
 
 ---
 
@@ -1487,9 +1250,10 @@ voice_id: [ElevenLabs voice ID]
 
 **For implementation details, see:**
 - Skill structure patterns: `SKILL-STRUCTURE-AND-ROUTING.md`
-- CLI-First detailed guide: `cli-first-architecture.md`
-- MCP strategy full details: `mcp-strategy.md`
-- Testing comprehensive guide: `TESTING.md`
+- CLI-First implementation: `cli-first-guide.md`
+- CLI-First examples: `cli-first-examples.md`
+- MCP strategy: `mcp-strategy.md`
+- Testing guide: `TESTING.md`
 - Security protocols: `security-protocols.md`
 - Voice system: `${PAI_DIR}/voice-server/USAGE.md`
 - Agent protocols: `agent-protocols.md`
