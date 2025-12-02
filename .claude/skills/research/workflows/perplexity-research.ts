@@ -22,7 +22,6 @@
  * - **sonar-pro** - Deeper analysis (used for follow-ups)
  */
 
-import { spawn } from 'child_process';
 import { promisify } from 'util';
 import * as fs from 'fs';
 import * as path from 'path';

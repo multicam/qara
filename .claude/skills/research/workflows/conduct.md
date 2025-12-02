@@ -83,7 +83,7 @@ Task({
 
 ## 🔥 EXTENSIVE RESEARCH MODE (24 AGENTS)
 
-**ACTIVATION:** User says "extensive research" or "do extensive research on X"
+**ACTIVATION:** User says "extensive research" or "do extensive research on X" or "deep research"
 
 **WORKFLOW:**
 
@@ -479,15 +479,6 @@ If research commands report being blocked, encountering CAPTCHAs, or facing bot 
 8. ✅ **Voice notification** automatically triggered
 
 **Result:** User gets exhaustive AI consciousness research from parallel agents (8 per type) covering philosophy, neuroscience, computer science, ethics, and more - with extensive cross-validation and domain coverage mapping in under 1 minute.
-
-## 🎤 VOICE NOTIFICATIONS
-
-Voice notifications are AUTOMATIC when you use the mandatory response format. The stop-hook will:
-- Extract your 🎯 COMPLETED line
-- Send it to the voice server with Jamie (Premium) voice at 228 wpm
-- Announce "Completed multi-source [topic] research"
-
-**YOU DO NOT NEED TO MANUALLY SEND VOICE NOTIFICATIONS** - just use the format.
 
 ## 🔄 BENEFITS OF THIS ARCHITECTURE
 

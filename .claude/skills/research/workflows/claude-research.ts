@@ -23,7 +23,6 @@
 * - Integrated with Claude's knowledge and reasoning
     */
 
-import { spawn } from 'child_process';
 import { promisify } from 'util';
 
 const exec = promisify(require('child_process').exec);
@@ -33,7 +32,7 @@ const originalQuestion = process.argv.slice(2).join(' ');
 
 if (!originalQuestion) {
 console.error('❌ Please provide a research question');
-console.error('Usage: bun ${PAI_DIR}/commands/perform-claude-research.md "your question here"');
+console.error('Usage: bun ${PAI_DIR}/commands/claude-research.ts "your question here"');
 process.exit(1);
 }
 
