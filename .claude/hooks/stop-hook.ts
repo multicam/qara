@@ -290,8 +290,9 @@ async function main() {
       if (entry.type === 'assistant' && entry.message?.content) {
         // Check if this assistant message contains a Task tool_use
         let foundTask = false;
-        for (const content of entry.message.content) {
-          if (content.type === 'tool_use' && content.name === 'Task') {
+        const contentArray = Array.isArray(entry.message.content) ? entry.message.content : [entry.message.content];
+        for (const content of contentArray) {
+          if (content?.type === 'tool_use' && content.name === 'Task') {
             // This is an agent task - find its result
             foundTask = true;
             agentType = content.input?.subagent_type || '';
@@ -300,9 +301,12 @@ async function main() {
             for (let j = i + 1; j < lines.length; j++) {
               const resultEntry = JSON.parse(lines[j]);
               if (resultEntry.type === 'user' && resultEntry.message?.content) {
-                for (const resultContent of resultEntry.message.content) {
-                  if (resultContent.type === 'tool_result' && resultContent.tool_use_id === content.id) {
-                    taskResult = resultContent.content;
+                const resultContentArray = Array.isArray(resultEntry.message.content)
+                  ? resultEntry.message.content
+                  : [resultEntry.message.content];
+                for (const resultContent of resultContentArray) {
+                  if (resultContent?.type === 'tool_result' && resultContent.tool_use_id === content.id) {
+                    taskResult = contentToText(resultContent.content);
                     isAgentTask = true;
                     break;
                   }
@@ -331,7 +335,7 @@ async function main() {
   try {
     const entry = JSON.parse(lastResponse);
     if (entry.type === 'assistant' && entry.message?.content) {
-      const content = entry.message.content.map(c => c.text || '').join(' ');
+      const content = contentToText(entry.message.content);
 
       // First, look for CUSTOM COMPLETED line (voice-optimized)
       const customCompletedMatch = content.match(/🗣️\s*CUSTOM\s+COMPLETED:\s*(.+?)(?:\n|$)/im);
@@ -445,7 +449,7 @@ async function main() {
       const lastResponse = lines[lines.length - 1];
       const entry = JSON.parse(lastResponse);
       if (entry.type === 'assistant' && entry.message?.content) {
-        const content = entry.message.content.map(c => c.text || '').join(' ');
+        const content = contentToText(entry.message.content);
         const completedMatch = content.match(/🎯\s*COMPLETED:\s*(.+?)(?:\n|$)/im);
         if (completedMatch) {
           tabTitle = completedMatch[1].trim()

@@ -1,8 +1,9 @@
-# Qara: First-Principles Rethink - Executive Summary
+# Qara v2: BAML-Powered Redesign - Executive Summary
 
 **Date:** 2025-12-01  
-**Purpose:** Strategic vision for Qara's next evolution  
-**Approach:** Elon-style first-principles thinking applied to AI infrastructure
+**BAML Version:** 0.335+  
+**Purpose:** Strategic vision for Qara's next evolution using BAML  
+**Approach:** Elon-style first-principles thinking + proven BAML implementation
 
 ---
 
@@ -12,10 +13,18 @@
 
 ```
 Current:  Natural Language → AI → Route → AI → Execute
-Optimal:  Natural Language → Compile → Execute
+Optimal:  Natural Language → Compiled Route → BAML → Execute
 ```
 
-Like a programming language compiles to machine code, Qara should compile natural language into deterministic skill execution.
+**Implementation:** Use BAML (Boundary AI Markup Language) as the core skill execution layer.
+
+BAML provides 90% of what the custom implementation would require:
+- Type-safe structured outputs
+- Multi-LLM support  
+- Auto-generated clients
+- Built-in retry/failover
+- VSCode playground for instant testing
+- Automatic JSON repair
 
 ---
 
@@ -32,16 +41,20 @@ Like a programming language compiles to machine code, Qara should compile natura
 - ⚠️ Locked into Claude Code
 - ⚠️ Skills not unit testable
 
-### Proposed State (v2)
+### Proposed State (v2 with BAML)
 
-- ✅ **Compiled routing** (<1ms, zero tokens)
-- ✅ **Skills as TypeScript** (type-safe, testable)
-- ✅ **Graph-based context** (10x more precise)
-- ✅ **Runtime-agnostic** (works with any LLM)
-- ✅ **Streaming execution** (instant feedback)
-- ✅ **Result caching** (instant for repeated queries)
-- ✅ **5K lines code** (vs 15K docs)
+- ✅ **Compiled routing** (<1ms, zero tokens) - Custom TypeScript
+- ✅ **Skills as BAML functions** (type-safe, testable, hot-reload)
+- ✅ **Multi-LLM support** (GPT-4, Claude, Gemini via BAML clients)
+- ✅ **Runtime-agnostic** (BAML handles provider abstraction)
+- ✅ **Streaming execution** (BAML built-in streaming)
+- ✅ **Retry/failover** (BAML retry policies)
+- ✅ **JSON repair** (BAML's SAP algorithm)
+- ✅ **VSCode playground** (instant skill testing)
+- ✅ **~550 lines custom code** (Router + Runtime + Context)
 - ✅ **10x faster** overall
+
+**Key Advantage:** BAML eliminates 60-80% of custom implementation work.
 
 ---
 
@@ -67,7 +80,7 @@ Optimal v2: (10 × 9 × 10) / (9 × 9 × 1) = 11.1
 
 ---
 
-## The Breakthrough: Compiled Routing
+## The Breakthrough: Compiled Routing + BAML Skills
 
 ### The Problem
 
@@ -80,16 +93,16 @@ Optimal v2: (10 × 9 × 10) / (9 × 9 × 1) = 11.1
 // Accuracy: ~95%
 ```
 
-### The Solution
+### The Solution (Part 1: Routing)
 
 **Compile routing into a trie at build time:**
 
 ```typescript
 // Build once
-const router = compileRouter(skills);
+const router = new QaraRouter(skills);
 
 // Route in <1ms, zero tokens, 100% accurate
-const skill = router.route("write blog"); // instant!
+const match = router.route("write blog"); // instant!
 ```
 
 **Impact:**
@@ -97,7 +110,38 @@ const skill = router.route("write blog"); // instant!
 - **100% token savings** (0 vs 10K)
 - **100% reliable** (deterministic vs probabilistic)
 
-**Engineering effort:** 2 weeks
+**Engineering effort:** 3-4 days
+
+### The Solution (Part 2: BAML Skills)
+
+**Define skills as BAML functions:**
+
+```baml
+class BlogPost {
+  title string
+  content string
+  tags string[]
+}
+
+function WriteBlog(topic: string) -> BlogPost {
+  client GPT4o
+  prompt #"
+    Write a blog post about {{ topic }}
+    {{ ctx.output_format }}
+  "#
+}
+```
+
+**BAML provides:**
+- ✅ Type-safe structured outputs
+- ✅ Auto-generated TypeScript/Python clients
+- ✅ VSCode playground (test without running code)
+- ✅ Multi-LLM support (OpenAI, Anthropic, Google)
+- ✅ Built-in retry/failover policies
+- ✅ Automatic JSON parsing/repair
+- ✅ Streaming support
+
+**Engineering effort:** Already built by Boundary ML
 
 **This is the minimum viable breakthrough.**
 
@@ -105,48 +149,57 @@ const skill = router.route("write blog"); // instant!
 
 ## The Architecture
 
-### Three-Layer Design
+### Three-Layer Design with BAML
 
 ```
-┌─────────────────────────────────┐
-│    User Interface Layer         │
-│  CLI • REPL • HTTP • IDE        │
-└────────────┬────────────────────┘
-             │
-┌────────────┴────────────────────┐
-│   Orchestration Layer           │
-│  Router • Executor • Context    │
-└────────────┬────────────────────┘
-             │
-┌────────────┴────────────────────┐
-│    Execution Layer              │
-│  Skills (TS) • LLM • Plugins    │
-└─────────────────────────────────┘
+┌─────────────────────────────────────────────────┐
+│         User Interface Layer                    │
+│    CLI • REPL • HTTP API • IDE Extension        │
+└────────────────┬────────────────────────────────┘
+                 │
+┌────────────────┴────────────────────────────────┐
+│      Qara Runtime Layer (TypeScript)            │
+│  Router • Orchestrator • Context • History      │
+│  (~550 lines custom code)                       │
+└────────────────┬────────────────────────────────┘
+                 │
+┌────────────────┴────────────────────────────────┐
+│         BAML Skill Layer (.baml files)          │
+│  Skills as BAML functions • Type-safe I/O       │
+│  Auto-generated clients • Multi-LLM support     │
+│  (Maintained by Boundary ML)                    │
+└─────────────────────────────────────────────────┘
 ```
 
 ### Key Components
 
-**1. Compiled Router** (100 lines)
+**1. Deterministic Router** (~200 lines TypeScript)
 - Trie-based pattern matching
 - O(1) skill lookup
 - Fuzzy fallback for unknowns
+- Zero tokens used
 
-**2. TypeScript Skills** (100 lines each)
-- Type-safe interfaces
-- Unit testable
-- Self-documenting
+**2. BAML Skills** (~50 lines each .baml file)
+- Type-safe class definitions
+- Jinja-based prompts
+- Built-in testing
+- Multi-LLM client support
+- Auto-generated TypeScript clients
 
-**3. Graph Context** (150 lines)
-- Vector similarity search
-- Dependency resolution
+**3. Context Manager** (~150 lines TypeScript)
+- Graph-based dependency loading
+- Smart caching
 - Token budget optimization
 
-**4. Plugin System** (50 lines)
-- Streaming execution
-- Result caching
-- Custom extensions
+**4. Minimal Runtime** (~200 lines TypeScript)
+- BAML function dispatcher
+- Client registry management
+- History logging
+- Error handling
 
-**Total core: ~500 lines** (vs 15K+ current)
+**Total custom code: ~550 lines TypeScript + BAML skills**  
+**vs 15K+ lines current system**  
+**BAML provides:** Type system, LLM abstraction, retry logic, JSON parsing, streaming
 
 ---
 
@@ -205,51 +258,56 @@ Serves: 90% of use cases
 
 ---
 
-## The Roadmap
+## The Roadmap (BAML-Accelerated)
 
-### Month 1: Proof of Concept
+### Week 1: POC Foundation
 
-- Build compiled router (100 lines)
-- Port 1 skill to TypeScript
-- Validate 100x faster routing
+- Setup BAML environment
+- Configure multi-LLM clients
+- Build deterministic router
+- Create first skill (blog) in BAML
+- Test in VSCode playground
+- **Validate <1ms routing**
+
+### Week 2: Core Skills
+
+- Port 3+ skills to BAML (research, code, git)
+- Test all skills in playground
+- Build skill registry
+- Integration tests
+
+### Week 3: Infrastructure
+
+- Context manager with caching
+- History logging
+- Error handling
+- Performance benchmarks
 - **Go/No-Go decision**
 
-### Month 2: Core Runtime
+### Week 4: Validation & Parallel Run
 
-- Complete production router
-- Port 5 essential skills
-- Graph-based context manager
-- Full test suite
+- Full integration tests
+- Parallel run with v1
+- Compare outputs
+- Document divergences
 
-### Month 3: Advanced Features
+### Month 2: Production Readiness
 
-- Streaming execution plugin
-- Result caching plugin
-- Vector context plugin
-- Observability dashboard
+- Streaming support
+- Additional skills (file ops, analysis)
+- Monitoring dashboard
+- Documentation
 
-### Month 4: Migration Tools
+### Month 3: Migration & Deployment
 
-- Markdown → TypeScript transpiler
-- Parallel v1/v2 runtime
-- 1000+ test validation suite
-- One-click migration
-
-### Month 5: Production Deploy
-
-- 10% canary deployment
-- 50% traffic validation
-- 100% cutover
+- Gradual traffic increase (10% → 50% → 100%)
+- Monitor error rates
 - V1 deprecation
+- Production polish
 
-### Month 6: Polish
+**Total: 3 months to production v2** (vs 6 months custom implementation)
 
-- Performance tuning (<100ms p50)
-- Advanced plugins
-- Complete documentation
-- Public release
-
-**Total: 6 months to production v2**
+**BAML saves 3 months of development time.**
 
 ---
 
@@ -306,16 +364,19 @@ Serves: 90% of use cases
 
 ### Engineering Time
 
-- **Total:** 24 weeks
-- **Average:** 1.5 FTE
-- **Peak:** 2 FTE (Month 2-3)
+- **Total:** 12 weeks (vs 24 weeks custom)
+- **Average:** 1 FTE
+- **Peak:** 1 FTE (constant)
+
+**BAML reduces engineering time by 50%**
 
 ### Infrastructure
 
 - **Development:** Existing (free)
-- **Vector DB:** $0-70/month
+- **BAML:** Free (open source)
 - **Monitoring:** Existing (free)
-- **Total:** <$100/month
+- **LLM APIs:** Usage-based (existing budget)
+- **Total:** $0/month additional
 
 ### Return on Investment
 
@@ -343,6 +404,41 @@ Serves: 90% of use cases
 
 ---
 
+## Why BAML Changes Everything
+
+### Comparison: Custom vs BAML Implementation
+
+| Aspect | Custom (Blueprint) | BAML-Based | Winner |
+|--------|-------------------|------------|--------|
+| **Type Safety** | Manual TS types (~200 lines) | Auto-generated from .baml | ✅ BAML |
+| **Testing** | Custom test framework | VSCode playground (built-in) | ✅ BAML |
+| **JSON Parsing** | Custom parser + repair | SAP algorithm (built-in) | ✅ BAML |
+| **Multi-LLM** | Custom abstraction (~300 lines) | client<llm> declarations | ✅ BAML |
+| **Retry Logic** | Manual implementation (~150 lines) | retry_policy declarations | ✅ BAML |
+| **Streaming** | Complex implementation (~200 lines) | .stream() built-in | ✅ BAML |
+| **Hot Reload** | Custom dev server | VSCode extension instant | ✅ BAML |
+| **Prompt Preview** | No preview | Live preview in editor | ✅ BAML |
+| **Failover** | Manual implementation | round_robin strategy | ✅ BAML |
+| **Code Generation** | Manual boilerplate | baml-cli generate | ✅ BAML |
+
+**Total code savings:** 1,000+ lines eliminated by using BAML
+
+**Development time savings:** 60-80% (3 months → <1 month for core features)
+
+### BAML Provides Production-Grade Features
+
+1. **Schema-Aligned Parsing (SAP)** - Handles broken JSON, markdown in responses
+2. **Retry Policies** - Exponential backoff, configurable strategies
+3. **Fallback Chains** - Round-robin, failover between LLMs
+4. **Type Generation** - TypeScript, Python, Ruby clients
+5. **Streaming** - Built-in support for all compatible models
+6. **Testing** - Integrated test framework with examples
+7. **Observability** - Trace IDs, request logs (Boundary Studio integration)
+
+**We get enterprise-grade LLM infrastructure for free.**
+
+---
+
 ## Controversial Recommendations
 
 ### 1. Delete 90% of Documentation
@@ -350,10 +446,10 @@ Serves: 90% of use cases
 **Proposal:** 15K lines → 1.5K lines
 
 Keep: Philosophy, quick start, examples  
-Generate: API reference from code  
-Delete: Implementation details → code comments
+Generate: API reference from BAML definitions  
+Delete: Implementation details → BAML files are self-documenting
 
-**Rationale:** Code is the source of truth. Docs drift.
+**Rationale:** BAML files are both code and documentation.
 
 ---
 
@@ -368,120 +464,147 @@ Remove: Intern, Architect, Designer, Writer, etc.
 
 ---
 
-### 3. Make Skills TypeScript, Not Markdown
+### 3. Make Skills BAML, Not Markdown
 
-**Proposal:** All skills in executable code
+**Proposal:** All skills as .baml functions
 
 **Rationale:**
-- Type safety
-- Unit testable
-- IDE support
+- Type safety (auto-generated)
+- Unit testable (VSCode playground)
+- IDE support (syntax highlighting, autocomplete)
 - Refactor-safe
-- 10x faster parsing
+- Hot-reload instant testing
+- Multi-LLM support built-in
 
 ---
 
-### 4. Build Compiler, Not Framework
+### 4. Leverage BAML, Don't Rebuild It
 
-**Proposal:** Natural language compiles to executable skills
+**Proposal:** Use BAML for skill execution layer
 
 **Rationale:**
-- Optimization passes (dead code elimination)
-- Debugging (step through IR)
-- Profiling (find bottlenecks)
-- Testing (unit test each pass)
+- Production-grade features (retry, fallback, streaming)
+- Maintained by expert team
+- Community support and examples
+- Continuous improvements
+- 60-80% faster development
 
 ---
 
-### 5. Abandon Claude Code Dependency
+### 5. Multi-LLM by Default (via BAML)
 
-**Proposal:** Runtime-agnostic core with LLM abstraction
+**Proposal:** Support GPT-4, Claude, Gemini from day 1
 
 **Rationale:**
-- No vendor lock-in
+- No vendor lock-in (BAML abstracts providers)
 - Use best model for each task
+- Failover/fallback strategies
 - Future-proof against API changes
-- Support local models
+- Support local models when available
 
 ---
 
 ## The Vision
 
-**Qara in 12 months:**
+**Qara in 3 months:**
 
-- **<100ms routing** (compiled trie)
-- **5K lines code** (vs 15K docs)
-- **Works with any LLM** (portable)
-- **100% test coverage** (reliable)
-- **10x faster UX** (streaming + caching)
-- **99%+ uptime** (production-grade)
-- **Scales to millions** (cloud-native)
+- **<1ms routing** (deterministic trie, zero tokens)
+- **~550 lines custom code** + BAML skills (vs 15K+ docs)
+- **Works with any LLM** (GPT-4, Claude, Gemini via BAML)
+- **Hot-reload testing** (VSCode playground)
+- **Type-safe skills** (auto-generated clients)
+- **Built-in retry/failover** (production-grade)
+- **Streaming by default** (instant feedback)
+- **10x faster UX** (sub-second total latency)
 
-**From personal AI infrastructure to global platform.**
+**BAML-powered. Production-ready in 3 months, not 6.**
 
 ---
 
 ## Decision: Go or No-Go?
 
-### Arguments FOR Proceeding
+### Arguments FOR Proceeding (with BAML)
 
-1. **Clear technical path** - Proven patterns, minimal risk
-2. **Massive performance gains** - 10-100x improvements
-3. **Strategic value** - Vendor independence, scalability
-4. **Low investment** - 6 months, 1.5 FTE, <$100/mo
-5. **Incremental approach** - Can abort at any time
-6. **Preserves current system** - V1 stays working
+1. **BAML eliminates 60-80% of work** - Production-grade features built-in
+2. **Faster timeline** - 3 months vs 6 months custom implementation
+3. **Massive performance gains** - 1000x faster routing, 10x overall
+4. **Lower risk** - Battle-tested BAML + simple router
+5. **Zero additional cost** - BAML is open source
+6. **Better DX** - VSCode playground, hot-reload, type safety
+7. **Multi-LLM from day 1** - Not locked to Claude
+8. **Incremental approach** - Week 3 Go/No-Go gate
+9. **Preserves current system** - V1 stays working
 
 ### Arguments AGAINST Proceeding
 
 1. **Current system works** - "Don't fix what isn't broken"
-2. **Opportunity cost** - 6 months could be spent on features
-3. **Risk of disruption** - Migration could break things
-4. **Uncertain user benefit** - Speed isn't everything
-5. **Complexity of maintaining two systems** - During transition
+2. **Learning curve** - Team needs to learn BAML syntax
+3. **Dependency on BAML** - External tool dependency
+4. **Risk of disruption** - Migration could break things
+
+**Counter-arguments:**
+1. Current system is slow (1-3s routing) and locked to Claude
+2. BAML syntax is simpler than custom code (learn in 1 day)
+3. BAML is open source, active development, strong community
+4. Parallel run eliminates migration risk
 
 ### Recommendation
 
-**PROCEED with Month 1 POC**
+**PROCEED with Week 1-3 POC using BAML**
 
 **Rationale:**
-- 1 month investment to validate assumptions
-- Clear Go/No-Go decision point
-- Minimal disruption (POC is separate)
-- Huge potential upside
-- Physics-based reasoning (not gut feel)
+- **3 weeks** investment vs 4-6 weeks custom POC
+- **Clear Go/No-Go** decision point after Week 3
+- **Minimal disruption** (POC is separate from v1)
+- **Huge potential upside** (1000x routing, multi-LLM, type-safe)
+- **Physics-based** + proven technology (not speculation)
+- **Zero cost** (BAML is free)
 
-**If POC succeeds:** Full implementation (Months 2-6)  
-**If POC fails:** Lessons learned, minimal cost
+**If POC succeeds:** Full implementation (Weeks 4-12)  
+**If POC fails:** Lessons learned, 3 weeks invested
 
 ---
 
 ## Next Action
 
-**Start immediately:**
+**Start Week 1 POC with BAML:**
 
 ```bash
-# Day 1: Create v2 workspace
-mkdir -p qara-next/{packages,skills,plugins}
-cd qara-next
+# Day 1: Setup BAML environment
+mkdir qara-v2 && cd qara-v2
+bun init -y
+bun add -D @boundaryml/baml
+bunx baml-cli init
+code --install-extension Boundary.baml-extension
 
-# Day 2-3: Build POC router
-# Target: <1ms routing
+# Day 2: Configure BAML clients (GPT-4, Claude, Gemini)
+# Edit baml_src/clients.baml
 
-# Day 4-5: Port one skill to TypeScript
-# Target: Unit testable
+# Day 3: Create first skill in BAML
+# Create baml_src/skills/blog.baml
+# Test in VSCode playground (instant!)
 
-# Day 6-7: Benchmark and report
-# Target: 100x faster routing
+# Day 4: Build deterministic router
+# Implement trie-based routing in TypeScript
+# Benchmark: <1ms target
 
-# Decision: Go/No-Go for Month 2
+# Day 5: Integrate router + BAML
+# Build minimal runtime that dispatches to BAML functions
+
+# Day 6-7: End-to-end test
+# Test: "write blog about AI" → BAML execution
+# Verify: 1000x faster routing, type-safe outputs
+
+# Week 3: Go/No-Go decision
 ```
+
+**See:** `QARA_V2_BAML_IMPLEMENTATION_GUIDE.md` for detailed steps
 
 ---
 
 ## Supporting Documentation
 
-This executive summary is supported by three detailed documents:
+This executive summary is supported by detailed implementation documents:
 
 1. **QARA_FIRST_PRINCIPLES_RETHINK.md** (5,800 words)
    - 14 first-principles questions applied
@@ -489,19 +612,23 @@ This executive summary is supported by three detailed documents:
    - Physics-based reasoning
    - Controversial insights
 
-2. **QARA_V2_IMPLEMENTATION_BLUEPRINT.md** (8,200 words)
-   - Detailed technical architecture
-   - Code examples and patterns
+2. **QARA_V2_BAML_ARCHITECTURE.md** (6,500 words)
+   - Complete BAML-powered architecture
+   - Skills as BAML functions with examples
+   - TypeScript router implementation
    - Performance characteristics
-   - Testing strategies
+   - Migration strategy
 
-3. **QARA_TRANSITION_ROADMAP.md** (7,500 words)
-   - 6-month week-by-week plan
-   - Risk management
-   - Success metrics
-   - Resource requirements
+3. **QARA_V2_BAML_IMPLEMENTATION_GUIDE.md** (5,000 words)
+   - Week-by-week implementation plan
+   - Day-by-day POC guide
+   - Complete code examples (BAML + TypeScript)
+   - Testing and benchmarking
+   - Success criteria
 
-**Total analysis: 21,500 words of strategic thinking**
+**Total: 17,300 words + working code examples**
+
+**Key Innovation:** Using BAML eliminates need for custom implementation blueprint. BAML provides the execution layer; we only build the router and orchestration.
 
 ---
 
@@ -511,30 +638,49 @@ This executive summary is supported by three detailed documents:
 
 Rebuild Qara with 2.1x better fundamental performance by treating it as a compiler rather than a framework.
 
-**The Path:**
+**The Implementation:**
 
-Incremental 6-month migration with clear validation gates and quick rollback capability.
+Use BAML (Boundary AI Markup Language) to eliminate 60-80% of custom implementation work while gaining production-grade features.
+
+**The Timeline:**
+
+- **Week 1:** BAML setup + first skill + router POC
+- **Week 2:** Core skills in BAML
+- **Week 3:** Infrastructure + Go/No-Go decision
+- **Weeks 4-12:** Production deployment
+
+**3 months total** (vs 6 months custom implementation)
 
 **The Outcome:**
 
-Production-grade AI infrastructure that scales from personal use to millions of users, with the reliability of traditional software and the flexibility of AI.
+Production-grade AI infrastructure with:
+- 1000x faster routing (<1ms vs 1-3s)
+- Multi-LLM support (GPT-4, Claude, Gemini)
+- Type-safe skills (auto-generated clients)
+- Hot-reload testing (VSCode playground)
+- Built-in retry/failover
+- Zero vendor lock-in
 
 **The Decision:**
 
-**Start Month 1 POC now.** Reassess after 4 weeks.
+**Start Week 1 POC with BAML now.** Reassess after Week 3.
 
-**The potential is clear. The path is proven. The physics is sound.**
+**The potential is clear. The technology is proven. The physics is sound.**
+
+**BAML changes everything.**
 
 ---
 
-**Document Version:** 1.0  
+**Document Version:** 2.0 (BAML-powered)  
 **Created:** 2025-12-01  
-**Review:** Weekly during Month 1 POC  
-**Author:** First-principles analysis by Cascade  
+**Updated:** 2025-12-01 (Added BAML implementation)  
+**BAML Version:** 0.335+  
+**Review:** Weekly during Week 1-3 POC  
+**Author:** First-principles analysis + BAML integration by Cascade  
 **Owner:** Jean-Marc Giorgi
 
 ---
 
-**"The best time to plant a tree was 20 years ago. The second best time is now."**
+**"The best time to use the right tool was at the start. The second best time is now."**
 
-**Let's build Qara v2.**
+**Let's build Qara v2 with BAML.**
