@@ -16,7 +16,14 @@ set -e  # Exit on error
 
 # Stash this script if it's a modified version (for testing)
 # This allows testing custom fixes while still cloning from GitHub
-SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
+# Use portable realpath fallback for macOS/Linux compatibility
+if command -v realpath >/dev/null 2>&1; then
+    SCRIPT_PATH="$(realpath "${BASH_SOURCE[0]}")"
+else
+    # Fallback for systems without realpath (including macOS)
+    SCRIPT_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
+fi
+
 if [ -f "$SCRIPT_PATH" ]; then
     # Check if this script differs from upstream (simple heuristic: line count)
     SCRIPT_LINES=$(wc -l < "$SCRIPT_PATH")
@@ -454,7 +461,7 @@ if [ "$NEEDS_INSTALL" = true ]; then
         print_warning "Git is not installed. Git is needed to download PAI."
         echo ""
 
-        if ask_yes_no "Install Git?"; then
+        if ask_yes_no "Install Git?" "y"; then
             print_step "Installing Git..."
             if [ "$HAS_BREW" = true ]; then
                 brew install git
@@ -476,7 +483,7 @@ if [ "$NEEDS_INSTALL" = true ]; then
         print_info "It's needed for features."
         echo ""
 
-        if ask_yes_no "Install Bun?"; then
+        if ask_yes_no "Install Bun?" "y"; then
             print_step "Installing Bun..."
             brew install oven-sh/bun/bun
             print_success "Bun installed successfully!"
@@ -500,7 +507,7 @@ if [ "$NEEDS_INSTALL" = true ]; then
         print_info "It's required to install fd, ripgrep, bat, and ast-grep."
         echo ""
 
-        if ask_yes_no "Install Cargo (Rust)?"; then
+        if ask_yes_no "Install Cargo (Rust)?" "y"; then
             print_step "Installing Rust and Cargo..."
             curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
@@ -523,7 +530,7 @@ if [ "$NEEDS_INSTALL" = true ]; then
         print_info "It's preferred over find for file searches (part of PAI CLI tool preferences)."
         echo ""
 
-        if ask_yes_no "Install fd?"; then
+        if ask_yes_no "Install fd?" "y"; then
             print_step "Installing fd via cargo..."
             cargo install fd-find
             print_success "fd installed successfully!"
@@ -540,7 +547,7 @@ if [ "$NEEDS_INSTALL" = true ]; then
         print_info "It's preferred for code refactoring and semantic searches (part of PAI CLI tool preferences)."
         echo ""
 
-        if ask_yes_no "Install ast-grep?"; then
+        if ask_yes_no "Install ast-grep?" "y"; then
             print_step "Installing ast-grep via cargo..."
             cargo install ast-grep
             print_success "ast-grep installed successfully!"
@@ -557,7 +564,7 @@ if [ "$NEEDS_INSTALL" = true ]; then
         print_info "It's preferred over grep for text searches (part of PAI CLI tool preferences)."
         echo ""
 
-        if ask_yes_no "Install ripgrep?"; then
+        if ask_yes_no "Install ripgrep?" "y"; then
             print_step "Installing ripgrep via cargo..."
             cargo install ripgrep
             print_success "ripgrep installed successfully!"
@@ -574,7 +581,7 @@ if [ "$NEEDS_INSTALL" = true ]; then
         print_info "It's preferred over cat for viewing files (part of PAI CLI tool preferences)."
         echo ""
 
-        if ask_yes_no "Install bat?"; then
+        if ask_yes_no "Install bat?" "y"; then
             print_step "Installing bat via cargo..."
             cargo install bat
             print_success "bat installed successfully!"
@@ -635,9 +642,13 @@ print_info "Configuration file: $SHELL_CONFIG"
 if grep -q "PAI_DIR" "$SHELL_CONFIG" 2>/dev/null; then
     print_info "PAI environment variables already exist in $SHELL_CONFIG"
 
-    if ask_yes_no "Update them?"; then
-        # Remove old PAI configuration
-        sed -i.bak '/# ========== PAI Configuration ==========/,/# =========================================/d' "$SHELL_CONFIG"
+    if ask_yes_no "Update them?" "n"; then
+        # Remove old PAI configuration (macOS/Linux compatible)
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            sed -i.bak '/# ========== PAI Configuration ==========/,/# =========================================/d' "$SHELL_CONFIG"
+        else
+            sed -i.bak '/# ========== PAI Configuration ==========/,/# =========================================/d' "$SHELL_CONFIG"
+        fi
         SHOULD_ADD_CONFIG=true
     else
         SHOULD_ADD_CONFIG=false
@@ -803,9 +814,14 @@ if ask_yes_no "Are you using Claude Code?"; then
         if grep -q "respond like Qara" "$PAI_DIR/commands/load-dynamic-requirements.md" 2>/dev/null; then
             print_warning "Updating AI name in load-dynamic-requirements.md..."
 
-            # Replace the two Qara references in the conversational section
-            sed -i "s/respond like Qara having a chat/respond like $AI_NAME having a chat/g" "$PAI_DIR/commands/load-dynamic-requirements.md"
-            sed -i "s/You're Qara, their assistant/You're $AI_NAME, their assistant/g" "$PAI_DIR/commands/load-dynamic-requirements.md"
+            # Replace the two Qara references in the conversational section (macOS/Linux compatible)
+            if [[ "$OSTYPE" == "darwin"* ]]; then
+                sed -i '' "s/respond like Qara having a chat/respond like $AI_NAME having a chat/g" "$PAI_DIR/commands/load-dynamic-requirements.md"
+                sed -i '' "s/You're Qara, their assistant/You're $AI_NAME, their assistant/g" "$PAI_DIR/commands/load-dynamic-requirements.md"
+            else
+                sed -i "s/respond like Qara having a chat/respond like $AI_NAME having a chat/g" "$PAI_DIR/commands/load-dynamic-requirements.md"
+                sed -i "s/You're Qara, their assistant/You're $AI_NAME, their assistant/g" "$PAI_DIR/commands/load-dynamic-requirements.md"
+            fi
 
             print_success "load-dynamic-requirements.md updated with AI name: $AI_NAME"
         fi
@@ -817,8 +833,12 @@ if ask_yes_no "Are you using Claude Code?"; then
         if grep -q "Your Name: \[CUSTOMIZE" "$PAI_DIR/skills/CORE/SKILL.md" 2>/dev/null; then
             print_warning "Updating AI name in SKILL.md..."
 
-            # Replace the template placeholder with the user's chosen name
-            sed -i "s/Your Name: \[CUSTOMIZE - e.g., Qara, Nova, Atlas\]/Your Name: $AI_NAME/" "$PAI_DIR/skills/CORE/SKILL.md"
+            # Replace the template placeholder with the user's chosen name (macOS/Linux compatible)
+            if [[ "$OSTYPE" == "darwin"* ]]; then
+                sed -i '' "s/Your Name: \[CUSTOMIZE - e.g., Qara, Nova, Atlas\]/Your Name: $AI_NAME/" "$PAI_DIR/skills/CORE/SKILL.md"
+            else
+                sed -i "s/Your Name: \[CUSTOMIZE - e.g., Qara, Nova, Atlas\]/Your Name: $AI_NAME/" "$PAI_DIR/skills/CORE/SKILL.md"
+            fi
 
             print_success "SKILL.md updated with AI name: $AI_NAME"
         fi
