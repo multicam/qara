@@ -29,27 +29,6 @@ import * as os from 'os';
 
 const exec = promisify(require('child_process').exec);
 
-// Load .env file from ~/.claude directory
-function loadEnv() {
-  const envPath = path.join(os.homedir(), '.claude', '.env');
-  if (fs.existsSync(envPath)) {
-    const envContent = fs.readFileSync(envPath, 'utf-8');
-    envContent.split('\n').forEach(line => {
-      const trimmedLine = line.trim();
-      if (trimmedLine && !trimmedLine.startsWith('#')) {
-        const [key, ...valueParts] = trimmedLine.split('=');
-        const value = valueParts.join('=').replace(/^["']|["']$/g, '');
-        if (key && value) {
-          process.env[key] = value;
-        }
-      }
-    });
-  }
-}
-
-// Load environment variables
-loadEnv();
-
 // Get the research question from command line
 const originalQuestion = process.argv.slice(2).join(' ');
 

@@ -125,6 +125,51 @@ command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
 
+# Create symlink in ~/.claude pointing to PAI directory
+# Usage: create_claude_symlink <name> <description>
+# Example: create_claude_symlink "hooks" "Hooks"
+create_claude_symlink() {
+    local name="$1"
+    local description="$2"
+    local target="$HOME/.claude/$name"
+    local source="$PAI_DIR/$name"
+
+    print_step "Linking $description to Claude Code..."
+
+    if [ -L "$target" ]; then
+        local current_target=$(readlink "$target")
+        if [ "$current_target" = "$source" ]; then
+            print_info "$description already linked to PAI"
+        else
+            print_warning "$description symlink points elsewhere: $current_target"
+            if ask_yes_no "Update to point to PAI?"; then
+                rm "$target"
+                ln -sf "$source" "$target"
+                print_success "$description linked to PAI!"
+            fi
+        fi
+    elif [ -d "$target" ]; then
+        print_warning "$description directory already exists"
+        if ask_yes_no "Replace it with PAI's $name?"; then
+            mv "$target" "$target.backup"
+            print_info "Backed up existing $name to $name.backup"
+            ln -sf "$source" "$target"
+            print_success "$description linked to PAI!"
+        fi
+    elif [ -f "$target" ]; then
+        print_warning "$description file already exists (expected directory)"
+        if ask_yes_no "Replace it with PAI's $name?"; then
+            mv "$target" "$target.backup"
+            print_info "Backed up existing $name to $name.backup"
+            ln -sf "$source" "$target"
+            print_success "$description linked to PAI!"
+        fi
+    else
+        ln -sf "$source" "$target"
+        print_success "$description linked to PAI!"
+    fi
+}
+
 # ============================================
 # Welcome Message
 # ============================================
@@ -867,56 +912,13 @@ fi
 
 print_header "Step 8.5: Creating Critical Symlinks"
 
-# Create hooks symlink (CRITICAL for hooks to work!)
-print_step "Linking hooks to Claude Code..."
-if [ -L "$HOME/.claude/hooks" ]; then
-    print_info "Hooks already linked to PAI"
-elif [ -d "$HOME/.claude/hooks" ]; then
-    print_warning "Hooks directory already exists"
-    if ask_yes_no "Replace it with PAI's hooks?"; then
-        mv "$HOME/.claude/hooks" "$HOME/.claude/hooks.backup"
-        print_info "Backed up existing hooks to hooks.backup"
-        ln -sf "$PAI_DIR/hooks" "$HOME/.claude/hooks"
-        print_success "Hooks linked to PAI!"
-    fi
-else
-    ln -sf "$PAI_DIR/hooks" "$HOME/.claude/hooks"
-    print_success "Hooks linked to PAI!"
-fi
-
-# Create skills symlink (PAI-global skills)
-print_step "Linking skills to Claude Code..."
-if [ -L "$HOME/.claude/skills" ]; then
-    print_info "Skills already linked to PAI"
-elif [ -d "$HOME/.claude/skills" ]; then
-    print_warning "Skills directory already exists"
-    if ask_yes_no "Replace it with PAI's skills?"; then
-        mv "$HOME/.claude/skills" "$HOME/.claude/skills.backup"
-        print_info "Backed up existing skills to skills.backup"
-        ln -sf "$PAI_DIR/skills" "$HOME/.claude/skills"
-        print_success "Skills linked to PAI!"
-    fi
-else
-    ln -sf "$PAI_DIR/skills" "$HOME/.claude/skills"
-    print_success "Skills linked to PAI!"
-fi
-
-# Create commands symlink (PAI-global commands)
-print_step "Linking commands to Claude Code..."
-if [ -L "$HOME/.claude/commands" ]; then
-    print_info "Commands already linked to PAI"
-elif [ -d "$HOME/.claude/commands" ]; then
-    print_warning "Commands directory already exists"
-    if ask_yes_no "Replace it with PAI's commands?"; then
-        mv "$HOME/.claude/commands" "$HOME/.claude/commands.backup"
-        print_info "Backed up existing commands to commands.backup"
-        ln -sf "$PAI_DIR/commands" "$HOME/.claude/commands"
-        print_success "Commands linked to PAI!"
-    fi
-else
-    ln -sf "$PAI_DIR/commands" "$HOME/.claude/commands"
-    print_success "Commands linked to PAI!"
-fi
+# Create symlinks using the helper function
+create_claude_symlink "hooks" "Hooks"
+create_claude_symlink "skills" "Skills"
+create_claude_symlink "commands" "Commands"
+create_claude_symlink "agents" "Agents"
+create_claude_symlink "rules" "Rules"
+create_claude_symlink ".env" "Environment variables"
 
 # Create scratchpad directory (required by PAI.md)
 print_step "Creating scratchpad directory..."

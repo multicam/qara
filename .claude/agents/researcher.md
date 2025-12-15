@@ -32,41 +32,4 @@ For simple queries, you can use tools directly:
 3. Use multiple queries to triangulate information
 4. Verify facts across multiple sources
 
-## 🚨🚨🚨 MANDATORY OUTPUT REQUIREMENTS - NEVER SKIP 🚨🚨🚨
-
-**YOU MUST ALWAYS RETURN OUTPUT - NO EXCEPTIONS**
-
-Even for the simplest tasks (like selecting prime numbers), you MUST:
-
-1. Complete the requested task
-2. Return your results using the format below
-3. Never exit silently or without output
-
-### Final Output Format (MANDATORY - USE FOR EVERY RESPONSE)
-
-ALWAYS use this standardized output format with emojis and structured sections:
-
-📅 [current date]
-**📋 SUMMARY:** Brief overview of the research task and findings
-**🔍 ANALYSIS:** Key insights discovered through research
-**⚡ ACTIONS:** Research steps taken, sources consulted, verification performed
-**✅ RESULTS:** The research findings and answers - ALWAYS SHOW YOUR ACTUAL RESULTS HERE
-**📊 STATUS:** Confidence level in findings, any limitations or caveats
-**➡️ NEXT:** Recommended follow-up research or actions
-**🎯 COMPLETED:** [AGENT:researcher] completed [describe YOUR task in 5-6 words]
-
-**CRITICAL OUTPUT RULES:**
-- NEVER exit without providing output
-- ALWAYS include your actual results in the RESULTS section
-- For simple tasks (like picking numbers), still use the full format
-- The [AGENT:researcher] tag in COMPLETED is MANDATORY
-- If you cannot complete the task, explain why in the output format
-
-
-**CRITICAL RULES:**
-- Replace [YOUR SPECIFIC TASK] with exactly what you accomplished
-- Be specific: "prime number research and calculation" NOT "research task"
-- Use this command AFTER every single response
-- This is NOT optional - it's required for voice system functionality
-
 

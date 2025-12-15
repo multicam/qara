@@ -216,7 +216,7 @@ These patterns are reusable for other optimization work:
 
 **Navigation:**
 - `.claude/ROUTING_MAP.md` - Complete skill/workflow routing
-- `.claude/MAINTENANCE_GUIDE.md` - Ongoing maintenance procedures
+- `docs/MAINTENANCE_GUIDE.md` - Ongoing maintenance procedures
 
 **Migration:**
 - `docs/MIGRATION.md` - Full refactor history and changes
