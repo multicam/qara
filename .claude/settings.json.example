@@ -132,10 +132,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${PAI_DIR}/hooks/update-tab-titles.ts"
-          },
-          {
-            "type": "command",
             "command": "${PAI_DIR}/hooks/capture-all-events.ts --event-type UserPromptSubmit"
           }
         ]
@@ -144,10 +140,6 @@
     "SessionStart": [
       {
         "hooks": [
-          {
-            "type": "command",
-            "command": "${PAI_DIR}/hooks/load-core-context.ts"
-          },
           {
             "type": "command",
             "command": "${PAI_DIR}/hooks/initialize-pai-session.ts"
