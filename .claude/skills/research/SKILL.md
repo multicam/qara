@@ -33,12 +33,12 @@ Examples: "do research on X", "research this topic", "find information about Y",
 
 **When user requests Claude-based research (FREE - no API keys):**
 Examples: "use claude for research", "claude research on X", "use websearch to research Y"
-→ **READ:** `${PAI_DIR}/skills/research/workflows/claude-research.md`
+→ **READ:** `${PAI_DIR}/skills/research/workflows/claude-research.ts`
 → **EXECUTE:** Intelligent query decomposition with Claude's WebSearch
 
 **When user requests Perplexity research (requires PERPLEXITY_API_KEY):**
 Examples: "use perplexity to research X", "perplexity research on Y"
-→ **READ:** `${PAI_DIR}/skills/research/workflows/perplexity-research.md`
+→ **READ:** `${PAI_DIR}/skills/research/workflows/perplexity-research.ts`
 → **EXECUTE:** Fast web search with query decomposition via Perplexity API
 
 **When user requests interview preparation:**

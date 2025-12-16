@@ -1762,17 +1762,14 @@ Daniel's personal context and knowledge management.
 #### Documentation & Reference
 
 **projects**
-Overview of Daniel's active projects.
+Overview of JM's active projects.
 
 **Domain:** Project-specific context and documentation
 **Key Projects:**
 - **PAI** - Personal AI Infrastructure public repository
 - **Website** - wove.tech blog
-- **TELOS** - Life operating system project
-- **Alma, Conan** - Active development projects
-- **human3** - Human 3.0 initiative
-- **uldocs** - Unsupervised Learning documentation
 - **dashboard** - Dashboard system architecture
+- **conscious** - Open Source Planet Consciousness Augmentation
 
 **When to use:** Need project-specific context, understanding project structure
 **Location:** `${PAI_DIR}/skills/projects/`

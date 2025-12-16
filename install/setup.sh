@@ -929,6 +929,28 @@ else
     print_success "Scratchpad directory created"
 fi
 
+# Install pre-commit hook (optional)
+print_step "Setting up pre-commit hook..."
+if [ -f "$PAI_DIR/../scripts/pre-commit" ]; then
+    if [ -d "$PAI_DIR/../.git" ]; then
+        if [ -f "$PAI_DIR/../.git/hooks/pre-commit" ]; then
+            print_info "Pre-commit hook already exists"
+        else
+            if ask_yes_no "Install pre-commit hook for quality checks?" "y"; then
+                cp "$PAI_DIR/../scripts/pre-commit" "$PAI_DIR/../.git/hooks/pre-commit"
+                chmod +x "$PAI_DIR/../.git/hooks/pre-commit"
+                print_success "Pre-commit hook installed"
+            else
+                print_info "Skipped pre-commit hook installation"
+            fi
+        fi
+    else
+        print_info "Not a git repository, skipping pre-commit hook"
+    fi
+else
+    print_info "Pre-commit script not found, skipping"
+fi
+
 # Clean up old wrapper files from pre-v0.6.0 (if they exist)
 print_step "Cleaning up old wrapper files (if any)..."
 if [ -d "$HOME/.claude/bin" ]; then

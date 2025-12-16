@@ -15,33 +15,47 @@ PAI_DIR="${PAI_DIR:-$HOME/.claude}"
 
 echo "=== Checking .md references in $PAI_DIR/skills ==="
 echo ""
+echo "Note: Only checking explicit workflow routing references (→ READ patterns)"
+echo ""
 
-# Find all .md files and check their references
+# Placeholder patterns to ignore (examples in documentation)
+IGNORE_PATTERNS="workflow[0-9]|\[.*\]|due-diligence|lookup"
+
+# Find all .md files and check workflow routing references
+# Only check lines that contain "→ READ:" or "→ **READ:**" patterns
 while IFS= read -r file; do
-    # Extract .md references (words ending in .md)
-    refs=$(grep -oE '[a-zA-Z0-9_-]+\.md' "$file" 2>/dev/null | sort -u || true)
+    # Extract workflow references from routing patterns like:
+    # → **READ:** ~/.claude/skills/research/workflows/conduct.md
+    # → READ: ${PAI_DIR}/skills/CORE/SKILL.md
+    refs=$(grep -oE '→.*READ.*[~/\$][^[:space:]]+\.md' "$file" 2>/dev/null | grep -oE '[^/]+\.md$' | sort -u || true)
     
     for ref in $refs; do
+        # Skip placeholder/example patterns
+        if echo "$ref" | grep -qE "$IGNORE_PATTERNS"; then
+            continue
+        fi
+        
         CHECKED=$((CHECKED + 1))
         dir=$(dirname "$file")
+        skill_dir=$(dirname "$dir")
         
-        # Check if reference exists in same directory, workflows subdir, or templates
+        # Check if reference exists in likely locations
         found=false
         
         if [[ -f "$dir/$ref" ]]; then
             found=true
         elif [[ -f "$dir/workflows/$ref" ]]; then
             found=true
+        elif [[ -f "$skill_dir/workflows/$ref" ]]; then
+            found=true
         elif [[ -f "$PAI_DIR/skills/CORE/$ref" ]]; then
             found=true
         elif [[ -f "$PAI_DIR/skills/CORE/workflows/$ref" ]]; then
             found=true
-        elif [[ -f "$PAI_DIR/templates/$ref" ]]; then
-            found=true
         fi
         
         if [[ "$found" == "false" ]]; then
-            echo "❌ Broken reference in $(basename "$file"): $ref"
+            echo "❌ Broken workflow reference in $(basename "$file"): $ref"
             echo "   File: $file"
             ERRORS=$((ERRORS + 1))
         elif [[ "$VERBOSE" == "true" ]]; then
