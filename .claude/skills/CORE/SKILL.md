@@ -76,8 +76,8 @@ description: |
   → Complete format examples and edge cases
 
   **For full contact directory:**
-  → **READ:** ${PAI_DIR}/skills/CORE/workflows/contacts-full.md
-  → Extended contact list with all details
+  → **READ:** ${PAI_DIR}/skills/CORE/contacts.md
+  → Complete contact list with all details
 ---
 
 ## 📚 Documentation Index & Route Triggers
@@ -220,7 +220,7 @@ Example format:
 
 **📚 Complete Contact Directory:**
 For extended contacts, social media accounts, and pronunciation notes, see:
-`${PAI_DIR}/skills/CORE/workflows/contacts-full.md`
+`${PAI_DIR}/skills/CORE/contacts.md`
 
 ---
 

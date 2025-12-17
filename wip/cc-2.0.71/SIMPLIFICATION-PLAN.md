@@ -341,11 +341,19 @@ These pairs could potentially be merged in the future, but are NOT duplicates:
 
 ## Next Steps
 
-1. [ ] Review this revised plan
-2. [ ] Create backup: `cp -r .claude/skills/CORE wip/cc-2.0.71/backup/`
-3. [ ] Remove orphaned content from SKILL-STRUCTURE-AND-ROUTING.md (lines 1550-2302)
-4. [ ] Delete contacts-full.md redirect file
-5. [ ] Test skill activation for all 14 skills
+1. [x] Review this revised plan
+2. [x] Create backup: `cp -r .claude/skills/CORE wip/cc-2.0.71/backup/` ✅ **DONE 2025-12-17 20:02** (28 files backed up)
+3. [x] Remove orphaned content from SKILL-STRUCTURE-AND-ROUTING.md ✅ **DONE 2025-12-17 20:04**
+   - Removed lines 1550-2356 (807 lines, 29KB)
+   - Original: 2,355 lines, 77KB
+   - New: 1,549 lines, 48KB
+   - Removed: "Skill Ecosystem Reference" (documented non-existent skills) + research notes
+4. [x] Delete contacts-full.md redirect file ✅ **DONE 2025-12-17 20:05**
+   - Deleted `.claude/skills/CORE/workflows/contacts-full.md` (1KB redirect file)
+   - CORE/workflows/ now has 6 files (was 7)
+5. [x] Test skill activation for all 14 skills ✅ **DONE 2025-12-17 20:06**
+   - All 14 skills validated: valid SKILL.md with name and description
+   - Fixed 2 broken references in CORE/SKILL.md (contacts-full.md → contacts.md)
 6. [ ] Commit changes
 
 ---
