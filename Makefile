@@ -14,8 +14,7 @@ fabric_setup:
 
 launch_agent_observability:
 	@echo "Launch Agent Observability..."
-	cd $(HOME)/qara/.claude/skills/agent-observability/apps/server && $(BUN) run dev &
-	cd $(HOME)/qara/.claude/skills/agent-observability/apps/client && $(BUN) run dev
+	cd $(HOME)/qara/ && ./scripts/start-observability.sh
 	@echo "-- done"
 
 kill_agent_observability:
