@@ -22,14 +22,18 @@ All AI agents should read this file first to understand your system.
 2. **Text as Primitive**: All configuration in markdown/text
 3. **Solve Once, Reuse Forever**: Every solution becomes a module
 
-## How to Use This System
+## MANDATORY: How to Use This System
 
-When starting any task:
+**YOU MUST FOLLOW THESE STEPS FOR EVERY TASK:**
 
-1. Read this file first
-2. Read relevant context from subdirectories
-3. Load appropriate agents for the task
-4. Execute using available commands
+1. **READ** this file completely before any action
+2. **LOAD** relevant context from subdirectories
+3. **ACTIVATE** appropriate agents for the task
+4. **EXECUTE** using available commands
+
+⚠️ FAILURE TO FOLLOW THIS PROTOCOL WILL RESULT IN INCORRECT OUTPUTS
+
+For detailed reference documentation, see: `$PAI_DIR/context/references/`
 
 ## Active Projects
 
