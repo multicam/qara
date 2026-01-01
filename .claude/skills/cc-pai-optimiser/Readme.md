@@ -27,6 +27,7 @@ This skill provides a systematic approach to track CC updates and apply them to 
 
 | Source | URL | Content |
 |--------|-----|---------|
+| Claude CC system prompt | https://github.com/marckrenn/claude-code-changelog/blob/main/cc-prompt.md | github dude |
 | ClaudeLog | https://claudelog.com/claude-code-changelog/ | Aggregated changelog |
 | DeepWiki | https://deepwiki.com/anthropics/claude-code/ | Feature architecture docs |
 | Discord | https://humanlayer.dev/discord | Community discussions |

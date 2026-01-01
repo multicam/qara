@@ -19,6 +19,8 @@ CC_SOURCES=(
   "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md"
   "https://github.com/anthropics/claude-code/releases"
   "https://docs.claude.com/en/release-notes/overview"
+  "https://github.com/marckrenn/claude-code-changelog/blob/main/cc-prompt.md"
+  "https://github.com/marckrenn/claude-code-changelog"
 )
 
 # Check latest version
