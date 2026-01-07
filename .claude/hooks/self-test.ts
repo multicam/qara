@@ -138,7 +138,7 @@ test(
   () => {
     const criticalHooks = [
       'capture-all-events.ts',
-      'load-core-context.ts',
+      'session-start.ts',
     ];
 
     for (const hook of criticalHooks) {
