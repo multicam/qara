@@ -1,134 +1,16 @@
 #!/usr/bin/env bun
 
+/**
+ * stop-hook.ts
+ *
+ * Main Stop event hook - triggered when Qara completes a response.
+ * Extracts COMPLETED lines, sets tab titles, and handles agent task results.
+ */
+
 import { readFileSync } from 'fs';
-import { join } from 'path';
-import { homedir } from 'os';
-
-/**
- * Generate 4-word tab title summarizing what was done
- */
-function generateTabTitle(prompt: string, completedLine?: string): string {
-  // If we have a completed line, try to use it for a better summary
-  if (completedLine) {
-    const cleanCompleted = completedLine
-      .replace(/\*+/g, '')
-      .replace(/\[.*?\]/g, '')
-      .replace(/🎯\s*COMPLETED:\s*/gi, '')
-      .trim();
-
-    // Extract meaningful words from the completed line
-    const completedWords = cleanCompleted.split(/\s+/)
-      .filter(word => word.length > 2 &&
-        !['the', 'and', 'but', 'for', 'are', 'with', 'his', 'her', 'this', 'that', 'you', 'can', 'will', 'have', 'been', 'your', 'from', 'they', 'were', 'said', 'what', 'them', 'just', 'told', 'how', 'does', 'into', 'about', 'completed'].includes(word.toLowerCase()))
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase());
-
-    if (completedWords.length >= 2) {
-      // Build a 4-word summary from completed line
-      const summary = completedWords.slice(0, 4);
-      while (summary.length < 4) {
-        summary.push('Done');
-      }
-      return summary.slice(0, 4).join(' ');
-    }
-  }
-
-  // Fall back to parsing the prompt
-  const cleanPrompt = prompt.replace(/[^\w\s]/g, ' ').trim();
-  const words = cleanPrompt.split(/\s+/).filter(word =>
-    word.length > 2 &&
-    !['the', 'and', 'but', 'for', 'are', 'with', 'his', 'her', 'this', 'that', 'you', 'can', 'will', 'have', 'been', 'your', 'from', 'they', 'were', 'said', 'what', 'them', 'just', 'told', 'how', 'does', 'into', 'about'].includes(word.toLowerCase())
-  );
-
-  const lowerPrompt = prompt.toLowerCase();
-
-  // Find action verb if present
-  const actionVerbs = ['test', 'rename', 'fix', 'debug', 'research', 'write', 'create', 'make', 'build', 'implement', 'analyze', 'review', 'update', 'modify', 'generate', 'develop', 'design', 'deploy', 'configure', 'setup', 'install', 'remove', 'delete', 'add', 'check', 'verify', 'validate', 'optimize', 'refactor', 'enhance', 'improve', 'send', 'email', 'help', 'updated', 'fixed', 'created', 'built', 'added'];
-
-  let titleWords = [];
-
-  // Check for action verb
-  for (const verb of actionVerbs) {
-    if (lowerPrompt.includes(verb)) {
-      // Convert to past tense for summary
-      let pastTense = verb;
-      if (verb === 'write') pastTense = 'Wrote';
-      else if (verb === 'make') pastTense = 'Made';
-      else if (verb === 'send') pastTense = 'Sent';
-      else if (verb.endsWith('e')) pastTense = verb.charAt(0).toUpperCase() + verb.slice(1, -1) + 'ed';
-      else pastTense = verb.charAt(0).toUpperCase() + verb.slice(1) + 'ed';
-
-      titleWords.push(pastTense);
-      break;
-    }
-  }
-
-  // Add most meaningful remaining words
-  const remainingWords = words
-    .filter(word => !actionVerbs.includes(word.toLowerCase()))
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase());
-
-  // Fill up to 4 words total
-  for (const word of remainingWords) {
-    if (titleWords.length < 4) {
-      titleWords.push(word);
-    } else {
-      break;
-    }
-  }
-
-  // If we don't have enough words, add generic ones
-  if (titleWords.length === 0) {
-    titleWords.push('Completed');
-  }
-  if (titleWords.length === 1) {
-    titleWords.push('Task');
-  }
-  if (titleWords.length === 2) {
-    titleWords.push('Successfully');
-  }
-  if (titleWords.length === 3) {
-    titleWords.push('Done');
-  }
-
-  return titleWords.slice(0, 4).join(' ');
-}
-
-/**
- * Set terminal tab title (works with Kitty, Ghostty, iTerm2, etc.)
- */
-function setTerminalTabTitle(title: string): void {
-  // Get terminal type
-  const term = process.env.TERM || '';
-
-  // Send to stderr to bypass potential output filtering
-
-  if (term.includes('ghostty')) {
-    // Ghostty-specific sequences
-    // Ghostty uses standard xterm sequences but may need different approach
-    process.stderr.write(`\x1b]2;${title}\x07`);  // Window title
-    process.stderr.write(`\x1b]0;${title}\x07`);  // Icon and window title
-
-    // Try OSC 7 for Ghostty tab titles (some terminals use this)
-    process.stderr.write(`\x1b]7;${title}\x07`);
-
-    // Also try the standard xterm way with ST terminator
-    process.stderr.write(`\x1b]2;${title}\x1b\\`);
-  } else if (term.includes('kitty')) {
-    // Kitty-specific sequences
-    process.stderr.write(`\x1b]0;${title}\x07`);
-    process.stderr.write(`\x1b]2;${title}\x07`);
-    process.stderr.write(`\x1b]30;${title}\x07`);  // Kitty-specific
-  } else {
-    // Generic sequences for other terminals
-    process.stderr.write(`\x1b]0;${title}\x07`);  // Icon and window
-    process.stderr.write(`\x1b]2;${title}\x07`);  // Window title
-  }
-
-  // Flush stderr to ensure immediate output
-  if (process.stderr.isTTY) {
-    process.stderr.write('');
-  }
-}
+import { generateTabTitle, setTerminalTabTitle, setTabTitleSync } from './lib/tab-titles';
+import { readStdinWithTimeout } from './lib/stdin-utils';
+import { contentToText } from './lib/transcript-utils';
 
 
 // Intelligent response generator - prioritizes custom COMPLETED messages
@@ -203,39 +85,25 @@ async function main() {
   const timestamp = new Date().toISOString();
   console.error(`\n🎬 STOP-HOOK TRIGGERED AT ${timestamp}`);
 
-  // Get input
-  let input = '';
-  const decoder = new TextDecoder();
-  const reader = Bun.stdin.stream().getReader();
-
+  // Read input from stdin using shared utility
+  let transcriptPath: string;
   try {
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      input += decoder.decode(value, { stream: true });
+    const input = await readStdinWithTimeout(500);
+    if (!input) {
+      console.error('❌ No input received');
+      process.exit(0);
     }
-  } catch (e) {
-    console.error(`❌ Error reading input: ${e}`);
-    process.exit(0);
-  }
 
-  if (!input) {
-    console.error('❌ No input received');
-    process.exit(0);
-  }
-
-  let transcriptPath;
-  try {
     const parsed = JSON.parse(input);
     transcriptPath = parsed.transcript_path;
     console.error(`📁 Transcript path: ${transcriptPath}`);
-  } catch (e) {
-    console.error(`❌ Error parsing input JSON: ${e}`);
-    process.exit(0);
-  }
 
-  if (!transcriptPath) {
-    console.error('❌ No transcript_path in input');
+    if (!transcriptPath) {
+      console.error('❌ No transcript_path in input');
+      process.exit(0);
+    }
+  } catch (e) {
+    console.error(`❌ Error reading/parsing input: ${e}`);
     process.exit(0);
   }
 
@@ -468,20 +336,8 @@ async function main() {
 
   // Set tab title to override "dynamic requirements" or any other previous title
   if (tabTitle) {
-    try {
-      // Escape single quotes in the message to prevent shell injection
-      const escapedTitle = tabTitle.replace(/'/g, "'\\''");
-
-      // Use printf command to set the tab title - this works in Kitty
-      const { execSync } = await import('child_process');
-      execSync(`printf '\\033]0;${escapedTitle}\\007' >&2`);
-      execSync(`printf '\\033]2;${escapedTitle}\\007' >&2`);
-      execSync(`printf '\\033]30;${escapedTitle}\\007' >&2`);
-
-      console.error(`\n🏷️ Tab title set to: "${tabTitle}"`);
-    } catch (e) {
-      console.error(`❌ Failed to set tab title: ${e}`);
-    }
+    setTabTitleSync(tabTitle);
+    console.error(`\n🏷️ Tab title set to: "${tabTitle}"`);
   }
 
   console.error(`📝 User query: ${lastUserQuery || 'No query found'}`);
@@ -489,9 +345,8 @@ async function main() {
 
   // Final tab title override as the very last action - use the actual completion message
   if (message) {
-    // Use the actual completion message as the tab title
     const finalTabTitle = message.slice(0, 50); // Limit to 50 chars for tab title
-    process.stderr.write(`\033]2;${finalTabTitle}\007`);
+    setTerminalTabTitle(finalTabTitle);
   }
 
   console.error(`🎬 STOP-HOOK COMPLETED SUCCESSFULLY at ${new Date().toISOString()}\n`);

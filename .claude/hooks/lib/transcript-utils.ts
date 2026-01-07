@@ -1,12 +1,42 @@
 /**
  * Transcript Utilities
- * 
+ *
  * Shared functions for reading and parsing Claude Code transcript files.
  * Used by stop-hook.ts, subagent-stop-hook.ts, and other hooks.
  */
 
 import { readFileSync, existsSync } from 'fs';
 import { delay } from './stdin-utils';
+
+/**
+ * Convert Claude message content (string or array) to plain text
+ * Handles both simple string content and complex content arrays
+ */
+export function contentToText(content: any): string {
+  if (typeof content === 'string') {
+    return content;
+  }
+
+  if (Array.isArray(content)) {
+    return content
+      .map(item => {
+        if (typeof item === 'string') return item;
+        if (item?.type === 'text' && item.text) return item.text;
+        if (item?.type === 'tool_result' && item.content) {
+          return contentToText(item.content);
+        }
+        return '';
+      })
+      .filter(Boolean)
+      .join('\n');
+  }
+
+  if (content?.type === 'text' && content.text) {
+    return content.text;
+  }
+
+  return '';
+}
 
 /**
  * Task result with agent type information

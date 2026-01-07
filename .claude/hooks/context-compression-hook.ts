@@ -1,29 +1,25 @@
 #!/usr/bin/env bun
+
 /**
- * PreCompact Hook - Triggered before context compression
- * Extracts context information from transcript and notifies about compression
+ * context-compression-hook.ts
+ *
+ * PreCompact event hook - triggered before context compression.
+ * Extracts context information from transcript and notifies about compression.
  */
 
-import {readFileSync} from 'fs';
-
-
-interface HookInput {
-    session_id: string;
-    transcript_path: string;
-    hook_event_name: string;
-    compact_type?: string;
-}
+import { readFileSync } from 'fs';
+import { readStdinWithTimeout, HookInput } from './lib/stdin-utils';
 
 interface TranscriptEntry {
-    type: string;
-    message?: {
-        role?: string;
-        content?: Array<{
-            type: string;
-            text: string;
-        }>
-    };
-    timestamp?: string;
+  type: string;
+  message?: {
+    role?: string;
+    content?: Array<{
+      type: string;
+      text: string;
+    }>;
+  };
+  timestamp?: string;
 }
 
 
@@ -64,55 +60,37 @@ function getTranscriptStats(transcriptPath: string): { messageCount: number; isL
 
 
 async function main() {
-    let hookInput: HookInput | null = null;
+  let hookInput: HookInput | null = null;
 
-    try {
-        // Read the JSON input from stdin
-        const decoder = new TextDecoder();
-        const reader = Bun.stdin.stream().getReader();
-        let input = '';
-
-        const timeoutPromise = new Promise<void>((resolve) => {
-            setTimeout(() => resolve(), 500);
-        });
-
-        const readPromise = (async () => {
-            while (true) {
-                const {done, value} = await reader.read();
-                if (done) break;
-                input += decoder.decode(value, {stream: true});
-            }
-        })();
-
-        await Promise.race([readPromise, timeoutPromise]);
-
-        if (input.trim()) {
-            hookInput = JSON.parse(input) as HookInput;
-        }
-    } catch (error) {
-        // Silently handle input errors
+  try {
+    const input = await readStdinWithTimeout(500);
+    if (input.trim()) {
+      hookInput = JSON.parse(input) as HookInput;
     }
+  } catch (error) {
+    // Silently handle input errors
+  }
 
-    // Determine the type of compression
-    const compactType = hookInput?.compact_type || 'auto';
-    let message = 'Compressing context to continue';
+  // Determine the type of compression
+  const compactType = (hookInput as any)?.compact_type || 'auto';
+  let message = 'Compressing context to continue';
 
-    // Get transcript statistics if available
-    if (hookInput && hookInput.transcript_path) {
-        const stats = getTranscriptStats(hookInput.transcript_path);
-        if (stats.messageCount > 0) {
-            if (compactType === 'manual') {
-                message = `Manually compressing ${stats.messageCount} messages`;
-            } else {
-                message = stats.isLarge
-                    ? `Auto-compressing large context with ${stats.messageCount} messages`
-                    : `Compressing context with ${stats.messageCount} messages`;
-            }
-            console.log(message);
-        }
+  // Get transcript statistics if available
+  if (hookInput && hookInput.transcript_path) {
+    const stats = getTranscriptStats(hookInput.transcript_path);
+    if (stats.messageCount > 0) {
+      if (compactType === 'manual') {
+        message = `Manually compressing ${stats.messageCount} messages`;
+      } else {
+        message = stats.isLarge
+          ? `Auto-compressing large context with ${stats.messageCount} messages`
+          : `Compressing context with ${stats.messageCount} messages`;
+      }
+      console.log(message);
     }
+  }
 
-    process.exit(0);
+  process.exit(0);
 }
 
 // Run the hook
