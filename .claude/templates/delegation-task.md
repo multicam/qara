@@ -183,6 +183,5 @@ await agent.task({ instructions: spotcheckPackage });
 
 ## Related Documentation
 
-- **delegation-guide.md** - Complete delegation patterns
+- **delegation-guide.md** - Complete delegation patterns (includes parallelization)
 - **agent-guide.md** - Agent hierarchy and capabilities
-- **parallel-execution.md** - Technical patterns for Promise.all

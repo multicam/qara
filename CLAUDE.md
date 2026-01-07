@@ -106,3 +106,20 @@ bun --hot ./index.ts
 ```
 
 For more information, read the Bun API docs in `node_modules/bun-types/docs/**.md`.
+
+## Hooks
+
+Claude Code hooks in `.claude/hooks/`. All hooks are Bun TypeScript.
+
+**Active hooks:**
+- `session-start.ts` - SessionStart: loads SKILL.md, sets tab title
+- `stop-hook.ts` - Stop: extracts COMPLETED line, updates tab title
+- `subagent-stop-hook.ts` - SubagentStop: extracts agent completion
+- `update-tab-titles.ts` - UserPromptSubmit: sets processing indicator
+- `capture-all-events.ts` - All events: logs to JSONL
+
+**Shared utilities in `lib/`:**
+- `pai-paths.ts` - PAI_DIR, SKILLS_DIR path resolution
+- `stdin-utils.ts` - readStdinWithTimeout, HookInput interface
+- `tab-titles.ts` - generateTabTitle, setTerminalTabTitle
+- `transcript-utils.ts` - contentToText, findTaskResult, extractCompletionMessage

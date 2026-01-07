@@ -234,7 +234,7 @@ When building CLI tool, system loads ~1,358 lines with 400 lines redundant (28% 
 - 6 other files: scattered references
 
 **Recommendation:**
-Consolidate to 3 files: CONSTITUTION.md (50 lines principle), cli-first-guide.md (400 lines patterns), cli-first-examples.md (300 lines examples)
+Consolidate to 2 files: CONSTITUTION.md (principles), cli-first-guide.md (patterns + examples)
 
 [... continue with other findings ...]
 ```

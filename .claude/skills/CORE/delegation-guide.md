@@ -418,10 +418,15 @@ Batches: Group into manageable chunks
 
 ---
 
+## Technical Parallelization
+
+For Promise.all, Promise.allSettled, and concurrency control patterns, Claude knows these intrinsically. Use standard TypeScript async patterns - no special documentation needed.
+
+---
+
 ## Related Documentation
 
 - **agent-guide.md** - Agent hierarchy, roles, and escalation patterns
-- **parallel-execution.md** - Technical parallel execution patterns (Promise.all, concurrency)
 - **SKILL.md** - Quick delegation reference
 
 ---

@@ -56,17 +56,17 @@ git remote -v
 
 #### 2. Search for Sensitive Data
 ```bash
-# Search for API keys
-grep -r "API_KEY\|api_key\|apiKey" . --exclude-dir=.git --exclude-dir=node_modules
+# Search for API keys (rg is 10-50x faster than grep)
+rg "API_KEY|api_key|apiKey" --glob '!.git' --glob '!node_modules'
 
 # Search for secrets/tokens
-grep -r "SECRET\|TOKEN\|PASSWORD" . --exclude-dir=.git --exclude-dir=node_modules
+rg "SECRET|TOKEN|PASSWORD" --glob '!.git' --glob '!node_modules'
 
 # Search for email addresses
-grep -r "@gmail.com\|@email.com" . --exclude-dir=.git --exclude-dir=node_modules
+rg "@gmail.com|@email.com" --glob '!.git' --glob '!node_modules'
 
 # Search for specific personal identifiers
-grep -r "Jean-Marc Giorgi\|[your-email]" . --exclude-dir=.git --exclude-dir=node_modules
+rg "Jean-Marc Giorgi|[your-email]" --glob '!.git' --glob '!node_modules'
 ```
 
 #### 3. Review Staged Changes
@@ -86,10 +86,10 @@ git status | grep -E "\.env|config|secrets"
 #### 5. Check .gitignore Coverage
 ```bash
 # Verify .env is ignored
-cat .gitignore | grep "\.env"
+rg "\.env" .gitignore
 
 # Verify sensitive directories ignored
-cat .gitignore | grep -E "secrets/|keys/|\.private/"
+rg "secrets/|keys/|\.private/" .gitignore
 ```
 
 ### Three-Check Rule
@@ -305,7 +305,7 @@ When creating public PAI content from private Qara:
 3. **Test sanitized version**
    ```bash
    # Verify no secrets remain
-   grep -r "secret\|key\|password" . -i
+   rg -i "secret|key|password"
    ```
 
 4. **Copy to public repo**
@@ -329,14 +329,14 @@ echo ""
 echo "🔍 Scanning for sensitive patterns..."
 
 # Check for API keys
-if grep -r "sk-\|api_key.*=.*[a-zA-Z0-9]" . --exclude-dir=.git 2>/dev/null; then
+if rg "sk-|api_key.*=.*[a-zA-Z0-9]" --glob '!.git' 2>/dev/null; then
   echo "⚠️  Potential API keys found"
 else
   echo "✅ No API keys detected"
 fi
 
 # Check for emails
-if grep -r "@.*\.com" . --exclude-dir=.git --exclude="*.md" 2>/dev/null | grep -v "example.com"; then
+if rg "@.*\.com" --glob '!.git' --glob '!*.md' 2>/dev/null | rg -v "example.com"; then
   echo "⚠️  Email addresses found"
 else
   echo "✅ No personal emails detected"

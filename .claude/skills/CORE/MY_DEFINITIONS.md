@@ -75,9 +75,7 @@
 
 **Reference**: See `CONSTITUTION.md` for the core principle and philosophy.
 
-**For implementation**: 
-- See `cli-first-guide.md` - Practical patterns, API integration, design best practices
-- See `cli-first-examples.md` - Real-world examples, anti-patterns, migration strategies
+**For implementation**: See `cli-first-guide.md` - Practical patterns, examples, API integration.
 
 **Quick Summary**:
 Build tools that work perfectly without AI, then add AI to make them easier to use. Code is cheaper, faster, and more reliable than prompts.

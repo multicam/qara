@@ -45,7 +45,7 @@ for skill_dir in "$PAI_DIR/skills"/*/; do
     fi
     
     # Check for empty directories (warning only)
-    file_count=$(find "$skill_dir" -type f -name "*.md" | wc -l)
+    file_count=$(fd -e md -t f . "$skill_dir" 2>/dev/null | wc -l)
     if [[ $file_count -eq 0 ]]; then
         echo "  ⚠️  No .md files found"
         WARNINGS=$((WARNINGS + 1))
@@ -53,7 +53,7 @@ for skill_dir in "$PAI_DIR/skills"/*/; do
     
     # Check workflows directory if it exists
     if [[ -d "$skill_dir/workflows" ]]; then
-        workflow_count=$(find "$skill_dir/workflows" -type f -name "*.md" -o -name "*.ts" | wc -l)
+        workflow_count=$(fd -e md -e ts -t f . "$skill_dir/workflows" 2>/dev/null | wc -l)
         if [[ $workflow_count -eq 0 ]]; then
             echo "  ⚠️  Empty workflows directory"
             WARNINGS=$((WARNINGS + 1))

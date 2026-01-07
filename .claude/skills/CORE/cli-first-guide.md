@@ -705,12 +705,31 @@ Every CLI tool needs:
 
 ---
 
+## Quick Examples
+
+**Before (Prompt-Driven):** AI manually creates JSON, runs inconsistent commands, formats output differently each time.
+
+**After (CLI-First):**
+```bash
+# Evaluation system
+evals run --use-case newsletter-summary --model claude-3-5-sonnet --json
+
+# Blog publishing
+blog-publish ./posts/my-post.md --verify
+
+# API integration
+llcli --date today --json | jq '.items'
+```
+
+**Benefits:** Reproducible, testable, version-controlled, AI just orchestrates.
+
+---
+
 ## Related Documentation
 
 - **CONSTITUTION.md** - Core CLI-First principle
-- **cli-first-examples.md** - Real-world examples and anti-patterns
 - **stack-preferences.md** - TypeScript over Python, Bun for runtimes
-- **testing-guide.md** - How to test CLI tools independently
+- **testing-guide.md** - How to test CLI tools
 
 ---
 

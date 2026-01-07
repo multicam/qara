@@ -44,14 +44,14 @@ Expected: `main` or `master` (or feature branch if working on one)
 
 ### 3. Verify No Sensitive Data
 ```bash
-# Search for API keys
-grep -r "sk-\|api_key.*=.*[a-zA-Z0-9]" . --exclude-dir=.git --exclude-dir=node_modules 2>/dev/null
+# Search for API keys (rg is 10-50x faster than grep)
+rg "sk-|api_key.*=.*[a-zA-Z0-9]" --glob '!.git' --glob '!node_modules' 2>/dev/null
 
 # Search for secrets/tokens
-grep -r "SECRET\|TOKEN\|PASSWORD" . --exclude-dir=.git --exclude-dir=node_modules 2>/dev/null | grep -v "\.md:"
+rg "SECRET|TOKEN|PASSWORD" --glob '!.git' --glob '!node_modules' --glob '!*.md' 2>/dev/null
 
 # Search for email addresses (real ones, not examples)
-grep -r "@" . --exclude-dir=.git --exclude-dir=node_modules --exclude="*.md" 2>/dev/null | grep -v "example.com"
+rg "@" --glob '!.git' --glob '!node_modules' --glob '!*.md' 2>/dev/null | rg -v "example.com"
 ```
 
 **If ANY matches found**: Review each one carefully. Ensure they're in gitignored files or are example values only.
@@ -376,7 +376,7 @@ git push origin main    # Push
 # Safety checks
 pwd                     # Verify location
 git remote -v           # Verify remote
-grep -r "API_KEY" .     # Check for secrets
+rg "API_KEY"            # Check for secrets
 
 # Rollback
 git reset --soft HEAD~1 # Undo commit (keep changes)

@@ -193,15 +193,12 @@ For detailed implementation, see the reference files below. This section provide
 
 | Topic | Reference File |
 |-------|----------------|
-| Skill structure patterns | `SKILL-STRUCTURE-AND-ROUTING.md` |
 | CLI-First implementation | `cli-first-guide.md` |
-| CLI-First examples | `cli-first-examples.md` |
 | Testing guide | `testing-guide.md` |
 | Security protocols | `security-protocols.md` |
 | Agent system | `agent-guide.md` |
 | Delegation patterns | `delegation-guide.md` |
 | History system | `history-system.md` |
-| Hook system | `hook-system.md` |
 
 ---
 

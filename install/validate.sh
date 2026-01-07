@@ -352,7 +352,7 @@ fi
 
 # Skills directory
 if [ -d "$PAI_DIR/skills" ]; then
-    skill_count=$(find "$PAI_DIR/skills" -maxdepth 1 -type d 2>/dev/null | wc -l | tr -d ' ')
+    skill_count=$(fd -t d --max-depth 1 . "$PAI_DIR/skills" 2>/dev/null | wc -l | tr -d ' ')
     print_success "Found $skill_count skills"
 else
     print_warning "Skills directory not found"
@@ -360,7 +360,7 @@ fi
 
 # Commands directory
 if [ -d "$PAI_DIR/commands" ]; then
-    command_count=$(find "$PAI_DIR/commands" -type f -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
+    command_count=$(fd -e md -t f . "$PAI_DIR/commands" 2>/dev/null | wc -l | tr -d ' ')
     print_success "Found $command_count commands"
 else
     print_warning "Commands directory not found"

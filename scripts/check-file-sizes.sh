@@ -38,7 +38,7 @@ while IFS= read -r file; do
         relpath="${file#$PAI_DIR/}"
         echo "⚠️  $relpath ($lines lines)"
     fi
-done < <(find "$PAI_DIR/skills" -name "*.md" -type f -not -path "*/node_modules/*" 2>/dev/null)
+done < <(fd -e md -t f . "$PAI_DIR/skills" --exclude node_modules 2>/dev/null)
 
 echo ""
 echo "=== Size Distribution ==="

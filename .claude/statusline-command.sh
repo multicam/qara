@@ -46,8 +46,8 @@ if [ ! -d "$fabric_patterns_dir" ]; then
     fabric_patterns_dir="${HOME}/.config/fabric/patterns"
 fi
 if [ -d "$fabric_patterns_dir" ]; then
-    # Count immediate subdirectories only
-    fabric_count=$(find "$fabric_patterns_dir" -maxdepth 1 -type d -not -path "$fabric_patterns_dir" 2>/dev/null | wc -l | tr -d ' ')
+    # Count immediate subdirectories only (fd is 13-23x faster than find)
+    fabric_count=$(fd -t d --max-depth 1 . "$fabric_patterns_dir" 2>/dev/null | wc -l | tr -d ' ')
 fi
 
 # Get cached ccusage data - SAFE VERSION without background processes
