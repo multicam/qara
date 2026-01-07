@@ -56,7 +56,6 @@ ${PAI_DIR}/skills/CORE/SKILL-STRUCTURE-AND-ROUTING.md
    - Are workflows sequential or independent?
 
 4. **What integrations?** (Dependencies)
-   - MCPs needed?
    - Agents required?
    - External services?
    - Tools or scripts?
@@ -221,7 +220,7 @@ Examples: "actual user phrase 1", "variation 1", "variation 2", "variation 3", "
 [Link any supporting docs]
 
 **Integration Points:**
-[MCPs, agents, external services]
+[agents, external services]
 
 **Configuration:**
 [Any required setup or configuration]
@@ -410,37 +409,7 @@ echo "Workflow count: $(find ${PAI_DIR}/skills/[skill-name]/workflows/ -name "*.
 
 ---
 
-### Step 8: Register Skill
-
-**Add to `${PAI_DIR}/mcp_settings.json`:**
-
-```json
-{
-  "skills": {
-    "skill-name": {
-      "description": "Brief description of skill. USE WHEN user says 'trigger 1', 'trigger 2', 'trigger 3', or requests [domain/task].",
-      "location": "user"
-    }
-  }
-}
-```
-
-**Important:**
-- Description should be 1-2 sentences max
-- Include 3-10 trigger phrases
-- Include USE WHEN for clarity
-- Location is "user" for user skills
-
-**Verify registration:**
-```bash
-grep -A 3 '"skill-name"' ${PAI_DIR}/mcp_settings.json
-```
-
-**Output:** Skill registered in system
-
----
-
-### Step 9: Test Skill Activation
+### Step 8: Test Skill Activation
 
 **Test natural language triggers:**
 
@@ -456,7 +425,6 @@ grep -A 3 '"skill-name"' ${PAI_DIR}/mcp_settings.json
 - Executes workflow steps
 
 **If skill doesn't activate:**
-- Check mcp_settings.json registration
 - Verify trigger phrases in description
 - Test with more explicit phrasing
 - Review system prompt skill loading
@@ -465,7 +433,7 @@ grep -A 3 '"skill-name"' ${PAI_DIR}/mcp_settings.json
 
 ---
 
-### Step 10: Document Creation
+### Step 9: Document Creation
 
 **Create skill creation record:**
 
@@ -490,7 +458,6 @@ grep -A 3 '"skill-name"' ${PAI_DIR}/mcp_settings.json
 [...]
 
 ## Integration Points
-- MCP: [if applicable]
 - Agents: [if applicable]
 - External Services: [if applicable]
 
@@ -503,7 +470,6 @@ grep -A 3 '"skill-name"' ${PAI_DIR}/mcp_settings.json
 ✅ Structural compliance
 ✅ Routing compliance
 ✅ Documentation complete
-✅ Registered in mcp_settings.json
 ✅ Tested and functional
 
 ## Notes
@@ -528,7 +494,6 @@ grep -A 3 '"skill-name"' ${PAI_DIR}/mcp_settings.json
 - ✅ All workflow files created
 - ✅ All files referenced in SKILL.md
 - ✅ Naming conventions followed
-- ✅ Registered in mcp_settings.json
 - ✅ Tested with natural language triggers
 - ✅ Validated against quality checklist
 - ✅ Documentation complete

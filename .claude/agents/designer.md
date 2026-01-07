@@ -14,7 +14,6 @@ permissions:
     - "Glob(*)"
     - "WebFetch(domain:*)"
     - "WebSearch"
-    - "mcp__*"
     - "TodoWrite(*)"
 ---
 

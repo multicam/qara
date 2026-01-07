@@ -32,8 +32,8 @@ fabric --youtube "<url>"
 ```bash
 # Try fabric first
 fabric -u "<url>"
-# If that fails, use Bright Data MCP
-mcp__brightdata__scrape_as_markdown url="<url>"
+# If that fails, use BrightData CLI
+brightdata scrape "<url>"
 ```
 
 **PDFs and Files**:
@@ -53,30 +53,30 @@ If `--focus` is not specified, auto-detect from content:
 - **Wisdom**: philosophy, principle, life, wisdom, insight, experience
 - **General**: everything else
 
-### Step 3: Extract Knowledge Using PAI Services
+### Step 3: Extract Knowledge
 
 **For Security Content:**
-- Use `mcp__pai__extract_primary_problem` and `mcp__pai__extract_primary_solution`
+- Extract primary problems and solutions
 - Extract attack vectors, vulnerabilities, defensive measures
 - Generate technical security recommendations
 
 **For Business Content:**
-- Use `mcp__pai__extract_primary_problem` and `mcp__pai__extract_primary_solution`
+- Extract primary problems and solutions
 - Extract revenue opportunities, market insights, growth strategies
 - Generate business action items
 
 **For Research Content:**
-- Use `mcp__pai__analyze_paper` if academic content
+- Analyze academic content structure and methodology
 - Extract key findings, methodology insights, technical details
 - Rate research quality and reproducibility
 
 **For Wisdom Content:**
-- Use `mcp__pai__author_wisdom_aphorism` and `mcp__pai__create_quotes`
+- Extract wisdom aphorisms and notable quotes
 - Extract life principles, philosophical insights, practical wisdom
 - Generate memorable quotes and aphorisms
 
 **For General Content:**
-- Use `mcp__pai__create_expanded_summary` and `mcp__pai__rate`
+- Create expanded summary and rate content quality
 - Extract key concepts, important facts, learning opportunities
 
 ### Step 4: Structure Output

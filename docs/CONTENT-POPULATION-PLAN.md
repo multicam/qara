@@ -40,7 +40,6 @@ This plan outlines the strategy for populating stub files created during the Qar
 
 **Phase 3: Operational Documentation** ✅ 100% (2/2)
 - Agent protocols defining functional roles and escalation
-- MCP profile management documenting LEGACY vs modern approaches
 
 **System Status**: All critical operational capabilities documented. Git workflow, security protocols, delegation patterns, and agent communication ready for use.
 
@@ -811,107 +810,6 @@ Before marking complete:
 
 ---
 
-### 10. mcp-profile-management.md (workflows/) 🟡 P1
-**Priority**: HIGH - Referenced in routing triggers (line 138)
-**Estimated Time**: 20 minutes
-**Dependencies**: mcp-strategy.md (can be done in parallel)
-
-**Content Requirements**:
-```markdown
-# MCP Profile Management (LEGACY System)
-
-## Important Note
-This is the LEGACY MCP profile switching system. For modern web scraping, see system-mcp skill (TypeScript wrappers).
-
-## Trigger Phrases
-- "switch MCP" / "change MCP profile"
-- "chrome MCP" / "dev MCP" / "security profile"
-- "what MCP profiles exist" / "available profiles"
-- "load research profile" / "swap MCP"
-
-## Profile System
-
-### Current Implementation
-Qara currently has: **Empty MCP configuration**
-- Location: `~/.claude/.mcp.json` (23 bytes - empty)
-- No profiles configured yet
-- Reference PAI has 10+ MCP servers configured
-
-### Reference PAI Profiles
-The upstream PAI has profiles like:
-- **dev**: Standard development tools
-- **chrome**: Browser automation
-- **security**: Security scanning tools
-- **research**: Search and documentation
-
-## How to Add MCP Servers
-
-### 1. Edit .mcp.json
-```json
-{
-  "mcpServers": {
-    "server-name": {
-      "command": "command-to-run",
-      "args": ["arg1", "arg2"],
-      "env": {
-        "API_KEY": "${ENV_VAR_NAME}"
-      }
-    }
-  }
-}
-```
-
-### 2. Store API Keys in .env
-```bash
-# ~/.claude/.env
-MCP_API_KEY=your_key_here
-```
-
-### 3. Restart Claude Code
-Required after .mcp.json changes.
-
-## Common MCP Servers
-
-### httpx (Web Stack Analysis)
-[Configuration example]
-
-### Playwright (Browser Automation)
-[Configuration example]
-
-### Content (Archiving)
-[Configuration example]
-
-## Modern Alternative: system-mcp Skill
-
-**Recommended approach**: Use TypeScript wrappers instead
-- Location: `~/.claude/skills/system-mcp/`
-- Direct API calls (faster, more efficient)
-- Filter results in code (99% token savings)
-- No MCP protocol overhead
-
-See: system-mcp skill documentation
-
-## Troubleshooting
-
-### MCP Server Not Loading
-1. Check .mcp.json syntax
-2. Verify command exists
-3. Check API keys in .env
-4. Restart Claude Code
-
-### Profile Switch Not Working
-This is LEGACY - profiles not implemented in Qara yet
-Implement by:
-1. Creating multiple .mcp-{profile}.json files
-2. Symlinking active one to .mcp.json
-3. Restarting Claude Code
-```
-
-**Sources to Reference**:
-- SKILL.md lines 313-323 (MCP routing)
-- `/media/ssdev/work/Personal_AI_Infrastructure/.claude/.mcp.json` (reference)
-- mcp-strategy.md (once created)
-
 ---
 
 ## Phase 4: Development & Testing Documentation (P2)
@@ -953,13 +851,6 @@ Implement by:
 **Content Summary**: Technical details of parallel execution beyond delegation - Promise.all patterns, concurrency limits, error handling, race conditions.
 
 ---
-
-### 15. mcp-strategy.md 🟢 P2
-**Priority**: MEDIUM - MCP architecture (line 199)
-**Estimated Time**: 20 minutes
-**Dependencies**: None
-
-**Content Summary**: Two-tier MCP strategy (LEGACY vs modern TypeScript wrappers), when to use each, migration path, token optimization.
 
 ---
 
@@ -1034,7 +925,6 @@ Implement by:
 ### Week 3: Operational Documentation (Phase 3)
 - ❌ agent-personalities.md (REMOVED - no personality features)
 - ✅ agent-protocols.md (rewritten: functional roles only)
-- ✅ mcp-profile-management.md
 - **Result**: Agent system documented (functional focus)
 
 ### Week 4: Development & Organizational (Phases 4-5)
@@ -1057,14 +947,12 @@ Implement by:
 
 **Phase 3: Operational Documentation** ✅ Complete
 - [x] agent-protocols.md (525 lines - functional roles only)
-- [x] mcp-profile-management.md (287 lines)
 
 **Phase 4: Development Documentation** ✅ Complete (5/5 files, 4,277 lines)
 - [x] cli-first-architecture.md (1,133 lines)
 - [x] TESTING.md (928 lines)
 - [x] playwright-config.md (730 lines)
 - [x] parallel-execution.md (760 lines)
-- [x] mcp-strategy.md (726 lines)
 
 **Phase 5: Remaining Workflows** ✅ Complete (4/4 files, 947 lines)
 - [x] merge-conflict-resolution.md (181 lines)

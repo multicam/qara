@@ -587,7 +587,6 @@ Major refactor of CORE skill documentation to eliminate redundancies, optimize t
 - `workflows/delegation-patterns.md` → consolidated into delegation-guide.md
 - `TESTING.md` → consolidated into testing-guide.md
 - `playwright-config.md` → merged into testing-guide.md
-- `mcp-strategy.md` → renamed to mcp-guide.md
 
 **Documentation:** See `REFACTOR_PART_I_SUMMARY.md`
 
@@ -601,14 +600,12 @@ All references updated from obsolete filenames to new consolidated files:
 
 | Old Reference | New Reference | Locations Fixed |
 |--------------|---------------|-----------------|
-| mcp-strategy.md | mcp-guide.md | 3 files |
 | TESTING.md | testing-guide.md | 7 files |
 | playwright-config.md | testing-guide.md | 1 file |
 
 **Files Updated:**
 - SKILL.md
 - CONSTITUTION.md
-- workflows/mcp-profile-management.md
 - stack-preferences.md
 - cli-first-examples.md
 - cli-first-guide.md
@@ -649,7 +646,6 @@ New `.claude/templates/` directory with 4 comprehensive templates:
 Activated 7 workflow routes in CORE SKILL.md:
 - Git repository updates
 - Parallel delegation
-- MCP profile switching
 - Merge conflict resolution
 - File organization reference
 - Response format examples
@@ -681,7 +677,6 @@ Activated 7 workflow routes in CORE SKILL.md:
 ├── agent-guide.md (NEW - agent hierarchy)
 ├── delegation-guide.md (NEW - task decomposition)
 ├── testing-guide.md (NEW - comprehensive testing)
-├── mcp-guide.md (RENAMED from mcp-strategy.md)
 │
 ├── parallel-execution.md (refocused - technical only)
 ├── stack-preferences.md
@@ -696,7 +691,6 @@ Activated 7 workflow routes in CORE SKILL.md:
 │
 └── workflows/
     ├── git-update-repo.md
-    ├── mcp-profile-management.md
     ├── merge-conflict-resolution.md
     ├── file-organization-detailed.md
     ├── response-format-examples.md
@@ -739,7 +733,6 @@ Activated 7 workflow routes in CORE SKILL.md:
 | Build CLI tool | 1,358 lines (28% waste) | 728 lines (0% waste) | 46% reduction |
 | Delegate work | 1,263 lines (59% waste) | 452 lines (0% waste) | 64% reduction |
 | Write tests | 1,108 lines (23% waste) | 756 lines (0% waste) | 32% reduction |
-| Use MCP | 810 lines (38% waste) | 586 lines (0% waste) | 28% reduction |
 | **Average** | **1,135 lines (38% waste)** | **631 lines (0% waste)** | **44% reduction** |
 
 ---
@@ -752,7 +745,6 @@ This refactor was internal documentation reorganization. **No changes needed to 
 - All existing workflows and commands
 - All skill activation triggers
 - All agent delegation patterns
-- All MCP configurations
 - All security protocols
 
 **What Improved:**

@@ -11,13 +11,13 @@ Your primary responsibility is to conduct thorough visual comparisons between im
 ## Your Workflow
 
 1. **Capture Implementation State**
-    - Use the Puppeteer MCP to capture screenshots of the implemented UI
+    - Capture screenshots of the implemented UI using browser tools
     - Test different viewport sizes if the design includes responsive breakpoints
     - Capture interactive states (hover, focus, active) when relevant
     - Document the URL and selectors of the components being reviewed
 
 2. **Retrieve Design Specifications**
-    - Use the Figma MCP to access the corresponding design files
+    - Access the corresponding design files from Figma or other design tools
     - Extract design tokens (colors, typography, spacing, shadows)
     - Identify component specifications and design system rules
     - Note any design annotations or developer handoff notes

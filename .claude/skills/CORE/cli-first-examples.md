@@ -642,45 +642,6 @@ if (result.success) {
 
 ---
 
-### Pattern 2: MCP → CLI Tool
-
-**Phase 1: Discovery with MCP**
-```typescript
-// Use MCP to explore API
-const mcp = new MCPClient("github");
-await mcp.call("issues.list", { repo: "owner/repo" });
-// Learn API structure, test endpoints
-```
-
-**Phase 2: Build CLI Tool**
-```typescript
-#!/usr/bin/env bun
-// gh-issues.ts - Once API is understood
-
-async function listIssues(repo: string): Promise<void> {
-  const token = process.env.GITHUB_TOKEN;
-  const url = `https://api.github.com/repos/${repo}/issues`;
-  
-  const response = await fetch(url, {
-    headers: { Authorization: `token ${token}` }
-  });
-  
-  const issues = await response.json();
-  console.log(JSON.stringify(issues, null, 2));
-}
-```
-
-**Phase 3: Replace MCP with CLI**
-```markdown
-# Before (in skill):
-Use MCP to fetch GitHub issues
-
-# After (in skill):
-Run: gh-issues list owner/repo --state open
-```
-
----
-
 ## Canonical Examples in Qara
 
 ### llcli - Limitless.ai API

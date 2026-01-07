@@ -15,7 +15,7 @@ description: |
 **When user requests scraping/fetching URL content:**
 Examples: "scrape this URL", "fetch this page", "get content from [URL]", "pull content from this site", "retrieve [URL]", "can't access this site", "this site is blocking me", "use Bright Data to fetch"
 → **READ:** ${PAI_DIR}/skills/brightdata/workflows/four-tier-scrape.md
-→ **EXECUTE:** Four-tier progressive scraping workflow (WebFetch → Curl → Browser Automation → Bright Data MCP)
+→ **EXECUTE:** Four-tier progressive scraping workflow (WebFetch → Curl → Browser Automation → Bright Data API)
 
 ---
 
@@ -59,7 +59,7 @@ Examples: "scrape this URL", "fetch this page", "get content from [URL]", "pull 
 1. **Tier 1: WebFetch** - Fast, simple, built-in Claude Code tool
 2. **Tier 2: Customized Curl** - Chrome-like browser headers to bypass basic bot detection
 3. **Tier 3: Browser Automation** - Full browser automation using Playwright for JavaScript-heavy sites
-4. **Tier 4: Bright Data MCP** - Professional scraping service that handles CAPTCHA and advanced bot detection
+4. **Tier 4: Bright Data** - Professional scraping service that handles CAPTCHA and advanced bot detection
 
 **Key Features:**
 - Automatic fallback between tiers
@@ -74,7 +74,7 @@ Examples: "scrape this URL", "fetch this page", "get content from [URL]", "pull 
 
 **four-tier-scrape.md** - Complete URL content scraping with four-tier fallback strategy
 - **When to use:** Any URL content retrieval request
-- **Process:** Start with WebFetch → If fails, use curl with Chrome headers → If fails, use Browser Automation → If fails, use Bright Data MCP
+- **Process:** Start with WebFetch → If fails, use curl with Chrome headers → If fails, use Browser Automation → If fails, use Bright Data API
 - **Output:** URL content in markdown format
 
 ---
@@ -85,7 +85,7 @@ Examples: "scrape this URL", "fetch this page", "get content from [URL]", "pull 
 - **WebFetch Tool** - Built-in Claude Code tool for basic URL fetching
 - **Bash Tool** - For executing curl commands with custom headers
 - **Browser Automation** - Playwright-based browser automation for JavaScript rendering
-- **Bright Data MCP** - `mcp__Brightdata__scrape_as_markdown` for advanced scraping
+- **Bright Data API** - `scrape_as_markdown` for advanced scraping
 
 **When Each Tier Is Used:**
 - **Tier 1 (WebFetch):** Simple sites, public content, no bot detection
@@ -131,7 +131,7 @@ Skill Response:
 2. Attempts Tier 1 (WebFetch) → Fails (blocked)
 3. Attempts Tier 2 (Curl) → Fails (advanced detection)
 4. Attempts Tier 3 (Browser Automation) → Fails (CAPTCHA)
-5. Attempts Tier 4 (Bright Data MCP) → Success
+5. Attempts Tier 4 (Bright Data API) → Success
 6. Returns content in markdown
 7. Total time: ~30-40 seconds
 
@@ -142,7 +142,7 @@ User: "Use Bright Data to fetch https://difficult-site.com"
 Skill Response:
 1. Routes to four-tier-scrape.md
 2. User explicitly requested Bright Data
-3. Goes directly to Tier 4 (Bright Data MCP) → Success
+3. Goes directly to Tier 4 (Bright Data API) → Success
 4. Returns content in markdown
 5. Total time: ~5-10 seconds
 

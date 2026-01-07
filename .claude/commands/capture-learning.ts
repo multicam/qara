@@ -145,7 +145,7 @@ This changes how we approach similar problems in the future because we understan
 
 ### Commands/Tools That Helped
 - Document specific commands that were useful
-- Note any MCP servers or tools that aided in debugging
+- Note any tools that aided in debugging
 - Include any error messages that were key indicators
 
 ### Related Files/Configurations

@@ -128,12 +128,12 @@ Check `${PAI_DIR}/agents/` for agents with "researcher" in their name:
 - WebSearch - Search engine queries
 - When to use: Default for all content retrieval
 
-**Layer 2: BrightData MCP (requires BRIGHTDATA_API_KEY)**
+**Layer 2: BrightData (requires BRIGHTDATA_API_KEY)**
 - CAPTCHA solving via Scraping Browser
 - Advanced JavaScript rendering
 - When to use: Bot detection blocking, CAPTCHA protection
 
-**Layer 3: Apify MCP (requires Apify account)**
+**Layer 3: Apify (requires Apify account)**
 - Specialized site scrapers (Instagram, LinkedIn, etc.)
 - Complex extraction logic
 - When to use: Layers 1 and 2 both failed

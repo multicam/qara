@@ -252,4 +252,4 @@ Or provide content and say:
 - Use CSE5 when user wants brevity
 - Use CSE when user wants comprehensive understanding
 - The explanation captures both content and context
-- No external MCP dependencies required
+- No external dependencies required

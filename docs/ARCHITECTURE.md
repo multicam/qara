@@ -148,41 +148,6 @@ Then: spotcheck agent verifies all 10 files
 
 ---
 
-### 4. MCPs (Model Context Protocol): When to Use vs Direct API Code
-
-**The Question:**
-When should you use an MCP server vs. direct API code in your Skills/Commands?
-
-**The Answer:**
-Both are valid - you're optimizing for different targets.
-
-**MCP Advantages:**
-- Standardized interface across AI systems
-- Maintained separately from Skills/Commands
-- Reusable across different agents/applications
-- Platform-level abstraction for ecosystem
-- Easier to share across organizations
-
-**Direct API Code Advantages:**
-- Tighter integration with specific workflow
-- No MCP server infrastructure dependency
-- Simpler for one-off integrations
-- Full control over implementation
-- Faster iteration in personal infrastructure
-
-**Decision Matrix:**
-
-| Use MCPs When... | Use Direct API Code When... |
-|-----------------|----------------------------|
-| Sharing across teams/orgs | Building personal infrastructure |
-| Need standardization | Own the full stack |
-| Multiple AI systems | Single AI system |
-| Platform-level service | Domain-specific integration |
-| Community maintains it | You maintain it |
-
-**Recommendation:**
-For personal AI infrastructure, direct API code within Skills/Commands provides agility and control. For platform-level tools, use community MCPs.
-
 ---
 
 ## The Hierarchy: How It All Fits Together
@@ -199,7 +164,7 @@ Natural Language Trigger
 │  │  ├── write.md               │   │
 │  │  │   - Step-by-step flow    │   │
 │  │  │   - Uses API code        │   │
-│  │  │   - May invoke MCPs      │   │
+│  │  │   - Uses external APIs    │   │
 │  │  └── publish.md             │   │
 │  │      - Different workflow   │   │
 │  │      - Different tools      │   │
@@ -335,7 +300,7 @@ Results consolidated → saved to history/
 - Agents do the WORK (parallel execution)
 - Each agent may invoke OTHER skills as needed
 
-### Example 3: Development Skill (Direct API Code)
+### Example 3: Development Skill
 
 **Structure:**
 ```
@@ -351,16 +316,10 @@ Results consolidated → saved to history/
 **Direct API Integration:**
 ```typescript
 // Within workflows/run-tests.md
-// Uses direct bash execution, not MCP
+// Uses direct bash execution
 const testCommand = `npm test -- ${testFiles}`;
 await bash(testCommand);
 ```
-
-**Why Direct vs MCP:**
-- Development tools are domain-specific (not platform-wide)
-- Full control over command-line flags and options
-- Easier to customize for specific needs
-- No MCP server dependency
 
 ---
 
@@ -442,12 +401,10 @@ Executes: Complete workflow automatically
 | **Workflows Organization** | Not mentioned | workflows/ subdirectory pattern | ➕ Extension |
 | **Agent-Skill Orchestration** | Not prescribed | Agents primarily invoke Skills | ➕ Extension |
 | **Two-Level Routing** | Not mentioned | Intent→Skill, Task→Workflow | ➕ Extension |
-| **MCPs vs Direct Code** | MCPs for platform services | Both - context-dependent | ❓ Different optimization |
 
 **Verdict:**
 - **5/5 Core Concepts:** Perfect alignment
 - **4 Extensions:** Sophisticated real-world patterns
-- **1 Different Optimization:** MCPs vs direct code (both valid)
 
 ---
 
@@ -473,11 +430,7 @@ Do you need AI capabilities?
            ├─ YES → USE AGENTS
            │        └─ Have them invoke Skills/Workflows
            │
-           └─ NO → Do you need standardized platform service?
-                    │
-                    ├─ YES → USE MCP (Chrome, etc.)
-                    │
-                    └─ NO → USE DIRECT API CODE (domain-specific)
+           └─ NO → USE DIRECT API CODE (domain-specific)
 ```
 
 ---
@@ -508,13 +461,11 @@ Do you need AI capabilities?
 - ❌ Don't use agents for sequential work
 - ❌ Don't launch agents without full context
 
-### 4. Direct API vs MCP
+### 4. Direct API Integration
 - ✅ Use direct API for domain-specific integrations
-- ✅ Use MCPs for standardized platform services
 - ✅ Prefer simplicity in personal infrastructure
 - ✅ Document dependencies clearly
-- ❌ Don't add MCP infrastructure for one-off use
-- ❌ Don't reinvent platform services (use community MCPs)
+- ✅ Full control over implementation
 
 ### 5. Logging and Observability
 - ✅ All agent work logs to filesystem
@@ -544,11 +495,6 @@ Do you need AI capabilities?
    - Domain-specific agents with pre-loaded Skills
    - Agent teams with complementary Skills
    - Automatic agent selection based on task analysis
-
-4. **Hybrid MCP + Direct Code:**
-   - MCPs for infrastructure, direct code for business logic
-   - Skill-level abstraction over MCPs
-   - Easier migration between approaches
 
 ---
 
@@ -722,7 +668,7 @@ When you build real production AI infrastructure, a natural hierarchy emerges:
 1. **Skills** organize domain expertise
 2. **Commands** define specific workflows
 3. **Agents** orchestrate parallel execution
-4. **MCPs/Direct Code** provide implementation flexibility
+4. **Direct Code** provides implementation flexibility
 
 This architecture:
 - ✅ Aligns perfectly with Anthropic's foundational framework

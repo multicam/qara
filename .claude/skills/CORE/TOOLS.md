@@ -281,7 +281,7 @@ curl -s https://example.com | fabric -p summarize
 
 **Purpose**: Google's open-source AI agent bringing Gemini 2.5 Pro directly into the terminal
 
-**Key Features**: 1M token context window, Google Search grounding, MCP support, multimodal capabilities, conversation checkpointing
+**Key Features**: 1M token context window, Google Search grounding, multimodal capabilities, conversation checkpointing
 
 **Installation**:
 
@@ -309,7 +309,6 @@ gemini -p "Explain this codebase"         # Non-interactive prompt
 gemini -m gemini-2.5-flash                # Use specific model
 gemini --output-format json               # JSON output
 gemini --resume latest                    # Resume previous session
-gemini mcp                                # Manage MCP servers
 ```
 
 **PAI Integration**: Alternative AI perspective, research tasks, multimodal analysis (PDFs/images),
@@ -323,7 +322,7 @@ complementary to Claude
 
 **Purpose**: Open-source conversational AI tool bringing xAI's Grok models into the terminal
 
-**Key Features**: Natural language interface, smart file operations, bash integration, MCP support, fast code editing
+**Key Features**: Natural language interface, smart file operations, bash integration, fast code editing
 (4,500+ tokens/sec), OpenAI-compatible API
 
 **Installation**:
@@ -334,7 +333,7 @@ bun add -g @vibe-kit/grok-cli
 
 **Version**: 1.0.1 (installed on system)
 
-**Why PAI Uses**: Access to Grok models (grok-4-latest, grok-code-fast-1), fast editing capabilities, MCP integration,
+**Why PAI Uses**: Access to Grok models (grok-4-latest, grok-code-fast-1), fast editing capabilities,
 complements Claude/Gemini
 
 **Authentication**: Requires xAI API key from X.AI
@@ -353,13 +352,10 @@ grok --prompt "show me the package.json"  # Headless/scripting mode
 grok --model grok-4-latest                # Use specific model
 grok --directory /path/to/project         # Set working directory
 grok --max-tool-rounds 50                 # Control tool usage
-grok mcp add NAME                         # Add MCP server
-grok mcp list                             # List MCP servers
 grok git                                  # Git operations with AI
 ```
 
-**PAI Integration**: Alternative AI perspective, fast code editing, scripting automation,
-MCP-based workflows
+**PAI Integration**: Alternative AI perspective, fast code editing, scripting automation
 
 **Documentation**: [github.com/superagent-ai/grok-cli](https://github.com/superagent-ai/grok-cli)
 
@@ -376,7 +372,7 @@ MCP-based workflows
 - **Key Difference**: Server runs continuously, handles multiple requests, manages model lifecycle
 
 **Key Features**: Local model execution (no cloud), model management (pull/push/list/rm), multimodal support
-(vision models), REST API, embedding generation, custom Modelfiles, GGUF/Safetensors import
+(vision models), REST API, embedding generation, custom Modelfiles, GGUF/Safetensors import, CLI integration
 
 **Installation**:
 
@@ -390,7 +386,7 @@ curl -fsSL https://ollama.com/install.sh | sh
 **Version**: 0.1.18 (installed on system)
 
 **Why PAI Uses**: Privacy-first local inference, no API costs, offline capability, supports multiple model families
-(Llama, Gemma, DeepSeek), MCP integration for local AI workflows
+(Llama, Gemma, DeepSeek), local AI workflows
 
 **System Requirements**: 8GB+ RAM recommended, GPU acceleration supported (NVIDIA CUDA, AMD ROCm, Apple Metal)
 
@@ -441,7 +437,7 @@ curl http://localhost:11434/api/chat -d '{
 - Vision: llava, bakllava
 
 **PAI Integration**: Local AI inference without cloud dependency, privacy-sensitive workloads, offline development,
-MCP server integration for local LLM tool use, cost-free experimentation
+cost-free experimentation
 
 **Documentation**: [github.com/ollama/ollama](https://github.com/ollama/ollama) |
 [ollama.com/library](https://ollama.com/library)
@@ -508,7 +504,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 **Installation**: `bun add -D @playwright/test`
 
-**PAI Usage**: Designer agent visual testing, UI/UX validation, Playwright MCP tools integration
+**PAI Usage**: Designer agent visual testing, UI/UX validation, Playwright tools integration
 
 ---
 

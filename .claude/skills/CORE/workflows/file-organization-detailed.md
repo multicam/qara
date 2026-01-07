@@ -16,7 +16,6 @@
 ├── bin/             # CLI tools and scripts (PERMANENT)
 ├── agents/          # Agent configurations (PERMANENT)
 ├── .env             # Environment variables (PERMANENT, PRIVATE)
-└── .mcp.json        # MCP configuration (PERMANENT)
 ```
 
 ---
@@ -50,7 +49,7 @@
 ```
 skills/
 ├── CORE/                 # Core identity and infrastructure
-├── system-mcp/           # MCP TypeScript wrappers
+├── brightdata/           # Web scraping with Bright Data
 ├── system-create-skill/  # Skill creation tooling
 └── [domain-skills]/      # Your custom skills
 ```
@@ -218,7 +217,7 @@ YYYY-MM-DD-HHMMSS_SESSION_short-description.md
 **Research:**
 ```
 YYYY-MM-DD_topic/
-2025-11-19_mcp-strategy-analysis/
+2025-11-19_api-strategy-analysis/
 ```
 
 ### Scratchpad Files

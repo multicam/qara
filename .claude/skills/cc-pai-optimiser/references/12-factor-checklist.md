@@ -16,7 +16,7 @@ grep -r "tools\|functions\|schema" "$PAI_PATH" --include="*.json" --include="*.m
 ```
 
 ### Optimization Signals
-- Missing: Add tool schema definitions to MCP config
+- Missing: Add tool schema definitions
 - Weak: Improve tool descriptions for better LLM selection
 
 ---
@@ -74,8 +74,8 @@ find "$PAI_PATH/.claude/context" -type d | head -20
 
 ### PAI Indicators
 ```bash
-# Check MCP tool definitions
-cat "$PAI_PATH/.mcp.json" 2>/dev/null | jq '.mcpServers | keys'
+# Check tool definitions
+grep -r "tools\|schema" "$PAI_PATH/.claude" --include="*.json"
 ```
 
 ### Optimization Signals

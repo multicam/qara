@@ -22,7 +22,6 @@ CACHE_AGE=30   # 30 seconds for more real-time updates
 # Count items from specified directories
 claude_dir="${PAI_DIR:-$HOME/.claude}"
 commands_count=0
-mcps_count=0
 fobs_count=0
 fabric_count=0
 
@@ -31,15 +30,8 @@ if [ -d "$claude_dir/commands" ]; then
     commands_count=$(ls -1 "$claude_dir/commands/"*.md 2>/dev/null | wc -l | tr -d ' ')
 fi
 
-# Count MCPs from .mcp.json (single parse)
-mcp_names_raw=""
-if [ -f "$claude_dir/.mcp.json" ]; then
-    mcp_data=$(jq -r '.mcpServers | keys | join(" "), length' "$claude_dir/.mcp.json" 2>/dev/null)
-    mcp_names_raw=$(echo "$mcp_data" | head -1)
-    mcps_count=$(echo "$mcp_data" | tail -1)
-else
-    mcps_count="0"
-fi
+# Count services from services directory
+services_names_raw=""
 
 # Count Services (optimized - count .md files directly)
 services_dir="${HOME}/Projects/FoundryServices/Services"
@@ -178,45 +170,21 @@ TOKENS_COLOR='\033[38;2;169;177;214m'
 SEPARATOR_COLOR='\033[38;2;140;152;180m'
 DIR_COLOR='\033[38;2;135;206;250m'
 
-# MCP colors
-MCP_DAEMON="$BRIGHT_BLUE"
-MCP_STRIPE="$LINE2_ACCENT"
-MCP_DEFAULT="$LINE2_PRIMARY"
+# Service colors
+SVC_PRIMARY="$BRIGHT_BLUE"
+SVC_SECONDARY="$LINE2_ACCENT"
+SVC_DEFAULT="$LINE2_PRIMARY"
 
 RESET='\033[0m'
 
-# Format MCP names efficiently
-mcp_names_formatted=""
-for mcp in $mcp_names_raw; do
-    case "$mcp" in
-        "daemon") formatted="${MCP_DAEMON}Daemon${RESET}" ;;
-        "stripe") formatted="${MCP_STRIPE}Stripe${RESET}" ;;
-        "httpx") formatted="${MCP_DEFAULT}HTTPx${RESET}" ;;
-        "brightdata") formatted="${MCP_DEFAULT}BrightData${RESET}" ;;
-        "naabu") formatted="${MCP_DEFAULT}Naabu${RESET}" ;;
-        "apify") formatted="${MCP_DEFAULT}Apify${RESET}" ;;
-        "content") formatted="${MCP_DEFAULT}Content${RESET}" ;;
-        "Ref") formatted="${MCP_DEFAULT}Ref${RESET}" ;;
-        "pai") formatted="${MCP_DEFAULT}Foundry${RESET}" ;;
-        "playwright") formatted="${MCP_DEFAULT}Playwright${RESET}" ;;
-        *) formatted="${MCP_DEFAULT}${mcp^}${RESET}" ;;
-    esac
+# Format service names (if any)
+services_formatted=""
 
-    if [ -z "$mcp_names_formatted" ]; then
-        mcp_names_formatted="$formatted"
-    else
-        mcp_names_formatted="$mcp_names_formatted${SEPARATOR_COLOR}, ${formatted}"
-    fi
-done
-
-# Output the full 3-line statusline
+# Output the full 2-line statusline
 # LINE 1 - PURPLE theme with all counts
-printf "${DA_DISPLAY_COLOR}${DA_NAME}${RESET}${LINE1_PRIMARY} here, running on ${MODEL_PURPLE}🧠 ${model_name}${RESET}${LINE1_PRIMARY} in ${DIR_COLOR}📁 ${dir_name}${RESET}${LINE1_PRIMARY}, wielding: ${RESET}${LINE1_PRIMARY}🔧 ${fobs_count} Services${RESET}${LINE1_PRIMARY}, ${RESET}${LINE1_PRIMARY}⚙️ ${commands_count} Commands${RESET}${LINE1_PRIMARY}, ${RESET}${LINE1_PRIMARY}🔌 ${mcps_count} MCPs${RESET}${LINE1_PRIMARY}, and ${RESET}${LINE1_PRIMARY}📚 ${fabric_count} Patterns${RESET}\n"
+printf "${DA_DISPLAY_COLOR}${DA_NAME}${RESET}${LINE1_PRIMARY} here, running on ${MODEL_PURPLE}🧠 ${model_name}${RESET}${LINE1_PRIMARY} in ${DIR_COLOR}📁 ${dir_name}${RESET}${LINE1_PRIMARY}, wielding: ${RESET}${LINE1_PRIMARY}🔧 ${fobs_count} Services${RESET}${LINE1_PRIMARY}, ${RESET}${LINE1_PRIMARY}⚙️ ${commands_count} Commands${RESET}${LINE1_PRIMARY}, and ${RESET}${LINE1_PRIMARY}📚 ${fabric_count} Patterns${RESET}\n"
 
-# LINE 2 - BLUE theme with MCP names
-printf "${LINE2_PRIMARY}🔌 MCPs${RESET}${LINE2_PRIMARY}${SEPARATOR_COLOR}: ${RESET}${mcp_names_formatted}${RESET}\n"
-
-# LINE 3 - GREEN theme with tokens and cost (show cached or N/A)
+# LINE 2 - GREEN theme with tokens and cost (show cached or N/A)
 # If we have cached data but it's empty, still show N/A
 tokens_display="${daily_tokens:-N/A}"
 cost_display="${daily_cost:-N/A}"

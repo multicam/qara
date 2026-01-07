@@ -196,44 +196,10 @@ function analyzeAgentConfiguration(paiPath) {
 function analyzeToolIntegration(paiPath) {
     const results = {
         score: 0,
-        maxScore: 15,
+        maxScore: 10,
         findings: [],
         recommendations: []
     };
-
-    // Check MCP configuration
-    const mcpPath = join(paiPath, '.mcp.json');
-    if (existsSync(mcpPath)) {
-        results.score += 5;
-        try {
-            const mcp = JSON.parse(readFileSync(mcpPath, 'utf-8'));
-            const serverCount = Object.keys(mcp.mcpServers || {}).length;
-            results.findings.push(`✅ MCP configured with ${serverCount} servers`);
-
-            // Check for descriptions
-            const servers = mcp.mcpServers || {};
-            let withDescriptions = 0;
-            for (const [name, config] of Object.entries(servers)) {
-                if (config.description) {
-                    withDescriptions++;
-                } else {
-                    results.findings.push(`⚠️  MCP server '${name}' missing description`);
-                }
-            }
-
-            if (withDescriptions === serverCount && serverCount > 0) {
-                results.score += 5;
-                results.findings.push('✅ All MCP servers have descriptions');
-            } else {
-                results.recommendations.push('Add descriptions to all MCP servers for better tool selection');
-            }
-        } catch (e) {
-            results.findings.push('❌ Invalid .mcp.json format');
-            results.recommendations.push('Fix .mcp.json JSON syntax');
-        }
-    } else {
-        results.findings.push('⚪ No .mcp.json (MCP is optional)');
-    }
 
     // Check for tools documentation
     const toolsContext = join(paiPath, '.claude', 'context', 'tools');
@@ -242,6 +208,16 @@ function analyzeToolIntegration(paiPath) {
         results.findings.push('✅ Tools context documentation exists');
     } else {
         results.recommendations.push('Create .claude/context/tools/ for tool documentation');
+    }
+
+    // Check for skills/rules definitions
+    const rulesPath = join(paiPath, '.claude', 'rules');
+    if (existsSync(rulesPath)) {
+        const rules = readdirSync(rulesPath).filter(f => f.endsWith('.md'));
+        results.score += 5;
+        results.findings.push(`✅ Found ${rules.length} skill/rule definitions`);
+    } else {
+        results.findings.push('⚪ No .claude/rules/ directory (skills are optional)');
     }
 
     return results;

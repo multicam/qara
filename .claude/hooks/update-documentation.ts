@@ -153,9 +153,6 @@ function analyzeChanges(fileChanges: FileChange[]): ChangeAnalysis {
     } else if (path === 'package.json' || path === 'bun.lockb') {
       if (!affectedAreas.has('dependencies')) affectedAreas.set('dependencies', []);
       affectedAreas.get('dependencies')!.push(change);
-    } else if (path === '.mcp.json') {
-      if (!affectedAreas.has('mcp-servers')) affectedAreas.set('mcp-servers', []);
-      affectedAreas.get('mcp-servers')!.push(change);
     } else if (path === 'settings.json') {
       if (!affectedAreas.has('settings')) affectedAreas.set('settings', []);
       affectedAreas.get('settings')!.push(change);

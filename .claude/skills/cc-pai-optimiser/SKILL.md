@@ -55,7 +55,6 @@ Compare PAI implementation against CC capabilities:
 |------------|----------------|---------------------|
 | Subagents | `.claude/` config | Missing parallel execution patterns |
 | Checkpoints | `/rewind` usage | No rollback safety nets |
-| MCP Servers | `.mcp.json` | Underutilized tool integrations |
 | Hooks | `hooks/` directory | Missing automation triggers |
 | Skills | `.claude/rules/` | No reusable skill definitions |
 | Plan Mode | Agent configs | Missing planning phase |
@@ -135,9 +134,6 @@ analyze_pai() {
   echo "## Context Files"
   find "$pai_path" -name "CLAUDE.md" -exec wc -l {} \;
   
-  # MCP configuration
-  echo "## MCP Config"
-  cat "$pai_path/.mcp.json" 2>/dev/null || echo "No MCP config"
 }
 ```
 

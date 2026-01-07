@@ -61,7 +61,6 @@ ${PAI_DIR}/skills/CORE/SKILL-STRUCTURE-AND-ROUTING.md
 - State management?
 - Tool integration?
 - Agent integration?
-- MCP integration?
 
 **Type 5: Fix Compliance Issues**
 - What issues identified (from validate-skill)?
@@ -497,9 +496,9 @@ ${PAI_DIR}/skills/[skill-name]/.backup-[timestamp]/
 
 ---
 
-### Pattern 4: Adding Integration (MCP/Agent)
+### Pattern 4: Adding Integration (Agent/External Service)
 
-**Scenario:** Add MCP integration to existing skill
+**Scenario:** Add agent or external service integration to existing skill
 
 **Steps:**
 1. Document integration in SKILL.md Extended Context

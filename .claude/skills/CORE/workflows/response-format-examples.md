@@ -32,10 +32,10 @@
 Weather lookup not possible without API access.
 
 🔍 ANALYSIS
-No weather API configured in Qara system. Checked available MCP servers and tools - no weather data source available.
+No weather API configured in Qara system. Checked available tools - no weather data source available.
 
 ⚡ ACTIONS
-- Reviewed .mcp.json configuration
+- Reviewed configuration
 - Checked for weather-related tools
 - Verified no weather API keys in environment
 
@@ -43,19 +43,19 @@ No weather API configured in Qara system. Checked available MCP servers and tool
 Confirmed no weather data source available in current configuration.
 
 📊 STATUS
-Cannot provide weather without external API. Would need to add OpenWeather, WeatherAPI, or similar service to MCP configuration.
+Cannot provide weather without external API. Would need to add OpenWeather, WeatherAPI, or similar service.
 
 📁 CAPTURE
-Weather requests require API setup: Add weather service to ~/.claude/.mcp.json with API key, or use web browser for weather lookups.
+Weather requests require API setup: Add weather service with API key, or use web browser for weather lookups.
 
 ➡️ NEXT
 Options:
 1. Accept limitation - use browser/phone for weather
-2. Add weather API to MCP configuration (requires API key)
-3. Use system-mcp skill with web scraping (less reliable)
+2. Add weather API configuration (requires API key)
+3. Use web scraping (less reliable)
 
 📖 STORY EXPLANATION
-Jean-Marc asked about weather, but Qara doesn't have weather API access configured in the MCP servers. To enable weather lookups, would need to add a weather API service (like OpenWeather or WeatherAPI) to the .mcp.json configuration file with an appropriate API key. This is a common request that could be worth setting up if weather data is frequently needed. Current workaround is to use a web browser or phone app directly for weather information. The system is designed to be extended with new APIs as needed through the MCP configuration system.
+Jean-Marc asked about weather, but Qara doesn't have weather API access configured. To enable weather lookups, would need to add a weather API service (like OpenWeather or WeatherAPI) with an appropriate API key. This is a common request that could be worth setting up if weather data is frequently needed. Current workaround is to use a web browser or phone app directly for weather information. The system is designed to be extended with new APIs as needed through the configuration system.
 
 🎯 COMPLETED
 Weather lookup unavailable - requires API configuration to enable.

@@ -474,10 +474,10 @@ Open the generated image and check ALL criteria:
 
 ## Example Scenarios
 
-### Example 1: MCP Architecture
-**Components:** Client app, MCP server, LLM, Resources
+### Example 1: Service Architecture
+**Components:** Client app, API server, LLM, Resources
 **Layout:** Horizontal flow
-**Color:** Purple on MCP server (key component), Teal on connection arrows
+**Color:** Purple on API server (key component), Teal on connection arrows
 **Aspect:** 16:9 (horizontal flow)
 
 ### Example 2: Data Pipeline

@@ -228,7 +228,6 @@
 | `extract_poc` | Proof-of-concept code | PoC code |
 | `extract_ctf_writeup` | CTF challenge writeup | Writeup text |
 | `extract_domains` | Domain names from text | Domain list |
-| `extract_mcp_servers` | MCP server information | Server list |
 | `extract_videoid` | YouTube video IDs | Video ID list |
 
 ### Problem/Solution

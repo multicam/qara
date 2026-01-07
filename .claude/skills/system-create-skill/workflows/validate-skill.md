@@ -272,17 +272,6 @@ find ${PAI_DIR}/skills/[skill-name]/ -name "*.md" -type f
 
 ### Step 7: Integration Validation
 
-**Check mcp_settings.json registration:**
-```bash
-grep -A 3 '"[skill-name]"' ${PAI_DIR}/mcp_settings.json
-```
-
-**Validation:**
-- [ ] Skill registered in mcp_settings.json
-- [ ] Description field present
-- [ ] USE WHEN triggers in description
-- [ ] Location set to "user"
-
 **Check for CORE duplication:**
 - [ ] Skill doesn't duplicate CORE context
 - [ ] References CORE instead of copying
@@ -427,10 +416,6 @@ grep -A 3 '"[skill-name]"' ${PAI_DIR}/mcp_settings.json
 
 ### 5. Integration: [X/10]
 
-**Registration:**
-- mcp_settings.json: [✅/❌]
-- Description quality: [Good/Needs Improvement]
-
 **CORE Duplication:**
 - [✅ No duplication / ❌ Duplication found]
 
@@ -539,7 +524,6 @@ All validation based on:
 - No critical issues
 - Workflow Routing section present and FIRST
 - All workflows routed
-- Registered in mcp_settings.json
 
 ---
 

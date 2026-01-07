@@ -406,11 +406,11 @@ Create a comprehensive report that:
 
 ## 🚧 HANDLING BLOCKED OR FAILED CRAWLS
 
-If research commands report being blocked, encountering CAPTCHAs, or facing bot detection, note this in your synthesis and recommend using:
-- `mcp__Brightdata__scrape_as_markdown` - Scrape single URLs that bypass bot detection
-- `mcp__Brightdata__scrape_batch` - Scrape multiple URLs (up to 10)
-- `mcp__Brightdata__search_engine` - Search Google, Bing, or Yandex with CAPTCHA bypass
-- `mcp__Brightdata__search_engine_batch` - Multiple search queries simultaneously
+If research commands report being blocked, encountering CAPTCHAs, or facing bot detection, note this in your synthesis and recommend using the BrightData CLI or retrieve workflow for:
+- Scraping single URLs that bypass bot detection
+- Scraping multiple URLs (up to 10)
+- Searching Google, Bing, or Yandex with CAPTCHA bypass
+- Multiple search queries simultaneously
 
 ## 💡 EXAMPLE EXECUTION
 

@@ -126,7 +126,6 @@ Every created/updated skill must pass:
    - Examples provided
 
 4. **Integration Validation**
-   - Registered in mcp_settings.json
    - No duplication of CORE context
    - Compatible with agent workflows
 
@@ -140,7 +139,7 @@ Ask user to clarify:
 - **What does this skill do?** (Core capability)
 - **When should it activate?** (Trigger patterns)
 - **What workflows does it need?** (Count and categories)
-- **What integrations?** (MCPs, agents, external services)
+- **What integrations?** (Agents, external services)
 
 ### Step 2: Choose Archetype
 
@@ -234,22 +233,7 @@ Run through quality gates:
 - ✅ Examples provided?
 - ✅ Naming conventions followed?
 
-### Step 6: Register Skill
-
-Add to `${PAI_DIR}/mcp_settings.json`:
-
-```json
-{
-  "skills": {
-    "skill-name": {
-      "description": "Brief description. USE WHEN user says 'trigger', 'pattern', or requests 'task type'.",
-      "location": "user"
-    }
-  }
-}
-```
-
-### Step 7: Test Activation
+### Step 6: Test Activation
 
 Verify skill activates with natural language triggers from description.
 
@@ -393,7 +377,7 @@ Before considering a skill complete, verify:
 - [ ] Related workflows linked
 
 **Integration:**
-- [ ] Registered in mcp_settings.json
+- [ ] Registered in skills directory
 - [ ] No duplication of CORE context
 - [ ] Compatible with existing skills
 - [ ] Tested activation with natural language
@@ -464,8 +448,7 @@ Before considering a skill complete, verify:
    - When to Activate section (8-category pattern)
    - Main body with workflow description
 5. Validate against quality checklist
-6. Register in mcp_settings.json
-7. Test activation: "generate API docs for my service"
+6. Test activation: "generate API docs for my service"
 
 ### Example 2: Creating a Standard Skill
 

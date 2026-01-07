@@ -1,12 +1,12 @@
 ---
 title: CSE5 - Create Story Explanation (5-Line)
-description: Generate clean 5-line story explanations from content using Foundry MCP
+description: Generate clean 5-line story explanations from content
 type: prompt
 ---
 
 # CSE5 - Create Story Explanation (5-Line)
 
-This command creates clean, scannable 5-line story explanations from blog posts, articles, or any content using the Foundry MCP service.
+This command creates clean, scannable 5-line story explanations from blog posts, articles, or any content.
 
 ## When to Use This Command
 
@@ -32,8 +32,8 @@ This command creates clean, scannable 5-line story explanations from blog posts,
    - First run: `fabric -y <URL>` to fetch the content
    - Use the fetched content as input for step 2
 
-2. **Call Foundry MCP** - Use the `mcp__Foundry__create-story-explanation-5` tool with the input content
-3. **Parse the output** - Take the detailed explanation from Foundry
+2. **Apply Story Explanation Format** - Create a detailed story explanation from the content
+3. **Parse the output** - Identify the 5 key points
 4. **Reformat to 5 lines** - Convert to clean, numbered, scannable format
 5. **Output the result** - Display the 5-line explanation
 
@@ -68,14 +68,12 @@ The output must be exactly 5 lines, numbered, with one clear concept per line:
    - If URL: Run `fabric -y <URL>` to fetch content
    - Store fetched content as input for next step
 
-2. **Call Foundry MCP Service**:
-   ```
-   Use mcp__Foundry__create-story-explanation-5 with the input content
-   (Either direct content or content fetched from URL)
-   ```
+2. **Apply Story Explanation Format**:
+   - Analyze the content (either direct content or content fetched from URL)
+   - Create a detailed story explanation
 
 3. **Analyze the Output**:
-   - Read the full explanation from Foundry
+   - Review the full explanation
    - Identify the 5 key points
    - Determine the logical flow
 
@@ -113,8 +111,7 @@ Or provide content and say "run CSE5 on this" or "explain this in 5 lines"
 
 ## Notes
 
-- The Foundry service does the heavy lifting of understanding the story
-- Your job is to reformat it into the clean 5-line structure
+- Understand the story and reformat it into the clean 5-line structure
 - Focus on making it scannable and digestible
 - Each line should be self-contained but flow with the others
 - Keep it simple - no jargon unless necessary

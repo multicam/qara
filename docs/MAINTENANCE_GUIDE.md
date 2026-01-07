@@ -64,7 +64,7 @@ This guide establishes ongoing maintenance procedures to:
 grep -r "\.md" .claude/skills/CORE/ --include="*.md" | grep -v "^Binary" | wc -l
 
 # Verify no broken references to deleted files
-grep -r "cli-first-architecture\|agent-protocols\|delegation-patterns\|TESTING\.md\|playwright-config\|mcp-strategy" .claude/skills/CORE/
+grep -r "cli-first-architecture\|agent-protocols\|delegation-patterns\|TESTING\.md\|playwright-config" .claude/skills/CORE/
 ```
 
 ---

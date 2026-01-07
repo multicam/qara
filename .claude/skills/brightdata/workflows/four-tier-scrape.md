@@ -13,7 +13,7 @@
 - WebFetch tool (built-in)
 - Bash tool for curl commands
 - Browser automation capability (Playwright)
-- Bright Data MCP available
+- Bright Data API available
 
 ---
 
@@ -131,13 +131,13 @@ curl -L -A "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (
 
 ---
 
-### Step 4: Tier 4 - Bright Data MCP (Professional Scraping)
+### Step 4: Tier 4 - Bright Data (Professional Scraping)
 
-**Description:** Use Bright Data MCP's professional scraping service with bot detection bypass
+**Description:** Use Bright Data's professional scraping service with bot detection bypass
 
 **Actions:**
 ```
-Use mcp__Brightdata__scrape_as_markdown tool with:
+Use Bright Data scrape_as_markdown API with:
 - URL: [user-provided URL]
 ```
 
@@ -230,7 +230,7 @@ Success? → Yes → Return content ✓
   ↓
   No
   ↓
-Attempt Tier 4 (Bright Data MCP)
+Attempt Tier 4 (Bright Data)
   ↓
 Success? → Yes → Return content ✓
   ↓
@@ -359,7 +359,7 @@ Process:
 
 Output:
 ```markdown
-Successfully retrieved content from https://protected-site.com using Tier 4 (Bright Data MCP)
+Successfully retrieved content from https://protected-site.com using Tier 4 (Bright Data)
 
 Note: This site has advanced bot detection and CAPTCHA. Content was retrieved using professional scraping service.
 
@@ -380,7 +380,7 @@ Process:
 
 Output:
 ```markdown
-Retrieved content from https://any-site.com using Tier 4 (Bright Data MCP) as requested
+Retrieved content from https://any-site.com using Tier 4 (Bright Data) as requested
 
 [Content...]
 ```

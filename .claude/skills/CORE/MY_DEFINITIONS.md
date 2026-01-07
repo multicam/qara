@@ -157,8 +157,8 @@ Build tools that work perfectly without AI, then add AI to make them easier to u
 
 **Components**:
 - Skills system
-- MCP integrations
 - Claude Code integration
+- CLI tools
 - [Other components]
 
 **Goals**:

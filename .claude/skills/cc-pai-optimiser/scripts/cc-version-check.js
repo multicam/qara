@@ -27,7 +27,6 @@ const FEATURE_REQUIREMENTS = {
     enterpriseSettings: { minVersion: '2.0.53', description: 'Managed enterprise configurations' },
 
     // Older but important
-    mcpServers: { minVersion: '0.2.0', description: 'Model Context Protocol integrations' },
     bedrockSupport: { minVersion: '0.2.0', description: 'AWS Bedrock integration' },
     vertexSupport: { minVersion: '0.2.0', description: 'Google Vertex AI integration' }
 };
@@ -74,9 +73,6 @@ function checkPAIFeatureUsage(paiPath) {
 
     // Check for skills
     usage.skills = existsSync(join(paiPath, '.claude', 'rules'));
-
-    // Check for MCP config
-    usage.mcpServers = existsSync(join(paiPath, '.mcp.json'));
 
     // Check for commands (implies planning/workflow)
     usage.planMode = existsSync(join(paiPath, '.claude', 'commands'));

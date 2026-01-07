@@ -7,14 +7,12 @@
   "_comment_5": "Copy this to settings.json and customize for your environment.",
   "_comment_6": "",
   "_comment_7": "IMPORTANT: Update these values:",
-  "_comment_8": "  - MCP_API_KEY: Your actual MCP API key",
-  "_comment_9": "  - PAI_DIR: Absolute path to your .claude directory (e.g., /home/username/.claude)",
-  "_comment_10": "  - DA: Your digital assistant name",
-  "_comment_11": "  - NOTE: PAI_DIR must be an ABSOLUTE path, not $HOME or ~",
-  "_comment_12": "=================================================================",
+  "_comment_8": "  - PAI_DIR: Absolute path to your .claude directory (e.g., /home/username/.claude)",
+  "_comment_9": "  - DA: Your digital assistant name",
+  "_comment_10": "  - NOTE: PAI_DIR must be an ABSOLUTE path, not $HOME or ~",
+  "_comment_11": "=================================================================",
 
   "env": {
-    "MCP_API_KEY": "your_mcp_api_key_here",
     "DA": "Qara",
     "PAI_DIR": "/home/username/.claude",
     "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "64000",
@@ -37,8 +35,7 @@
       "NotebookEdit(*)",
       "TodoWrite(*)",
       "ExitPlanMode(*)",
-      "Task(*)",
-      "mcp__*"
+      "Task(*)"
     ],
     "deny": [
       "Bash(diskutil partitionDisk)",
@@ -75,8 +72,6 @@
     ]
   },
 
-  "enableAllProjectMcpServers": true,
-  "enabledMcpjsonServers": [],
 
   "_hooks_comment_1": "=================================================================",
   "_hooks_comment_2": "HOOKS CONFIGURATION - Complete set of PAI lifecycle hooks",

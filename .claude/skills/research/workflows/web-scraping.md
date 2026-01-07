@@ -1,6 +1,6 @@
 # Web Scraping Workflow
 
-Web scraping and crawling using WebFetch for simple pages, BrightData MCP for CAPTCHA/blocking, and Apify MCP for social media. Includes HTML parsing, rate limiting, and best practices for ethical scraping.
+Web scraping and crawling using WebFetch for simple pages, BrightData for CAPTCHA/blocking, and Apify for social media. Includes HTML parsing, rate limiting, and best practices for ethical scraping.
 
 ## 🎯 Load Full PAI Context
 
@@ -25,8 +25,8 @@ This provides access to:
 ## Decision Tree
 
 1. **Simple pages?** → Use WebFetch first
-2. **CAPTCHA/blocking?** → Use BrightData MCP (`mcp__brightdata__*`)
-3. **Social media?** → Use Apify MCP
+2. **CAPTCHA/blocking?** → Use BrightData CLI or retrieve workflow
+3. **Social media?** → Use Apify or specialized scrapers
 
 ## Common Tasks
 
@@ -68,4 +68,3 @@ This provides access to:
 
 ## Supplementary Resources
 For advanced scraping: `read ${PAI_DIR}/docs/web-scraping-advanced.md`
-For MCP tools: `read ${PAI_DIR}/docs/mcp-servers-reference.md`

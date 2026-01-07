@@ -308,11 +308,11 @@ read ${PAI_DIR}/context/unsupervised-learning/CLAUDE.md
 read ${PAI_DIR}/context/tools/CLAUDE.md
 ```
 
-**AGENT:** designer 
+**AGENT:** designer
 
 **SPECIAL INSTRUCTIONS:**
 - Use Task tool with subagent_type="designer" for visual testing
-- Use Playwright MCP tools for browser automation
+- Use Playwright for browser automation
 
 ### 10. Capture Learning - Problem/Solution Documentation
 

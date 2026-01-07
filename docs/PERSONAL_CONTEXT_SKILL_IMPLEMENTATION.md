@@ -216,7 +216,6 @@ description: |
 **Action**:
 ```bash
 # Search through Jean-Marc's published content
-# May require specific content search tool/MCP
 # Document implementation when available
 ```
 

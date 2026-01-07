@@ -102,7 +102,6 @@ fi
 ### Medium Priority (Productivity)
 - New slash commands
 - UI/UX improvements
-- MCP server updates
 - Hook system changes
 
 ### Lower Priority (Nice-to-have)

@@ -11,15 +11,15 @@ This skill implements a four-tier progressive web scraping system that automatic
 1. **Tier 1: WebFetch** - Built-in Claude Code tool (~2-5 seconds, free)
 2. **Tier 2: cURL + Headers** - Chrome-like browser headers (~3-7 seconds, free)
 3. **Tier 3: Browser Automation** - Full Playwright execution (~10-20 seconds, free)
-4. **Tier 4: Bright Data MCP** - Professional scraping service (~5-15 seconds, paid)
+4. **Tier 4: Bright Data** - Professional scraping service (~5-15 seconds, paid)
 
 The system automatically tries each tier in order, only escalating when the previous tier fails.
 
 ## Setup Requirements
 
-### 1. Install Bright Data MCP Server
+### 1. Bright Data API Configuration
 
-To use Tier 4 (Bright Data MCP), you need to install the Bright Data MCP server and configure your API key.
+To use Tier 4 (Bright Data), you need a Bright Data API key.
 
 **Step 1: Get Bright Data API Key**
 
@@ -31,34 +31,9 @@ To use Tier 4 (Bright Data MCP), you need to install the Bright Data MCP server 
 
 Full documentation: [Bright Data API Documentation](https://docs.brightdata.com/api-reference/web-scraper/introduction)
 
-**Step 2: Configure MCP Server**
+**Step 2: Configure API Token**
 
-Add the Bright Data MCP server to your Claude Code MCP configuration file (`.claude/.mcp.json` or `${PAI_DIR}/.mcp.json`):
-
-```json
-{
-  "mcpServers": {
-    "brightdata": {
-      "command": "bunx",
-      "args": [
-        "-y",
-        "@brightdata/mcp"
-      ],
-      "env": {
-        "API_TOKEN": "your_bright_data_api_token_here"
-      }
-    }
-  }
-}
-```
-
-**Step 3: Restart Claude Code**
-
-After adding the MCP server configuration, restart Claude Code to load the Bright Data MCP server.
-
-**Verify Installation:**
-
-Once Claude Code restarts, the `mcp__Brightdata__scrape_as_markdown` tool will be available. You can verify by asking Claude Code to list available MCP tools.
+Set the `BRIGHT_DATA_API_TOKEN` environment variable in your `.env` file or shell configuration.
 
 ### 2. Browser Automation (Optional)
 
@@ -76,7 +51,7 @@ npx playwright install
 
 ## Usage
 
-Once configured, simply ask Claude Code to scrape URLs:
+Once configured, simply ask to scrape URLs:
 
 ```
 "Scrape this URL"

@@ -142,14 +142,13 @@ Skills are more than documentation - they are active orchestrators:
 
 For detailed implementation, see the reference files below. This section provides the conceptual overview.
 
-### The Four Primitives
+### The Three Primitives
 
 | Primitive | Purpose | When to Use |
 |-----------|---------|-------------|
 | **Skills** | Meta-containers for domain expertise | Need competence in topic/domain |
 | **Commands** | Discrete task workflows within skills | Repeatable task with clear steps |
 | **Agents** | Autonomous task executors | Need specialized expertise or parallel execution |
-| **MCPs** | External tool integrations | Need external API access |
 
 ### Progressive Disclosure (3-Tier Context)
 
@@ -159,14 +158,9 @@ For detailed implementation, see the reference files below. This section provide
 | **Tier 2** | SKILL.md body | When skill activates |
 | **Tier 3** | Reference files | Just-in-time when needed |
 
-### Two-Tier MCP Strategy
-
-- **Tier 1 (Discovery):** Use MCP to explore APIs
-- **Tier 2 (Production):** Build TypeScript CLI wrapper for repeated use
-
 ---
 
-## The Ten Commandments
+## The Nine Commandments
 
 1. **Command Line First** - Build CLI tools before AI wrappers
 2. **Deterministic Code First** - Same input always produces same output
@@ -174,10 +168,9 @@ For detailed implementation, see the reference files below. This section provide
 4. **Progressive Disclosure** - Load context only when needed (3 tiers)
 5. **Skills-as-Containers** - Package expertise with routing and workflows
 6. **System Prompt Routing** - Natural language triggers automatic skill activation
-7. **Two-Tier MCP Strategy** - Discovery via MCP, production via TypeScript
-8. **The Four Primitives** - Skills, Commands, Agents, MCPs work together
-9. **Test-Driven Development** - All tools tested independently before AI integration
-10. **Quality Gates** - Never skip validation steps before declaring completion
+7. **The Three Primitives** - Skills, Commands, Agents work together
+8. **Test-Driven Development** - All tools tested independently before AI integration
+9. **Quality Gates** - Never skip validation steps before declaring completion
 
 ---
 
@@ -188,7 +181,7 @@ For detailed implementation, see the reference files below. This section provide
 2. Will this be called >10 times? (If yes → make it deterministic)
 3. Does this need AI? (AI should orchestrate, not implement)
 4. What's the routing trigger? (Define in skill description)
-5. Where does this fit? (Skill, Command, Agent, or MCP?)
+5. Where does this fit? (Skill, Command, or Agent?)
 6. How do I test this? (Write tests before implementation)
 7. What tier is this context? (System prompt, SKILL.md, or reference file?)
 
@@ -203,7 +196,6 @@ For detailed implementation, see the reference files below. This section provide
 | Skill structure patterns | `SKILL-STRUCTURE-AND-ROUTING.md` |
 | CLI-First implementation | `cli-first-guide.md` |
 | CLI-First examples | `cli-first-examples.md` |
-| MCP strategy | `mcp-guide.md` |
 | Testing guide | `testing-guide.md` |
 | Security protocols | `security-protocols.md` |
 | Agent system | `agent-guide.md` |

@@ -908,7 +908,7 @@ Level 4: Loads sdd-specify.md → Creates spec first
 ### Website Management
 - get-analytics.md - Fetch Cloudflare analytics
 - search-content.md - Search published content
-- sync-content.md - Sync content to MCP vector database
+- sync-content.md - Sync content to vector database
 - troubleshoot-cloudflare.md - Debug deployment issues
 
 ### Security
@@ -920,7 +920,7 @@ Level 4: Loads sdd-specify.md → Creates spec first
 - observability/check-metrics.md - View system metrics
 
 ### Configuration
-- create-cloudflare-mcp.md - Create new MCP server
+- create-cloudflare-integration.md - Create new Cloudflare integration
 - update-qara-repo.md - Commit and push changes
 ```
 

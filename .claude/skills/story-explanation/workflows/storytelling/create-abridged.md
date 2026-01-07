@@ -33,8 +33,8 @@ This command creates ultra-concise 5-line story explanations (5-12 words per lin
    - **URL**: Run `fabric -y <URL>` to fetch web content
    - **Raw Text**: Use directly as input
 
-3. **Process with Foundry MCP**:
-   - Call `mcp__Foundry__create-story-explanation-5` with the fetched/provided content
+3. **Process Content**:
+   - Apply the 5-line story explanation format to the fetched/provided content
 
 4. **Output**: Display the 5-line explanation with strict word limits
 
@@ -89,18 +89,14 @@ fabric -y <URL>
 **For Raw Text**:
 - Use the provided text directly
 
-### Step 3: Call Foundry MCP Service
+### Step 3: Apply Story Explanation Format
 
-```
-Use mcp__Foundry__create-story-explanation-5 with:
-{
-  "input": "[fetched content or raw text]"
-}
-```
+- Analyze the content to identify key narrative points
+- Create 5 lines following the structure: Setup, Background, Main Point, Implication, Impact
+- Ensure each line is 5-12 words
 
 ### Step 4: Format Output
 
-- Take the result from Foundry MCP
 - Verify each line is 5-12 words
 - Ensure proper formatting (line breaks, periods)
 - Output the clean 5-line format
@@ -117,7 +113,7 @@ Use mcp__Foundry__create-story-explanation-5 with:
 **Process**:
 1. Detect: YouTube URL
 2. Fetch: `yt --transcript https://youtube.com/watch?v=abc123`
-3. Process: Send transcript to Foundry MCP
+3. Process: Apply 5-line story explanation format
 4. Output: 5-line explanation
 
 ### Example 2: Article URL
@@ -130,7 +126,7 @@ Use mcp__Foundry__create-story-explanation-5 with:
 **Process**:
 1. Detect: Regular URL
 2. Fetch: `fabric -y https://example.com/article`
-3. Process: Send content to Foundry MCP
+3. Process: Apply 5-line story explanation format
 4. Output: 5-line explanation
 
 ### Example 3: Raw Text
@@ -143,7 +139,7 @@ Use mcp__Foundry__create-story-explanation-5 with:
 **Process**:
 1. Detect: Raw text
 2. Skip fetch: Use text directly
-3. Process: Send text to Foundry MCP
+3. Process: Apply 5-line story explanation format
 4. Output: 5-line explanation
 
 ## Output Example
@@ -187,8 +183,7 @@ It means consciousness might not require biological brains after all.
 
 ## Notes
 
-- The Foundry MCP service handles the AI processing
-- Your job is to detect input type, fetch content, and format output
+- Detect input type, fetch content, and format output
 - Focus on the 5-12 word limit per line - this is non-negotiable
 - Use Daniel's voice: casual, direct, conversational
 - No flowery language or journalistic clichés

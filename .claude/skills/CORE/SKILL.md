@@ -57,11 +57,6 @@ description: |
   → **READ:** ${PAI_DIR}/skills/CORE/delegation-guide.md
   → **EXECUTE:** Deploy multiple parallel intern agents with full context and spotcheck
 
-  **When user requests switching MCP profiles:**
-  Examples: "switch MCP", "change MCP profile", "load chrome MCP", "swap MCP profile"
-  → **READ:** ${PAI_DIR}/skills/CORE/workflows/mcp-profile-management.md
-  → **EXECUTE:** MCP profile switching and restart workflow
-
   **When user requests merge conflict resolution or complex decisions:**
   Examples: "merge conflict", "complex decision", "trade-offs", "/plan mode for this"
   → **READ:** ${PAI_DIR}/skills/CORE/workflows/merge-conflict-resolution.md
@@ -105,7 +100,6 @@ description: |
 **Configuration & Systems:**
 - `hook-system.md` - Hook configuration | Triggers: "hooks configuration", "create custom hooks"
 - `history-system.md` - UOCS automatic documentation | Canonical: `${PAI_DIR}/history/CLAUDE.md` | Triggers: "history system", "capture system"
-- `mcp-guide.md` - MCP strategy and architecture | Triggers: "MCP strategy", "when to use MCP", "MCP vs CLI"
 - `terminal-tabs.md` - Terminal tab management
 - `macos-fixes.md` - macOS-specific fixes
 
@@ -115,7 +109,7 @@ description: |
 - `security-protocols.md` - Security guide | See security section below for critical always-active rules
 
 **Workflows:**
-- `workflows/` - Operational procedures (git, delegation, MCP, blog deployment, etc.)
+- `workflows/` - Operational procedures (git, delegation, blog deployment, etc.)
 
 ---
 
@@ -176,14 +170,6 @@ description: |
 - Breaking down complex tasks into parallel subtasks
 - Implementing spotcheck patterns
 - Scaling delegation strategies
-
-### Integration & Tools
-
-**MCP Strategy** → READ `mcp-guide.md` when:
-- Deciding between MCP server vs CLI wrapper
-- Jean-Marc mentions MCP or asks about integration strategy
-- Migrating from MCP to production CLI
-- Setting up Tier 1 (discovery) vs Tier 2 (production) tools
 
 **Personal Context** → READ `MY_DEFINITIONS.md` when:
 - Jean-Marc uses terms that might have specific definitions

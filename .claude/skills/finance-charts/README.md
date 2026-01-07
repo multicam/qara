@@ -184,9 +184,8 @@ echo "ALPHA_VANTAGE_API_KEY=your_key_here" >> ~/.claude/.env
 echo "POLYGON_API_KEY=your_key_here" >> ~/.claude/.env
 ```
 
-### 5. Register in MCP Settings (If Required)
+### 5. Skill Registration
 
-Check if `mcp_settings.json` exists and requires skill registration.
 The skill should auto-activate based on natural language patterns in SKILL.md.
 
 ---

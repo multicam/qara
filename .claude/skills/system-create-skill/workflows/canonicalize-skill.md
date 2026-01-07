@@ -127,7 +127,7 @@ find ${PAI_DIR}/skills/[skill-name]/ -name "*.md" ! -path "*/workflows/*"
 **Extract and preserve:**
 - All workflow content (steps, tools, commands)
 - All domain knowledge and context
-- All integration points (MCPs, agents, external services)
+- All integration points (agents, external services)
 - All examples and use cases
 - All reference documentation
 - Special configurations or state

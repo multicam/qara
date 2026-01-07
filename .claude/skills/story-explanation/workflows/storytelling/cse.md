@@ -1,6 +1,6 @@
 # CSE - Create Story Explanation
 
-This command creates comprehensive story explanations from blog posts, articles, or any content using the Foundry MCP service.
+This command creates comprehensive story explanations from blog posts, articles, or any content.
 
 ## When to Use This Command
 
@@ -26,8 +26,8 @@ This command creates comprehensive story explanations from blog posts, articles,
    - First run: `fabric -y <URL>` to fetch the content
    - Use the fetched content as input for step 2
 
-2. **Call Foundry MCP** - Use the `mcp__Foundry__create_story_explanation` tool with the input content
-3. **Receive the explanation** - Get the detailed narrative explanation from Foundry
+2. **Apply Story Explanation Format** - Create a detailed narrative explanation from the content
+3. **Receive the explanation** - Generate the detailed narrative explanation
 4. **Output the result** - Display the full story explanation
 
 ## Output Format
@@ -56,14 +56,12 @@ The output is a comprehensive narrative explanation that:
    - If URL: Run `fabric -y <URL>` to fetch content
    - Store fetched content as input for next step
 
-2. **Call Foundry MCP Service**:
-   ```
-   Use mcp__Foundry__create_story_explanation with the input content
-   (Either direct content or content fetched from URL)
-   ```
+2. **Apply Story Explanation Format**:
+   - Analyze the content (either direct content or content fetched from URL)
+   - Create a detailed narrative explanation
 
 3. **Output the Result**:
-   - Display the full explanation from Foundry
+   - Display the full explanation
    - No need to reformat or restructure
    - Present it cleanly and readably
 
@@ -83,7 +81,7 @@ Or provide content and say "run CSE on this" or "explain this story"
 
 ## Notes
 
-- The Foundry service provides a complete narrative explanation
+- Provides a complete narrative explanation
 - More detailed than CSE5 (5-line version)
 - Use CSE5 when user wants brevity
 - Use CSE when user wants comprehensive understanding

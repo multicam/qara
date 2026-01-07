@@ -20,8 +20,8 @@ The Qara repository is designed for a multi-agent system. You are a single, high
 | **`codebase-analyzer`** | Use `codebase_investigator` to understand architecture, or `read_file` for deep reading. |
 | **`thoughts-locator`** | Use `glob` in the `thoughts/` directory. |
 | **`Task(...)` / Sub-agents** | Use `write_todos` to break down the request into steps. Execute them yourself sequentially. |
-| **`mcp__Ref__*`** | Use `google_web_search` and `web_fetch`. |
-| **`mcp__SequentialThinking`** | Use your internal Chain of Thought or `write_todos`. |
+| **Web Search** | Use `google_web_search` and `web_fetch`. |
+| **Sequential Thinking** | Use your internal Chain of Thought or `write_todos`. |
 
 ## 📂 Workflow & Command Routing
 If the user uses a command like `/create_plan` or `/research`:

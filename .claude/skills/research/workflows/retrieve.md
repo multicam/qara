@@ -1,6 +1,6 @@
 # Retrieve Workflow
 
-Intelligent multi-layer content retrieval system for DIFFICULT content retrieval. Uses built-in tools (WebFetch, WebSearch), BrightData MCP (CAPTCHA handling, advanced scraping), and Apify MCP (RAG browser, Actor ecosystem). USE ONLY WHEN user indicates difficulty: 'can't get this', 'having trouble', 'site is blocking', 'protected site', 'keeps giving CAPTCHA', 'won't let me scrape'. DO NOT use for simple 'read this page' or 'get content from' without indication of difficulty.
+Intelligent multi-layer content retrieval system for DIFFICULT content retrieval. Uses built-in tools (WebFetch, WebSearch), BrightData (CAPTCHA handling, advanced scraping), and Apify (RAG browser, Actor ecosystem). USE ONLY WHEN user indicates difficulty: 'can't get this', 'having trouble', 'site is blocking', 'protected site', 'keeps giving CAPTCHA', 'won't let me scrape'. DO NOT use for simple 'read this page' or 'get content from' without indication of difficulty.
 
 ## 🎯 Load Full PAI Context
 
@@ -48,9 +48,9 @@ The Retrieve skill uses a **3-layer fallback strategy** to ensure content can al
 ```
 Layer 1: Built-in Tools (Fast, Simple)
   ↓ (If blocked, rate-limited, or fails)
-Layer 2: BrightData MCP (CAPTCHA handling, advanced scraping)
+Layer 2: BrightData (CAPTCHA handling, advanced scraping)
   ↓ (If specialized scraping needed)
-Layer 3: Apify MCP (RAG browser, Actor ecosystem)
+Layer 3: Apify (RAG browser, Actor ecosystem)
 ```
 
 ### Decision Tree: Which Layer to Use?
@@ -116,9 +116,9 @@ WebSearch({
 - Need specific search engine (Google, Bing, Yandex)
 → **Escalate to Layer 2 (BrightData search_engine)**
 
-## Layer 2: BrightData MCP
+## Layer 2: BrightData
 
-### scrape_as_markdown Tool
+### scrape_as_markdown
 
 **Best for:** Sites with bot protection, CAPTCHA, JavaScript rendering
 
@@ -128,21 +128,13 @@ WebSearch({
 - Handles JavaScript-heavy sites
 - Residential proxy network
 
-**Usage:**
-```typescript
-// Single URL scraping with bot protection bypass
-mcp__Brightdata__scrape_as_markdown({
-  url: "https://protected-site.com/article"
-})
+**Usage via BrightData CLI or API:**
+```bash
+# Single URL scraping with bot protection bypass
+brightdata scrape "https://protected-site.com/article"
 
-// Multiple URLs in parallel (up to 10)
-mcp__Brightdata__scrape_batch({
-  urls: [
-    "https://site.com/page1",
-    "https://site.com/page2",
-    "https://site.com/page3"
-  ]
-})
+# Multiple URLs in parallel (up to 10)
+brightdata scrape-batch "https://site.com/page1" "https://site.com/page2" "https://site.com/page3"
 ```
 
 **When to use:**
@@ -154,28 +146,20 @@ mcp__Brightdata__scrape_batch({
 **When it fails:**
 - Site requires very specialized extraction logic
 - Need social media specific scraping
-→ **Escalate to Layer 3 (Apify Actors)**
+- **Escalate to Layer 3 (Apify Actors)**
 
-### search_engine Tool
+### search_engine
 
 **Best for:** Getting search results from Google, Bing, Yandex
 
-**Usage:**
-```typescript
-// Search Google for results
-mcp__Brightdata__search_engine({
-  engine: "google",
-  query: "React 19 server components"
-})
+**Usage via BrightData CLI or API:**
+```bash
+# Search Google for results
+brightdata search --engine google "React 19 server components"
 
-// Search multiple engines in parallel
-mcp__Brightdata__search_engine_batch({
-  queries: [
-    { engine: "google", query: "React 19 features" },
-    { engine: "bing", query: "React 19 features" },
-    { engine: "yandex", query: "React 19 features" }
-  ]
-})
+# Search multiple engines
+brightdata search --engine google "React 19 features"
+brightdata search --engine bing "React 19 features"
 ```
 
 **Output format:**
@@ -187,7 +171,7 @@ mcp__Brightdata__search_engine_batch({
 - Want multiple search engines for comprehensive coverage
 - Layer 1 WebSearch insufficient
 
-## Layer 3: Apify MCP
+## Layer 3: Apify
 
 ### RAG Web Browser Actor
 
@@ -199,21 +183,13 @@ mcp__Brightdata__search_engine_batch({
 - Can scrape individual URLs or search results
 - Top N results from search
 
-**Usage:**
-```typescript
-// Search Google and scrape top 3 results
-mcp__Apify__apify-slash-rag-web-browser({
-  query: "React 19 server components",
-  maxResults: 3,
-  outputFormats: ["markdown"]
-})
+**Usage via Apify CLI or API:**
+```bash
+# Search Google and scrape top 3 results
+apify call apify/rag-web-browser -i '{"query": "React 19 server components", "maxResults": 3}'
 
-// Scrape specific URL (query is URL)
-mcp__Apify__apify-slash-rag-web-browser({
-  query: "https://react.dev/blog/2024/12/05/react-19",
-  maxResults: 1,
-  outputFormats: ["markdown", "text", "html"]
-})
+# Scrape specific URL
+apify call apify/rag-web-browser -i '{"query": "https://react.dev/blog/2024/12/05/react-19", "maxResults": 1}'
 ```
 
 **When to use:**
@@ -221,51 +197,25 @@ mcp__Apify__apify-slash-rag-web-browser({
 - Want search + scraping in one operation
 - Layer 1 and 2 failed or insufficient
 
-**Output:** Returns datasetId for full results
-
-**To get full output:**
-```typescript
-mcp__Apify__get-actor-output({
-  datasetId: "abc123xyz",
-  fields: "markdown,url,title"  // Optional: specific fields
-})
-```
+**Output:** Returns dataset with full results
 
 ### Specialized Actors
 
 **Best for:** Site-specific scraping (Instagram, Twitter, LinkedIn, etc.)
 
 **Finding Actors:**
-```typescript
-// Search for specialized Actor
-mcp__Apify__search-actors({
-  search: "instagram posts scraper",
-  limit: 10
-})
+```bash
+# Search for specialized Actor
+apify actors search "instagram posts scraper"
 
-// Get Actor details and input schema
-mcp__Apify__fetch-actor-details({
-  actor: "apify/instagram-scraper"
-})
+# Get Actor details
+apify actors info apify/instagram-scraper
 ```
 
-**Using Actors (2-step workflow):**
-```typescript
-// Step 1: Get Actor info and input schema
-mcp__Apify__call-actor({
-  actor: "apify/instagram-scraper",
-  step: "info"
-})
-
-// Step 2: Run Actor with proper input
-mcp__Apify__call-actor({
-  actor: "apify/instagram-scraper",
-  step: "call",
-  input: {
-    username: "example",
-    resultsLimit: 10
-  }
-})
+**Using Actors:**
+```bash
+# Run Actor with input
+apify call apify/instagram-scraper -i '{"username": "example", "resultsLimit": 10}'
 ```
 
 **When to use:**
@@ -281,29 +231,15 @@ mcp__Apify__call-actor({
 
 **Execution:**
 
-```typescript
-// 1. Try Layer 1 (Built-in) first
-WebFetch({
-  url: "https://example.com/article",
-  prompt: "Extract the main article content, title, author, and published date"
-})
+```bash
+# 1. Try Layer 1 (Built-in) first
+# Use WebFetch tool with URL and prompt
 
-// 2. If Layer 1 fails (blocked/CAPTCHA):
-mcp__Brightdata__scrape_as_markdown({
-  url: "https://example.com/article"
-})
+# 2. If Layer 1 fails (blocked/CAPTCHA):
+brightdata scrape "https://example.com/article"
 
-// 3. If Layer 2 fails (needs specialized extraction):
-mcp__Apify__apify-slash-rag-web-browser({
-  query: "https://example.com/article",
-  maxResults: 1,
-  outputFormats: ["markdown"]
-})
-
-// 4. Get full output from Apify:
-mcp__Apify__get-actor-output({
-  datasetId: "[from previous response]"
-})
+# 3. If Layer 2 fails (needs specialized extraction):
+apify call apify/rag-web-browser -i '{"query": "https://example.com/article", "maxResults": 1}'
 ```
 
 ### Example: Search + Scrape Multiple Pages
@@ -312,31 +248,19 @@ mcp__Apify__get-actor-output({
 
 **Execution:**
 
-```typescript
-// 1. Try Layer 1 for search:
-WebSearch({
-  query: "React 19 features documentation",
-  allowed_domains: ["react.dev"]
-})
-// Extract URLs from results
+```bash
+# 1. Try Layer 1 for search:
+# Use WebSearch tool with query and allowed_domains
+# Extract URLs from results
 
-// 2. Fetch each URL with Layer 1:
-WebFetch({ url: url1, prompt: "Extract main content" })
-WebFetch({ url: url2, prompt: "Extract main content" })
-// ... (can run in parallel)
+# 2. Fetch each URL with Layer 1:
+# Use WebFetch tool for each URL (can run in parallel)
 
-// 3. If any Layer 1 fetches fail, use Layer 2 batch:
-mcp__Brightdata__scrape_batch({
-  urls: [url1, url2, url3, url4, url5]
-})
+# 3. If any Layer 1 fetches fail, use Layer 2 batch:
+brightdata scrape-batch "$url1" "$url2" "$url3" "$url4" "$url5"
 
-// 4. OR use Layer 3 for all-in-one search + scrape:
-mcp__Apify__apify-slash-rag-web-browser({
-  query: "React 19 features documentation",
-  maxResults: 5,
-  outputFormats: ["markdown"]
-})
-// Then get full output with get-actor-output
+# 4. OR use Layer 3 for all-in-one search + scrape:
+apify call apify/rag-web-browser -i '{"query": "React 19 features documentation", "maxResults": 5}'
 ```
 
 ### Example: Protected Site Scraping
@@ -345,19 +269,13 @@ mcp__Apify__apify-slash-rag-web-browser({
 
 **Execution:**
 
-```typescript
-// Skip Layer 1 (known to fail on protected sites)
-// Start with Layer 2:
-mcp__Brightdata__scrape_as_markdown({
-  url: "https://cloudflare-protected-site.com"
-})
+```bash
+# Skip Layer 1 (known to fail on protected sites)
+# Start with Layer 2:
+brightdata scrape "https://cloudflare-protected-site.com"
 
-// If Layer 2 fails, try Layer 3:
-mcp__Apify__apify-slash-rag-web-browser({
-  query: "https://cloudflare-protected-site.com",
-  maxResults: 1,
-  outputFormats: ["markdown"]
-})
+# If Layer 2 fails, try Layer 3:
+apify call apify/rag-web-browser -i '{"query": "https://cloudflare-protected-site.com", "maxResults": 1}'
 ```
 
 ## 📊 Layer Comparison Matrix

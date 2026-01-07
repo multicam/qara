@@ -315,7 +315,6 @@ Hooks have access to all environment variables from `${PAI_DIR}/settings.json` `
   "env": {
     "PAI_DIR": "/Users/daniel/.claude",
     "DA": "Qara",
-    "MCP_API_KEY": "...",
     "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "64000"
   }
 }

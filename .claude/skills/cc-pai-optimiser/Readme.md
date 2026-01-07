@@ -177,7 +177,7 @@ Progress: [███████████████░░░░░] 78%
    • Add context loading enforcement
 
 📌 toolIntegration:
-   • Add descriptions to all MCP servers
+   • Add descriptions to all tool integrations
 ```
 
 ## Installation

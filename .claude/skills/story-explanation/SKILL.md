@@ -1,6 +1,6 @@
 ---
 name: story-explanation
-description: Create compelling story-format summaries using UltraThink to find the best narrative framing. Support multiple formats - 3-part narrative, n-length with inline links, abridged 5-line, or comprehensive via Foundry MCP. USE WHEN user says 'create story explanation', 'narrative summary', 'explain as a story', or wants content in Daniel's conversational first-person voice.
+description: Create compelling story-format summaries using UltraThink to find the best narrative framing. Support multiple formats - 3-part narrative, n-length with inline links, abridged 5-line, or comprehensive. USE WHEN user says 'create story explanation', 'narrative summary', 'explain as a story', or wants content in Daniel's conversational first-person voice.
 ---
 
 # Story Explanation - Narrative Summary with Creative Analysis
@@ -66,12 +66,12 @@ This skill contains multiple workflows for different story explanation formats:
    - **Triggers:** "create abridged story explanation", "5-line summary", command: `/create-abridged-story-explanation`
    - **Output:** 5 lines with strict word limits
 
-4. **`workflows/cse.md`** - Comprehensive explanation using Foundry MCP
+4. **`workflows/cse.md`** - Comprehensive explanation
    - **Use when:** User wants detailed narrative explanation
    - **Triggers:** "run CSE", "explain this story", command: `/cse`
-   - **Output:** Complete narrative explanation via Foundry
+   - **Output:** Complete narrative explanation
 
-5. **`workflows/cse5.md`** - Clean 5-line numbered format using Foundry MCP
+5. **`workflows/cse5.md`** - Clean 5-line numbered format
    - **Use when:** User wants scannable, numbered breakdown
    - **Triggers:** "explain in 5 lines", "CSE5", command: `/cse5`
    - **Output:** 5 numbered lines, one concept per line
@@ -321,7 +321,7 @@ Use the selected framing to create the story explanation in the appropriate form
 ## Comparison to Other Approaches
 
 **/cse5 (single story explanation):**
-- Fast, single output via Foundry MCP
+- Fast, single output
 - Quick technical summary
 - No creative analysis
 
@@ -413,7 +413,7 @@ You've succeeded with this skill when:
 - Default: 3-part narrative (opening/body/closing)
 - With links: N-length with inline source attribution
 - Abridged: Ultra-concise 5-line format
-- CSE/CSE5: Foundry MCP formats
+- CSE/CSE5: comprehensive formats
 
 **Voice:**
 - First person (Daniel's perspective)
