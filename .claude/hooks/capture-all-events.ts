@@ -266,20 +266,16 @@ function validateEvent(event: HookEvent): boolean {
 
 async function main() {
     try {
-        // Get event type from command line args
-        const args = process.argv.slice(2);
-        const eventTypeIndex = args.indexOf('--event-type');
-
-        if (eventTypeIndex === -1) {
-            console.error('Missing --event-type argument');
-            process.exit(0); // Don't block Claude Code
-        }
-
-        const eventType = args[eventTypeIndex + 1];
-
         // Read hook data from stdin
         const stdinData = await Bun.stdin.text();
         const hookData = JSON.parse(stdinData);
+
+        // Get event type from input (no longer need CLI arg)
+        const eventType = hookData.hook_event_name;
+        if (!eventType) {
+            console.error('Missing hook_event_name in input');
+            process.exit(0);
+        }
 
         // Detect agent type from session mapping or payload
         const sessionId = hookData.session_id || 'main';
