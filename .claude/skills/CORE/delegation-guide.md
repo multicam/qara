@@ -21,23 +21,23 @@
 
 ✅ **Updating multiple files simultaneously**
 - Example: Update 5 documentation files with new naming convention
-- Pattern: 1 intern per file + 1 spotcheck intern
+- Pattern: 1 agent per file + 1 spotcheck agent
 
 ✅ **Researching multiple topics at once**
 - Example: Research 3 different libraries for feature comparison
-- Pattern: 1 intern per topic + 1 synthesis intern
+- Pattern: 1 agent per topic + 1 synthesis agent
 
 ✅ **Testing multiple approaches in parallel**
 - Example: Try 3 different algorithms to solve problem
-- Pattern: 1 intern per approach + 1 comparison intern
+- Pattern: 1 agent per approach + 1 comparison agent
 
 ✅ **Processing lists/batches**
 - Example: Analyze 10 code files for security issues
-- Pattern: 1 intern per file (or per batch of 2-3) + 1 spotcheck
+- Pattern: 1 agent per file (or per batch of 2-3) + 1 spotcheck
 
 ✅ **Independent subtasks**
 - Example: Create components A, B, C for a feature
-- Pattern: 1 intern per component + 1 integration intern
+- Pattern: 1 agent per component + 1 integration agent
 
 ### Poor Candidates for Parallelization
 
@@ -70,12 +70,12 @@
 Task: Add error logging to 5 API endpoints
 
 Decompose into:
-1. Intern 1: Add logging to /api/users.ts
-2. Intern 2: Add logging to /api/posts.ts
-3. Intern 3: Add logging to /api/comments.ts
-4. Intern 4: Add logging to /api/auth.ts
-5. Intern 5: Add logging to /api/settings.ts
-6. Spotcheck: Verify consistent logging pattern across all files
+1. Agent 1: Add logging to /api/users.ts
+2. Agent 2: Add logging to /api/posts.ts
+3. Agent 3: Add logging to /api/comments.ts
+4. Agent 4: Add logging to /api/auth.ts
+5. Agent 5: Add logging to /api/settings.ts
+6. Spotcheck Agent: Verify consistent logging pattern across all files
 ```
 
 ### Pattern 2: Feature-Based Decomposition
@@ -87,12 +87,12 @@ Decompose into:
 Task: Add Settings page to application
 
 Decompose into:
-1. Intern 1: Create Settings page component
-2. Intern 2: Add Settings route configuration
-3. Intern 3: Create Settings API endpoints
-4. Intern 4: Add Settings navigation menu item
-5. Intern 5: Write Settings page tests
-6. Integration Intern: Verify all pieces work together
+1. Agent 1: Create Settings page component
+2. Agent 2: Add Settings route configuration
+3. Agent 3: Create Settings API endpoints
+4. Agent 4: Add Settings navigation menu item
+5. Agent 5: Write Settings page tests
+6. Integration Agent: Verify all pieces work together
 ```
 
 ### Pattern 3: Research-Based Decomposition
@@ -104,10 +104,10 @@ Decompose into:
 Task: Choose best state management library
 
 Decompose into:
-1. Intern 1: Research Zustand (features, pros/cons, examples)
-2. Intern 2: Research Jotai (features, pros/cons, examples)
-3. Intern 3: Research Redux Toolkit (features, pros/cons, examples)
-4. Synthesis Intern: Compare findings, create decision matrix
+1. Agent 1: Research Zustand (features, pros/cons, examples)
+2. Agent 2: Research Jotai (features, pros/cons, examples)
+3. Agent 3: Research Redux Toolkit (features, pros/cons, examples)
+4. Synthesis Agent: Compare findings, create decision matrix
 ```
 
 ### Pattern 4: Batch-Based Decomposition
@@ -119,10 +119,10 @@ Decompose into:
 Task: Update 20 component files
 
 Decompose into batches:
-Batch 1 (files 1-5): 5 interns + spotcheck
-Batch 2 (files 6-10): 5 interns + spotcheck
-Batch 3 (files 11-15): 5 interns + spotcheck
-Batch 4 (files 16-20): 5 interns + spotcheck
+Batch 1 (files 1-5): 5 agents + spotcheck
+Batch 2 (files 6-10): 5 agents + spotcheck
+Batch 3 (files 11-15): 5 agents + spotcheck
+Batch 4 (files 16-20): 5 agents + spotcheck
 Final spotcheck: Verify consistency across all 20 files
 ```
 
@@ -132,14 +132,14 @@ Final spotcheck: Verify consistency across all 20 files
 
 ### Why Spotcheck is Critical
 
-- Parallel interns work independently
-- No inter-intern communication
+- Parallel agents work independently
+- No inter-agent communication
 - Need verification of consistency
 - Catch conflicting changes early
 
 ### When Spotcheck is Required
 
-**After ANY parallel intern work** - no exceptions:
+**After ANY parallel agent work** - no exceptions:
 - Multi-file updates
 - Batch processing
 - Parallel research
@@ -171,8 +171,8 @@ Final spotcheck: Verify consistency across all 20 files
 
 ```
 task({ 
-  agent: "intern", 
-  task: "SPOTCHECK: Review work from previous [N] interns.
+  agent: "agent", 
+  task: "SPOTCHECK: Review work from previous [N] agents.
   
   Verify:
   1. All tasks completed successfully
@@ -197,30 +197,30 @@ task({
 // SINGLE message with MULTIPLE Task tool calls
 await Promise.all([
   task({ 
-    agent: "intern", 
+    agent: "agent", 
     task: "Update navigation.tsx: Add Settings route..." 
   }),
   task({ 
-    agent: "intern", 
+    agent: "agent", 
     task: "Update routes.ts: Register /settings..." 
   }),
   task({ 
-    agent: "intern", 
+    agent: "agent", 
     task: "Update types.ts: Add SettingsPage interface..." 
   }),
   task({ 
-    agent: "intern", 
+    agent: "agent", 
     task: "Update tests.ts: Add settings route test..." 
   }),
   task({ 
-    agent: "intern", 
+    agent: "agent", 
     task: "Update docs.md: Document settings feature..." 
   }),
 ]);
 
 // Then MANDATORY spotcheck
 task({ 
-  agent: "intern", 
+  agent: "agent", 
   task: "SPOTCHECK: Review all 5 updates for consistency..." 
 });
 ```
@@ -233,22 +233,22 @@ task({
 // Research phase (parallel)
 await Promise.all([
   task({ 
-    agent: "intern", 
+    agent: "agent", 
     task: "Research Library A: Features, pros/cons, examples..." 
   }),
   task({ 
-    agent: "intern", 
+    agent: "agent", 
     task: "Research Library B: Features, pros/cons, examples..." 
   }),
   task({ 
-    agent: "intern", 
+    agent: "agent", 
     task: "Research Library C: Features, pros/cons, examples..." 
   }),
 ]);
 
 // Synthesis phase (single agent)
 task({ 
-  agent: "intern", 
+  agent: "agent", 
   task: "SYNTHESIS: Compare findings, create decision matrix..." 
 });
 ```
@@ -259,18 +259,18 @@ task({
 
 ```typescript
 // Batch 1 (files 1-5)
-await Promise.all([...5 intern tasks...]);
-task({ agent: "intern", task: "SPOTCHECK batch 1..." });
+await Promise.all([...5 agent tasks...]);
+task({ agent: "agent", task: "SPOTCHECK batch 1..." });
 
 // Batch 2 (files 6-10)
-await Promise.all([...5 intern tasks...]);
-task({ agent: "intern", task: "SPOTCHECK batch 2..." });
+await Promise.all([...5 agent tasks...]);
+task({ agent: "agent", task: "SPOTCHECK batch 2..." });
 
 // Continue for remaining batches...
 
 // Final spotcheck
 task({ 
-  agent: "intern", 
+  agent: "agent", 
   task: "FINAL SPOTCHECK: Verify all batches consistent..." 
 });
 ```
@@ -280,12 +280,12 @@ task({
 ## Scalability Guidelines
 
 ### Small Tasks (1-3 files)
-- **Pattern**: 1 intern per file + spotcheck
+- **Pattern**: 1 agent per file + spotcheck
 - **Total**: 2-4 agents
 - **Example**: Update 3 config files
 
 ### Medium Tasks (4-10 files)
-- **Pattern**: 1 intern per file + spotcheck
+- **Pattern**: 1 agent per file + spotcheck
 - **Total**: 5-11 agents
 - **Example**: Add new feature across multiple components
 
@@ -297,7 +297,7 @@ task({
 ### Very Large Tasks (50+ files)
 - **Pattern**: Hierarchical delegation
   - Group into logical units
-  - 1 intern per unit + unit spotcheck
+  - 1 agent per unit + unit spotcheck
   - 1 final synthesis + overall spotcheck
 - **Total**: Varies by complexity
 - **Example**: Migrate entire codebase to new framework
@@ -309,12 +309,12 @@ task({
 ### ✅ Do
 
 **Launch Aggressively**:
-- Use parallel interns liberally
-- No artificial limits on intern count
+- Use parallel agents liberally
+- No artificial limits on agent count
 - Better to have spotcheck catch duplicates than miss work
 
 **Provide Full Context**:
-- Every intern gets complete picture
+- Every agent gets complete picture
 - Include file paths, examples, success criteria
 - Better too much context than too little
 
@@ -324,7 +324,7 @@ task({
 - This catches 90% of consistency issues
 
 **Escalate Appropriately**:
-- Interns can invoke engineers for technical expertise
+- Agents can invoke engineers for technical expertise
 - See `agent-guide.md` for escalation patterns
 
 **Document Outcomes**:
@@ -334,10 +334,10 @@ task({
 
 ### ❌ Don't
 
-**Don't: Launch 1 intern for trivial task**
+**Don't: Launch 1 agent for trivial task**
 ```typescript
 // Bad
-task({ agent: "intern", task: "Add semicolon to line 42" });
+task({ agent: "agent", task: "Add semicolon to line 42" });
 
 // Good: Just do it yourself
 ```
@@ -350,17 +350,17 @@ await Promise.all([...10 tasks...]);
 
 // Good
 await Promise.all([...10 tasks...]);
-task({ agent: "intern", task: "SPOTCHECK..." });
+task({ agent: "agent", task: "SPOTCHECK..." });
 ```
 
 **Don't: Give vague instructions**
 ```typescript
 // Bad
-task({ agent: "intern", task: "Make it better" });
+task({ agent: "agent", task: "Make it better" });
 
 // Good
 task({ 
-  agent: "intern", 
+  agent: "agent", 
   task: "Refactor authentication.ts: Extract token validation to separate function, add error handling for expired tokens, update tests..." 
 });
 ```
@@ -368,11 +368,11 @@ task({
 **Don't: Skip context sharing**
 ```typescript
 // Bad
-task({ agent: "intern", task: "Update the config" });
+task({ agent: "agent", task: "Update the config" });
 
 // Good
 task({ 
-  agent: "intern", 
+  agent: "agent", 
   task: "Update config.ts at /path/to/config.ts: Add DATABASE_URL environment variable to config object (line 23), follow existing pattern for API_KEY..." 
 });
 ```
@@ -380,13 +380,13 @@ task({
 **Don't: Artificially limit parallel agents**
 ```typescript
 // Bad
-"I'll only use 3 interns because I don't want to overwhelm the system"
+"I'll only use 3 agents because I don't want to overwhelm the system"
 
 // Good
-"I need to update 10 files, so I'll launch 10 interns + 1 spotcheck"
+"I need to update 10 files, so I'll launch 10 agents + 1 spotcheck"
 ```
 
-**There is NO artificial limit on parallel interns.** Launch as many as the task requires.
+**There is NO artificial limit on parallel agents.** Launch as many as the task requires.
 
 ---
 
@@ -395,23 +395,23 @@ task({
 ```bash
 # DECISION TREE
 Simple task → Do it yourself
-Multi-file task → Parallel interns + spotcheck
+Multi-file task → Parallel agents + spotcheck
 Need expertise → Escalate to engineer (see agent-guide.md)
 
 # PATTERN: N parallel tasks + 1 spotcheck
-Interns: Launch as many as needed (no limit)
-Context: FULL for each intern
+Agents: Launch as many as needed (no limit)
+Context: FULL for each agent
 Spotcheck: ALWAYS after parallel work
 
 # DECOMPOSITION
-Files: 1 intern per file
-Features: 1 intern per component
-Research: 1 intern per topic
+Files: 1 agent per file
+Features: 1 agent per component
+Research: 1 agent per topic
 Batches: Group into manageable chunks
 
 # REMEMBER
 - No artificial limits on parallel agents
-- Full context for every intern
+- Full context for every agent
 - Never skip spotcheck
 - Escalate when appropriate (see agent-guide.md)
 ```

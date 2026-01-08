@@ -14,25 +14,25 @@ description: |
 **When user requests creating a new skill:**
 Examples: "create skill", "create a skill", "new skill", "build skill", "make skill", "skill for X", "Create-A-Skill"
 → **READ:** ${PAI_DIR}/skills/CORE/SKILL-STRUCTURE-AND-ROUTING.md
-→ **READ:** ${PAI_DIR}/skills/system-createskill/workflows/create-skill.md
+→ **READ:** ${PAI_DIR}/skills/system-create-skill/workflows/create-skill.md
 → **EXECUTE:** Complete skill creation workflow with architectural validation
 
 **When user requests validating existing skill:**
 Examples: "validate skill", "check skill compliance", "audit skill", "verify skill structure"
 → **READ:** ${PAI_DIR}/skills/CORE/SKILL-STRUCTURE-AND-ROUTING.md
-→ **READ:** ${PAI_DIR}/skills/system-createskill/workflows/validate-skill.md
+→ **READ:** ${PAI_DIR}/skills/system-create-skill/workflows/validate-skill.md
 → **EXECUTE:** Skill compliance audit workflow
 
 **When user requests updating existing skill:**
 Examples: "update skill", "refactor skill", "fix skill routing", "add workflow to skill"
 → **READ:** ${PAI_DIR}/skills/CORE/SKILL-STRUCTURE-AND-ROUTING.md
-→ **READ:** ${PAI_DIR}/skills/system-createskill/workflows/update-skill.md
+→ **READ:** ${PAI_DIR}/skills/system-create-skill/workflows/update-skill.md
 → **EXECUTE:** Skill update workflow with compliance checking
 
 **When user requests canonicalizing a skill:**
 Examples: "canonicalize skill", "canonicalize this skill", "canonicalize [skill-name]", "rebuild skill to standards", "refactor skill to canonical structure"
 → **READ:** ${PAI_DIR}/skills/CORE/SKILL-STRUCTURE-AND-ROUTING.md
-→ **READ:** ${PAI_DIR}/skills/system-createskill/workflows/canonicalize-skill.md
+→ **READ:** ${PAI_DIR}/skills/system-create-skill/workflows/canonicalize-skill.md
 → **EXECUTE:** Complete skill canonicalization workflow - analyze current skill structure and rebuild according to canonical architecture while preserving functionality
 
 ---
@@ -405,20 +405,20 @@ Before considering a skill complete, verify:
 
 ### Workflow Files
 
-**${PAI_DIR}/skills/system-createskill/workflows/create-skill.md**
+**${PAI_DIR}/skills/system-create-skill/workflows/create-skill.md**
 - Complete skill creation workflow
 - Step-by-step process with validation gates
 - Template generation
 - Quality assurance checks
 
-**${PAI_DIR}/skills/system-createskill/workflows/validate-skill.md**
+**${PAI_DIR}/skills/system-create-skill/workflows/validate-skill.md**
 - Skill compliance audit workflow
 - Structural validation
 - Routing validation
 - Documentation validation
 - Integration validation
 
-**${PAI_DIR}/skills/system-createskill/workflows/update-skill.md**
+**${PAI_DIR}/skills/system-create-skill/workflows/update-skill.md**
 - Skill update and refactoring workflow
 - Adding workflows to existing skills
 - Reorganizing skill structure

@@ -49,10 +49,17 @@ Then wait for the user's input.
 2. **Spawn initial research tasks to gather context**:
    Before asking the user any questions, use specialized agents to research in parallel:
 
+   **ALWAYS spawn these agents first (historical context is critical):**
+   - Use the **thoughts-locator** agent to find existing research, plans, decisions, and historical context
    - Use the **codebase-locator** agent to find all files related to the ticket/task
    - Use the **codebase-analyzer** agent to understand how the current implementation works
-   - If relevant, use the **thoughts-locator** agent to find any existing thoughts documents about this feature
    - If a Linear ticket is mentioned, use the **linear-ticket-reader** agent to get full details
+
+   **Historical context from thoughts/ often contains:**
+   - Past decisions that explain WHY code is structured a certain way
+   - Previous research that answers questions you might have
+   - Lessons learned from similar implementations
+   - Design constraints or trade-offs already considered
 
    These agents will:
    - Find relevant source files, configs, and tests
@@ -109,9 +116,15 @@ After getting initial clarifications:
    - **codebase-analyzer** - To understand implementation details (e.g., "analyze how [system] works")
    - **codebase-pattern-finder** - To find similar features we can model after
 
-   **For historical context:**
-   - **thoughts-locator** - To find any research, plans, or decisions about this area
-   - **thoughts-analyzer** - To extract key insights from the most relevant documents
+   **For historical context (CRITICAL - don't skip this):**
+   - **thoughts-locator** - FIRST: Find all related research, plans, decisions, tickets, and learnings
+   - **thoughts-analyzer** - THEN: Extract detailed insights from the 2-3 most relevant documents found
+
+   **Why thoughts/ matters for planning:**
+   - Prevents reinventing solutions already documented
+   - Reveals past decisions and their rationale
+   - Shows what approaches were tried and why they worked/failed
+   - Contains learnings from similar implementations
 
    **For related tickets:**
    - **linear-searcher** - To find similar issues or past implementations

@@ -133,7 +133,7 @@ Qara (Primary Assistant) - Orchestrates all agents
 
 **Jean-Marc specifies which agent(s) to use:**
 ```
-"Have the interns update these 5 files..."
+"Have the agents update these 5 files..."
 "Ask an engineer to review this code..."
 "I need a principal engineer opinion on architecture..."
 ```
@@ -141,7 +141,7 @@ Qara (Primary Assistant) - Orchestrates all agents
 ### Automatic Delegation (Qara → Agent)
 
 **Qara determines appropriate agent based on:**
-- Multiple files → Parallel interns
+- Multiple files → Parallel agents
 - Technical complexity → Engineer
 - Architectural decision → Principal
 
@@ -156,7 +156,7 @@ Qara (Primary Assistant) - Orchestrates all agents
 #### Intern → Engineer
 
 **When to Escalate**:
-- Technical problem beyond intern's expertise
+- Technical problem beyond agent's expertise
 - Security-sensitive implementation
 - Performance optimization needed
 - Complex integration challenges
@@ -165,7 +165,7 @@ Qara (Primary Assistant) - Orchestrates all agents
 ```
 ESCALATED from Intern: [Problem description]
 
-Context: [What intern tried]
+Context: [What agent tried]
 Challenge: [Specific technical issue]
 Question: [What expertise is needed]
 Files: [Paths and line numbers]

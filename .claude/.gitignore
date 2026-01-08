@@ -1,0 +1,8 @@
+# State is ephemeral - not committed
+state/
+
+# Agent session data
+agent-sessions.json
+
+# Local settings (user-specific)
+settings.local.json

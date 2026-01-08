@@ -21,7 +21,7 @@ description: |
   "update the Qara repo", "push these changes"
   → READ: ${PAI_DIR}/skills/CORE/workflows/git-update-repo.md
 
-  "use parallel interns", "delegate to interns"
+  "use parallel agents", "delegate tasks"
   → READ: ${PAI_DIR}/skills/CORE/delegation-guide.md
 
   "merge conflict", "complex decision"
@@ -39,15 +39,16 @@ description: |
 | Stack preferences | `stack-preferences.md` | "what stack", TypeScript vs Python |
 | Testing | `testing-guide.md` | tests (uses bun test, Playwright) |
 | Agent hierarchy | `agent-guide.md` | "agent roles", escalation |
-| Delegation | `delegation-guide.md` | parallel interns, task decomposition |
+| Delegation | `delegation-guide.md` | parallel agents, task decomposition |
 | Contacts | `contacts.md` | "who is X", contact info |
 | Definitions | `MY_DEFINITIONS.md` | "JM's definition of X" |
 | Security | `security-protocols.md` | API keys, repo safety |
 | History | `history-system.md` | UOCS, session capture |
+| Checkpoints | `checkpoint-protocol.md` | "/rewind", rollback, safety |
 
 **Skills (on-demand):**
 - `hook-authoring` skill → hook creation
-- `skill-authoring` skill → skill creation
+- `system-create-skill` skill → skill creation
 
 ---
 
@@ -81,11 +82,11 @@ description: |
 
 ## 🤝 Delegation (Always Active)
 
-**WHENEVER A TASK CAN BE PARALLELIZED, USE MULTIPLE INTERN AGENTS!**
+**WHENEVER A TASK CAN BE PARALLELIZED, USE MULTIPLE AGENTS!**
 
 - Use SINGLE message with MULTIPLE Task tool calls
-- Each intern gets FULL CONTEXT
-- ALWAYS launch spotcheck intern after parallel work
+- Each agent gets FULL CONTEXT
+- ALWAYS launch spotcheck agent after parallel work
 
 **Guides:** `agent-guide.md`, `delegation-guide.md`
 
