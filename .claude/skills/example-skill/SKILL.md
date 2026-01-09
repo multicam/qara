@@ -1,5 +1,6 @@
 ---
 name: example-skill
+context: fork
 description: |
   Example skill demonstrating the Skills-as-Containers pattern with workflows,
   assets, and natural language routing. This is a teaching tool showing the

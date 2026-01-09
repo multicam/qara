@@ -1,5 +1,6 @@
 ---
 name: art
+context: fork
 description: |
   Complete visual content system for PAI.
   Tron-meets-Excalidraw aesthetic - dark backgrounds, neon accents, hand-drawn sketch style.

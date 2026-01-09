@@ -1,5 +1,6 @@
 ---
 name: CORE
+context: same
 description: |
   Qara (Personal AI Infrastructure) - Jean-Marc Giorgi's AI System.
   Loads automatically at session start.
@@ -45,6 +46,7 @@ description: |
 | Security | `security-protocols.md` | API keys, repo safety |
 | History | `history-system.md` | UOCS, session capture |
 | Checkpoints | `checkpoint-protocol.md` | "/rewind", rollback, safety |
+| CC Features | `cc-features.md` | CC 2.1.2 features, 12-factor compliance |
 
 **Skills (on-demand):**
 - `hook-authoring` skill → hook creation
@@ -89,6 +91,30 @@ description: |
 - ALWAYS launch spotcheck agent after parallel work
 
 **Guides:** `agent-guide.md`, `delegation-guide.md`
+
+---
+
+## 📋 Response Format (Always Active)
+
+Use this standardized format for all responses:
+
+📋 **SUMMARY:** [One sentence - what this response is about]
+
+🔍 **ANALYSIS:** [Key findings, insights, or observations]
+
+⚡ **ACTIONS:** [Steps taken or tools used]
+
+✅ **RESULTS:** [Outcomes, what was accomplished]
+
+📊 **STATUS:** [Current state of the task/system]
+
+📁 **CAPTURE:** [Context worth preserving for this session]
+
+➡️ **NEXT:** [Recommended next steps or options]
+
+📖 **STORY EXPLANATION:** [8 lines - narrative summary of what happened]
+
+🎯 **COMPLETED:** [12 words max - final status summary]
 
 ---
 

@@ -7,10 +7,99 @@
  * Extracts COMPLETED lines, sets tab titles, and handles agent task results.
  */
 
-import { readFileSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { generateTabTitle, setTerminalTabTitle, setTabTitleSync } from './lib/tab-titles';
 import { readStdinWithTimeout } from './lib/stdin-utils';
 import { contentToText } from './lib/transcript-utils';
+
+// Error compaction types and utilities (12-Factor #9)
+interface ErrorSummary {
+  totalErrors: number;
+  uniqueTypes: string[];
+  errors: Array<{
+    type: string;
+    message: string;
+    count: number;
+    firstOccurrence: string;
+  }>;
+  sessionId?: string;
+  timestamp: string;
+}
+
+function extractAndCompactErrors(transcript: string): ErrorSummary | null {
+  const lines = transcript.trim().split('\n');
+  const errorMap = new Map<string, { type: string; message: string; count: number; firstOccurrence: string }>();
+
+  const errorPatterns = [
+    /Error:\s*(.+)/i,
+    /TypeError:\s*(.+)/i,
+    /ReferenceError:\s*(.+)/i,
+    /SyntaxError:\s*(.+)/i,
+    /Failed:\s*(.+)/i,
+    /❌\s*(.+)/,
+    /error\[E\d+\]:\s*(.+)/i,  // Rust-style errors
+    /Exception:\s*(.+)/i,
+    /ENOENT:\s*(.+)/i,
+    /EACCES:\s*(.+)/i,
+  ];
+
+  for (const line of lines) {
+    try {
+      const entry = JSON.parse(line);
+      const content = contentToText(entry.message?.content || '');
+
+      for (const pattern of errorPatterns) {
+        const matches = content.matchAll(new RegExp(pattern, 'gi'));
+        for (const match of matches) {
+          const errorMessage = match[1]?.trim() || match[0];
+          const errorType = pattern.source.split(':')[0].replace(/[\\[\]]/g, '');
+          const key = `${errorType}:${errorMessage.slice(0, 100)}`;
+
+          if (errorMap.has(key)) {
+            const existing = errorMap.get(key)!;
+            existing.count++;
+          } else {
+            errorMap.set(key, {
+              type: errorType,
+              message: errorMessage.slice(0, 200),
+              count: 1,
+              firstOccurrence: entry.timestamp || new Date().toISOString()
+            });
+          }
+        }
+      }
+    } catch (e) {
+      // Skip invalid JSON lines
+    }
+  }
+
+  if (errorMap.size === 0) return null;
+
+  const errors = Array.from(errorMap.values()).sort((a, b) => b.count - a.count);
+  const uniqueTypes = [...new Set(errors.map(e => e.type))];
+
+  return {
+    totalErrors: errors.reduce((sum, e) => sum + e.count, 0),
+    uniqueTypes,
+    errors: errors.slice(0, 10), // Top 10 errors
+    timestamp: new Date().toISOString()
+  };
+}
+
+function saveErrorSummary(summary: ErrorSummary, sessionId: string): void {
+  const paiDir = process.env.PAI_DIR || `${process.env.HOME}/.claude`;
+  const errorDir = `${paiDir}/state/errors`;
+
+  if (!existsSync(errorDir)) {
+    mkdirSync(errorDir, { recursive: true });
+  }
+
+  const date = new Date().toISOString().split('T')[0];
+  const filename = `${errorDir}/${date}_errors.jsonl`;
+
+  summary.sessionId = sessionId;
+  writeFileSync(filename, JSON.stringify(summary) + '\n', { flag: 'a' });
+}
 
 
 // Intelligent response generator - prioritizes custom COMPLETED messages
@@ -347,6 +436,21 @@ async function main() {
   if (message) {
     const finalTabTitle = message.slice(0, 50); // Limit to 50 chars for tab title
     setTerminalTabTitle(finalTabTitle);
+  }
+
+  // Error compaction (12-Factor #9) - extract and save error summary
+  try {
+    const errorSummary = extractAndCompactErrors(transcript);
+    if (errorSummary) {
+      // Extract session ID from transcript path
+      const sessionMatch = transcriptPath.match(/session_([a-zA-Z0-9]+)/);
+      const sessionId = sessionMatch ? sessionMatch[1] : 'unknown';
+
+      saveErrorSummary(errorSummary, sessionId);
+      console.error(`🔴 Error compaction: ${errorSummary.totalErrors} errors (${errorSummary.uniqueTypes.length} types) saved`);
+    }
+  } catch (e) {
+    console.error(`⚠️ Error compaction failed: ${e}`);
   }
 
   console.error(`🎬 STOP-HOOK COMPLETED SUCCESSFULLY at ${new Date().toISOString()}\n`);

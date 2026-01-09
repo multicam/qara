@@ -1,5 +1,6 @@
 ---
 name: hook-authoring
+context: fork
 description: |
   Claude Code hook creation and configuration. PAI event-driven automation.
 

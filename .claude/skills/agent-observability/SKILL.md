@@ -1,5 +1,6 @@
 ---
 name: agent-observability
+context: fork
 description: |
   Real-time observability dashboard for multi-agent Claude Code sessions.
 

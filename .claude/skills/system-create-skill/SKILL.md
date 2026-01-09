@@ -1,5 +1,6 @@
 ---
 name: system-create-skill
+context: fork
 description: |
   Skill creation and validation framework ensuring compliance with PAI architectural standards.
 

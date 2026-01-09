@@ -1,6 +1,7 @@
 ---
 name: research
 context: fork
+model: sonnet
 description: Comprehensive research, analysis, and content extraction system. Multi-source parallel research using available researcher agents. Deep content analysis with extended thinking. Intelligent retrieval for difficult sites. Fabric pattern selection for 242+ specialized prompts. USE WHEN user says 'do research', 'extract wisdom', 'analyze content', 'find information about', or requests web/content research.
 ---
 
@@ -214,6 +215,66 @@ ${PAI_DIR}/history/research/YYYY-MM/YYYY-MM-DD_[topic]/
 2. **Hard timeouts** - Don't wait indefinitely, proceed with partial results
 3. **Simplest first** - Always try free tools before paid services
 4. **Auto-routing** - Skill analyzes intent and activates appropriate workflow
+
+---
+
+## WebSearch Tool Usage
+
+### Built-in Web Search (FREE)
+
+Claude Code includes a built-in WebSearch tool for real-time web queries.
+
+**When to Use:**
+- Current events and recent information
+- Documentation and API references
+- Pricing, availability, status checks
+- Fact verification beyond training data
+
+**Best Practices:**
+
+```typescript
+// Include year for recent info
+WebSearch({ query: "Next.js 15 features 2024" })
+
+// Be specific
+WebSearch({ query: "TypeScript 5.4 satisfies operator examples" })
+
+// Use domain filtering for trusted sources
+WebSearch({
+  query: "React hooks best practices",
+  allowed_domains: ["react.dev", "kentcdodds.com"]
+})
+```
+
+**Query Optimization:**
+- Include year: "React Server Components 2024"
+- Be specific: "Bun vs Node.js benchmark comparison"
+- Use domain filters: Focus on official docs or trusted sources
+
+**Source Citation:**
+Always cite sources in research output:
+```markdown
+## Sources
+- [React Documentation](https://react.dev/...)
+- [Official Blog Post](https://...)
+```
+
+### WebSearch vs WebFetch
+
+| Need | Tool |
+|------|------|
+| Search for information | WebSearch |
+| Get specific page content | WebFetch |
+| Multiple search results | WebSearch |
+| Full article extraction | WebFetch |
+
+### Integration with Research Workflows
+
+WebSearch is the foundation of `claude-researcher` agent:
+1. Query decomposition into sub-queries
+2. Parallel WebSearch calls
+3. Result synthesis
+4. Source attribution
 
 ---
 
