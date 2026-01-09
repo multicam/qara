@@ -230,45 +230,45 @@ cargo install fd-find ripgrep ast-grep bat
 
 ### Core Infrastructure
 
-| Tool | Purpose | Required | Install |
-|------|---------|----------|---------|
-| Git | Version control | Yes | `xcode-select --install` or `brew install git` |
-| curl | HTTP client | Yes | Pre-installed on most systems |
-| Homebrew | Package manager | macOS | `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"` |
-| Bun | Fast JS runtime | Recommended | `curl -fsSL https://bun.sh/install \| bash` |
-| Cargo | Rust toolchain | Recommended | `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \| sh` |
+| Tool | Purpose | Required | Linux | macOS |
+|------|---------|----------|-------|-------|
+| Git | Version control | Yes | `apt install git` | `xcode-select --install` |
+| curl | HTTP client | Yes | `apt install curl` | Pre-installed |
+| Homebrew | Package manager | macOS | [brew.sh](https://brew.sh) | `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"` |
+| Bun | Fast JS runtime | Recommended | `curl -fsSL https://bun.sh/install \| bash` | `brew install oven-sh/bun/bun` |
+| Cargo | Rust toolchain | Recommended | `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \| sh` | `brew install rust` |
 
 ### Modern CLI Tools
 
-| Tool | Purpose | Install |
-|------|---------|---------|
-| fd | Fast file finder (13-23x faster than find) | `cargo install fd-find` |
-| ripgrep | Fast text search (10-50x faster than grep) | `cargo install ripgrep` |
-| ast-grep | Semantic code search & refactoring | `cargo install ast-grep` |
-| bat | Syntax-highlighted file viewer | `cargo install bat` |
+| Tool | Purpose | Linux | macOS |
+|------|---------|-------|-------|
+| fd | Fast file finder (13-23x faster than find) | `cargo install fd-find` | `brew install fd` |
+| ripgrep | Fast text search (10-50x faster than grep) | `cargo install ripgrep` | `brew install ripgrep` |
+| ast-grep | Semantic code search & refactoring | `cargo install ast-grep` | `brew install ast-grep` |
+| bat | Syntax-highlighted file viewer | `cargo install bat` | `brew install bat` |
 
 ### Development Tools
 
-| Tool | Purpose | Install |
-|------|---------|---------|
-| gh | GitHub CLI | `brew install gh` |
-| markdownlint-cli2 | Markdown linting | `bun install -g markdownlint-cli2` |
-| TypeScript | TS compiler | `bun install -g typescript` |
-| ts-node | TS execution | `bun install -g ts-node` |
+| Tool | Purpose | Linux | macOS |
+|------|---------|-------|-------|
+| gh | GitHub CLI | `apt install gh` | `brew install gh` |
+| markdownlint-cli2 | Markdown linting | `bun install -g markdownlint-cli2` | `brew install markdownlint-cli2` |
+| TypeScript | TS compiler | `bun install -g typescript` | `bun install -g typescript` |
+| ts-node | TS execution | `bun install -g ts-node` | `bun install -g ts-node` |
 
 ### AI Tools
 
-| Tool | Purpose | Install |
-|------|---------|---------|
-| Fabric | AI pattern system (242+ prompts) | [github.com/danielmiessler/fabric](https://github.com/danielmiessler/fabric) |
-| Gemini CLI | Google's terminal AI agent | `npm install -g @anthropic-ai/gemini-cli` |
-| Grok CLI | xAI's terminal agent | [github.com/xai-org/grok-cli](https://github.com/xai-org/grok-cli) |
-| Ollama | Local LLM server | [ollama.com](https://ollama.com) |
+| Tool | Purpose | Linux | macOS |
+|------|---------|-------|-------|
+| Fabric | AI pattern system (242+ prompts) | `go install github.com/danielmiessler/fabric@latest` | `brew install fabric` |
+| Gemini CLI | Google's terminal AI agent | `npm install -g @google/gemini-cli` | `npm install -g @google/gemini-cli` |
+| Grok CLI | xAI's terminal agent | [github.com/xai-org/grok](https://github.com/xai-org/grok) | [github.com/xai-org/grok](https://github.com/xai-org/grok) |
+| Ollama | Local LLM server | `curl -fsSL https://ollama.com/install.sh \| sh` | `brew install ollama` |
 
 ### Language Runtimes
 
-| Tool | Purpose | Install |
-|------|---------|---------|
-| Python 3 | Runtime for utilities | `brew install python` or pre-installed |
-| uv | Fast Python package manager | `curl -LsSf https://astral.sh/uv/install.sh \| sh` |
-| Playwright | Browser automation & UI testing | `bun install -g playwright` |
+| Tool | Purpose | Linux | macOS |
+|------|---------|-------|-------|
+| Python 3 | Runtime for utilities | `apt install python3` | `brew install python` |
+| uv | Fast Python package manager | `curl -LsSf https://astral.sh/uv/install.sh \| sh` | `brew install uv` |
+| Playwright | Browser automation & UI testing | `bun install -g playwright` | `bun install -g playwright` |
