@@ -1,5 +1,6 @@
 ---
 name: brightdata
+context: fork
 description: |
   Progressive four-tier URL content scraping with automatic fallback strategy.
 

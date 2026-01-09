@@ -10,13 +10,16 @@ import { execSync } from 'child_process';
 import { existsSync, readFileSync, readdirSync, statSync } from 'fs';
 import { join, relative } from 'path';
 
-// Analysis categories
+// Analysis categories (updated for PAI v2.1.x)
 const ANALYSIS_MODULES = {
     structure: analyzeStructure,
     contextManagement: analyzeContextManagement,
+    skillsSystem: analyzeSkillsSystem,
+    hooksConfiguration: analyzeHooksConfiguration,
     agentConfiguration: analyzeAgentConfiguration,
     toolIntegration: analyzeToolIntegration,
-    workflowPatterns: analyzeWorkflowPatterns
+    workflowPatterns: analyzeWorkflowPatterns,
+    delegationPatterns: analyzeDelegationPatterns
 };
 
 // Analyze PAI directory structure
@@ -31,10 +34,11 @@ function analyzeStructure(paiPath) {
     const expectedDirs = [
         { path: '.claude', required: true, weight: 2 },
         { path: '.claude/context', required: true, weight: 2 },
+        { path: '.claude/skills', required: false, weight: 2 },  // PAI v2.x skills (replaces .claude/rules)
         { path: '.claude/agents', required: false, weight: 1 },
         { path: '.claude/commands', required: false, weight: 1 },
         { path: '.claude/hooks', required: false, weight: 1 },
-        { path: '.claude/rules', required: false, weight: 1 }
+        { path: '.claude/state', required: false, weight: 1 }    // State persistence
     ];
 
     for (const dir of expectedDirs) {
@@ -128,6 +132,277 @@ function analyzeContextManagement(paiPath) {
     return results;
 }
 
+// Analyze skills system (PAI v2.x)
+function analyzeSkillsSystem(paiPath) {
+    const results = {
+        score: 0,
+        maxScore: 25,
+        findings: [],
+        recommendations: []
+    };
+
+    const skillsPath = join(paiPath, '.claude', 'skills');
+    const rulesPath = join(paiPath, '.claude', 'rules'); // Legacy
+
+    // Check for legacy rules vs modern skills
+    if (existsSync(rulesPath) && !existsSync(skillsPath)) {
+        results.findings.push('⚠️  Using legacy .claude/rules/ - consider migrating to .claude/skills/');
+        results.recommendations.push('Migrate from .claude/rules/ to .claude/skills/ for PAI v2.x compatibility');
+    }
+
+    if (!existsSync(skillsPath)) {
+        results.findings.push('⚪ No skills directory (skills are optional but powerful)');
+        results.recommendations.push('Create .claude/skills/ to define reusable, invocable capabilities');
+        return results;
+    }
+
+    results.score += 5;
+    results.findings.push('✅ Skills directory exists');
+
+    // Analyze each skill
+    const skillDirs = readdirSync(skillsPath, { withFileTypes: true })
+        .filter(d => d.isDirectory())
+        .map(d => d.name);
+
+    results.findings.push(`📦 Found ${skillDirs.length} skill(s)`);
+
+    let wellFormedSkills = 0;
+    let hasInvocableSkill = false;
+    let hasForkContextSkill = false;
+
+    for (const skillDir of skillDirs) {
+        const skillMdPath = join(skillsPath, skillDir, 'SKILL.md');
+
+        if (!existsSync(skillMdPath)) {
+            results.findings.push(`⚠️  ${skillDir}/ missing SKILL.md`);
+            results.recommendations.push(`Add SKILL.md to ${skillDir}/ with proper frontmatter`);
+            continue;
+        }
+
+        const content = readFileSync(skillMdPath, 'utf-8');
+
+        // Check for proper frontmatter
+        const hasFrontmatter = content.startsWith('---');
+        const hasName = /^name:\s*.+/m.test(content);
+        const hasDescription = /^description:\s*.+/m.test(content);
+        const hasContext = /^context:\s*(fork|same)/m.test(content);
+
+        if (hasFrontmatter && hasName) {
+            wellFormedSkills++;
+
+            // Check context type
+            if (/context:\s*fork/m.test(content)) {
+                hasForkContextSkill = true;
+                results.findings.push(`✅ ${skillDir}: fork context (subagent)`);
+            } else {
+                results.findings.push(`✅ ${skillDir}: same context`);
+            }
+
+            // Check for invocability (user-invocable commands)
+            if (/invocable|user-invocable|slash command/i.test(content)) {
+                hasInvocableSkill = true;
+            }
+        } else {
+            const issues = [];
+            if (!hasFrontmatter) issues.push('missing frontmatter');
+            if (!hasName) issues.push('missing name');
+            results.findings.push(`⚠️  ${skillDir}: ${issues.join(', ')}`);
+        }
+
+        // Check for proper skill structure
+        const hasReferences = existsSync(join(skillsPath, skillDir, 'references'));
+        const hasScripts = existsSync(join(skillsPath, skillDir, 'scripts'));
+        const hasWorkflows = existsSync(join(skillsPath, skillDir, 'workflows'));
+
+        if (hasReferences || hasScripts || hasWorkflows) {
+            results.findings.push(`  └─ Has: ${[hasReferences && 'references', hasScripts && 'scripts', hasWorkflows && 'workflows'].filter(Boolean).join(', ')}`);
+        }
+    }
+
+    // Score based on skill quality
+    if (wellFormedSkills === skillDirs.length && skillDirs.length > 0) {
+        results.score += 10;
+        results.findings.push('✅ All skills have proper SKILL.md format');
+    } else if (wellFormedSkills > 0) {
+        results.score += 5;
+    }
+
+    if (hasForkContextSkill) {
+        results.score += 5;
+        results.findings.push('✅ Has fork-context skills (isolated execution)');
+    }
+
+    if (hasInvocableSkill) {
+        results.score += 5;
+        results.findings.push('✅ Has user-invocable skills');
+    } else {
+        results.recommendations.push('Consider making skills user-invocable with Skill tool');
+    }
+
+    return results;
+}
+
+// Analyze hooks configuration
+function analyzeHooksConfiguration(paiPath) {
+    const results = {
+        score: 0,
+        maxScore: 20,
+        findings: [],
+        recommendations: []
+    };
+
+    const hooksDir = join(paiPath, '.claude', 'hooks');
+    const settingsPath = join(paiPath, '.claude', 'settings.json');
+
+    // Check for hooks directory (scripts)
+    let hasHooksDir = false;
+    let hookScripts = [];
+    if (existsSync(hooksDir)) {
+        hasHooksDir = true;
+        hookScripts = readdirSync(hooksDir).filter(f => f.endsWith('.ts') || f.endsWith('.js') || f.endsWith('.sh'));
+        results.findings.push(`📁 Hooks directory: ${hookScripts.length} script(s)`);
+    }
+
+    // Check settings.json for hooks configuration (CC 2.1.x)
+    if (existsSync(settingsPath)) {
+        try {
+            const settings = JSON.parse(readFileSync(settingsPath, 'utf-8'));
+
+            if (settings.hooks && typeof settings.hooks === 'object') {
+                const hookEvents = Object.keys(settings.hooks);
+                results.score += 10;
+                results.findings.push(`✅ Hooks configured in settings.json: ${hookEvents.join(', ')}`);
+
+                // Analyze hook event coverage
+                const recommendedEvents = ['PreToolUse', 'PostToolUse', 'SessionStart', 'SessionEnd', 'UserPromptSubmit'];
+                const missingEvents = recommendedEvents.filter(e => !hookEvents.includes(e));
+
+                if (missingEvents.length === 0) {
+                    results.score += 5;
+                    results.findings.push('✅ All recommended hook events configured');
+                } else if (missingEvents.length < 3) {
+                    results.score += 2;
+                    results.findings.push(`⚪ Optional hook events not configured: ${missingEvents.join(', ')}`);
+                }
+
+                // Check for specific patterns
+                const hasPreToolHooks = hookEvents.includes('PreToolUse');
+                const hasSessionHooks = hookEvents.includes('SessionStart') || hookEvents.includes('SessionEnd');
+
+                if (hasPreToolHooks) {
+                    results.findings.push('✅ PreToolUse hooks enabled (event capture/validation)');
+                }
+                if (hasSessionHooks) {
+                    results.findings.push('✅ Session lifecycle hooks enabled');
+                }
+
+            } else {
+                results.findings.push('⚪ No hooks configured in settings.json');
+                results.recommendations.push('Configure hooks in settings.json for CC 2.1.x automation');
+            }
+
+            // Check for statusLine (related to hooks/automation)
+            if (settings.statusLine) {
+                results.score += 5;
+                results.findings.push('✅ Status line configured');
+            }
+
+        } catch (e) {
+            results.findings.push('⚠️  Could not parse settings.json');
+        }
+    } else {
+        results.findings.push('❌ No settings.json found');
+        results.recommendations.push('Create settings.json with hooks configuration');
+    }
+
+    // Check for legacy hooks.json (deprecated)
+    const legacyHooksJson = join(paiPath, '.claude', 'hooks.json');
+    if (existsSync(legacyHooksJson)) {
+        results.findings.push('⚠️  Legacy hooks.json detected - migrate to settings.json');
+        results.recommendations.push('Migrate hooks.json to settings.json hooks section');
+    }
+
+    return results;
+}
+
+// Analyze delegation patterns (multi-agent)
+function analyzeDelegationPatterns(paiPath) {
+    const results = {
+        score: 0,
+        maxScore: 15,
+        findings: [],
+        recommendations: []
+    };
+
+    // Search for delegation patterns in CLAUDE.md files and context
+    const allMdFiles = findFiles(paiPath, '*.md');
+
+    let hasDelegationGuide = false;
+    let hasParallelPatterns = false;
+    let hasAgentHierarchy = false;
+
+    for (const file of allMdFiles) {
+        const content = readFileSync(file, 'utf-8').toLowerCase();
+        const relativePath = relative(paiPath, file);
+
+        // Check for delegation guide
+        if (relativePath.includes('delegation') || content.includes('delegation-guide')) {
+            hasDelegationGuide = true;
+            results.findings.push(`✅ Delegation guide: ${relativePath}`);
+        }
+
+        // Check for parallel agent patterns
+        if (content.includes('parallel') && (content.includes('agent') || content.includes('task tool'))) {
+            hasParallelPatterns = true;
+        }
+
+        // Check for agent hierarchy documentation
+        if (content.includes('agent-guide') || content.includes('agent hierarchy') || content.includes('orchestrator')) {
+            hasAgentHierarchy = true;
+        }
+    }
+
+    if (hasDelegationGuide) {
+        results.score += 5;
+    } else {
+        results.recommendations.push('Create delegation guide for multi-agent workflows');
+    }
+
+    if (hasParallelPatterns) {
+        results.score += 5;
+        results.findings.push('✅ Parallel agent patterns documented');
+    } else {
+        results.recommendations.push('Document parallel agent execution patterns');
+    }
+
+    if (hasAgentHierarchy) {
+        results.score += 5;
+        results.findings.push('✅ Agent hierarchy/roles documented');
+    } else {
+        results.recommendations.push('Define agent hierarchy and escalation paths');
+    }
+
+    // Check for Task tool patterns in commands
+    const commandsDir = join(paiPath, '.claude', 'commands');
+    if (existsSync(commandsDir)) {
+        const commands = readdirSync(commandsDir).filter(f => f.endsWith('.md'));
+        let commandsWithDelegation = 0;
+
+        for (const cmd of commands) {
+            const content = readFileSync(join(commandsDir, cmd), 'utf-8');
+            if (content.includes('Task tool') || content.includes('subagent') || content.includes('parallel')) {
+                commandsWithDelegation++;
+            }
+        }
+
+        if (commandsWithDelegation > 0) {
+            results.findings.push(`✅ ${commandsWithDelegation} command(s) use delegation patterns`);
+        }
+    }
+
+    return results;
+}
+
 // Analyze agent configuration
 function analyzeAgentConfiguration(paiPath) {
     const results = {
@@ -201,23 +476,25 @@ function analyzeToolIntegration(paiPath) {
         recommendations: []
     };
 
-    // Check for tools documentation
+    // Check for MCP tools documentation
     const toolsContext = join(paiPath, '.claude', 'context', 'tools');
     if (existsSync(toolsContext)) {
         results.score += 5;
         results.findings.push('✅ Tools context documentation exists');
     } else {
-        results.recommendations.push('Create .claude/context/tools/ for tool documentation');
+        results.findings.push('⚪ No tools context directory (optional)');
     }
 
-    // Check for skills/rules definitions
-    const rulesPath = join(paiPath, '.claude', 'rules');
-    if (existsSync(rulesPath)) {
-        const rules = readdirSync(rulesPath).filter(f => f.endsWith('.md'));
-        results.score += 5;
-        results.findings.push(`✅ Found ${rules.length} skill/rule definitions`);
-    } else {
-        results.findings.push('⚪ No .claude/rules/ directory (skills are optional)');
+    // Check for MCP server configurations
+    const settingsPath = join(paiPath, '.claude', 'settings.json');
+    if (existsSync(settingsPath)) {
+        try {
+            const settings = JSON.parse(readFileSync(settingsPath, 'utf-8'));
+            if (settings.enabledMcpjsonServers || settings.enableAllProjectMcpServers) {
+                results.score += 5;
+                results.findings.push('✅ MCP server configuration present');
+            }
+        } catch { /* ignore */ }
     }
 
     return results;

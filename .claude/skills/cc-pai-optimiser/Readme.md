@@ -1,4 +1,4 @@
-# CC-PAI Optimizer Skill
+# CC-PAI Optimizer Skill (v2.1.2)
 
 A Claude skill for reviewing and optimizing Personal AI Infrastructure (PAI) codebases as Claude Code evolves.
 
@@ -20,14 +20,14 @@ This skill provides a systematic approach to track CC updates and apply them to 
 |--------|-----|---------|
 | **GitHub CHANGELOG** | https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md | Detailed version history |
 | **GitHub Releases** | https://github.com/anthropics/claude-code/releases | Tagged releases with notes |
-| **Anthropic Docs** | https://docs.claude.com/en/release-notes/overview | Platform-wide updates |
+| **Anthropic Docs** | https://docs.anthropic.com/en/docs/claude-code | Official documentation |
 | **NPM Package** | https://www.npmjs.com/package/@anthropic-ai/claude-code | Package versions |
 
 ### Secondary Sources (Community - Verify Against Official)
 
 | Source | URL | Content |
 |--------|-----|---------|
-| Claude CC system prompt | https://github.com/marckrenn/claude-code-changelog/blob/main/cc-prompt.md | github dude |
+| marckrenn changelog | https://github.com/marckrenn/claude-code-changelog | System prompt history |
 | ClaudeLog | https://claudelog.com/claude-code-changelog/ | Aggregated changelog |
 | DeepWiki | https://deepwiki.com/anthropics/claude-code/ | Feature architecture docs |
 | Discord | https://humanlayer.dev/discord | Community discussions |
@@ -37,13 +37,14 @@ This skill provides a systematic approach to track CC updates and apply them to 
 | Source | URL | Relevance |
 |--------|-----|-----------|
 | 12-Factor Agents | https://github.com/humanlayer/12-factor-agents | Agent design principles |
-| Claude Agent SDK | https://platform.claude.com/docs/en/agent-sdk | Custom agent building |
+| Claude Agent SDK | https://docs.anthropic.com/en/docs/agent-sdk | Custom agent building |
 
 ## Skill Structure
 
 ```
 cc-pai-optimiser/
 ├── SKILL.md                              # Main skill file
+├── Readme.md                             # This file
 ├── references/
 │   ├── cc-trusted-sources.md            # Trusted sources detail
 │   └── 12-factor-checklist.md           # Compliance audit criteria
@@ -86,15 +87,43 @@ bun run scripts/analyse-pai.js ${PAI_DIR}/..
 
 ## Key Claude Code Features to Track
 
+### CC 2.1.x (Current - 2025)
+
+| Feature | Min Version | PAI Impact |
+|---------|-------------|------------|
+| Model routing | 2.1.0 | Per-task model selection (haiku/sonnet/opus) |
+| Skill invocation | 2.1.0 | Skill tool for user-defined skills |
+| Background tasks | 2.1.0 | Async agent execution with run_in_background |
+| Task resume | 2.1.0 | Resume agents via agent ID |
+| Status line | 2.1.0 | Custom status line in settings.json |
+| Enhanced hooks | 2.1.0 | Hooks in settings.json (replaces hooks.json) |
+| WebSearch | 2.1.0 | Built-in web search capability |
+| AskUserQuestion | 2.1.0 | Interactive questions with options |
+
+### CC 2.0.x (Foundational)
+
 | Feature | Min Version | PAI Impact |
 |---------|-------------|------------|
 | Subagents | 1.0.80 | Parallel task delegation |
-| Checkpoints | 2.0.0 | Code state rollback |
+| Checkpoints | 2.0.0 | Code state rollback with /rewind |
 | Hooks | 1.0.85 | Event automation |
-| Skills | 2.0.40 | Reusable capabilities |
+| Skills | 2.0.40 | Reusable capabilities in .claude/skills/ |
 | Plan Mode | 2.0.50 | Structured execution |
 | LSP | 2.0.74 | Code intelligence |
 | Chrome Integration | 2.0.72 | Browser control |
+
+## Analysis Modules
+
+The PAI analyzer checks:
+
+1. **Structure** - Directory layout (.claude/, context/, skills/, etc.)
+2. **Context Management** - UFC patterns, file sizes, progressive disclosure
+3. **Skills System** - SKILL.md format, context types (fork/same), invocability
+4. **Hooks Configuration** - settings.json hooks, lifecycle events
+5. **Agent Configuration** - Specialized agents, Factor 10 compliance
+6. **Tool Integration** - MCP servers, tool documentation
+7. **Workflow Patterns** - Commands, control flow, state management
+8. **Delegation Patterns** - Multi-agent workflows, parallel execution
 
 ## 12-Factor Agent Principles for PAI
 
@@ -115,41 +144,6 @@ The skill audits against these factors (see `references/12-factor-checklist.md`)
 
 ⭐ = High-impact factors for PAI optimization
 
-## Update Monitoring Strategy
-
-### Automated (Recommended)
-
-```bash
-#!/bin/bash
-# Add to weekly cron
-CURRENT=$(claude --version 2>/dev/null | grep -oP '\d+\.\d+\.\d+')
-LOCATION=$(which claude)
-LATEST=$(npm view @anthropic-ai/claude-code version 2>/dev/null)
-
-if [ "$CURRENT" != "$LATEST" ]; then
-  echo "CC Update: $CURRENT → $LATEST"
-  # Optionally: trigger PAI analysis
-fi
-```
-
-### Manual Cadence
-
-| Check | Frequency | Action |
-|-------|-----------|--------|
-| `claude --version` | Each session | Quick version check |
-| GitHub CHANGELOG | Weekly | Feature review |
-| Anthropic Blog | Monthly | Major announcements |
-| Run full analysis | Monthly | Comprehensive audit |
-
-## Integration with Existing PAI
-
-When using this skill to optimize an existing PAI:
-
-1. **Preserve** - Don't break existing context loading (Layers 1-4)
-2. **Enhance** - Add new CC features incrementally
-3. **Validate** - Test context hydration after changes
-4. **Document** - Update CLAUDE.md files with changes
-
 ## Output Example
 
 When running the skill, expect reports like:
@@ -159,26 +153,42 @@ When running the skill, expect reports like:
 ║              PAI OPTIMIZATION ANALYSIS                       ║
 ╚══════════════════════════════════════════════════════════════╝
 
-📅 Generated: 2025-12-23T10:30:00Z
-📁 PAI Path: /home/user/my-pai
-📊 Overall Score: 62/80 (78%)
+📅 Generated: 2025-01-09T10:30:00Z
+📁 PAI Path: /home/user/.claude
+📊 Overall Score: 85/125 (68%)
 
-Progress: [███████████████░░░░░] 78%
+Progress: [█████████████░░░░░░░] 68%
 
-─── STRUCTURE (8/10) ───
+─── STRUCTURE (10/10) ───
   ✅ .claude exists
   ✅ .claude/context exists
-  ✅ .claude/agents exists
-  ⚪ .claude/hooks not present (optional)
+  ✅ .claude/skills exists
+  ✅ .claude/hooks exists
+
+─── SKILLSSYSTEM (20/25) ───
+  ✅ Skills directory exists
+  📦 Found 16 skill(s)
+  ✅ All skills have proper SKILL.md format
+  ✅ Has fork-context skills (isolated execution)
+
+─── HOOKSCONFIGURATION (20/20) ───
+  ✅ Hooks configured in settings.json
+  ✅ All recommended hook events configured
+  ✅ Status line configured
 
 ─── RECOMMENDATIONS ───
-📌 contextManagement:
-   • Split 2 oversized context files
-   • Add context loading enforcement
-
-📌 toolIntegration:
-   • Add descriptions to all tool integrations
+📌 delegationPatterns:
+   • Document parallel agent execution patterns
 ```
+
+## Integration with Existing PAI
+
+When using this skill to optimize an existing PAI:
+
+1. **Preserve** - Don't break existing context loading (Layers 1-4)
+2. **Enhance** - Add new CC features incrementally
+3. **Validate** - Test context hydration after changes
+4. **Document** - Update CLAUDE.md files with changes
 
 ## Installation
 

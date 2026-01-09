@@ -4,7 +4,7 @@ context: fork
 description: Review and optimize PAI (Personal AI Infrastructure) codebases as Claude Code evolves. Use when analyzing PAI repositories against 12-factor agent principles, checking for Claude Code feature compatibility, auditing context management patterns, or generating upgrade recommendations. Triggers on requests involving PAI optimization, Claude Code feature adoption, agent architecture review, or context engineering improvements.
 ---
 
-# CC-PAI Optimizer
+# CC-PAI Optimizer (v2.1.2)
 
 Review and optimize PAI codebases by tracking Claude Code evolution and applying 12-factor agent principles.
 
@@ -15,17 +15,16 @@ Review and optimize PAI codebases by tracking Claude Code evolution and applying
 Before any optimization, fetch current CC capabilities from trusted sources:
 
 ```bash
-# Set trusted sources
+# Check current version
+claude --version
+
+# Trusted sources
 CC_SOURCES=(
   "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md"
   "https://github.com/anthropics/claude-code/releases"
-  "https://docs.claude.com/en/release-notes/overview"
+  "https://docs.anthropic.com/en/docs/claude-code"
   "https://github.com/marckrenn/claude-code-changelog/blob/main/cc-prompt.md"
-  "https://github.com/marckrenn/claude-code-changelog"
 )
-
-# Check latest version
-claude --version 2>/dev/null || echo "Claude Code not installed locally"
 ```
 
 Reference `references/cc-trusted-sources.md` for complete source list and update frequency recommendations.
@@ -34,31 +33,88 @@ Reference `references/cc-trusted-sources.md` for complete source list and update
 
 ```bash
 # Discover PAI structure
-find "$PAI_DIR" -name "CLAUDE.md" -o -name ".claude" -type d -exec basename {} \; 2>/dev/null
+ls -la "$PAI_DIR/.claude/"
 ```
 
 ### 3. Run Analysis Pipeline
 
 Execute analysis in this order:
 
-1. **Feature Gap Analysis** - Compare current PAI against latest CC features
-2. **12-Factor Compliance** - Audit against agent principles
-3. **Context Engineering Audit** - Review context management patterns
-4. **Upgrade Plan Generation** - Create prioritized recommendations
+1. **Structure Analysis** - Directory layout and required files
+2. **Skills System Audit** - SKILL.md format, context types, invocability
+3. **Hooks Configuration** - settings.json hooks, lifecycle events
+4. **Context Engineering Audit** - UFC patterns, progressive disclosure
+5. **Delegation Patterns** - Multi-agent workflows
+6. **12-Factor Compliance** - Agent principles audit
+7. **Upgrade Plan Generation** - Prioritized recommendations
 
 ## Analysis Modules
+
+### Structure Analysis
+
+Expected PAI v2.x structure:
+
+```
+.claude/
+├── context/           # Context files (CLAUDE.md)
+├── skills/            # Skill definitions (replaces rules/)
+│   └── */SKILL.md    # Each skill with frontmatter
+├── agents/            # Agent configurations
+├── commands/          # Reusable workflows
+├── hooks/             # Hook scripts
+├── state/             # State persistence
+└── settings.json      # CC configuration with hooks
+```
+
+### Skills System Analysis
+
+Check for proper SKILL.md format:
+
+```yaml
+---
+name: skill-name
+context: fork|same
+description: What this skill does
+---
+```
+
+Key checks:
+- All skills have SKILL.md with frontmatter
+- `context: fork` for isolated execution (subagent)
+- `context: same` for main conversation
+- references/, scripts/, workflows/ subdirectories
+
+### Hooks Configuration (CC 2.1.x)
+
+Hooks are now in settings.json:
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [...],
+    "PostToolUse": [...],
+    "SessionStart": [...],
+    "SessionEnd": [...],
+    "UserPromptSubmit": [...],
+    "Stop": [...],
+    "SubagentStop": [...]
+  }
+}
+```
 
 ### Feature Gap Analysis
 
 Compare PAI implementation against CC capabilities:
 
-| CC Feature | Check Location | Optimization Signal |
-|------------|----------------|---------------------|
-| Subagents | `.claude/` config | Missing parallel execution patterns |
-| Checkpoints | `/rewind` usage | No rollback safety nets |
-| Hooks | `hooks/` directory | Missing automation triggers |
-| Skills | `.claude/rules/` | No reusable skill definitions |
-| Plan Mode | Agent configs | Missing planning phase |
+| CC Feature | Min Version | Check Location | Optimization Signal |
+|------------|-------------|----------------|---------------------|
+| Subagents | 1.0.80 | `.claude/agents/` | Missing parallel execution |
+| Checkpoints | 2.0.0 | `/rewind` usage | No rollback safety |
+| Hooks | 2.1.0 | `settings.json` | Missing automation |
+| Skills | 2.0.40 | `.claude/skills/` | No reusable capabilities |
+| Plan Mode | 2.0.50 | Commands | Missing planning phase |
+| Model routing | 2.1.0 | Task tool usage | No per-task model selection |
+| Status line | 2.1.0 | `settings.json` | No custom status |
 
 ### 12-Factor Compliance Check
 
@@ -67,28 +123,9 @@ Reference `references/12-factor-checklist.md` for complete audit criteria.
 Key factors to validate:
 
 1. **Factor 3 - Own Context Window**: Is context hydration explicit and controlled?
-2. **Factor 8 - Own Control Flow**: Is agent loop logic in application code, not framework?
-3. **Factor 10 - Small Focused Agents**: Are agents single-purpose or monolithic?
-4. **Factor 12 - Stateless Reducer**: Is state externalized properly?
-
-### Context Engineering Audit
-
-Evaluate against UFC (Universal File-based Context) principles:
-
-```
-Check hierarchy:
-~/.claude/
-├── context/           # Should exist with CLAUDE.md files
-├── agents/            # Specialized agent configs
-├── commands/          # Reusable workflows
-└── hooks/             # Event automation
-```
-
-Red flags:
-- Context files >500 lines (split needed)
-- Missing progressive disclosure patterns
-- Hardcoded context (should be file-based)
-- No context loading enforcement
+2. **Factor 8 - Own Control Flow**: Is agent loop logic in application code?
+3. **Factor 10 - Small Focused Agents**: Are agents single-purpose?
+4. **Factor 12 - Stateless Reducer**: Is state externalized?
 
 ## Output Format
 
@@ -104,8 +141,14 @@ Generate report as:
 | Feature | Status | Priority | Effort |
 |---------|--------|----------|--------|
 
+## Skills System
+[SKILL.md format compliance, context types]
+
+## Hooks Configuration
+[settings.json hooks audit]
+
 ## 12-Factor Compliance
-[Factor-by-factor status with specific file references]
+[Factor-by-factor status]
 
 ## Context Engineering
 [UFC audit results]
@@ -122,56 +165,31 @@ Generate report as:
 
 ### Full Audit
 ```bash
-# Comprehensive PAI review
-analyze_pai() {
-  local pai_path="${1:-.}"
-  echo "=== PAI Analysis: $pai_path ==="
-  
-  # Structure check
-  echo "## Structure"
-  tree -L 3 "$pai_path/.claude" 2>/dev/null || echo "No .claude directory"
-  
-  # Context file audit
-  echo "## Context Files"
-  find "$pai_path" -name "CLAUDE.md" -exec wc -l {} \;
-  
-}
+cd ${PAI_DIR}/skills/cc-pai-optimiser
+bun run scripts/analyse-pai.js ${PAI_DIR}/..
 ```
 
-### Feature Diff
+### Version Check
 ```bash
-# Compare PAI against CC version
-cc_feature_diff() {
-  echo "Claude Code Version: $(claude --version 2>/dev/null || echo 'N/A')"
-  echo "Checking for:"
-  echo "  - Subagent support: $(grep -r 'subagent' . 2>/dev/null | wc -l) references"
-  echo "  - Hook usage: $(ls .claude/hooks 2>/dev/null | wc -l) hooks"
-  echo "  - Skill definitions: $(ls .claude/rules 2>/dev/null | wc -l) skills"
-}
+cd ${PAI_DIR}/skills/cc-pai-optimiser
+bun run scripts/cc-version-check.js ${PAI_DIR}/..
 ```
-
-## Integration with PAI System
-
-When optimizing an existing PAI setup:
-
-1. **Preserve** existing context loading protocols (Layer 1-4 enforcement)
-2. **Enhance** with new CC features (subagents, checkpoints, hooks)
-3. **Validate** changes don't break context hydration
-4. **Document** all changes in appropriate CLAUDE.md files
 
 ## Version Tracking
 
 Track CC versions against PAI compatibility:
 
 ```javascript
-// scripts/cc-version-check.js
-const CC_MIN_VERSION = "2.0.0";
-const FEATURE_REQUIREMENTS = {
-  subagents: "1.0.80",
-  checkpoints: "2.0.0",
-  hooks: "1.0.85",
-  skills: "2.0.40",
-  planMode: "2.0.50"
+// Key CC 2.1.x features
+const CC_2_1_FEATURES = {
+  modelRouting: "2.1.0",      // Per-task model selection
+  skillInvocation: "2.1.0",   // Skill tool
+  backgroundTasks: "2.1.0",   // run_in_background
+  taskResume: "2.1.0",        // Resume via agent ID
+  statusLine: "2.1.0",        // Custom status line
+  settingsJsonHooks: "2.1.0", // Hooks in settings.json
+  webSearch: "2.1.0",         // Built-in WebSearch
+  askUserQuestion: "2.1.0"    // Interactive questions
 };
 ```
 

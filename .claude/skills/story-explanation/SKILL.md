@@ -1,5 +1,6 @@
 ---
 name: story-explanation
+context: fork
 description: Create compelling story-format summaries using UltraThink to find the best narrative framing. Support multiple formats - 3-part narrative, n-length with inline links, abridged 5-line, or comprehensive. USE WHEN user says 'create story explanation', 'narrative summary', 'explain as a story', or wants content in Daniel's conversational first-person voice.
 ---
 
@@ -104,52 +105,11 @@ User request → Analyze intent:
 - `/cse` → `workflows/cse.md`
 - `/cse5` → `workflows/cse5.md`
 
-## 📁 Scratchpad → History Pattern
+## 📁 File Organization
 
 **Working Directory:** `${PAI_DIR}/scratchpad/YYYY-MM-DD-HHMMSS_story-explanation-[topic]/`
 
-**Process:**
-1. **Scratchpad (Working Files):**
-   - Create timestamped directory for each story explanation project
-   - Store raw content extraction (transcripts, article text, etc.)
-   - Keep UltraThink analysis notes
-   - Save multiple framing explorations (5+ options from deep analysis)
-   - Draft iterations and refinements
-   - Example: `${PAI_DIR}/scratchpad/2025-10-26-143000_story-explanation-agi-timeline/`
-
-2. **History (Permanent Archive - Optional):**
-   - Move to `${PAI_DIR}/history/research/YYYY-MM/YYYY-MM-DD-HHMMSS_AGENT-[agent]_RESEARCH_[slug].md` **ONLY IF:**
-     - The analysis provides valuable reusable insights about narrative framing
-     - The content analysis reveals patterns applicable to future work
-     - The framing exploration demonstrates particularly effective techniques
-     - You want to reference this analysis methodology later
-   - Include: Final story explanation + UltraThink analysis notes + framing options explored
-   - Most story explanations are one-off outputs and can stay in scratchpad
-
-3. **Distinction:**
-   - **Scratchpad = All working files** (content extraction, drafts, explorations)
-   - **History = Only valuable analytical insights** (methodology learnings, exceptional framing discoveries)
-   - **Most story explanations are throwaway content** - only archive exceptional analysis
-
-**File Structure Example:**
-```
-${PAI_DIR}/scratchpad/2025-10-26-143000_story-explanation-agi-timeline/
-├── raw-content.txt                    # Extracted article/transcript
-├── ultrathink-analysis.md             # Deep narrative analysis notes
-├── framing-explorations.md            # 5+ different narrative framings explored
-├── draft-v1.md                        # First draft
-├── draft-v2.md                        # Refined version
-└── final-story-explanation.md         # Final output
-
-# Only if exceptional:
-${PAI_DIR}/history/research/2025-10/2025-10-26-143000_AGENT-default_RESEARCH_agi-timeline-narrative-framing-analysis.md
-```
-
-**Guidelines:**
-- Always work in scratchpad first
-- Only move to history if the analysis itself is valuable for future reference
-- Clean up scratchpad after project completion (or leave for periodic cleanup)
-- The story explanation output itself goes to the user - not necessarily to history
+**Full details:** `references/file-organization.md`
 
 ## The Four-Step Process
 
@@ -235,88 +195,15 @@ STEP 3 - OUTPUT IN SELECTED FORMAT:
 Use the selected framing to create the story explanation in the appropriate format.
 ```
 
-## Output Formats
+## Output Formats & Voice
 
-### Default: 3-Part Narrative (workflows/create.md)
+**Full guide:** `references/voice-style-guide.md`
 
-**Opening (15-25 words)**
-- Compelling sentence that sets up the content
-- Use plain descriptors: "interview", "paper", "talk", "article", "post", "blog"
-- Avoid journalistic adjectives: "alarming", "groundbreaking", "shocking", "incredible"
-- First person voice (Daniel's perspective)
-
-**Body (5-15 sentences)**
-- Escalating story-based flow: background → main points → examples → implications
-- Written in 9th-grade English (conversational, not dumbed down)
-- Vary sentence length naturally (8-16 words, mix short and longer)
-- Natural rhythm that feels human-written
-- First person voice
-- Stick to the facts - don't extrapolate beyond the input
-- No bullet markers - line breaks between sentences
-- Period at end of each sentence
-
-**Closing (15-25 words)**
-- Wrap up in a compelling way that delivers the "wow" factor
-- First person voice
-- Make the significance clear
-
-### N-Length with Links (workflows/create-with-links.md)
-
-**N sentences** (user-specified, default 25) with inline links after EVERY sentence mentioning developments:
-
-```
-[Sentence 1 - opening hook]. [LINK 1](URL) | [LINK 2](URL)
-
-[Sentence 2]. [LINK 3](URL)
-
-[Sentence 3]. [LINK 4](URL) | [LINK 5](URL) | [LINK 6](URL)
-
-[Continue for n sentences...]
-
----
-
-**Primary Sources:**
-- [Source 1]: [URL]
-- [Source 2]: [URL]
-```
-
-## Voice and Style Guidelines
-
-### DANIEL MIESSLER VOICE:
-- First person perspective ("In this post, I argue...")
-- Casual, direct, genuinely curious and excited
-- Natural conversational tone (like telling a friend)
-- Never flowery, emotional, or journalistic
-- Let the content speak for itself
-
-### AVOID THESE CLICHE PHRASES:
-- "sitting on a knife's edge"
-- "game-changer" / "game changing"
-- "double-edged sword"
-- "paradigm shift"
-- "revolutionary"
-- "groundbreaking"
-- "alarming"
-- "shocking"
-- "incredible"
-- "mind-blowing"
-
-### GOOD SIGNALS:
-- Opening hooks the reader with plain, direct language
-- Body flows naturally with varied sentence length
-- Story escalates logically (background → points → implications)
-- Closing delivers "wow" factor without hyperbole
-- Reads naturally when spoken aloud
-- Sticks to facts from the content
-- Feels like Daniel sharing something interesting
-
-### BAD SIGNALS (avoid):
-- Journalistic or academic tone
-- Formulaic structure
-- Extrapolating beyond the input
-- Flowery or emotional language
-- Cliche phrases
-- Bullet points or numbered lists in final output
+**Key points:**
+- **3-Part Narrative:** Opening (15-25 words) → Body (5-15 sentences) → Closing (15-25 words)
+- **N-Length with Links:** User-specified sentences with inline source attribution
+- **Daniel's Voice:** First person, casual, direct, genuinely curious
+- **Avoid:** Cliches ("game-changer", "paradigm shift"), journalistic tone, extrapolation
 
 ## Comparison to Other Approaches
 
@@ -378,28 +265,11 @@ When this skill activates, Qara should:
 9. **Stick to facts** - Don't extrapolate beyond the input
 10. **Deliver "wow" factor** - Make significance clear without hyperbole
 
-## Common Failure Modes to Avoid
+## Quality Guidelines
 
-1. **Mode collapse** - Only considering obvious narrative framings without exploring alternatives
-2. **Formulaic structure** - Generic academic or journalistic tone
-3. **Cliche language** - Using "game-changer", "paradigm shift", "revolutionary", "groundbreaking"
-4. **Extrapolating** - Adding information not in the source content
-5. **Wrong voice** - Third person, formal, or academic instead of Daniel's casual first person
-6. **No "wow" factor** - Missing the compelling closing that makes significance clear
-7. **Bullet points** - Using numbered lists or bullets in final output
-8. **Flowery language** - Emotional, journalistic, or hyperbolic tone
+**See:** `references/voice-style-guide.md` for failure modes and success criteria.
 
-## Success Criteria
-
-You've succeeded with this skill when:
-- Story explanation reads naturally when spoken aloud
-- Opening hooks the reader with plain, direct language
-- Body flows conversationally with varied sentence length
-- Closing delivers "wow" factor without hyperbole
-- Voice feels like Daniel sharing something interesting with a friend
-- Sticks to facts from the content without extrapolating
-- No cliches or journalistic language
-- User says "This makes me want to share it!" or "I get it now!"
+**Quick check:** Does it read naturally spoken aloud? Does it feel like Daniel sharing something interesting with a friend?
 
 ## Quick Reference
 

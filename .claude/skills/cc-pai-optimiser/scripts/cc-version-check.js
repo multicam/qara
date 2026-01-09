@@ -7,26 +7,37 @@
  */
 
 import { execSync } from 'child_process';
-import { existsSync, readFileSync } from 'fs';
+import { existsSync, readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
 
-// Feature requirements by CC version
+// Feature requirements by CC version (updated 2025-01)
 const FEATURE_REQUIREMENTS = {
-    // Core features
-    subagents: { minVersion: '1.0.80', description: 'Parallel task delegation' },
+    // Core features (foundational)
+    subagents: { minVersion: '1.0.80', description: 'Parallel task delegation via Task tool' },
     checkpoints: { minVersion: '2.0.0', description: 'Code state snapshots with /rewind' },
-    hooks: { minVersion: '1.0.85', description: 'Event-based automation' },
-    skills: { minVersion: '2.0.40', description: 'Reusable skill definitions in .claude/rules/' },
-    planMode: { minVersion: '2.0.50', description: 'Structured planning before execution' },
+    hooks: { minVersion: '1.0.85', description: 'Event-based automation (settings.json hooks config)' },
+    skills: { minVersion: '2.0.40', description: 'Reusable skill definitions in .claude/skills/' },
+    planMode: { minVersion: '2.0.50', description: 'Structured planning with EnterPlanMode/ExitPlanMode' },
 
-    // Recent additions
+    // CC 2.0.x features
     lsp: { minVersion: '2.0.74', description: 'Language Server Protocol for code intelligence' },
     chromeIntegration: { minVersion: '2.0.72', description: 'Browser control via Chrome extension' },
     desktopApp: { minVersion: '2.0.51', description: 'Native desktop application' },
     vscodeExtension: { minVersion: '2.0.0', description: 'Native VS Code extension' },
     enterpriseSettings: { minVersion: '2.0.53', description: 'Managed enterprise configurations' },
 
-    // Older but important
+    // CC 2.1.x features (2025)
+    modelRouting: { minVersion: '2.1.0', description: 'Per-task model selection (haiku/sonnet/opus)' },
+    skillInvocation: { minVersion: '2.1.0', description: 'Skill tool for invoking user-defined skills' },
+    backgroundTasks: { minVersion: '2.1.0', description: 'run_in_background parameter for Task tool' },
+    taskResume: { minVersion: '2.1.0', description: 'Resume agents via agent ID' },
+    statusLine: { minVersion: '2.1.0', description: 'Custom status line via settings.json' },
+    settingsJsonHooks: { minVersion: '2.1.0', description: 'Hooks configuration in settings.json (replaces hooks.json)' },
+    enhancedSubagents: { minVersion: '2.1.0', description: 'Specialized agent types (Explore, Plan, etc.)' },
+    webSearch: { minVersion: '2.1.0', description: 'Built-in WebSearch tool' },
+    askUserQuestion: { minVersion: '2.1.0', description: 'Interactive user questions with options' },
+
+    // Provider integrations
     bedrockSupport: { minVersion: '0.2.0', description: 'AWS Bedrock integration' },
     vertexSupport: { minVersion: '0.2.0', description: 'Google Vertex AI integration' }
 };
@@ -64,23 +75,67 @@ function getCurrentCCVersion() {
 // Check PAI structure for feature usage
 function checkPAIFeatureUsage(paiPath) {
     const usage = {};
+    const claudeDir = join(paiPath, '.claude');
 
     // Check for subagent patterns
-    usage.subagents = existsSync(join(paiPath, '.claude', 'agents'));
+    usage.subagents = existsSync(join(claudeDir, 'agents'));
 
-    // Check for hooks
-    usage.hooks = existsSync(join(paiPath, '.claude', 'hooks'));
+    // Check for hooks (directory or settings.json config)
+    usage.hooks = existsSync(join(claudeDir, 'hooks'));
 
-    // Check for skills
-    usage.skills = existsSync(join(paiPath, '.claude', 'rules'));
+    // Check for skills (new path: .claude/skills/, legacy: .claude/rules/)
+    usage.skills = existsSync(join(claudeDir, 'skills')) || existsSync(join(claudeDir, 'rules'));
 
     // Check for commands (implies planning/workflow)
-    usage.planMode = existsSync(join(paiPath, '.claude', 'commands'));
+    usage.planMode = existsSync(join(claudeDir, 'commands'));
 
     // Check for context system
-    usage.contextSystem = existsSync(join(paiPath, '.claude', 'context'));
+    usage.contextSystem = existsSync(join(claudeDir, 'context'));
+
+    // Check settings.json for advanced features
+    const settingsPath = join(claudeDir, 'settings.json');
+    if (existsSync(settingsPath)) {
+        try {
+            const settings = JSON.parse(readFileSync(settingsPath, 'utf-8'));
+
+            // CC 2.1.x features detection
+            usage.settingsJsonHooks = Boolean(settings.hooks && Object.keys(settings.hooks).length > 0);
+            usage.statusLine = Boolean(settings.statusLine);
+            usage.modelRouting = Boolean(settings.model); // Default model set
+
+            // Enhanced subagents detection (check for skill definitions with context: fork)
+            const skillsDir = join(claudeDir, 'skills');
+            if (existsSync(skillsDir)) {
+                usage.enhancedSubagents = checkForForkContextSkills(skillsDir);
+                usage.skillInvocation = true;
+            }
+        } catch {
+            // Settings parse error, skip
+        }
+    }
 
     return usage;
+}
+
+// Check if skills directory contains fork context skills
+function checkForForkContextSkills(skillsDir) {
+    try {
+        const entries = readdirSync(skillsDir, { withFileTypes: true });
+        for (const entry of entries) {
+            if (entry.isDirectory()) {
+                const skillMd = join(skillsDir, entry.name, 'SKILL.md');
+                if (existsSync(skillMd)) {
+                    const content = readFileSync(skillMd, 'utf-8');
+                    if (content.includes('context: fork')) {
+                        return true;
+                    }
+                }
+            }
+        }
+    } catch {
+        // Error reading skills dir
+    }
+    return false;
 }
 
 // Generate compatibility report

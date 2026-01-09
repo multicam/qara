@@ -1,5 +1,6 @@
 ---
 name: fabric
+context: fork
 description: Intelligent pattern selection for Fabric CLI. Automatically selects the right pattern from 242+ specialized prompts based on your intent - threat modeling, analysis, summarization, content creation, extraction, and more. USE WHEN processing content, analyzing data, creating summaries, threat modeling, or transforming text.
 ---
 
@@ -116,151 +117,17 @@ fabric "your text here" -p [pattern]
 
 ## 📚 Pattern Categories (242 Total)
 
-### Threat Modeling & Security (15 patterns)
-- `create_threat_model` - General threat modeling
-- `create_stride_threat_model` - STRIDE methodology
-- `create_threat_scenarios` - Threat scenario generation
-- `create_security_update` - Security update documentation
-- `create_sigma_rules` - SIGMA detection rules
-- `write_nuclei_template_rule` - Nuclei scanner templates
-- `write_semgrep_rule` - Semgrep static analysis rules
-- `analyze_threat_report` - Threat report analysis
-- `analyze_threat_report_cmds` - Extract commands from threat reports
-- `analyze_threat_report_trends` - Identify threat trends
-- `t_threat_model_plans` - Threat model for plans
-- `ask_secure_by_design_questions` - Secure by design questions
-- `create_network_threat_landscape` - Network threat landscape
-- `analyze_incident` - Incident analysis
-- `analyze_risk` - Risk analysis
+**Full pattern reference:** `read ${PAI_DIR}/skills/fabric/fabric-patterns-reference.md`
 
-### Summarization (20 patterns)
-- `summarize` - General summarization
-- `create_5_sentence_summary` - Ultra-concise 5-line summary
-- `create_micro_summary` - Micro summary
-- `create_summary` - Detailed summary
-- `summarize_micro` - Micro summarization
-- `summarize_meeting` - Meeting notes summary
-- `summarize_paper` - Academic paper summary
-- `summarize_lecture` - Lecture summary
-- `summarize_newsletter` - Newsletter summary
-- `summarize_debate` - Debate summary
-- `summarize_legislation` - Legislation summary
-- `summarize_rpg_session` - RPG session summary
-- `summarize_board_meeting` - Board meeting summary
-- `summarize_git_changes` - Git changes summary
-- `summarize_git_diff` - Git diff summary
-- `summarize_pull-requests` - PR summary
-- `summarize_prompt` - Prompt summary
-- `youtube_summary` - YouTube video summary
-- `create_ul_summary` - Unsupervised Learning summary
-- `create_cyber_summary` - Cybersecurity summary
-
-### Extraction (30+ patterns)
-- `extract_wisdom` - General wisdom extraction
-- `extract_article_wisdom` - Article-specific wisdom
-- `extract_book_ideas` - Book ideas
-- `extract_insights` - General insights
-- `extract_insights_dm` - Daniel Miessler style insights
-- `extract_main_idea` - Core message
-- `extract_recommendations` - Recommendations
-- `extract_ideas` - Ideas from content
-- `extract_questions` - Questions raised
-- `extract_predictions` - Predictions made
-- `extract_controversial_ideas` - Controversial points
-- `extract_business_ideas` - Business opportunities
-- `extract_skills` - Skills mentioned
-- `extract_patterns` - Patterns identified
-- `extract_sponsors` - Sponsor mentions
-- `extract_references` - References cited
-- `extract_instructions` - Instructions from content
-- `extract_jokes` - Humor extraction
-- `extract_primary_problem` - Main problem
-- `extract_primary_solution` - Main solution
-- `extract_product_features` - Product features
-- `extract_core_message` - Core message
-- `extract_algorithm_update_recommendations` - Algorithm recommendations
-- `extract_extraordinary_claims` - Extraordinary claims
-- `extract_most_redeeming_thing` - Most valuable aspect
-
-### Analysis (35+ patterns)
-- `analyze_claims` - Claim analysis
-- `analyze_malware` - Malware analysis
-- `analyze_code` - Code analysis
-- `analyze_paper` - Paper analysis
-- `analyze_logs` - Log analysis
-- `analyze_debate` - Debate analysis
-- `analyze_incident` - Incident analysis
-- `analyze_comments` - Comment analysis
-- `analyze_answers` - Answer analysis
-- `analyze_email_headers` - Email header analysis
-- `analyze_military_strategy` - Military strategy
-- `analyze_mistakes` - Mistake analysis
-- `analyze_personality` - Personality analysis
-- `analyze_presentation` - Presentation analysis
-- `analyze_product_feedback` - Product feedback
-- `analyze_proposition` - Proposition analysis
-- `analyze_prose` - Prose analysis
-- `analyze_risk` - Risk analysis
-- `analyze_sales_call` - Sales call analysis
-- `analyze_spiritual_text` - Spiritual text analysis
-- `analyze_tech_impact` - Tech impact analysis
-- `analyze_threat_report` - Threat report analysis
-- `analyze_bill` - Legislation analysis
-- `analyze_candidates` - Candidate analysis
-- `analyze_cfp_submission` - CFP submission analysis
-- `analyze_terraform_plan` - Terraform plan analysis
-- `analyze_interviewer_techniques` - Interviewer technique analysis
-
-### Creation (50+ patterns)
-- `create_prd` - Product Requirements Document
-- `create_design_document` - Design documentation
-- `create_user_story` - User stories
-- `create_coding_project` - Coding project
-- `create_coding_feature` - Code features
-- `create_mermaid_visualization` - Mermaid diagrams
-- `create_markmap_visualization` - Markmap mindmaps
-- `create_visualization` - General visualizations
-- `create_threat_model` - Threat models
-- `create_stride_threat_model` - STRIDE threat models
-- `create_threat_scenarios` - Threat scenarios
-- `create_report_finding` - Report findings
-- `create_newsletter_entry` - Newsletter content
-- `create_keynote` - Keynote presentations
-- `create_academic_paper` - Academic papers
-- `create_flash_cards` - Study flashcards
-- `create_quiz` - Quizzes
-- `create_graph_from_input` - Graphs
-- `create_tags` - Content tags
-- `create_art_prompt` - Art generation prompts
-- `create_command` - CLI commands
-- `create_pattern` - Fabric patterns
-- `create_logo` - Logo designs
-- `create_podcast_image` - Podcast imagery
-- `create_sigma_rules` - SIGMA rules
-- `create_video_chapters` - Video chapters
-- `create_upgrade_pack` - Upgrade documentation
-
-### Improvement (10 patterns)
-- `improve_writing` - General writing improvement
-- `improve_academic_writing` - Academic writing
-- `improve_prompt` - Prompt engineering
-- `improve_report_finding` - Report findings
-- `review_code` - Code review
-- `review_design` - Design review
-- `refine_design_document` - Design refinement
-- `humanize` - Humanize AI text
-- `enrich_blog_post` - Blog enhancement
-- `clean_text` - Text cleanup
-
-### Rating/Judgment (8 patterns)
-- `rate_ai_response` - Rate AI outputs
-- `rate_ai_result` - Rate AI results
-- `rate_content` - Rate content quality
-- `rate_value` - Rate value proposition
-- `judge_output` - General judgment
-- `label_and_rate` - Label and rate
-- `check_agreement` - Agreement checking
-- `arbiter-evaluate-quality` - Quality evaluation
+| Category | Count | Common Patterns |
+|----------|-------|-----------------|
+| Security & Threat Modeling | 15 | `create_threat_model`, `create_stride_threat_model`, `analyze_incident` |
+| Summarization | 20 | `summarize`, `create_5_sentence_summary`, `youtube_summary` |
+| Extraction | 30+ | `extract_wisdom`, `extract_insights`, `extract_main_idea` |
+| Analysis | 35+ | `analyze_claims`, `analyze_code`, `analyze_paper` |
+| Creation | 50+ | `create_prd`, `create_mermaid_visualization`, `create_user_story` |
+| Improvement | 10 | `improve_writing`, `improve_prompt`, `review_code` |
+| Rating | 8 | `rate_content`, `judge_output`, `rate_ai_response` |
 
 ## 🔄 Updating Patterns
 
