@@ -36,7 +36,7 @@ Before considering a skill complete, verify:
 - [ ] Follows naming conventions
 - [ ] Progressive disclosure pattern
 - [ ] Self-contained but inherits CORE
-- [ ] Validated against SKILL-STRUCTURE-AND-ROUTING.md
+- [ ] Validated against skill-structure.md
 
 ---
 

@@ -5,12 +5,12 @@
 **When to Use:**
 - User says "canonicalize skill", "canonicalize this skill", "canonicalize [skill-name]"
 - Existing skill doesn't follow current architectural standards
-- Need to refactor skill to comply with SKILL-STRUCTURE-AND-ROUTING.md
+- Need to refactor skill to comply with skill-structure.md
 - Skill structure is inconsistent or non-compliant
 
 **Prerequisites:**
 - Target skill exists in ${PAI_DIR}/skills/
-- Access to SKILL-STRUCTURE-AND-ROUTING.md
+- Access to skill-structure.md
 - Understanding of current skill functionality
 
 ---
@@ -36,7 +36,7 @@
 
 **REQUIRED:** Read the source of truth before any analysis:
 ```bash
-${PAI_DIR}/skills/CORE/SKILL-STRUCTURE-AND-ROUTING.md
+${PAI_DIR}/skills/CORE/skill-structure.md
 ```
 
 **What to extract:**
@@ -536,7 +536,7 @@ skill/
 
 **One Source of Truth:**
 Everything must align with:
-`${PAI_DIR}/skills/CORE/SKILL-STRUCTURE-AND-ROUTING.md`
+`${PAI_DIR}/skills/CORE/skill-structure.md`
 
 ---
 

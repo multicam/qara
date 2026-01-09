@@ -11,7 +11,7 @@
 
 **Prerequisites:**
 - Target skill exists in ${PAI_DIR}/skills/
-- Access to SKILL-STRUCTURE-AND-ROUTING.md
+- Access to skill-structure.md
 - Understanding of validation criteria
 
 ---
@@ -22,7 +22,7 @@
 
 **REQUIRED FIRST STEP:** Read the source of truth:
 ```bash
-${PAI_DIR}/skills/CORE/SKILL-STRUCTURE-AND-ROUTING.md
+${PAI_DIR}/skills/CORE/skill-structure.md
 ```
 
 **What to extract:**
@@ -480,7 +480,7 @@ find ${PAI_DIR}/skills/[skill-name]/ -name "*.md" -type f
 ## Canonical Reference
 
 All validation based on:
-`${PAI_DIR}/skills/CORE/SKILL-STRUCTURE-AND-ROUTING.md`
+`${PAI_DIR}/skills/CORE/skill-structure.md`
 
 **Last Updated:** [YYYY-MM-DD]
 ```
@@ -589,7 +589,7 @@ All validation based on:
 - Skill maintenance
 
 **One Source of Truth:**
-`${PAI_DIR}/skills/CORE/SKILL-STRUCTURE-AND-ROUTING.md`
+`${PAI_DIR}/skills/CORE/skill-structure.md`
 
 ---
 

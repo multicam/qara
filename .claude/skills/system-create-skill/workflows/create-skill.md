@@ -8,7 +8,7 @@
 - User requests "skill for [purpose]"
 
 **Prerequisites:**
-- Access to SKILL-STRUCTURE-AND-ROUTING.md
+- Access to skill-structure.md
 - Understanding of skill purpose and requirements
 - Target skill name determined
 
@@ -20,7 +20,7 @@
 
 **REQUIRED FIRST STEP:** Read the source of truth before creating:
 ```bash
-${PAI_DIR}/skills/CORE/SKILL-STRUCTURE-AND-ROUTING.md
+${PAI_DIR}/skills/CORE/skill-structure.md
 ```
 
 **What to extract:**
@@ -136,7 +136,7 @@ ls -la ${PAI_DIR}/skills/[skill-name]/
 
 ### Step 5: Create SKILL.md
 
-**Use the canonical template from SKILL-STRUCTURE-AND-ROUTING.md:**
+**Use the canonical template from skill-structure.md:**
 
 ```markdown
 ---
@@ -250,7 +250,7 @@ Skill Response:
 ---
 
 **Related Documentation:**
-- `${PAI_DIR}/skills/CORE/SKILL-STRUCTURE-AND-ROUTING.md` - Canonical structure guide
+- `${PAI_DIR}/skills/CORE/skill-structure.md` - Canonical structure guide
 - `${PAI_DIR}/skills/CORE/CONSTITUTION.md` - Overall PAI philosophy
 
 **Last Updated:** [YYYY-MM-DD]
@@ -582,7 +582,7 @@ security-testing/
 ## Notes
 
 **Critical Success Factors:**
-1. **ALWAYS read SKILL-STRUCTURE-AND-ROUTING.md FIRST**
+1. **ALWAYS read skill-structure.md FIRST**
 2. **Workflow Routing section MUST be FIRST**
 3. **Every workflow MUST be routed**
 4. **8-category activation pattern is NOT optional**
@@ -590,7 +590,7 @@ security-testing/
 
 **One Source of Truth:**
 Everything must align with:
-`${PAI_DIR}/skills/CORE/SKILL-STRUCTURE-AND-ROUTING.md`
+`${PAI_DIR}/skills/CORE/skill-structure.md`
 
 **Progressive Disclosure:**
 - SKILL.md is the hub (routing + overview)

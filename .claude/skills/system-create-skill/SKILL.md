@@ -14,25 +14,25 @@ description: |
 
 **When user requests creating a new skill:**
 Examples: "create skill", "create a skill", "new skill", "build skill", "make skill", "skill for X", "Create-A-Skill"
-→ **READ:** ${PAI_DIR}/skills/CORE/SKILL-STRUCTURE-AND-ROUTING.md
+→ **READ:** ${PAI_DIR}/skills/CORE/skill-structure.md
 → **READ:** ${PAI_DIR}/skills/system-create-skill/workflows/create-skill.md
 → **EXECUTE:** Complete skill creation workflow with architectural validation
 
 **When user requests validating existing skill:**
 Examples: "validate skill", "check skill compliance", "audit skill", "verify skill structure"
-→ **READ:** ${PAI_DIR}/skills/CORE/SKILL-STRUCTURE-AND-ROUTING.md
+→ **READ:** ${PAI_DIR}/skills/CORE/skill-structure.md
 → **READ:** ${PAI_DIR}/skills/system-create-skill/workflows/validate-skill.md
 → **EXECUTE:** Skill compliance audit workflow
 
 **When user requests updating existing skill:**
 Examples: "update skill", "refactor skill", "fix skill routing", "add workflow to skill"
-→ **READ:** ${PAI_DIR}/skills/CORE/SKILL-STRUCTURE-AND-ROUTING.md
+→ **READ:** ${PAI_DIR}/skills/CORE/skill-structure.md
 → **READ:** ${PAI_DIR}/skills/system-create-skill/workflows/update-skill.md
 → **EXECUTE:** Skill update workflow with compliance checking
 
 **When user requests canonicalizing a skill:**
 Examples: "canonicalize skill", "canonicalize this skill", "canonicalize [skill-name]", "rebuild skill to standards", "refactor skill to canonical structure"
-→ **READ:** ${PAI_DIR}/skills/CORE/SKILL-STRUCTURE-AND-ROUTING.md
+→ **READ:** ${PAI_DIR}/skills/CORE/skill-structure.md
 → **READ:** ${PAI_DIR}/skills/system-create-skill/workflows/canonicalize-skill.md
 → **EXECUTE:** Complete skill canonicalization workflow - analyze current skill structure and rebuild according to canonical architecture while preserving functionality
 
@@ -64,7 +64,7 @@ Examples: "canonicalize skill", "canonicalize this skill", "canonicalize [skill-
 
 ### Quality & Compliance Indicators
 - User mentions "architectural standards" or "compliance"
-- User references "SKILL-STRUCTURE-AND-ROUTING.md"
+- User references "skill-structure.md"
 - User asks about "skill best practices" or "skill patterns"
 - User needs to ensure skill follows "template" or "philosophy"
 
@@ -75,7 +75,7 @@ Examples: "canonicalize skill", "canonicalize this skill", "canonicalize [skill-
 ### Architectural Compliance
 
 **MANDATORY: Every skill MUST comply with the canonical architecture defined in:**
-`${PAI_DIR}/skills/CORE/SKILL-STRUCTURE-AND-ROUTING.md`
+`${PAI_DIR}/skills/CORE/skill-structure.md`
 
 This document defines:
 - The 3 skill archetypes (Minimal, Standard, Complex)
@@ -180,7 +180,7 @@ skill-name/
 
 **ALWAYS read the canonical architecture before creating:**
 ```bash
-${PAI_DIR}/skills/CORE/SKILL-STRUCTURE-AND-ROUTING.md
+${PAI_DIR}/skills/CORE/skill-structure.md
 ```
 
 This ensures:
@@ -191,7 +191,7 @@ This ensures:
 
 ### Step 4: Create Skill Structure
 
-Use the canonical template from SKILL-STRUCTURE-AND-ROUTING.md:
+Use the canonical template from skill-structure.md:
 
 ```markdown
 ---
@@ -252,7 +252,7 @@ Verify skill activates with natural language triggers from description.
 
 ### Primary Reference Document
 
-**${PAI_DIR}/skills/CORE/SKILL-STRUCTURE-AND-ROUTING.md**
+**${PAI_DIR}/skills/CORE/skill-structure.md**
 - Canonical guide for all skill structure and routing
 - Defines the 3 archetypes (Minimal, Standard, Complex)
 - The 4-level routing hierarchy
@@ -291,7 +291,7 @@ Verify skill activates with natural language triggers from description.
 **User:** "Create a skill for generating API documentation"
 
 **System-create-skill Response:**
-1. Read SKILL-STRUCTURE-AND-ROUTING.md
+1. Read skill-structure.md
 2. Determine archetype: Minimal (single workflow)
 3. Create structure:
    ```
@@ -313,7 +313,7 @@ Verify skill activates with natural language triggers from description.
 **User:** "Create a skill for database operations - migrations, backups, queries, optimization"
 
 **System-create-skill Response:**
-1. Read SKILL-STRUCTURE-AND-ROUTING.md
+1. Read skill-structure.md
 2. Determine archetype: Standard (4 workflows)
 3. Create structure:
    ```
@@ -339,7 +339,7 @@ Verify skill activates with natural language triggers from description.
 **User:** "Validate the research skill for compliance"
 
 **System-create-skill Response:**
-1. Read SKILL-STRUCTURE-AND-ROUTING.md
+1. Read skill-structure.md
 2. Read ${PAI_DIR}/skills/research/SKILL.md
 3. Run validation:
    - ✅ Workflow Routing section present and FIRST
@@ -366,7 +366,7 @@ Verify skill activates with natural language triggers from description.
 3. **Update** - Modify skills while maintaining compliance
 
 **One source of truth:**
-`${PAI_DIR}/skills/CORE/SKILL-STRUCTURE-AND-ROUTING.md`
+`${PAI_DIR}/skills/CORE/skill-structure.md`
 
 **Zero tolerance for:**
 - Orphaned workflows (not routed)
@@ -377,7 +377,7 @@ Verify skill activates with natural language triggers from description.
 ---
 
 **Related Documentation:**
-- `${PAI_DIR}/skills/CORE/SKILL-STRUCTURE-AND-ROUTING.md` - Canonical architecture guide (PRIMARY)
+- `${PAI_DIR}/skills/CORE/skill-structure.md` - Canonical architecture guide (PRIMARY)
 - `${PAI_DIR}/skills/CORE/CONSTITUTION.md` - Overall PAI philosophy
 
 **Last Updated:** 2025-11-17

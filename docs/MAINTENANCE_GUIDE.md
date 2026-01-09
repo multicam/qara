@@ -2,8 +2,9 @@
 
 **Ongoing Maintenance Procedures for Context Management System**
 
-**Created:** 2025-12-01  
-**Status:** Active  
+**Created:** 2025-12-01
+**Last Updated:** 2026-01-10
+**Status:** Active
 **Purpose:** Ensure long-term quality and prevent redundancy regression
 
 ---
@@ -11,14 +12,15 @@
 ## Table of Contents
 
 1. [Overview](#overview)
-2. [Daily/Weekly Tasks](#dailyweekly-tasks)
-3. [Monthly Tasks](#monthly-tasks)
-4. [Quarterly Reviews](#quarterly-reviews)
-5. [When Adding Content](#when-adding-content)
-6. [Structure Standards](#structure-standards)
-7. [Reference Integrity Checks](#reference-integrity-checks)
-8. [Usage Analytics](#usage-analytics)
-9. [Emergency Procedures](#emergency-procedures)
+2. [Automated Quality Checks](#automated-quality-checks)
+3. [Daily/Weekly Tasks](#dailyweekly-tasks)
+4. [Monthly Tasks](#monthly-tasks)
+5. [Quarterly Reviews](#quarterly-reviews)
+6. [When Adding Content](#when-adding-content)
+7. [Structure Standards](#structure-standards)
+8. [Reference Integrity Checks](#reference-integrity-checks)
+9. [Usage Analytics](#usage-analytics)
+10. [Emergency Procedures](#emergency-procedures)
 
 ---
 
@@ -42,12 +44,108 @@ This guide establishes ongoing maintenance procedures to:
 
 ---
 
+## Automated Quality Checks
+
+PAI includes automated validation scripts in `scripts/` to maintain code quality and prevent common issues.
+
+### Pre-commit Hook
+
+Install the pre-commit hook for automatic validation on every commit:
+
+```bash
+cp scripts/pre-commit .git/hooks/pre-commit
+chmod +x .git/hooks/pre-commit
+```
+
+**What it checks:**
+- Skill structure validation (SKILL.md files have required frontmatter)
+- Reference integrity (workflow routing references point to existing files)
+- Blocked files (.env files and settings.json not committed)
+
+The hook runs automatically before each commit completes. If checks fail, the commit is blocked until issues are resolved.
+
+### Manual Validation Scripts
+
+Run these scripts manually to check the codebase:
+
+#### Validate Skills Structure
+
+```bash
+bash scripts/validate-skills.sh
+```
+
+**What it checks:**
+- All skill directories have SKILL.md files
+- SKILL.md files have proper YAML frontmatter (---)
+- SKILL.md files include required `name:` and `description:` fields
+- Workflows directories are not empty
+
+**When to run:**
+- After creating or modifying skills
+- Before major commits
+- During quarterly reviews
+
+#### Check References
+
+```bash
+bash scripts/check-references.sh
+```
+
+**What it checks:**
+- All workflow routing references (→ READ: patterns) point to existing files
+- References are resolved in expected locations (current directory, workflows/, CORE skill)
+
+**When to run:**
+- After moving or renaming workflow files
+- Before major commits
+- When troubleshooting routing issues
+
+Add `--verbose` flag to see all checked references:
+
+```bash
+bash scripts/check-references.sh --verbose
+```
+
+#### Check File Sizes
+
+```bash
+bash scripts/check-file-sizes.sh
+```
+
+**What it checks:**
+- Reports files exceeding recommended line counts (default: 400 lines)
+- Provides size distribution analysis (small, medium, large, oversized)
+
+**When to run:**
+- Monthly maintenance checks
+- When files seem to be growing too large
+- During quarterly reviews
+
+Customize warning threshold:
+
+```bash
+bash scripts/check-file-sizes.sh --warn-at=500
+```
+
+### Integrating Automated Checks
+
+**Recommended workflow:**
+
+1. **Install pre-commit hook** for automatic validation
+2. **Run manual scripts monthly** as part of maintenance routine
+3. **Run all scripts before major refactoring** to establish baseline
+4. **Include script output in quarterly reviews** to track trends
+
+**Note:** The automated scripts complement but do not replace the manual maintenance procedures outlined in this guide. Many quality aspects (redundancy, content accuracy, usage patterns) still require human review.
+
+---
+
 ## Daily/Weekly Tasks
 
 ### As You Work
 
 **When modifying any .md file:**
-- [ ] Check for broken references before committing
+- [ ] Check for broken references before committing (automated by pre-commit hook)
 - [ ] Verify cross-references still valid
 - [ ] Update routing map if routing changed
 - [ ] Maintain consistent formatting
@@ -58,13 +156,15 @@ This guide establishes ongoing maintenance procedures to:
 - [ ] Update appropriate indexes
 - [ ] Document in ROUTING_MAP.md
 
+**Note:** If you have installed the pre-commit hook (recommended), skill structure validation and reference integrity checks run automatically on commit. The manual commands below are still useful for spot checks during development.
+
 **Quick checks:**
 ```bash
 # Before committing changes to CORE skill
 grep -r "\.md" .claude/skills/CORE/ --include="*.md" | grep -v "^Binary" | wc -l
 
-# Verify no broken references to deleted files
-grep -r "cli-first-architecture\|agent-protocols\|delegation-patterns\|TESTING\.md\|playwright-config" .claude/skills/CORE/
+# Verify no broken references to deleted files (or use automated script)
+bash scripts/check-references.sh
 ```
 
 ---
@@ -75,22 +175,21 @@ grep -r "cli-first-architecture\|agent-protocols\|delegation-patterns\|TESTING\.
 
 **Run monthly (1st of each month):**
 
+Use the automated reference checking script:
+
+```bash
+# Check for broken references
+bash scripts/check-references.sh
+
+# Optionally use verbose mode to see all checked references
+bash scripts/check-references.sh --verbose
+```
+
+**Legacy manual check (if needed):**
+
 ```bash
 # Navigate to qara root
 cd ~/qara  # or wherever your qara installation is
-
-# Check for potential broken references
-echo "=== Checking for broken .md references ==="
-find .claude/skills/CORE -name "*.md" -type f -exec grep -H "\.md" {} \; | \
-  grep -v "^\s*#" | \
-  grep -E "\w+\.md" | \
-  while read line; do
-    file=$(echo $line | cut -d: -f1)
-    ref=$(echo $line | sed 's/.*\(\w\+\.md\).*/\1/')
-    if [ ! -f "$(dirname $file)/$ref" ] && [ ! -f ".claude/skills/CORE/$ref" ]; then
-      echo "Potential broken reference: $file -> $ref"
-    fi
-  done
 
 # Check file counts
 echo "=== File counts ==="
@@ -111,6 +210,24 @@ echo "Workflow files: $(find .claude/skills/CORE/workflows -name "*.md" -type f 
 
 ---
 
+### File Size Check
+
+**Run monthly (1st of each month):**
+
+Use the automated file size checking script:
+
+```bash
+# Check for oversized files
+bash scripts/check-file-sizes.sh
+
+# Or customize warning threshold (default: 400 lines)
+bash scripts/check-file-sizes.sh --warn-at=500
+```
+
+The script provides a size distribution report and flags files exceeding recommended line counts.
+
+---
+
 ### Redundancy Spot Check
 
 **Monthly redundancy check:**
@@ -125,9 +242,8 @@ find .claude/skills/CORE -name "*.md" -type f | \
   sed 's/-examples\.md//' | \
   sort | uniq -d
 
-# Check for long files (>800 lines = potential bloat)
-find .claude/skills/CORE -name "*.md" -type f -exec wc -l {} \; | \
-  awk '$1 > 800 {print "Large file: " $2 " (" $1 " lines)"}'
+# Check for long files using automated script
+bash scripts/check-file-sizes.sh
 ```
 
 **Action if redundancy found:**
@@ -611,10 +727,10 @@ find .claude/skills/CORE -name "*.md" -exec grep -l "\.md" {} \; | \
 
 ### Monthly Maintenance Checklist
 
-- [ ] Run reference integrity check
+- [ ] Run automated validation scripts (check-references.sh, check-file-sizes.sh, validate-skills.sh)
 - [ ] Check file counts against baselines
 - [ ] Run redundancy spot check
-- [ ] Review large files (>800 lines)
+- [ ] Review large files flagged by check-file-sizes.sh
 - [ ] Update ROUTING_MAP.md if needed
 - [ ] Document any issues found
 
@@ -644,6 +760,7 @@ find .claude/skills/CORE -name "*.md" -exec grep -l "\.md" {} \; | \
 | Version | Date | Changes |
 |---------|------|---------|
 | 1.0 | 2025-12-01 | Initial maintenance guide created |
+| 1.1 | 2026-01-10 | Added Automated Quality Checks section documenting validation scripts and pre-commit hook |
 
 ---
 

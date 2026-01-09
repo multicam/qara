@@ -1,7 +1,25 @@
-# PAI Architecture: Skills, Commands, Agents, and MCPs
+# PAI Architecture: Skills, Commands, and Agents
 
-**Last Updated:** 2025-10-31
-**Version:** 1.2.0
+**Last Updated:** 2026-01-10
+**Version:** 1.3.0
+
+---
+
+## Recent Changes (2026-01)
+
+- Split `SKILL-STRUCTURE-AND-ROUTING.md` into 3 focused files:
+  - `skill-structure.md` - Mandatory requirements and templates
+  - `skill-archetypes.md` - Directory structure patterns
+  - `routing-patterns.md` - 4-level routing hierarchy
+- Split `hook-system.md` into 4 focused files:
+  - `hook-system.md` - Main guide
+  - `hook-reference.md` - Complete hook types reference
+  - `hook-troubleshooting.md` - Debugging guide
+  - `hook-quickref.md` - Quick reference card
+- Consolidated hooks from 14 to 6 active hooks
+- All SKILL.md files now under 400 lines
+- 16 skills now active in the system
+- 25 CORE skill documentation files providing comprehensive guidance
 
 ---
 
@@ -13,7 +31,7 @@ This document describes the architectural philosophy and design patterns of PAI 
 
 ---
 
-## The Four Primitives
+## The Three Primitives
 
 ### 1. Skills: Meta-Containers for Domain Expertise
 
@@ -690,6 +708,6 @@ This architecture:
 
 ---
 
-**Document Version:** 1.0
-**Last Updated:** 2025-10-30
+**Document Version:** 1.3.0
+**Last Updated:** 2026-01-10
 **License:** MIT (Part of PAI - Personal AI Infrastructure)

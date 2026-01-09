@@ -12,7 +12,7 @@
 
 **Prerequisites:**
 - Target skill exists and is functional
-- Access to SKILL-STRUCTURE-AND-ROUTING.md
+- Access to skill-structure.md
 - Understanding of changes needed
 - Backup created (recommended)
 
@@ -24,7 +24,7 @@
 
 **REQUIRED:** Read the source of truth before updating:
 ```bash
-${PAI_DIR}/skills/CORE/SKILL-STRUCTURE-AND-ROUTING.md
+${PAI_DIR}/skills/CORE/skill-structure.md
 ```
 
 **What to extract:**
@@ -540,7 +540,7 @@ ${PAI_DIR}/skills/[skill-name]/.backup-[timestamp]/
 - Update documentation
 
 **One Source of Truth:**
-`${PAI_DIR}/skills/CORE/SKILL-STRUCTURE-AND-ROUTING.md`
+`${PAI_DIR}/skills/CORE/skill-structure.md`
 
 ---
 
