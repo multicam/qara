@@ -4,6 +4,10 @@
 
 set -e
 
+# Source common variables
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/lib/common.sh"
+
 VERBOSE=false
 if [[ "$1" == "--verbose" ]]; then
     VERBOSE=true
@@ -11,7 +15,6 @@ fi
 
 ERRORS=0
 CHECKED=0
-PAI_DIR="${PAI_DIR:-$HOME/.claude}"
 
 echo "=== Checking .md references in $PAI_DIR/skills ==="
 echo ""

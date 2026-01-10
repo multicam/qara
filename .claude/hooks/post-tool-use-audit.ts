@@ -9,9 +9,10 @@
  * Logs all tool invocations to thoughts/memory/tool-usage.jsonl
  */
 
-import { appendFileSync, existsSync, mkdirSync } from "fs";
-import { homedir } from "os";
 import { join } from "path";
+import { MEMORY_DIR } from './lib/pai-paths';
+import { appendJsonl, truncate } from './lib/jsonl-utils';
+import { getISOTimestamp } from './lib/datetime-utils';
 
 interface ToolUseInput {
   tool_name: string;
@@ -22,43 +23,24 @@ interface ToolUseInput {
 }
 
 function logToolUsage(data: ToolUseInput): void {
-  const logDir = join(homedir(), "qara", "thoughts", "memory");
-  const logFile = join(logDir, "tool-usage.jsonl");
-
-  // Ensure directory exists
-  if (!existsSync(logDir)) {
-    mkdirSync(logDir, { recursive: true });
-  }
-
-  // Truncate large inputs/outputs for storage efficiency
-  const truncate = (str: string | undefined, maxLen: number = 500): string => {
-    if (!str) return "";
-    return str.length > maxLen ? str.substring(0, maxLen) + "...[truncated]" : str;
-  };
+  const logFile = join(MEMORY_DIR, "tool-usage.jsonl");
 
   const entry = {
-    timestamp: new Date().toISOString(),
+    timestamp: getISOTimestamp(),
     tool: data.tool_name,
     duration_ms: data.duration_ms,
     session_id: data.session_id || process.env.SESSION_ID || "unknown",
-    // Only log key info, not full input/output (for privacy and size)
     input_keys: data.tool_input ? Object.keys(data.tool_input) : [],
     output_preview: truncate(data.tool_output, 200),
   };
 
-  appendFileSync(logFile, JSON.stringify(entry) + "\n");
+  appendJsonl(logFile, entry);
 }
 
 async function main(): Promise<void> {
   try {
-    // Read input from stdin
-    const chunks: Buffer[] = [];
-    for await (const chunk of process.stdin) {
-      chunks.push(chunk);
-    }
-    const input = Buffer.concat(chunks).toString("utf-8").trim();
-
-    if (!input) {
+    const input = await Bun.stdin.text();
+    if (!input.trim()) {
       process.exit(0);
     }
 

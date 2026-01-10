@@ -11,9 +11,11 @@
  * 4. Configure in settings.json under "hooks" section
  */
 
-import {appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync} from 'fs';
+import {existsSync, readFileSync, writeFileSync} from 'fs';
 import {join} from 'path';
-import {PAI_DIR} from './lib/pai-paths';
+import {PAI_DIR, ensureDir} from './lib/pai-paths';
+import {getAEDTTimestamp, getDateParts} from './lib/datetime-utils';
+import {appendJsonl} from './lib/jsonl-utils';
 
 // Configuration: Default agent name (configurable via environment variable)
 const DEFAULT_AGENT_NAME = process.env.PAI_AGENT_NAME || 'claude';
@@ -52,54 +54,12 @@ interface HookEvent {
     timestamp_aedt: string;
 }
 
-// Get Sydney timestamp (AEDT)
-function getAEDTTimestamp(): string {
-    const date = new Date();
-    // Use Intl.DateTimeFormat for reliable timezone conversion
-    const formatter = new Intl.DateTimeFormat('en-AU', {
-        timeZone: 'Australia/Sydney',
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false
-    });
-    const parts = formatter.formatToParts(date);
-    const year = parts.find(p => p.type === 'year')!.value;
-    const month = parts.find(p => p.type === 'month')!.value;
-    const day = parts.find(p => p.type === 'day')!.value;
-    const hours = parts.find(p => p.type === 'hour')!.value;
-    const minutes = parts.find(p => p.type === 'minute')!.value;
-    const seconds = parts.find(p => p.type === 'second')!.value;
-
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds} AEDT`;
-}
 
 // Get current events file path
 function getEventsFilePath(): string {
-    // ALWAYS use ~/.claude/history (NEVER PAI_DIR/history)
-    const now = new Date();
-    // Use Intl.DateTimeFormat for reliable timezone conversion
-    const formatter = new Intl.DateTimeFormat('en-AU', {
-        timeZone: 'Australia/Sydney',
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
-    });
-    const parts = formatter.formatToParts(now);
-    const year = parts.find(p => p.type === 'year')!.value;
-    const month = parts.find(p => p.type === 'month')!.value;
-    const day = parts.find(p => p.type === 'day')!.value;
-
-    const monthDir = join(PAI_DIR, 'history', 'raw-outputs', `${year}-${month}`);
-
-    // Ensure directory exists
-    if (!existsSync(monthDir)) {
-        mkdirSync(monthDir, {recursive: true});
-    }
-
+    const { year, month, day, yearMonth } = getDateParts();
+    const monthDir = join(PAI_DIR, 'history', 'raw-outputs', yearMonth);
+    ensureDir(monthDir);
     return join(monthDir, `${year}-${month}-${day}_all-events.jsonl`);
 }
 
@@ -329,8 +289,7 @@ async function main() {
 
         // Append to events file
         const eventsFile = getEventsFilePath();
-        const jsonLine = JSON.stringify(event) + '\n';
-        appendFileSync(eventsFile, jsonLine, 'utf-8');
+        appendJsonl(eventsFile, event);
 
     } catch (error) {
         // Silently fail - don't block Claude Code

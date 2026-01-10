@@ -116,17 +116,25 @@ function analyzeContextManagement(paiPath) {
         results.recommendations.push('Implement progressive disclosure with references/ directory');
     }
 
-    // Check for context loading enforcement
-    const hasEnforcement = contextFiles.some(f => {
+    // Check for context loading enforcement (context files + SKILL.md files)
+    const skillsPath = join(paiPath, '.claude', 'skills');
+    const skillFiles = existsSync(skillsPath) ? findFiles(skillsPath, 'SKILL.md') : [];
+    const allContextFiles = [...contextFiles, ...skillFiles];
+
+    const hasEnforcement = allContextFiles.some(f => {
         const content = readFileSync(f, 'utf-8');
-        return content.includes('MANDATORY') || content.includes('MUST') || content.includes('READ THESE FILES');
+        return content.includes('MANDATORY') ||
+               content.includes('MUST') ||
+               content.includes('READ THESE FILES') ||
+               content.includes('→ READ:') ||  // PAI routing pattern
+               content.includes('READ:');      // Alternate routing pattern
     });
 
     if (hasEnforcement) {
         results.score += 5;
         results.findings.push('✅ Context loading enforcement detected');
     } else {
-        results.recommendations.push('Add context loading enforcement (Layer 3 aggressive instructions)');
+        results.recommendations.push('Add context loading enforcement (e.g., "→ READ:" routing, "MUST", or "MANDATORY" directives)');
     }
 
     return results;

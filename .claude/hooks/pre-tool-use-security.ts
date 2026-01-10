@@ -8,9 +8,11 @@
  * Factor 7 Compliance: Contact Humans with Tool Calls
  */
 
-import { readFileSync, appendFileSync, existsSync, mkdirSync } from "fs";
-import { homedir } from "os";
+import { readFileSync } from "fs";
 import { join } from "path";
+import { MEMORY_DIR } from './lib/pai-paths';
+import { appendJsonl } from './lib/jsonl-utils';
+import { getISOTimestamp } from './lib/datetime-utils';
 
 // Dangerous patterns that require human approval
 const DANGEROUS_PATTERNS: Array<{ pattern: RegExp; risk: string; severity: "block" | "approve" }> = [
@@ -71,24 +73,18 @@ function logApprovalRequest(
   risk: string,
   decision: string
 ): void {
-  const logDir = join(homedir(), "qara", "thoughts", "memory");
-  const logFile = join(logDir, "security-checks.jsonl");
-
-  // Ensure directory exists
-  if (!existsSync(logDir)) {
-    mkdirSync(logDir, { recursive: true });
-  }
+  const logFile = join(MEMORY_DIR, "security-checks.jsonl");
 
   const entry = {
-    timestamp: new Date().toISOString(),
-    operation: operation.substring(0, 200), // Truncate for safety
+    timestamp: getISOTimestamp(),
+    operation: operation.substring(0, 200),
     pattern_matched: pattern,
     risk,
     decision,
     session_id: process.env.SESSION_ID || "unknown",
   };
 
-  appendFileSync(logFile, JSON.stringify(entry) + "\n");
+  appendJsonl(logFile, entry);
 }
 
 function checkCommand(command: string): { status: string; risk?: string; pattern?: string } {

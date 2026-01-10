@@ -11,7 +11,8 @@
 
 import { readFileSync, existsSync } from "fs";
 import { join } from "path";
-import { homedir } from "os";
+import { MEMORY_DIR, PAI_DIR } from './lib/pai-paths';
+import { getDateParts } from './lib/datetime-utils';
 
 interface CompactInput {
   transcript_path?: string;
@@ -19,7 +20,7 @@ interface CompactInput {
 }
 
 function getRecentDecisions(): string[] {
-  const decisionsFile = join(homedir(), "qara", "thoughts", "memory", "decisions.jsonl");
+  const decisionsFile = join(MEMORY_DIR, "decisions.jsonl");
   if (!existsSync(decisionsFile)) return [];
 
   try {
@@ -35,7 +36,7 @@ function getRecentDecisions(): string[] {
 }
 
 function getActiveApprovals(): string[] {
-  const approvalsFile = join(homedir(), "qara", "thoughts", "memory", "approvals.jsonl");
+  const approvalsFile = join(MEMORY_DIR, "approvals.jsonl");
   if (!existsSync(approvalsFile)) return [];
 
   try {
@@ -51,7 +52,7 @@ function getActiveApprovals(): string[] {
 }
 
 function getSecurityAlerts(): string[] {
-  const securityFile = join(homedir(), "qara", "thoughts", "memory", "security-checks.jsonl");
+  const securityFile = join(MEMORY_DIR, "security-checks.jsonl");
   if (!existsSync(securityFile)) return [];
 
   try {
@@ -71,11 +72,9 @@ function getSecurityAlerts(): string[] {
  * Summarizes errors so they survive context compaction
  */
 function getRecentErrors(): string[] {
-  // Check today's events file
-  const today = new Date();
-  const yearMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`;
-  const dateStr = `${yearMonth}-${String(today.getDate()).padStart(2, "0")}`;
-  const eventsFile = join(homedir(), "qara", ".claude", "history", "raw-outputs", yearMonth, `${dateStr}_all-events.jsonl`);
+  const { year, month, day, yearMonth } = getDateParts();
+  const dateStr = `${year}-${month}-${day}`;
+  const eventsFile = join(PAI_DIR, "history", "raw-outputs", yearMonth, `${dateStr}_all-events.jsonl`);
 
   if (!existsSync(eventsFile)) return [];
 

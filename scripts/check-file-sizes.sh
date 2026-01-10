@@ -4,12 +4,14 @@
 
 set -e
 
+# Source common variables
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/lib/common.sh"
+
 WARN_THRESHOLD=${1:-400}
 if [[ "$1" == --warn-at=* ]]; then
     WARN_THRESHOLD="${1#--warn-at=}"
 fi
-
-PAI_DIR="${PAI_DIR:-$HOME/.claude}"
 
 echo "=== File Size Analysis for $PAI_DIR/skills ==="
 echo "Warning threshold: $WARN_THRESHOLD lines"

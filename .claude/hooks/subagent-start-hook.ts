@@ -7,9 +7,10 @@
  * Logs agent lifecycle for observability (12-Factor Agents compliance).
  */
 
-import { appendFileSync, existsSync, mkdirSync } from "fs";
-import { homedir } from "os";
 import { join } from "path";
+import { MEMORY_DIR } from './lib/pai-paths';
+import { appendJsonl } from './lib/jsonl-utils';
+import { getISOTimestamp } from './lib/datetime-utils';
 
 interface SubagentStartInput {
   agent_id?: string;
@@ -19,16 +20,10 @@ interface SubagentStartInput {
 }
 
 function logAgentStart(data: SubagentStartInput): void {
-  const logDir = join(homedir(), "qara", "thoughts", "memory");
-  const logFile = join(logDir, "agent-lifecycle.jsonl");
-
-  // Ensure directory exists
-  if (!existsSync(logDir)) {
-    mkdirSync(logDir, { recursive: true });
-  }
+  const logFile = join(MEMORY_DIR, "agent-lifecycle.jsonl");
 
   const entry = {
-    timestamp: new Date().toISOString(),
+    timestamp: getISOTimestamp(),
     event: "AGENT_START",
     agent_id: data.agent_id || "unknown",
     agent_type: data.agent_type || "unknown",
@@ -36,19 +31,13 @@ function logAgentStart(data: SubagentStartInput): void {
     session_id: data.session_id || process.env.SESSION_ID || "unknown",
   };
 
-  appendFileSync(logFile, JSON.stringify(entry) + "\n");
+  appendJsonl(logFile, entry);
 }
 
 async function main(): Promise<void> {
   try {
-    // Read input from stdin
-    const chunks: Buffer[] = [];
-    for await (const chunk of process.stdin) {
-      chunks.push(chunk);
-    }
-    const input = Buffer.concat(chunks).toString("utf-8").trim();
-
-    if (!input) {
+    const input = await Bun.stdin.text();
+    if (!input.trim()) {
       process.exit(0);
     }
 

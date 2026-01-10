@@ -4,7 +4,9 @@
 
 set -e
 
-PAI_DIR="${PAI_DIR:-$HOME/.claude}"
+# Source common variables
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/lib/common.sh"
 ERRORS=0
 WARNINGS=0
 

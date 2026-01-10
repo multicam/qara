@@ -10,7 +10,7 @@
 
 import { homedir } from 'os';
 import { resolve, join } from 'path';
-import { existsSync } from 'fs';
+import { existsSync, mkdirSync } from 'fs';
 
 /**
  * Smart PAI_DIR detection with fallback
@@ -30,6 +30,12 @@ export const SKILLS_DIR = join(PAI_DIR, 'skills');
 export const AGENTS_DIR = join(PAI_DIR, 'agents');
 export const HISTORY_DIR = join(PAI_DIR, 'history');
 export const COMMANDS_DIR = join(PAI_DIR, 'commands');
+export const STATE_DIR = join(PAI_DIR, 'state');
+
+// Qara-specific directories (outside PAI_DIR)
+export const QARA_DIR = resolve(homedir(), 'qara');
+export const THOUGHTS_DIR = join(QARA_DIR, 'thoughts');
+export const MEMORY_DIR = join(THOUGHTS_DIR, 'memory');
 
 /**
  * Validate PAI directory structure on first import
@@ -64,4 +70,14 @@ export function getHistoryFilePath(subdir: string, filename: string): string {
     const month = String(pstDate.getMonth() + 1).padStart(2, '0');
 
     return join(HISTORY_DIR, subdir, `${year}-${month}`, filename);
+}
+
+/**
+ * Ensure a directory exists, creating it recursively if needed
+ * @param dir Directory path to ensure exists
+ */
+export function ensureDir(dir: string): void {
+    if (!existsSync(dir)) {
+        mkdirSync(dir, { recursive: true });
+    }
 }
