@@ -1,3 +1,8 @@
+---
+description: Research Command - Claude WebSearch
+model: sonnet
+---
+
 # Research Command - Claude WebSearch
 
 Force research using Claude's built-in WebSearch capabilities. Free, no API key required.

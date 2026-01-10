@@ -3,6 +3,8 @@ name: claude-researcher
 description: Use this agent for web research using Claude's built-in WebSearch capabilities with intelligent multi-query decomposition and parallel search execution.
 model: sonnet
 color: yellow
+skills:
+  - research
 ---
 
 # IDENTITY

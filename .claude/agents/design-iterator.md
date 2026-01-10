@@ -1,6 +1,7 @@
 ---
 name: design-iterator
 description: Use this agent when you need to iteratively refine and improve UI components through systematic design iterations. This agent takes screenshots, identifies improvements, implements changes, and repeats the process N times to progressively enhance any visual element. Perfect for landing pages, feature sections, hero components, or any UI that needs polish. <example>Context: User has a features section that feels boring and wants iterative improvements. user: "The features section looks a bit boring, can you iterate on it 10 times to make it better?" assistant: "I'll use the design-iterator agent to systematically refine your features section through 10 iterations of visual improvements" <commentary>Since the user wants iterative UI refinement with multiple rounds of improvements, use the design-iterator agent to systematically enhance the component.</commentary></example> <example>Context: User wants to polish a hero section with multiple design passes. user: "Can you do 5 design iterations on the hero component?" assistant: "Let me use the design-iterator agent to progressively improve the hero through 5 rounds of refinement" <commentary>The user explicitly wants multiple design iterations, which is the core function of the design-iterator agent.</commentary></example> <example>Context: User wants research-driven improvements to a landing page section. user: "Look at how Stripe and Linear do their pricing pages and iterate on mine 8 times" assistant: "I'll launch the design-iterator agent to research competitor designs and apply those insights across 8 iterations" <commentary>The user wants competitor research combined with iterative refinement, a key capability of the design-iterator agent.</commentary></example>
+model: sonnet
 color: violet
 ---
 
@@ -107,6 +108,21 @@ For each iteration, output:
 - Build progressively - early iterations focus on structure, later on polish
 - Always preserve existing functionality
 - Keep accessibility in mind (contrast ratios, semantic HTML)
+
+## Image Dimension Metadata
+
+When working with screenshots or images, ALWAYS document dimensions:
+
+```markdown
+**Screenshot:** [1440x900px viewport]
+<!-- Captured: 2026-01-11 | Component: hero-section | State: default -->
+```
+
+**For responsive testing, capture at standard breakpoints:**
+- Mobile: 375x667px (iPhone SE)
+- Tablet: 768x1024px (iPad)
+- Desktop: 1440x900px (MacBook)
+- Wide: 1920x1080px (Full HD)
 
 ## Starting an Iteration Cycle
 

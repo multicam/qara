@@ -1,3 +1,8 @@
+---
+description: Research Command - Gemini Multi-Perspective
+model: sonnet
+---
+
 # Research Command - Gemini Multi-Perspective
 
 Force research using Gemini's multi-perspective orchestration. Breaks queries into 3-10 variations and runs parallel sub-agents.

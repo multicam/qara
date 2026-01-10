@@ -1,3 +1,8 @@
+---
+description: Research Command (Auto-Select)
+model: sonnet
+---
+
 # Research Command (Auto-Select)
 
 Automatically selects the best available research agent based on API key availability.

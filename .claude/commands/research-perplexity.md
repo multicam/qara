@@ -1,3 +1,8 @@
+---
+description: Research Command - Perplexity API
+model: sonnet
+---
+
 # Research Command - Perplexity API
 
 Force research using Perplexity API. Requires `PERPLEXITY_API_KEY` in `${PAI_DIR}/.env`.

@@ -44,7 +44,11 @@ Then wait for the user's research query.
    - Create multiple Task agents to research different aspects concurrently
    - We now have specialized agents that know how to do specific research tasks:
 
-   **For codebase research:**
+   **For quick codebase exploration (preferred for initial discovery):**
+   - Use the **Explore** agent (subagent_type=Explore) for fast initial discovery - finds files by patterns, searches code for keywords, answers structural questions about the codebase
+   - Specify thoroughness: "quick" for basic searches, "medium" for moderate exploration, "very thorough" for comprehensive analysis
+
+   **For detailed codebase research:**
    - Use the **codebase-locator** agent to find WHERE files and components live
    - Use the **codebase-analyzer** agent to understand HOW specific code works (without critiquing it)
    - Use the **codebase-pattern-finder** agent to find examples of existing patterns (without evaluating them)

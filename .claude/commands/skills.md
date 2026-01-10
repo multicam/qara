@@ -1,3 +1,8 @@
+---
+description: Skills Discovery Command
+model: haiku
+---
+
 # Skills Discovery Command
 
 Lists all available skills with their descriptions and trigger phrases.

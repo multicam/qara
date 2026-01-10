@@ -1,3 +1,8 @@
+---
+description: load-dynamic-requirements
+model: haiku
+---
+
 # load-dynamic-requirements
 
 # **DYNAMIC REQUIREMENTS LOADING INSTRUCTIONS**

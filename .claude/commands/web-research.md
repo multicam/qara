@@ -1,3 +1,8 @@
+---
+description: Web Research Command - Perplexity AI
+model: haiku
+---
+
 # Web Research Command - Perplexity AI
 
 ## Quick Usage

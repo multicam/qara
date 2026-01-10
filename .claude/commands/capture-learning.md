@@ -1,3 +1,8 @@
+---
+description: capture-learning Command
+model: haiku
+---
+
 # capture-learning Command
 
 Capture comprehensive problem-solving narratives from our work sessions, documenting not just the solution but the entire journey of discovery.

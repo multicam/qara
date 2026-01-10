@@ -1,8 +1,26 @@
 ---
 description: Create handoff document for transferring work to another session
+model: haiku
 ---
 
 # Create Handoff
+
+## Resume Capability (12-Factor Agents - Factor 6)
+
+Handoff documents support session resume via Claude Code's native agent_id:
+
+```yaml
+# In handoff frontmatter
+agent_id: "abc123"  # From Task tool response
+resume_command: "claude --resume abc123"
+```
+
+**To resume a session:**
+1. Using agent_id: `claude --resume <agent_id>`
+2. Using handoff: `/resume_handoff <path/to/handoff.md>`
+3. Using Task tool: `Task(resume: "<agent_id>")`
+
+---
 
 You are tasked with writing a handoff document to hand off your work to another agent in a new session. You will create a handoff document that is thorough, but also **concise**. The goal is to compact and summarize your context without losing any of the key details of what you're working on.
 
