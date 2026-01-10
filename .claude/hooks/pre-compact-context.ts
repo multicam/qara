@@ -66,6 +66,54 @@ function getSecurityAlerts(): string[] {
   }
 }
 
+/**
+ * Get recent errors from events log for Factor 9 compliance
+ * Summarizes errors so they survive context compaction
+ */
+function getRecentErrors(): string[] {
+  // Check today's events file
+  const today = new Date();
+  const yearMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`;
+  const dateStr = `${yearMonth}-${String(today.getDate()).padStart(2, "0")}`;
+  const eventsFile = join(homedir(), "qara", ".claude", "history", "raw-outputs", yearMonth, `${dateStr}_all-events.jsonl`);
+
+  if (!existsSync(eventsFile)) return [];
+
+  try {
+    const content = readFileSync(eventsFile, "utf-8");
+    const lines = content.trim().split("\n").slice(-100); // Check last 100 events
+
+    const errors: string[] = [];
+    for (const line of lines) {
+      try {
+        const event = JSON.parse(line);
+        // Look for error indicators in PostToolUse events
+        if (event.hook_event_type === "PostToolUse" && event.payload?.tool_result) {
+          const result = event.payload.tool_result;
+          if (typeof result === "string") {
+            // Check for common error patterns
+            if (result.includes("Error:") || result.includes("error:") ||
+                result.includes("FAILED") || result.includes("failed") ||
+                result.includes("Permission denied") || result.includes("not found")) {
+              // Extract first line of error, truncate to 100 chars
+              const errorLine = result.split("\n")[0].slice(0, 100);
+              errors.push(`- ${event.payload.tool_name || "tool"}: ${errorLine}`);
+            }
+          }
+        }
+      } catch {
+        // Skip malformed JSON lines
+      }
+    }
+
+    // Return unique errors, last 5
+    const uniqueErrors = [...new Set(errors)].slice(-5);
+    return uniqueErrors;
+  } catch {
+    return [];
+  }
+}
+
 async function main(): Promise<void> {
   try {
     // Read input
@@ -77,6 +125,7 @@ async function main(): Promise<void> {
     const decisions = getRecentDecisions();
     const approvals = getActiveApprovals();
     const securityAlerts = getSecurityAlerts();
+    const recentErrors = getRecentErrors();
 
     // Output preserved context (this gets included in compacted context)
     const contextParts: string[] = [];
@@ -94,6 +143,13 @@ async function main(): Promise<void> {
     if (securityAlerts.length > 0) {
       contextParts.push("\n## Security Alerts");
       contextParts.push(...securityAlerts);
+    }
+
+    // Factor 9: Compact Errors into Context
+    if (recentErrors.length > 0) {
+      contextParts.push("\n## Recent Errors (Factor 9)");
+      contextParts.push("Errors encountered this session - avoid repeating:");
+      contextParts.push(...recentErrors);
     }
 
     if (contextParts.length > 0) {

@@ -26,7 +26,7 @@ const FEATURE_REQUIREMENTS = {
     vscodeExtension: { minVersion: '2.0.0', description: 'Native VS Code extension' },
     enterpriseSettings: { minVersion: '2.0.53', description: 'Managed enterprise configurations' },
 
-    // CC 2.1.x features (2025)
+    // CC 2.1.0 features
     modelRouting: { minVersion: '2.1.0', description: 'Per-task model selection (haiku/sonnet/opus)' },
     skillInvocation: { minVersion: '2.1.0', description: 'Skill tool for invoking user-defined skills' },
     backgroundTasks: { minVersion: '2.1.0', description: 'run_in_background parameter for Task tool' },
@@ -36,6 +36,12 @@ const FEATURE_REQUIREMENTS = {
     enhancedSubagents: { minVersion: '2.1.0', description: 'Specialized agent types (Explore, Plan, etc.)' },
     webSearch: { minVersion: '2.1.0', description: 'Built-in WebSearch tool' },
     askUserQuestion: { minVersion: '2.1.0', description: 'Interactive user questions with options' },
+
+    // CC 2.1.3 features
+    mergedSkillsCommands: { minVersion: '2.1.3', description: 'Unified slash commands and skills (simplified mental model)' },
+    releaseChannelToggle: { minVersion: '2.1.3', description: 'Release channel toggle (stable/latest) in /config' },
+    enhancedDoctor: { minVersion: '2.1.3', description: '/doctor detects unreachable permission rules' },
+    extendedHookTimeout: { minVersion: '2.1.3', description: 'Hook execution timeout increased to 10 minutes' },
 
     // Provider integrations
     bedrockSupport: { minVersion: '0.2.0', description: 'AWS Bedrock integration' },

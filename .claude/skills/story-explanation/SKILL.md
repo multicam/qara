@@ -1,6 +1,7 @@
 ---
 name: story-explanation
 context: fork
+model: sonnet
 description: Create compelling story-format summaries using UltraThink to find the best narrative framing. Support multiple formats - 3-part narrative, n-length with inline links, abridged 5-line, or comprehensive. USE WHEN user says 'create story explanation', 'narrative summary', 'explain as a story', or wants content in Daniel's conversational first-person voice.
 ---
 

@@ -114,6 +114,48 @@ Examples: "actual user phrases", "variations", "synonyms"
 
 ---
 
+## YAML Frontmatter Fields (CC 2.1.x)
+
+### Required Fields
+
+| Field | Description |
+|-------|-------------|
+| `name` | Skill identifier (lowercase, hyphenated) |
+| `description` | What skill does, including USE WHEN triggers |
+
+### Optional Fields
+
+| Field | Values | Description |
+|-------|--------|-------------|
+| `context` | `fork` or `same` | Execution context. `fork` = isolated subagent (default for most skills), `same` = main conversation |
+| `model` | `sonnet`, `opus`, `haiku` | Model routing for cost/performance optimization. Use `sonnet` for compute-intensive skills |
+| `agent` | Agent name from `.claude/agents/` | Specify which agent definition to use when executing this skill (CC 2.1.x feature) |
+
+### Example with All Fields
+
+```yaml
+---
+name: research
+context: fork
+model: sonnet
+agent: researcher
+description: |
+  Deep research and analysis skill.
+
+  USE WHEN: user says "research", "investigate", "find information about"
+---
+```
+
+### When to Use Each Field
+
+- **`context: fork`** - Most skills should use this for isolated execution
+- **`context: same`** - Only for skills that modify main conversation context (like CORE)
+- **`model: sonnet`** - For skills needing quality reasoning (research, analysis, content creation)
+- **`model: haiku`** - For simple, fast skills (validation, formatting)
+- **`agent`** - When skill requires specific agent capabilities (rarely needed)
+
+---
+
 ## What is a Skill?
 
 In Qara's architecture, **skills are the primary organizational primitive** - self-contained packages of context, workflows, and capabilities that enable specialized functionality.

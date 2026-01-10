@@ -4,7 +4,7 @@ context: fork
 description: Review and optimize PAI (Personal AI Infrastructure) codebases as Claude Code evolves. Use when analyzing PAI repositories against 12-factor agent principles, checking for Claude Code feature compatibility, auditing context management patterns, or generating upgrade recommendations. Triggers on requests involving PAI optimization, Claude Code feature adoption, agent architecture review, or context engineering improvements.
 ---
 
-# CC-PAI Optimizer (v2.1.2)
+# CC-PAI Optimizer (v2.1.3)
 
 Review and optimize PAI codebases by tracking Claude Code evolution and applying 12-factor agent principles.
 
@@ -182,6 +182,7 @@ Track CC versions against PAI compatibility:
 ```javascript
 // Key CC 2.1.x features
 const CC_2_1_FEATURES = {
+  // 2.1.0
   modelRouting: "2.1.0",      // Per-task model selection
   skillInvocation: "2.1.0",   // Skill tool
   backgroundTasks: "2.1.0",   // run_in_background
@@ -189,7 +190,12 @@ const CC_2_1_FEATURES = {
   statusLine: "2.1.0",        // Custom status line
   settingsJsonHooks: "2.1.0", // Hooks in settings.json
   webSearch: "2.1.0",         // Built-in WebSearch
-  askUserQuestion: "2.1.0"    // Interactive questions
+  askUserQuestion: "2.1.0",   // Interactive questions
+  // 2.1.3
+  mergedSkillsCommands: "2.1.3", // Unified slash commands and skills
+  releaseChannelToggle: "2.1.3", // stable/latest in /config
+  enhancedDoctor: "2.1.3",       // /doctor detects unreachable rules
+  extendedHookTimeout: "2.1.3"   // Hook timeout: 60s → 10 min
 };
 ```
 
