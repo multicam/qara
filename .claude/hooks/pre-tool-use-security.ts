@@ -13,6 +13,7 @@ import { join } from "path";
 import { MEMORY_DIR } from './lib/pai-paths';
 import { appendJsonl } from './lib/jsonl-utils';
 import { getISOTimestamp } from './lib/datetime-utils';
+import { logCheckpointEvent } from './lib/checkpoint-utils';
 
 // Dangerous patterns that require human approval
 const DANGEROUS_PATTERNS: Array<{ pattern: RegExp; risk: string; severity: "block" | "approve" }> = [
@@ -133,6 +134,14 @@ async function main(): Promise<void> {
       result.risk || "none",
       result.status
     );
+
+    // Log checkpoint event for destructive operations (Factor 6)
+    if (result.status !== "APPROVED") {
+      logCheckpointEvent('pre_destructive', {
+        operation: result.risk || 'unknown',
+        context: { command: command.substring(0, 200), decision: result.status }
+      });
+    }
 
     // Output decision
     if (result.status === "BLOCKED") {

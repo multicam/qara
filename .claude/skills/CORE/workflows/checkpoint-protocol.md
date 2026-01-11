@@ -1,124 +1,219 @@
-# Checkpoint Protocol
+# Checkpoint Protocol (Enhanced v2.0)
 
 ## Overview
 
-Claude Code 2.0+ supports checkpoints for session safety and rollback. This workflow documents how to effectively use checkpoints in PAI workflows.
+Claude Code 2.0+ creates automatic checkpoints before file modifications. This workflow provides patterns for leveraging checkpoints in PAI workflows for safe, recoverable operations.
 
-## Using /rewind
+## Quick Reference
 
-The `/rewind` command shows checkpoint history and allows rollback:
-
-```bash
-# In Claude Code session
-/rewind
-```
-
-This displays:
-- List of available checkpoints with timestamps
-- Description of what changed at each checkpoint
-- Option to restore to any previous checkpoint
+| Command | Effect |
+|---------|--------|
+| `/rewind` | Interactive checkpoint selection |
+| `/rewind 1` | Go back 1 checkpoint |
+| `/rewind 3` | Go back 3 checkpoints |
 
 ## Checkpoint Types
 
-### Automatic Checkpoints
+### Automatic Checkpoints (CC Creates These)
 
-Claude Code creates checkpoints automatically before:
+CC automatically checkpoints before:
 - File modifications (Write, Edit tools)
-- Destructive bash operations
+- Destructive bash operations (rm, git reset, etc.)
 - Multi-file refactoring
-- Git operations that modify history
+- Git operations modifying history
 
-### Manual Checkpoints
+### Explicit Checkpoints (You Request These)
 
-Create explicit checkpoints at important milestones:
-
+Request checkpoints at milestones:
 ```
-# Request a checkpoint in conversation
-"Create a checkpoint before we begin the refactor"
+"Create a checkpoint before we begin the migration"
 ```
 
-Use manual checkpoints:
-- Before experimental changes
-- After completing a significant phase
-- Before testing destructive operations
-- At natural "save points" in complex workflows
-
-## When to Checkpoint
-
-### Always Checkpoint Before:
-- Large-scale refactoring
+Use before:
+- Experimental changes
 - Database migrations
-- Git operations (rebase, reset, force push)
-- Deleting files or directories
-- Installing/removing system packages
-- Configuration changes
+- Multi-step refactors
+- Anything irreversible outside of git
 
-### Checkpoint After:
-- Successfully completing multi-step workflows
-- Passing all tests after changes
-- Merging complex branches
-- Deploying to staging
+## Rollback Decision Tree
 
-## Rollback Safety Pattern
+```
+Operation Failed?
+├── File changes only → /rewind (CC handles it)
+├── Git changes → git reflog + /rewind
+├── Database changes → Manual restore (CC can't help)
+└── External API calls → Manual rollback (CC can't help)
+```
 
-For risky operations, follow this pattern:
+## Workflow Templates
 
-1. **Verify current state** - Ensure working directory is clean
-2. **Create checkpoint** - Request explicit checkpoint
-3. **Execute operation** - Perform the risky change
-4. **Verify success** - Check that changes are correct
-5. **Continue or rollback** - Use /rewind if needed
+### Template 1: Destructive File Operations
 
-## Integration with PAI Workflows
+```markdown
+## Before Deleting/Moving Files
 
-### Pre-Destructive Hook Pattern
+1. **List targets**: `ls -la <targets>`
+2. **Verify intent**: "These files will be deleted: [list]"
+3. **Execute**: CC auto-checkpoints before rm/mv
+4. **Verify**: Check expected state
+5. **Recover if needed**: `/rewind`
+```
 
-The `pre-tool-use-security.ts` hook can trigger checkpoint creation:
+### Template 2: Refactoring Operations
 
-```typescript
-// Before destructive operations, ensure checkpoint exists
-if (isDestructiveOperation(tool, args)) {
-  // CC creates checkpoint automatically
-  logSecurityCheck("checkpoint_created", operation);
+```markdown
+## Multi-File Refactor
+
+1. **Scope check**: Identify all affected files
+2. **Run tests first**: Establish baseline
+3. **Refactor incrementally**: CC checkpoints each edit
+4. **Test after each major change**
+5. **If tests fail after 2 attempts**: `/rewind` to last green state
+
+Recovery: `/rewind` restores all files to pre-refactor state
+```
+
+### Template 3: Git Operations
+
+```markdown
+## Before Git History Changes
+
+Operations requiring extra care:
+- git rebase
+- git reset --hard
+- git push --force
+- git clean -fd
+
+Pattern:
+1. `git stash` (backup uncommitted work)
+2. `git reflog` (note current HEAD for git recovery)
+3. CC auto-checkpoints file state
+4. Execute git operation
+5. If wrong: `git reflog` + `git reset --hard <ref>` + `/rewind`
+```
+
+### Template 4: Iteration Loop Safety
+
+```markdown
+## Iterative Fix Pattern
+
+1. Attempt fix (CC checkpoints)
+2. Test result
+3. If failing after 3 iterations:
+   - STOP iterating
+   - `/rewind` to iteration 0
+   - Try fundamentally different approach
+4. If still failing: Escalate to Jean-Marc
+
+Max iterations: 5 (prevent infinite loops)
+```
+
+### Template 5: Database Migrations
+
+```markdown
+## Database Migration (CC Cannot Rollback DB!)
+
+1. **Backup first**: `pg_dump` or equivalent
+2. Create CC checkpoint: "Checkpoint before migration"
+3. Run migration
+4. Verify data integrity
+5. If failed:
+   - `/rewind` for file changes only
+   - Restore DB from backup manually
+```
+
+### Template 6: Multi-Agent Recovery
+
+```markdown
+## Parallel Agent Conflict Resolution
+
+When parallel agents cause merge conflicts:
+1. `/rewind` to before agent launch
+2. Re-decompose task with explicit file ownership:
+   - Agent A: files matching `src/api/**`
+   - Agent B: files matching `src/ui/**`
+3. Add non-overlapping constraints to prompts
+4. Re-launch with boundaries
+```
+
+## Integration Patterns
+
+### Pre-Tool-Use Hook Integration
+
+The security hook (`pre-tool-use-security.ts`) runs before dangerous operations. When it flags something:
+
+1. Hook logs to `memory/security-checks.jsonl`
+2. CC creates checkpoint automatically
+3. After approval, operation proceeds
+4. If it goes wrong: `/rewind` to pre-operation state
+
+### Stop Hook Recovery Suggestions
+
+When the stop hook detects errors in the session, it may suggest recovery:
+
+- Multiple failed attempts → "Consider `/rewind` to try different approach"
+- Destructive operation errors → "Use `/rewind` to restore previous state"
+
+### State Tracking
+
+Checkpoint events are logged to `state/checkpoint-events.jsonl`:
+```json
+{
+  "timestamp": "2026-01-12T10:30:00Z",
+  "event": "pre_destructive",
+  "operation": "rm -rf dist/",
+  "session_id": "abc123"
 }
 ```
 
-### Git Workflow Integration
+## Failure Detection Patterns
 
-When using `git-update-repo.md` workflow:
-1. CC checkpoints before git operations
-2. If push fails, /rewind restores pre-push state
-3. Allows safe experimentation with branches
+### Signs You Should `/rewind`
 
-## Factor 6 Compliance
+1. **Same error 3+ times** - You're in a loop
+2. **Tests that were passing now fail** - Regression introduced
+3. **"Undo" attempts making things worse** - Manual fixes going sideways
+4. **File corruption or unexpected deletions** - Something went wrong
 
-Checkpoints support **Factor 6: Launch, Pause, Resume**:
-- **Launch** - Session starts with clean checkpoint
-- **Pause** - Checkpoint preserves exact state
-- **Resume** - /rewind restores any checkpoint
+### Signs You Should NOT `/rewind`
+
+1. **Making progress** - Errors are decreasing
+2. **Learning new information** - Errors teach you something
+3. **External system issues** - `/rewind` won't fix API problems
+4. **Database state issues** - `/rewind` only affects files
+
+## Limitations
+
+Checkpoints **DO restore**:
+- All file changes in the working directory
+- Conversation context (what you discussed)
+
+Checkpoints **DO NOT restore**:
+- Database state
+- External API calls (already sent)
+- Git remote state (already pushed)
+- Running processes
+- Environment variables
 
 ## Best Practices
 
-1. **Trust automatic checkpoints** - CC is smart about when to checkpoint
-2. **Use /rewind proactively** - Check checkpoint history regularly
-3. **Don't over-checkpoint** - Manual checkpoints for milestones only
-4. **Document checkpoint purpose** - "Checkpoint: before API migration"
-5. **Test rollback** - Verify /rewind works before relying on it
+1. **Trust auto-checkpoints** - CC is smart about when to save
+2. **Don't over-checkpoint** - Manual checkpoints for milestones only
+3. **Name checkpoints descriptively** - "Before API refactor" not "checkpoint"
+4. **Test `/rewind` early** - Verify it works before relying on it
+5. **Know the limits** - Checkpoints are file-based, not system-wide
 
-## Troubleshooting
+## Factor 6 Compliance
 
-### "No checkpoints available"
-- Session may be too new
-- No file modifications yet
-- Try making a small edit to trigger checkpoint
+This protocol supports **12-Factor Agent - Factor 6: Launch, Pause, Resume**:
 
-### Checkpoint doesn't restore expected state
-- Checkpoints are file-based, not memory-based
-- External systems (databases) won't rollback
-- Git state is separate from CC checkpoints
+- **Launch** - Session starts with clean checkpoint
+- **Pause** - Checkpoint preserves exact file state
+- **Resume** - `/rewind` restores any checkpoint
+- **Resilience** - Long-running tasks can recover from failures
 
 ## Related Documentation
 
-- `git-update-repo.md` - Git workflow with checkpoint safety
-- `pre-tool-use-security.ts` - Security hook with checkpoint triggers
-- Factor 6 in 12-factor checklist - Launch/Pause/Resume principle
+- `delegation-guide.md` - Multi-agent coordination with checkpoint recovery
+- `pre-tool-use-security.ts` - Security hook that triggers checkpoints
+- `stop-hook.ts` - Stop hook with error detection

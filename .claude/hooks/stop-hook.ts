@@ -11,6 +11,7 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { generateTabTitle, setTerminalTabTitle, setTabTitleSync } from './lib/tab-titles';
 import { readStdinWithTimeout } from './lib/stdin-utils';
 import { contentToText } from './lib/transcript-utils';
+import { trackErrorAndSuggestRecovery, logCheckpointEvent } from './lib/checkpoint-utils';
 
 // Error compaction types and utilities (12-Factor #9)
 interface ErrorSummary {
@@ -448,6 +449,20 @@ async function main() {
 
       saveErrorSummary(errorSummary, sessionId);
       console.error(`🔴 Error compaction: ${errorSummary.totalErrors} errors (${errorSummary.uniqueTypes.length} types) saved`);
+
+      // Check for recovery suggestions (Factor 6: checkpoint integration)
+      if (errorSummary.errors.length > 0) {
+        const topError = errorSummary.errors[0];
+        const suggestion = trackErrorAndSuggestRecovery(topError.type, topError.count);
+        if (suggestion) {
+          console.error(`💡 Recovery suggestion: ${suggestion}`);
+          logCheckpointEvent('error_threshold', {
+            error_count: topError.count,
+            suggestion,
+            context: { error_type: topError.type, message: topError.message }
+          });
+        }
+      }
     }
   } catch (e) {
     console.error(`⚠️ Error compaction failed: ${e}`);

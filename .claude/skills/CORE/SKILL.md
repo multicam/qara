@@ -27,6 +27,9 @@ description: |
 
   "merge conflict", "complex decision"
   → READ: ${PAI_DIR}/skills/CORE/workflows/merge-conflict-resolution.md
+
+  "/rewind", "checkpoint", "rollback", "recovery"
+  → READ: ${PAI_DIR}/skills/CORE/workflows/checkpoint-protocol.md
 ---
 
 ## 📚 Documentation Index
@@ -45,7 +48,7 @@ description: |
 | Definitions | `MY_DEFINITIONS.md` | "JM's definition of X" |
 | Security | `security-protocols.md` | API keys, repo safety |
 | History | `history-system.md` | UOCS, session capture |
-| Checkpoints | `checkpoint-protocol.md` | "/rewind", rollback, safety |
+| Checkpoints | `workflows/checkpoint-protocol.md` | "/rewind", rollback, safety |
 | CC Features | `cc-features.md` | CC 2.1.2 features, 12-factor compliance |
 
 **Skills (on-demand):**
