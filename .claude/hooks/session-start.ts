@@ -16,8 +16,10 @@
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
-import { PAI_DIR, SKILLS_DIR } from './lib/pai-paths';
+import { PAI_DIR, SKILLS_DIR, STATE_DIR, ensureDir } from './lib/pai-paths';
 import { setTerminalTabTitle } from './lib/tab-titles';
+import { appendJsonl } from './lib/jsonl-utils';
+import { getISOTimestamp } from './lib/datetime-utils';
 
 interface SkillSuggestion {
   pattern: string[];
@@ -115,9 +117,29 @@ function loadCoreContext(): void {
 }
 
 /**
+ * Log skill suggestions for metrics tracking
+ */
+function logSkillSuggestions(skills: SkillSuggestion[], sessionId: string): void {
+  const logFile = join(STATE_DIR, "skill-suggestions.jsonl");
+  ensureDir(STATE_DIR);
+
+  skills.forEach(skill => {
+    const entry = {
+      timestamp: getISOTimestamp(),
+      skill_name: skill.skill.replace('/', ''),
+      session_id: sessionId,
+      suggested_by: "auto",
+      reason: `Matched patterns: ${skill.pattern.join(", ")}`,
+    };
+
+    appendJsonl(logFile, entry);
+  });
+}
+
+/**
  * Analyze session context and suggest relevant skills
  */
-function suggestSkills(): void {
+function suggestSkills(sessionId: string): void {
   // Check for context clues in the current directory
   const cwd = process.cwd();
 
@@ -148,6 +170,9 @@ function suggestSkills(): void {
   );
 
   if (matches.length > 0) {
+    // Log suggestions for metrics
+    logSkillSuggestions(matches, sessionId);
+
     console.error('\n💡 RELEVANT SKILLS FOR THIS SESSION:\n');
     matches.forEach(s => {
       console.error(`   ${s.skill} - ${s.description}`);
@@ -169,11 +194,16 @@ async function main() {
       process.exit(0);
     }
 
+    // Get session ID for tracking
+    const sessionId = process.env.CLAUDE_SESSION_ID ||
+                      process.env.SESSION_ID ||
+                      `session-${Date.now()}`;
+
     // Load core context (outputs to stdout)
     loadCoreContext();
 
     // Suggest relevant skills based on context
-    suggestSkills();
+    suggestSkills(sessionId);
 
     // Set initial tab title
     const daName = process.env.DA || 'AI';

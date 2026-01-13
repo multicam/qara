@@ -36,13 +36,13 @@ lines_removed=0
 fi
 
 # Context window calculation
-# Using 60% effective budget (research shows ~50-60% effective usage of stated capacity)
-usage=$(echo "$input" | jq '.context_window.current_usage')
-if [ "$usage" != "null" ]; then
-current=$(echo "$usage" | jq '.input_tokens + .cache_creation_input_tokens + .cache_read_input_tokens')
-size=$(echo "$input" | jq '.context_window.context_window_size')
-effective_budget=$((size * 60 / 100))  # 60% of total capacity
-used_pct=$((current * 100 / effective_budget))
+# CC 2.1.6+ provides native used_percentage field
+# Fallback to manual calculation for older versions
+used_pct_native=$(echo "$input" | jq -r '.context_window.used_percentage // null')
+
+if [ "$used_pct_native" != "null" ] && [ "$used_pct_native" != "0" ]; then
+    # Use CC 2.1.6+ native percentage (already accounts for effective budget)
+    used_pct=$(printf "%.0f" "$used_pct_native")
 
     # Color based on effective budget usage
     if [ "$used_pct" -lt 60 ]; then
@@ -56,11 +56,35 @@ used_pct=$((current * 100 / effective_budget))
       ctx_icon='🚨'
     fi
 
-    # Show used percentage (not remaining)
     ctx="${ctx_icon} ${used_pct}%"
 else
-ctx=''
-ctx_color=''
+    # Fallback: Manual calculation using 60% effective budget
+    # (research shows ~50-60% effective usage of stated capacity)
+    usage=$(echo "$input" | jq '.context_window.current_usage')
+    if [ "$usage" != "null" ]; then
+        current=$(echo "$usage" | jq '.input_tokens + .cache_creation_input_tokens + .cache_read_input_tokens')
+        size=$(echo "$input" | jq '.context_window.context_window_size')
+        effective_budget=$((size * 60 / 100))  # 60% of total capacity
+        used_pct=$((current * 100 / effective_budget))
+
+        # Color based on effective budget usage
+        if [ "$used_pct" -lt 60 ]; then
+          ctx_color='\033[92m'  # Green: 0-60% of effective budget
+          ctx_icon='✅'
+        elif [ "$used_pct" -lt 80 ]; then
+          ctx_color='\033[93m'  # Yellow: 60-80% of effective budget
+          ctx_icon='⚠️ '
+        else
+          ctx_color='\033[91m'  # Red: 80-100%+ of effective budget
+          ctx_icon='🚨'
+        fi
+
+        # Show used percentage (not remaining)
+        ctx="${ctx_icon} ${used_pct}%"
+    else
+        ctx=''
+        ctx_color=''
+    fi
 fi
 
 # Format session time as human-readable

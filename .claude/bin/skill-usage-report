@@ -1,0 +1,55 @@
+#!/usr/bin/env bun
+
+/**
+ * skill-usage-report
+ *
+ * Generate skill usage report for PAI optimization.
+ *
+ * Usage:
+ *   skill-usage-report [--patterns] [--json]
+ *
+ * Options:
+ *   --patterns: Show usage pattern analysis
+ *   --json: Output in JSON format
+ */
+
+import { generateSkillUsageReport, detectSkillPatterns, getSkillUsageStats } from "../hooks/lib/skill-usage-tracker";
+
+const args = process.argv.slice(2);
+const showPatterns = args.includes("--patterns");
+const jsonOutput = args.includes("--json");
+
+if (jsonOutput) {
+  const stats = getSkillUsageStats();
+  const patterns = detectSkillPatterns();
+
+  console.log(JSON.stringify({
+    stats,
+    patterns,
+  }, null, 2));
+} else {
+  console.log(generateSkillUsageReport());
+
+  if (showPatterns) {
+    const patterns = detectSkillPatterns();
+
+    console.log("\n=== Usage Patterns ===\n");
+
+    if (patterns.user_favorites.length > 0) {
+      console.log("User Favorites (primarily user-invoked):");
+      patterns.user_favorites.forEach(skill => console.log(`  - ${skill}`));
+      console.log("");
+    }
+
+    if (patterns.auto_suggestions_accepted.length > 0) {
+      console.log("Auto-Suggestions Accepted (suggestion → usage):");
+      patterns.auto_suggestions_accepted.forEach(skill => console.log(`  - ${skill}`));
+      console.log("");
+    }
+
+    if (patterns.discovery_candidates.length > 0) {
+      console.log("Discovery Candidates (low usage, need better visibility):");
+      patterns.discovery_candidates.slice(0, 10).forEach(skill => console.log(`  - ${skill}`));
+    }
+  }
+}
