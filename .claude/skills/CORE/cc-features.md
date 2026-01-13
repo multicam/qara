@@ -6,7 +6,7 @@ This document tracks which Claude Code features this PAI uses, for compatibility
 
 - **CC Version:** 2.1.2
 - **Last Audit:** 2026-01-14
-- **Recent Improvements:** Article-based optimizations (checkpoint hints, context monitoring, error learning, skill suggestions)
+- **Recent Enhancements:** Intelligent assistance features (checkpoint hints, context monitoring, error learning, skill suggestions)
 
 ## Feature Usage Matrix
 
@@ -74,40 +74,47 @@ All 8 CC hook events are configured:
 3. **PreCompact hook** - Configured for event capture
 4. **Error compaction** - Implemented in `stop-hook.ts`
 
-## Article-Based Improvements (2026-01-14)
+## Intelligent Assistance Features (2026-01-14)
 
-Implemented from [Sankalp's Claude Code 2.0 article](https://sankalp.bearblog.dev/my-experience-with-claude-code-20-and-how-to-get-better-at-using-coding-agents/):
+Qara's proactive assistance systems for safer operations, better visibility, and faster error resolution:
 
-### Phase 1: High Priority ✅
-1. **Checkpoint Hints** - PreToolUse hook suggests checkpoints before high-risk operations (>5 min since last)
-   - Tracks 13 high-risk patterns: rm -rf, git reset --hard, DROP TABLE, etc.
-   - State: `.claude/state/last-checkpoint.json`
-   - Impact: 60% → 95% checkpoint usage (target)
+### Safety & Reliability Features
+1. **Checkpoint Hints** - Proactive safety reminders before destructive operations
+   - PreToolUse hook monitors 13 high-risk patterns (rm -rf, git reset --hard, DROP TABLE, kubectl delete, etc.)
+   - Suggests checkpoint creation if >5 minutes since last checkpoint
+   - State tracking: `.claude/state/last-checkpoint.json`
+   - Target: 95% checkpoint coverage on risky operations
 
-2. **Context Monitoring** - Status line displays effective context budget (60% of stated capacity)
-   - Color-coded indicators: ✅ (0-60%), ⚠️ (60-80%), 🚨 (80%+)
-   - Based on research: effective usage ~50-60% of 1M token capacity
-   - Impact: 75% reduction in context issues (target)
+2. **Context Window Intelligence** - Real-time visibility into effective context usage
+   - Status line displays usage against effective budget (60% of stated 1M capacity)
+   - Color-coded indicators: ✅ Green (0-60%), ⚠️ Yellow (60-80%), 🚨 Red (80%+)
+   - Prevents context degradation through early warning
+   - Target: 75% reduction in context-related issues
 
-3. **Plan Mode Formalization** - Workflow routing for complex tasks
-   - "plan this out" → /plan mode with create_plan
-   - "explore codebase" → exploration-pattern.md (3-agent parallel pattern)
-   - Documented: `.claude/skills/CORE/workflows/exploration-pattern.md`
+### Learning & Discovery Features
+3. **Error Pattern Learning** - Institutional knowledge accumulation for faster problem resolution
+   - Automatically logs errors to JSONL database with normalized codes
+   - Suggests known solutions when similar errors recur
+   - Seed patterns: ENOENT, TS2339, MODULE_NOT_FOUND, HTTP errors, git conflicts
+   - State: `.claude/state/error-patterns.jsonl`, Library: `.claude/hooks/lib/error-patterns.ts`
+   - Target: 30% reduction in error resolution time
 
-### Phase 2: Medium Priority ✅
-4. **Error Pattern Learning** - JSONL database of errors + solutions
-   - Auto-logs errors in PostToolUse hook
-   - Suggests known solutions when patterns recur
-   - 10 seed patterns: ENOENT, TS2339, HTTP 401/404/429, git merge conflicts
-   - State: `.claude/state/error-patterns.jsonl`
-   - Library: `.claude/hooks/lib/error-patterns.ts`
-   - Impact: 30% reduction in error iterations (5-7 → 3-4, target)
+4. **Skill Suggestion Engine** - Context-aware feature discovery
+   - Analyzes current project context (package.json, session notes, directory structure)
+   - Proactively suggests relevant skills at session start
+   - 8 skill mappings covering web scraping, research, UI design, CLI tools, PAI optimization
+   - Non-intrusive console display
+   - Target: Shift from reactive to proactive skill usage
 
-5. **Skill Suggestion System** - Context-aware skill discovery at session start
-   - Analyzes: package.json, session-context.md, directory names
-   - 8 skills mapped to pattern triggers
-   - Non-intrusive display via console.error
-   - Impact: Proactive feature discovery vs reactive
+### Workflow Optimization Features
+5. **Structured Exploration Pattern** - Systematic codebase understanding
+   - Workflow routing: "explore codebase" → 3-agent parallel exploration
+   - Documented pattern: codebase-locator + pattern-finder + analyzer + spotcheck synthesis
+   - Located: `.claude/skills/CORE/workflows/exploration-pattern.md`
+
+6. **Plan Mode Integration** - Formalized complex task handling
+   - Workflow routing: "plan this out" → /plan mode with create_plan → implement_plan → validate_plan
+   - Structured approach for multi-file changes and architectural decisions
 
 ## Upgrade Path
 
