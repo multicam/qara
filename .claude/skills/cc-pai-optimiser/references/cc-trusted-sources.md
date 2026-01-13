@@ -314,6 +314,7 @@ code --list-extensions --show-versions 2>/dev/null | grep "anthropic.claude-code
 | Release channel toggle | 2.1.3+ | stable/latest selection in /config |
 | Enhanced /doctor | 2.1.3+ | Detects unreachable permission rules |
 | Extended hook timeout | 2.1.3+ | Hook execution timeout: 10 minutes |
+| Disable background tasks | 2.1.4+ | CLAUDE_CODE_DISABLE_BACKGROUND_TASKS env var |
 
 ---
 

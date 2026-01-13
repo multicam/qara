@@ -30,6 +30,13 @@ description: |
 
   "/rewind", "checkpoint", "rollback", "recovery"
   → READ: ${PAI_DIR}/skills/CORE/workflows/checkpoint-protocol.md
+
+  "plan this out", "complex refactor", "multi-file change"
+  → USE: /plan mode with create_plan command
+  → THEN: implement_plan → validate_plan
+
+  "explore codebase", "understand architecture", "before we start"
+  → READ: ${PAI_DIR}/skills/CORE/workflows/exploration-pattern.md
 ---
 
 ## 📚 Documentation Index

@@ -8,12 +8,32 @@
  * Factor 7 Compliance: Contact Humans with Tool Calls
  */
 
-import { readFileSync } from "fs";
+import { readFileSync, existsSync } from "fs";
+import { readFile, writeFile } from "fs/promises";
 import { join } from "path";
 import { MEMORY_DIR } from './lib/pai-paths';
 import { appendJsonl } from './lib/jsonl-utils';
 import { getISOTimestamp } from './lib/datetime-utils';
 import { logCheckpointEvent } from './lib/checkpoint-utils';
+
+// Checkpoint tracking
+const CHECKPOINT_STATE_FILE = join(process.env.PAI_DIR || process.env.HOME + '/qara', 'state/last-checkpoint.json');
+const HIGH_RISK_OPERATIONS = [
+  'git reset --hard',
+  'git push --force',
+  'git push -f',
+  'rm -rf',
+  'DROP TABLE',
+  'DROP DATABASE',
+  'ALTER TABLE',
+  'DELETE FROM',
+  'TRUNCATE',
+  'mkfs',
+  'dd if=',
+  'chmod -R 777',
+  'kubectl delete',
+  'docker system prune',
+];
 
 // Dangerous patterns that require human approval
 const DANGEROUS_PATTERNS: Array<{ pattern: RegExp; risk: string; severity: "block" | "approve" }> = [
@@ -66,6 +86,34 @@ const ALWAYS_BLOCKED: RegExp[] = [
 interface HookInput {
   tool_name: string;
   tool_input: Record<string, unknown>;
+}
+
+async function getLastCheckpointAge(): Promise<number> {
+  try {
+    if (!existsSync(CHECKPOINT_STATE_FILE)) {
+      return Infinity;
+    }
+    const data = JSON.parse(await readFile(CHECKPOINT_STATE_FILE, 'utf-8'));
+    return Date.now() - data.timestamp;
+  } catch {
+    return Infinity;
+  }
+}
+
+async function checkCheckpointHint(command: string): Promise<void> {
+  // Check for high-risk operations
+  const isHighRisk = HIGH_RISK_OPERATIONS.some(op => command.includes(op));
+
+  if (isHighRisk) {
+    const ageSec = Math.floor((await getLastCheckpointAge()) / 1000);
+
+    if (ageSec > 300) { // 5 minutes
+      console.error('\n💡 CHECKPOINT SUGGESTION:');
+      console.error('   This is a high-risk operation.');
+      console.error(`   Last checkpoint: ${ageSec > 3600 ? 'over 1 hour ago' : ageSec === Infinity ? 'never' : `${Math.floor(ageSec / 60)} minutes ago`}`);
+      console.error('   Recommend: Create a checkpoint before proceeding\n');
+    }
+  }
 }
 
 function logApprovalRequest(
@@ -124,6 +172,9 @@ async function main(): Promise<void> {
       console.log("APPROVED");
       return;
     }
+
+    // Check if checkpoint hint should be shown
+    await checkCheckpointHint(command);
 
     const result = checkCommand(command);
 

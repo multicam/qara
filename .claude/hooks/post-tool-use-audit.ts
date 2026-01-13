@@ -13,6 +13,7 @@ import { join } from "path";
 import { MEMORY_DIR } from './lib/pai-paths';
 import { appendJsonl, truncate } from './lib/jsonl-utils';
 import { getISOTimestamp } from './lib/datetime-utils';
+import { logErrorPattern, lookupErrorPattern } from './lib/error-patterns';
 
 interface ToolUseInput {
   tool_name: string;
@@ -20,6 +21,7 @@ interface ToolUseInput {
   tool_output?: string;
   duration_ms?: number;
   session_id?: string;
+  error?: string;
 }
 
 function logToolUsage(data: ToolUseInput): void {
@@ -50,6 +52,27 @@ async function main(): Promise<void> {
     const skipTools = ["TodoRead"]; // Add tools to skip if needed
     if (skipTools.includes(data.tool_name)) {
       process.exit(0);
+    }
+
+    // Error pattern handling
+    if (data.error || (data.tool_output && data.tool_output.toLowerCase().includes('error'))) {
+      const errorMsg = data.error || data.tool_output || '';
+
+      // Log this error
+      await logErrorPattern(
+        errorMsg,
+        JSON.stringify(data.tool_input || {}),
+        data.tool_name
+      );
+
+      // Check for known solutions
+      const knownPattern = await lookupErrorPattern(errorMsg);
+      if (knownPattern && knownPattern.solution) {
+        console.error('\n💡 KNOWN ERROR PATTERN:');
+        console.error(`   Error: ${knownPattern.error}`);
+        console.error(`   Solution: ${knownPattern.solution}`);
+        console.error(`   (Seen ${knownPattern.frequency} times)\n`);
+      }
     }
 
     logToolUsage(data);

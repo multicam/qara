@@ -10,7 +10,7 @@ import { execSync } from 'child_process';
 import { existsSync, readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
 
-// Feature requirements by CC version (updated 2025-01)
+// Feature requirements by CC version (updated 2026-01)
 const FEATURE_REQUIREMENTS = {
     // Core features (foundational)
     subagents: { minVersion: '1.0.80', description: 'Parallel task delegation via Task tool' },
@@ -42,6 +42,9 @@ const FEATURE_REQUIREMENTS = {
     releaseChannelToggle: { minVersion: '2.1.3', description: 'Release channel toggle (stable/latest) in /config' },
     enhancedDoctor: { minVersion: '2.1.3', description: '/doctor detects unreachable permission rules' },
     extendedHookTimeout: { minVersion: '2.1.3', description: 'Hook execution timeout increased to 10 minutes' },
+
+    // CC 2.1.4 features
+    disableBackgroundTasks: { minVersion: '2.1.4', description: 'CLAUDE_CODE_DISABLE_BACKGROUND_TASKS env var to disable background tasks' },
 
     // Provider integrations
     bedrockSupport: { minVersion: '0.2.0', description: 'AWS Bedrock integration' },

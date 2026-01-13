@@ -1,4 +1,4 @@
-# CC-PAI Optimizer Skill (v2.1.2)
+# CC-PAI Optimizer Skill (v2.1.5)
 
 A Claude skill for reviewing and optimizing Personal AI Infrastructure (PAI) codebases as Claude Code evolves.
 
@@ -87,7 +87,7 @@ bun run scripts/analyse-pai.js ${PAI_DIR}/..
 
 ## Key Claude Code Features to Track
 
-### CC 2.1.x (Current - 2025)
+### CC 2.1.x (Current - 2026)
 
 | Feature | Min Version | PAI Impact |
 |---------|-------------|------------|

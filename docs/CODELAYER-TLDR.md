@@ -10,21 +10,21 @@
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│                   CodeLayer IDE                      │
-│              (humanlayer-wui/)                       │
-│           Tauri-based desktop app                    │
+│                   CodeLayer IDE                     │
+│              (humanlayer-wui/)                      │
+│           Tauri-based desktop app                   │
 └───────────────────┬─────────────────────────────────┘
                     │
                     ↓
 ┌─────────────────────────────────────────────────────┐
-│              HLD Daemon (hld/)                       │
-│         Go service managing sessions                 │
+│              HLD Daemon (hld/)                      │
+│         Go service managing sessions                │
 │    REST API, WebSockets, SQLite database            │
 └───────────────────┬─────────────────────────────────┘
                     │
                     ↓
 ┌─────────────────────────────────────────────────────┐
-│               HLYR CLI (hlyr/)                       │
+│               HLYR CLI (hlyr/)                      │
 │  Commands: hlyr, humanlayer, codelayer              │
 │  TypeScript/Node.js - launch sessions, MCP, etc     │
 └─────────────────────────────────────────────────────┘
@@ -187,3 +187,15 @@ humanlayer/
 > "Even with state-of-the-art agentic reasoning, LLMs are not sufficiently reliable to be given access to high-stakes functions without human oversight"
 
 The project evolved from providing human-in-the-loop guarantees for AI agents to building a full IDE for AI-first development with advanced context engineering.
+
+
+## System integration
+
+```bash
+which hlyr humanlayer codelayer codelayer-nightly
+
+/usr/local/bin/hlyr
+/usr/local/bin/humanlayer
+/usr/local/bin/codelayer
+/usr/local/bin/codelayer-nightly
+```
