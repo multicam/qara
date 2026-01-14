@@ -594,3 +594,111 @@
 .theme-active:active {
   background-color: var(--theme-active-bg);
 }
+
+/* Agent Lens OLED - Optimized for OLED displays (2026 standards) */
+.theme-agent-lens-oled {
+  /* Primary colors - Neon purple accent */
+  --theme-primary: #BBA0FF;          /* Purple glow */
+  --theme-primary-hover: #D4C5FF;    /* Lighter purple */
+  --theme-primary-light: #EDE7FF;    /* Very light purple */
+  --theme-primary-dark: #9D7FE8;     /* Darker purple */
+
+  /* Background colors - NOT pure black (OLED optimization) */
+  --theme-bg-primary: #0A0A0A;       /* Very dark gray, NOT #000000 */
+  --theme-bg-secondary: #141414;     /* Slightly lighter for cards */
+  --theme-bg-tertiary: #1E1E1E;      /* Even lighter for elevated surfaces */
+  --theme-bg-quaternary: #282828;    /* Lightest for hover states */
+
+  /* Text colors - NOT pure white (prevents visual vibration) */
+  --theme-text-primary: #F5F5F5;     /* Off-white, NOT #FFFFFF */
+  --theme-text-secondary: #B3B3B3;   /* Dimmed text */
+  --theme-text-tertiary: #808080;    /* Even more dimmed */
+  --theme-text-quaternary: #666666;  /* Most dimmed */
+
+  /* Border colors */
+  --theme-border-primary: #2A2A2A;   /* Subtle borders */
+  --theme-border-secondary: #3D3D3D; /* Slightly visible borders */
+  --theme-border-tertiary: #525252;  /* More visible borders */
+
+  /* Accent colors - Neon theme */
+  --theme-accent-success: #4ADE80;   /* Bright green */
+  --theme-accent-warning: #FBBF24;   /* Bright yellow */
+  --theme-accent-error: #F87171;     /* Bright red */
+  --theme-accent-info: #00D9FF;      /* Bright cyan */
+
+  /* Shadow colors - Subtle purple glow effects */
+  --theme-shadow: rgba(187, 160, 255, 0.1);
+  --theme-shadow-lg: rgba(187, 160, 255, 0.2);
+
+  /* Interactive states */
+  --theme-hover-bg: #252525;
+  --theme-active-bg: #2A2A2A;
+  --theme-focus-ring: #BBA0FF;
+
+  /* Chart colors (neon theme for visualizations) */
+  --chart-primary: #00D9FF;          /* Cyan */
+  --chart-secondary: #BBA0FF;        /* Purple */
+  --chart-tertiary: #FF6B9D;         /* Pink */
+  --chart-quaternary: #FFD93D;       /* Yellow */
+
+  /* Success/warning/error backgrounds */
+  --theme-success-bg: rgba(74, 222, 128, 0.1);
+  --theme-warning-bg: rgba(251, 191, 36, 0.1);
+  --theme-error-bg: rgba(248, 113, 113, 0.1);
+}
+
+/* Animated gradients for Agent Lens OLED theme */
+.theme-agent-lens-oled .gradient-primary {
+  background: linear-gradient(135deg, var(--theme-primary), var(--chart-tertiary));
+}
+
+.theme-agent-lens-oled .gradient-accent {
+  background: linear-gradient(90deg, var(--chart-primary), var(--theme-primary));
+}
+
+/* Shimmer animation for loading states */
+@keyframes shimmer-oled {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.theme-agent-lens-oled .loading-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--theme-bg-secondary) 0%,
+    var(--theme-bg-tertiary) 50%,
+    var(--theme-bg-secondary) 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer-oled 2s infinite linear;
+}
+
+/* Glow effects for interactive elements */
+.theme-agent-lens-oled .btn-primary {
+  background: var(--theme-primary);
+  color: #0A0A0A;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.theme-agent-lens-oled .btn-primary:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 0 20px rgba(187, 160, 255, 0.4);
+}
+
+.theme-agent-lens-oled .glow-accent {
+  box-shadow: 0 0 15px rgba(187, 160, 255, 0.3);
+}
+
+.theme-agent-lens-oled .glow-accent:hover {
+  box-shadow: 0 0 25px rgba(187, 160, 255, 0.5);
+}
+
+/* Smooth transitions for theme */
+.theme-agent-lens-oled * {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}

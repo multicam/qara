@@ -1,24 +1,33 @@
 ---
-name: agent-observability
+name: agent-lens
+aliases: [agent-observability]
 context: fork
 description: |
-  Real-time observability dashboard for multi-agent Claude Code sessions.
+  Agent Lens: Real-time observability dashboard for multi-agent Claude Code sessions.
 
-  Visualize agent interactions, tool usage, and session flows in real-time through a web dashboard. Track multiple agents running in parallel with swim lane visualization, event filtering, and live charts.
+  Visualize agent interactions, tool usage, and session flows through a modern dual-pane interface. Track parent-child event relationships with hierarchical timeline visualization, HITL approvals, and comprehensive metrics.
 
   **Key Features:**
+  - 👁️ Dual-pane layout (process timeline + results/metrics)
+  - 🌳 Span hierarchy visualization with parent-child relationships
   - 🔴 Real-time event streaming via WebSocket
-  - 📊 Agent swim lanes showing parallel execution
-  - 🔍 Event filtering by agent, session, event type
-  - 📈 Live charts for tool usage patterns
+  - 🤖 HITL interface with timeout indicators and three-action pattern
+  - 📊 Token usage, cost tracking, and performance metrics
+  - 🎨 OLED-optimized dark theme (2026 standards)
   - 💾 Filesystem-based (no database required)
+
+  **Version 2.0** - Complete modernization with Agent Lens branding
 
   **Inspired by [@indydevdan](https://github.com/indydevdan)**'s work on multi-agent observability.
 
-  **Our approach:** Filesystem + in-memory streaming vs. indydevdan's SQLite database approach.
+  **Our approach:** Filesystem + in-memory streaming + span hierarchy vs. indydevdan's SQLite database approach.
 ---
 
-# Agent Observability Skill
+# Agent Lens
+
+**Formerly:** agent-observability
+**Version:** 2.0.0
+**Status:** Production-ready with Phases 1-3 complete
 
 ## Prerequisites
 

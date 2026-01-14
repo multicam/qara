@@ -1,8 +1,14 @@
 #!/usr/bin/env bun
 /**
- * Capture All Events Hook
- * Captures ALL Claude Code hook events (not just tools) to JSONL
- * This hook provides comprehensive event tracking for the PAI observability system
+ * Capture All Events Hook - Agent Lens Edition
+ * Captures ALL Claude Code hook events with hierarchy tracking to JSONL
+ * This hook provides comprehensive event tracking for the Agent Lens observability system
+ *
+ * NEW in Agent Lens:
+ * - Parent-child event relationships (span hierarchy)
+ * - CC 2.1.6 context tracking integration
+ * - Skill invocation tracking
+ * - OpenTelemetry span kind classification
  *
  * SETUP REQUIRED:
  * 1. Install Bun: https://bun.sh
@@ -11,11 +17,21 @@
  * 4. Configure in settings.json under "hooks" section
  */
 
-import {existsSync, readFileSync, writeFileSync} from 'fs';
-import {join} from 'path';
-import {PAI_DIR, ensureDir} from './lib/pai-paths';
-import {getAEDTTimestamp, getDateParts} from './lib/datetime-utils';
-import {appendJsonl} from './lib/jsonl-utils';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
+import { join } from 'path';
+import { randomUUID } from 'crypto';
+import { PAI_DIR, ensureDir } from './lib/pai-paths';
+import { getAEDTTimestamp, getDateParts } from './lib/datetime-utils';
+import { appendJsonl } from './lib/jsonl-utils';
+import {
+  getParentEventId,
+  getSpanKind,
+  updateSessionState,
+  extractSkillName,
+  extractContextInfo,
+  estimateTokens,
+  estimateCost
+} from './lib/session-hierarchy-tracker';
 
 // Configuration: Default agent name (configurable via environment variable)
 const DEFAULT_AGENT_NAME = process.env.PAI_AGENT_NAME || 'claude';
@@ -46,12 +62,32 @@ interface SessionMapping {
 }
 
 interface HookEvent {
+    // Core identification
+    event_id: string;           // NEW: Unique event ID
+    parent_event_id: string | null; // NEW: Parent event for hierarchy
     source_app: string;
     session_id: string;
     hook_event_type: string;
     payload: Record<string, any>;
     timestamp: number;
     timestamp_aedt: string;
+
+    // NEW: Hierarchy metadata
+    span_kind: string;          // OpenTelemetry span kind
+
+    // NEW: Context tracking (CC 2.1.6)
+    context_used?: number;
+    context_remaining?: number;
+    context_used_percentage?: number;
+    context_remaining_percentage?: number;
+
+    // NEW: Metrics
+    model_name?: string;
+    estimated_tokens?: number;
+    estimated_cost?: number;
+
+    // NEW: Skill tracking
+    skill_name?: string;
 }
 
 
@@ -271,14 +307,52 @@ async function main() {
             }
         }
 
-        // Create event object
+        // Generate unique event ID
+        const eventId = randomUUID();
+        // sessionId already declared above at line 277
+
+        // Get parent event ID based on hierarchy rules
+        const parentEventId = getParentEventId(sessionId, eventType, hookData);
+
+        // Get span kind for OpenTelemetry compatibility
+        const spanKind = getSpanKind(eventType);
+
+        // Extract context info from CC 2.1.6
+        const contextInfo = extractContextInfo(hookData);
+
+        // Extract skill name if this is a skill invocation
+        const skillName = extractSkillName(eventType, hookData);
+
+        // Estimate tokens and cost (if possible)
+        const estimatedTokens = estimateTokens(eventType, hookData);
+        const modelName = hookData.model_name || hookData.model;
+        const estimatedCost = estimateCost(modelName, estimatedTokens);
+
+        // Create enhanced event object
         const event: HookEvent = {
+            // Core identification
+            event_id: eventId,
+            parent_event_id: parentEventId,
             source_app: agentName,
-            session_id: hookData.session_id || 'main',
+            session_id: sessionId,
             hook_event_type: eventType,
             payload: hookData,
             timestamp: Date.now(),
-            timestamp_aedt: getAEDTTimestamp()
+            timestamp_aedt: getAEDTTimestamp(),
+
+            // Hierarchy metadata
+            span_kind: spanKind,
+
+            // Context tracking (CC 2.1.6)
+            ...contextInfo,
+
+            // Metrics
+            model_name: modelName,
+            estimated_tokens: estimatedTokens,
+            estimated_cost: estimatedCost,
+
+            // Skill tracking
+            skill_name: skillName
         };
 
         // Validate event before writing
@@ -286,6 +360,9 @@ async function main() {
             console.error('Event validation failed, skipping write');
             process.exit(0);
         }
+
+        // Update session state for future parent lookups
+        updateSessionState(sessionId, eventType, eventId, hookData);
 
         // Append to events file
         const eventsFile = getEventsFilePath();

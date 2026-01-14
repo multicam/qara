@@ -1,9 +1,14 @@
 #!/usr/bin/env bun
 /**
- * File-based Event Streaming (In-Memory Only)
+ * File-based Event Streaming (In-Memory Only) - Agent Lens Edition
  * Watches JSONL files from capture-all-events.ts hook
  * NO DATABASE - streams directly to WebSocket clients
  * Fresh start each time - no persistence
+ *
+ * NEW in Agent Lens:
+ * - Builds parent-child hierarchy from event_id/parent_event_id fields
+ * - Calculates depth for visualization
+ * - Enriches events with children array
  *
  * ENVIRONMENT VARIABLES:
  * - PAI_DIR: Path to your PAI directory (defaults to ~/.claude/)
@@ -196,6 +201,60 @@ function readNewEvents(filePath: string): HookEvent[] {
 }
 
 /**
+ * Build parent-child hierarchy for events
+ * Mutates events to add 'children' and 'depth' fields
+ */
+function buildHierarchy(eventsToProcess: HookEvent[]): void {
+  // Create event map for fast lookups
+  const eventMap = new Map<string, HookEvent>();
+
+  // First pass: index all events and initialize children arrays
+  eventsToProcess.forEach(event => {
+    event.children = [];
+    eventMap.set(event.event_id, event);
+  });
+
+  // Second pass: link parents to children
+  eventsToProcess.forEach(event => {
+    if (event.parent_event_id) {
+      const parent = eventMap.get(event.parent_event_id);
+      if (parent) {
+        parent.children = parent.children || [];
+        parent.children.push(event.event_id);
+      } else {
+        // Parent not found (might be outside our window)
+        console.warn(`⚠️  Parent event ${event.parent_event_id} not found for event ${event.event_id}`);
+      }
+    }
+  });
+
+  // Third pass: calculate depth
+  function calculateDepth(eventId: string, visited = new Set<string>()): number {
+    if (visited.has(eventId)) {
+      console.warn(`⚠️  Circular reference detected for event ${eventId}`);
+      return 0; // Prevent infinite loops
+    }
+    visited.add(eventId);
+
+    const event = eventMap.get(eventId);
+    if (!event || !event.parent_event_id) {
+      return 0; // Root event or parent not found
+    }
+
+    const parent = eventMap.get(event.parent_event_id);
+    if (!parent) {
+      return 0; // Parent outside our window
+    }
+
+    return 1 + calculateDepth(event.parent_event_id, visited);
+  }
+
+  eventsToProcess.forEach(event => {
+    event.depth = calculateDepth(event.event_id);
+  });
+}
+
+/**
  * Add events to in-memory store (keeping last MAX_EVENTS only)
  */
 function storeEvents(newEvents: HookEvent[]): void {
@@ -212,9 +271,14 @@ function storeEvents(newEvents: HookEvent[]): void {
     events.splice(0, events.length - MAX_EVENTS);
   }
 
-  console.log(`✅ Received ${newEvents.length} event(s) (${events.length} in memory)`);
+  // Build hierarchy for ALL events in memory (including old ones)
+  // This ensures parent-child links work even across batches
+  buildHierarchy(events);
+
+  console.log(`✅ Received ${newEvents.length} event(s) (${events.length} in memory, hierarchy built)`);
 
   // Notify subscribers (WebSocket clients)
+  // Send enriched events with hierarchy metadata
   if (onEventsReceived) {
     onEventsReceived(newEvents);
   }

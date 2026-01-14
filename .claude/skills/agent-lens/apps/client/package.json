@@ -1,7 +1,8 @@
 {
-  "name": "multi-agent-observability-client",
+  "name": "@agent-lens/client",
+  "description": "Agent Lens client - Vue 3 dashboard for multi-agent observability",
   "private": true,
-  "version": "1.0.0",
+  "version": "2.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

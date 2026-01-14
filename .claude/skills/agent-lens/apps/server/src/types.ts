@@ -27,6 +27,10 @@ export interface HumanInTheLoopStatus {
 
 export interface HookEvent {
   id?: number;
+
+  // Core identification (Agent Lens enhancements)
+  event_id: string;                  // NEW: Unique event ID (UUID)
+  parent_event_id?: string | null;   // NEW: Parent event for hierarchy
   source_app: string;
   session_id: string;
   hook_event_type: string;
@@ -35,9 +39,27 @@ export interface HookEvent {
   summary?: string;
   timestamp: number;
   timestamp_aedt: string;
-  model_name?: string;
 
-  // NEW: Optional HITL data
+  // Hierarchy metadata (Agent Lens)
+  span_kind?: string;                // NEW: OpenTelemetry span kind (root/internal/client)
+  children?: string[];               // NEW: Computed on server - child event IDs
+  depth?: number;                    // NEW: Computed on server - hierarchy depth (0 = root)
+
+  // Context tracking (CC 2.1.6 integration)
+  context_used?: number;             // NEW: Context tokens used
+  context_remaining?: number;        // NEW: Context tokens remaining
+  context_used_percentage?: number;  // NEW: % of context used
+  context_remaining_percentage?: number; // NEW: % of context remaining
+
+  // Metrics (Agent Lens)
+  model_name?: string;
+  estimated_tokens?: number;         // NEW: Estimated token count for this event
+  estimated_cost?: number;           // NEW: Estimated cost in USD for this event
+
+  // Skill tracking (Agent Lens)
+  skill_name?: string;               // NEW: Skill name if this is a skill invocation
+
+  // HITL data
   humanInTheLoop?: HumanInTheLoop;
   humanInTheLoopStatus?: HumanInTheLoopStatus;
 }

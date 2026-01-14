@@ -1,20 +1,24 @@
 #!/bin/bash
 
-# Start Agent Observability Dashboard (Server + Client)
+# Start Agent Lens Dashboard (Server + Client)
 # Server: http://localhost:4000 (WebSocket: ws://localhost:4000/stream)
 # Client: http://localhost:5173
+#
+# NOTE: This script maintained for backward compatibility
+# Prefer using: start-agent-lens.sh
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-OBS_DIR="$HOME/.claude/skills/agent-observability/apps"
+LENS_DIR="$HOME/.claude/skills/agent-lens/apps"
 BUN="$HOME/.bun/bin/bun"
 
 # Colors
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
-echo -e "${BLUE}🚀 Starting Agent Observability Dashboard${NC}"
+echo -e "${PURPLE}👁️  Starting Agent Lens Dashboard${NC}"
 
 # Check if bun exists
 if [ ! -f "$BUN" ]; then
@@ -23,13 +27,13 @@ if [ ! -f "$BUN" ]; then
 fi
 
 # Check if directories exist
-if [ ! -d "$OBS_DIR/server" ]; then
-    echo -e "${RED}❌ Server directory not found: $OBS_DIR/server${NC}"
+if [ ! -d "$LENS_DIR/server" ]; then
+    echo -e "${RED}❌ Server directory not found: $LENS_DIR/server${NC}"
     exit 1
 fi
 
-if [ ! -d "$OBS_DIR/client" ]; then
-    echo -e "${RED}❌ Client directory not found: $OBS_DIR/client${NC}"
+if [ ! -d "$LENS_DIR/client" ]; then
+    echo -e "${RED}❌ Client directory not found: $LENS_DIR/client${NC}"
     exit 1
 fi
 
@@ -40,7 +44,7 @@ lsof -ti:5173 | xargs -r kill 2>/dev/null
 
 # Start server in background
 echo -e "${GREEN}📡 Starting server on port 4000...${NC}"
-cd "$OBS_DIR/server"
+cd "$LENS_DIR/server"
 $BUN run dev &
 SERVER_PID=$!
 
@@ -49,12 +53,12 @@ sleep 2
 
 # Start client in background
 echo -e "${GREEN}🖥️  Starting client on port 5173...${NC}"
-cd "$OBS_DIR/client"
+cd "$LENS_DIR/client"
 $BUN run dev &
 CLIENT_PID=$!
 
 echo ""
-echo -e "${GREEN}✅ Agent Observability Dashboard started!${NC}"
+echo -e "${PURPLE}✅ Agent Lens Dashboard started!${NC}"
 echo -e "   ${BLUE}Server:${NC} http://localhost:4000"
 echo -e "   ${BLUE}Client:${NC} http://localhost:5173"
 echo -e "   ${BLUE}WebSocket:${NC} ws://localhost:4000/stream"
