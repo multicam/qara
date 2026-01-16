@@ -4,7 +4,7 @@ context: fork
 description: Review and optimize PAI (Personal AI Infrastructure) codebases as Claude Code evolves. Use when analyzing PAI repositories against 12-factor agent principles, checking for Claude Code feature compatibility, auditing context management patterns, or generating upgrade recommendations. Triggers on requests involving PAI optimization, Claude Code feature adoption, agent architecture review, or context engineering improvements.
 ---
 
-# CC-PAI Optimizer (v2.1.5)
+# CC-PAI Optimizer (v2.1.9)
 
 Review and optimize PAI codebases by tracking Claude Code evolution and applying 12-factor agent principles.
 
@@ -115,6 +115,10 @@ Compare PAI implementation against CC capabilities:
 | Plan Mode | 2.0.50 | Commands | Missing planning phase |
 | Model routing | 2.1.0 | Task tool usage | No per-task model selection |
 | Status line | 2.1.0 | `settings.json` | No custom status |
+| Context % | 2.1.6 | Status line | Not using native percentage |
+| additionalContext | 2.1.9 | PreToolUse hooks | No context injection to model |
+| plansDirectory | 2.1.9 | `settings.json` | Using default plans location |
+| Session ID | 2.1.9 | Skills | No session tracking in skills |
 
 ### 12-Factor Compliance Check
 
@@ -197,7 +201,23 @@ const CC_2_1_FEATURES = {
   enhancedDoctor: "2.1.3",       // /doctor detects unreachable rules
   extendedHookTimeout: "2.1.3",  // Hook timeout: 60s → 10 min
   // 2.1.4
-  disableBackgroundTasks: "2.1.4" // CLAUDE_CODE_DISABLE_BACKGROUND_TASKS env var
+  disableBackgroundTasks: "2.1.4", // CLAUDE_CODE_DISABLE_BACKGROUND_TASKS env var
+  // 2.1.5
+  tmpDirOverride: "2.1.5",     // CLAUDE_CODE_TMPDIR env var
+  // 2.1.6
+  configSearch: "2.1.6",       // Search in /config command
+  statsDateFiltering: "2.1.6", // /stats date range filtering
+  nestedSkillDiscovery: "2.1.6", // Auto-discovery from nested .claude/skills
+  contextWindowPercentage: "2.1.6", // used_percentage in status line input
+  // 2.1.7
+  turnDurationToggle: "2.1.7", // showTurnDuration setting
+  permissionFeedback: "2.1.7", // Feedback on permission prompts
+  mcpToolSearchAuto: "2.1.7",  // Auto-defer MCP tools >10% context
+  // 2.1.9
+  additionalContext: "2.1.9",  // PreToolUse hooks return context to model
+  plansDirectory: "2.1.9",     // Custom plan file location
+  sessionIdSubstitution: "2.1.9", // ${CLAUDE_SESSION_ID} in skills
+  mcpAutoThreshold: "2.1.9",   // auto:N syntax for MCP tool threshold
 };
 ```
 

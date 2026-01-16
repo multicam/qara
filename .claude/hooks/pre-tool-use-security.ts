@@ -3,9 +3,10 @@
  * Pre-Tool-Use Security Hook
  *
  * Detects dangerous patterns in Bash commands before execution.
- * Outputs: APPROVED | REQUIRE_APPROVAL | BLOCKED
+ * Outputs JSON: { decision, additionalContext? }
  *
  * Factor 7 Compliance: Contact Humans with Tool Calls
+ * CC 2.1.9 Feature: additionalContext injection
  */
 
 import { readFileSync, existsSync } from "fs";
@@ -155,6 +156,68 @@ function checkCommand(command: string): { status: string; risk?: string; pattern
   return { status: "APPROVED" };
 }
 
+/**
+ * Generate contextual hints for the model based on command type
+ * CC 2.1.9 additionalContext feature
+ */
+function generateAdditionalContext(command: string, checkpointAgeMs: number): string | undefined {
+  const hints: string[] = [];
+  const checkpointAgeMins = Math.floor(checkpointAgeMs / 60000);
+
+  // Git operations context
+  if (/git\s+(push|reset|rebase|merge|checkout|branch\s+-[dD])/.test(command)) {
+    if (checkpointAgeMs > 300000) { // 5 min
+      hints.push(`⚠️ Git operation detected. Last checkpoint: ${checkpointAgeMins > 60 ? 'over 1 hour ago' : checkpointAgeMins === Infinity ? 'never' : `${checkpointAgeMins}m ago`}. Consider /checkpoint first.`);
+    }
+    if (/git\s+push/.test(command) && !/--force|-f/.test(command)) {
+      hints.push('Remember: Verify branch and remote before pushing.');
+    }
+    if (/git\s+reset/.test(command)) {
+      hints.push('git reset modifies history. Ensure no uncommitted work will be lost.');
+    }
+  }
+
+  // Database operations context
+  if (/DROP|TRUNCATE|DELETE\s+FROM|ALTER\s+TABLE/i.test(command)) {
+    hints.push('⚠️ Database modification detected. Ensure you have a backup or are in a dev environment.');
+  }
+
+  // File deletion context
+  if (/rm\s+(-[rfRF]+\s+)?/.test(command)) {
+    hints.push('Verify target paths before deletion. Consider --dry-run or ls first if unsure.');
+  }
+
+  // Docker/k8s context
+  if (/kubectl\s+delete|docker\s+(rm|rmi|system\s+prune)/.test(command)) {
+    hints.push('Container/orchestration deletion. Verify namespace and resource names.');
+  }
+
+  // Credential-related operations
+  if (/\.env|SECRET|API_KEY|TOKEN|PASSWORD/i.test(command)) {
+    hints.push('Credential-related operation. Never commit secrets to git.');
+  }
+
+  return hints.length > 0 ? hints.join(' ') : undefined;
+}
+
+/**
+ * Output hook result in CC 2.1.9 JSON format with additionalContext
+ */
+function outputResult(decision: string, additionalContext?: string, reason?: string): void {
+  const result: { decision: string; additionalContext?: string } = { decision };
+
+  if (additionalContext) {
+    result.additionalContext = additionalContext;
+  }
+
+  // Append reason to decision for BLOCKED/REQUIRE_APPROVAL
+  if (reason && decision !== "APPROVED") {
+    result.decision = `${decision}: ${reason}`;
+  }
+
+  console.log(JSON.stringify(result));
+}
+
 async function main(): Promise<void> {
   try {
     // Read hook input from stdin
@@ -163,17 +226,20 @@ async function main(): Promise<void> {
 
     // Only check Bash commands
     if (hookData.tool_name !== "Bash") {
-      console.log("APPROVED");
+      outputResult("APPROVED");
       return;
     }
 
     const command = hookData.tool_input.command as string;
     if (!command) {
-      console.log("APPROVED");
+      outputResult("APPROVED");
       return;
     }
 
-    // Check if checkpoint hint should be shown
+    // Get checkpoint age for context generation
+    const checkpointAgeMs = await getLastCheckpointAge();
+
+    // Check if checkpoint hint should be shown (stderr)
     await checkCheckpointHint(command);
 
     const result = checkCommand(command);
@@ -194,19 +260,16 @@ async function main(): Promise<void> {
       });
     }
 
-    // Output decision
-    if (result.status === "BLOCKED") {
-      console.log(`BLOCKED: ${result.risk}`);
-    } else if (result.status === "REQUIRE_APPROVAL") {
-      console.log(`REQUIRE_APPROVAL: ${result.risk}`);
-    } else {
-      console.log("APPROVED");
-    }
+    // Generate contextual hints for the model (CC 2.1.9 additionalContext)
+    const additionalContext = generateAdditionalContext(command, checkpointAgeMs);
+
+    // Output JSON result with additionalContext
+    outputResult(result.status, additionalContext, result.risk);
 
   } catch (error) {
     // On error, fail open but log
     console.error("Security hook error:", error);
-    console.log("APPROVED");
+    outputResult("APPROVED");
   }
 }
 
