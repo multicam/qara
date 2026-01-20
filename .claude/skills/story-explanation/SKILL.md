@@ -108,7 +108,7 @@ User request → Analyze intent:
 
 ## 📁 File Organization
 
-**Working Directory:** `${PAI_DIR}/scratchpad/YYYY-MM-DD-HHMMSS_story-explanation-[topic]/`
+**Working Directory:** `${PAI_DIR}/scratchpad/${CLAUDE_SESSION_ID}/story-explanation-[topic]/`
 
 **Full details:** `references/file-organization.md`
 
@@ -232,7 +232,7 @@ Use the selected framing to create the story explanation in the appropriate form
 When this skill activates, Qara should:
 
 1. **Determine format** - Based on user request, select appropriate workflow
-2. **Create scratchpad directory** - `${PAI_DIR}/scratchpad/YYYY-MM-DD-HHMMSS_story-explanation-[topic]/`
+2. **Create scratchpad directory** - `${PAI_DIR}/scratchpad/${CLAUDE_SESSION_ID}/story-explanation-[topic]/`
 3. **Load be-creative skill** - Activate research-backed creativity framework
 4. **Load content** via appropriate method (fabric -y, WebFetch, Read, or paste)
 5. **Save raw content to scratchpad** - Store extracted content for reference

@@ -1,6 +1,7 @@
 ---
 name: system-create-skill
 context: fork
+model: sonnet
 description: |
   Skill creation and validation framework ensuring compliance with PAI architectural standards.
 

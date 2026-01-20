@@ -1,6 +1,6 @@
 <template>
   <div class="tool-usage-chart">
-    <div v-if="toolData.length === 0" class="empty-chart">
+    <div v-if="data.length === 0" class="empty-chart">
       <p>No tool usage data available</p>
     </div>
 
@@ -31,8 +31,8 @@
         </div>
       </div>
 
-      <div v-if="toolData.length > maxDisplay" class="more-tools">
-        +{{ toolData.length - maxDisplay }} more tools
+      <div v-if="data.length > maxDisplay" class="more-tools">
+        +{{ data.length - maxDisplay }} more tools
       </div>
     </div>
   </div>
@@ -40,23 +40,17 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-
-interface ToolUsageData {
-  tool: string;
-  count: number;
-  percentage: number;
-  averageLatency: number;
-}
+import type { ToolUsageData } from '../services/metricsCalculator';
 
 const props = defineProps<{
-  toolData: ToolUsageData[];
+  data: ToolUsageData[];
   maxDisplay?: number;
 }>();
 
 const maxDisplay = props.maxDisplay || 10;
 
 const topTools = computed(() => {
-  return props.toolData.slice(0, maxDisplay);
+  return props.data.slice(0, maxDisplay);
 });
 
 const toolColors = [

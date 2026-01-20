@@ -298,11 +298,6 @@ const server = Bun.serve({
     close(ws) {
       wsClients.delete(ws);
       console.log(`🔌 WebSocket client disconnected (remaining clients: ${wsClients.size})`);
-    },
-
-    error(ws, error: unknown) {
-      console.error('WebSocket error:', error);
-      wsClients.delete(ws);
     }
   }
 });

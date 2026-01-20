@@ -55,26 +55,67 @@
         <div class="card-value">{{ contextUsed }}%</div>
         <div class="card-subtitle">{{ contextRemaining }}% remaining</div>
       </div>
+
+      <div v-if="sessionMetrics.totalTokens > 0" class="metric-card">
+        <div class="card-header">
+          <span class="icon">🔤</span>
+          <span class="title">Tokens</span>
+        </div>
+        <div class="card-value">{{ formatTokens(sessionMetrics.totalTokens) }}</div>
+        <div class="card-subtitle">{{ sessionMetrics.inputTokens }}in / {{ sessionMetrics.outputTokens }}out</div>
+      </div>
+
+      <div v-if="sessionMetrics.estimatedCost > 0" class="metric-card">
+        <div class="card-header">
+          <span class="icon">💰</span>
+          <span class="title">Cost</span>
+        </div>
+        <div class="card-value">${{ sessionMetrics.estimatedCost.toFixed(4) }}</div>
+        <div class="card-subtitle">${{ sessionMetrics.costPerThousandTokens.toFixed(3) }}/1K</div>
+      </div>
+
+      <div v-if="sessionMetrics.errors > 0" class="metric-card alert">
+        <div class="card-header">
+          <span class="icon">⚠️</span>
+          <span class="title">Errors</span>
+        </div>
+        <div class="card-value">{{ sessionMetrics.errors }}</div>
+        <div class="card-subtitle">{{ sessionMetrics.errorRate.toFixed(1) }}% error rate</div>
+      </div>
     </div>
 
-    <!-- Context Usage Bar (if available) -->
-    <div v-if="hasContextData" class="context-section">
-      <h3>Context Window Usage</h3>
-      <div class="progress-bar" :class="contextLevel">
-        <div
-          class="progress-fill"
-          :style="{ width: contextUsed + '%' }"
-        ></div>
-      </div>
-      <div class="context-footer">
-        <span class="remaining-text">
-          {{ contextRemaining }}% remaining
-        </span>
-        <span v-if="contextWarning" class="warning-message">
-          {{ contextWarning }}
-        </span>
-      </div>
+    <!-- Enhanced Context Bar (CC 2.1.6) -->
+    <EnhancedContextBar
+      v-if="hasContextData"
+      :events="events"
+    />
+
+    <!-- Charts Section -->
+    <div class="charts-section">
+      <!-- Token Trend Chart -->
+      <TokenTrendChart
+        v-if="tokenTrend.length > 0"
+        :data="tokenTrend"
+      />
+
+      <!-- Tool Usage Chart -->
+      <ToolUsageChart
+        v-if="toolUsageData.length > 0"
+        :data="toolUsageData"
+      />
+
+      <!-- Error Breakdown Chart -->
+      <ErrorBreakdownChart
+        v-if="errorBreakdown.length > 0"
+        :data="errorBreakdown"
+      />
     </div>
+
+    <!-- Skill Usage Panel -->
+    <SkillUsagePanel
+      v-if="hasSkills"
+      :events="events"
+    />
 
     <!-- Event Details Section -->
     <div v-if="selectedEvent" class="event-details-section">
@@ -133,6 +174,12 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import type { HookEvent } from '../types';
+import { MetricsCalculator } from '../services/metricsCalculator';
+import TokenTrendChart from './TokenTrendChart.vue';
+import ErrorBreakdownChart from './ErrorBreakdownChart.vue';
+import ToolUsageChart from './ToolUsageChart.vue';
+import SkillUsagePanel from './SkillUsagePanel.vue';
+import EnhancedContextBar from './EnhancedContextBar.vue';
 
 const props = defineProps<{
   events: HookEvent[];
@@ -140,6 +187,15 @@ const props = defineProps<{
 }>();
 
 const showPayload = ref(false);
+
+// Expose MetricsCalculator for template use
+const { formatTokens } = MetricsCalculator;
+
+// Calculate comprehensive metrics using MetricsCalculator
+const sessionMetrics = computed(() => MetricsCalculator.calculateSessionMetrics(props.events));
+const tokenTrend = computed(() => MetricsCalculator.getTokenTrend(props.events, 10000));
+const toolUsageData = computed(() => MetricsCalculator.getToolUsageBreakdown(props.events));
+const errorBreakdown = computed(() => MetricsCalculator.getErrorBreakdown(props.events));
 
 // Event counts
 const eventCount = computed(() => props.events.length);
@@ -451,5 +507,11 @@ function formatPayload(payload: any): string {
   text-align: center;
   color: var(--theme-text-tertiary, #808080);
   font-size: 0.875rem;
+}
+
+.charts-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
 }
 </style>

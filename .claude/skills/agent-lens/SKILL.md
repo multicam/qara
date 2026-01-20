@@ -2,6 +2,7 @@
 name: agent-lens
 aliases: [agent-observability]
 context: fork
+model: haiku
 description: |
   Agent Lens: Real-time observability dashboard for multi-agent Claude Code sessions.
 

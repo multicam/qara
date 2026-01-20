@@ -1,4 +1,4 @@
-import { Database } from 'bun:sqlite';
+import { Database, type SQLQueryBindings } from 'bun:sqlite';
 import type { Theme, ThemeSearchQuery } from './types';
 
 let db: Database;
@@ -95,29 +95,33 @@ export function insertTheme(theme: Theme): Theme {
 }
 
 export function updateTheme(id: string, updates: Partial<Theme>): boolean {
-  const allowedFields = ['displayName', 'description', 'colors', 'isPublic', 'updatedAt', 'tags'];
-  const setClause = Object.keys(updates)
-    .filter(key => allowedFields.includes(key))
-    .map(key => `${key} = ?`)
-    .join(', ');
-  
-  if (!setClause) return false;
-  
-  const values = Object.keys(updates)
-    .filter(key => allowedFields.includes(key))
-    .map(key => {
-      if (key === 'colors' || key === 'tags') {
-        return JSON.stringify(updates[key as keyof Theme]);
-      }
-      if (key === 'isPublic') {
-        return updates[key as keyof Theme] ? 1 : 0;
-      }
-      return updates[key as keyof Theme];
-    });
-  
+  const allowedFields = new Set(['displayName', 'description', 'colors', 'isPublic', 'updatedAt', 'tags']);
+
+  // Filter out undefined so we never bind `undefined` into SQLite.
+  const entries = Object.entries(updates).filter(
+    ([key, value]) => allowedFields.has(key) && value !== undefined,
+  );
+
+  if (entries.length === 0) return false;
+
+  const setClause = entries.map(([key]) => `${key} = ?`).join(', ');
+
+  const values: SQLQueryBindings[] = entries.map(([key, value]) => {
+    if (key === 'colors' || key === 'tags') {
+      return JSON.stringify(value);
+    }
+
+    if (key === 'isPublic') {
+      // SQLite has no boolean type; store as INTEGER (1/0)
+      return value ? 1 : 0;
+    }
+
+    return value as SQLQueryBindings;
+  });
+
   const stmt = db.prepare(`UPDATE themes SET ${setClause} WHERE id = ?`);
   const result = stmt.run(...values, id);
-  
+
   return result.changes > 0;
 }
 
