@@ -112,6 +112,16 @@ Each line is a complete JSON object:
 export PAI_DIR="/Users/yourname/.claude"
 ```
 
+### Session Tracking (CC 2.1.9+)
+
+Agent Lens automatically tracks sessions using Claude Code's native session IDs:
+
+- **Current session:** `${CLAUDE_SESSION_ID}`
+- **Events file:** `~/.claude/history/raw-outputs/YYYY-MM/YYYY-MM-DD_all-events.jsonl`
+- **Session state:** `~/.claude/state/agent-lens/sessions/${CLAUDE_SESSION_ID}.json`
+
+Each event includes the `session_id` field for correlation across the observability dashboard.
+
 ### Hooks Configuration
 
 Hooks should be configured in `~/.claude/settings.json`. The `capture-all-events` hook is required for Agent Lens to function.

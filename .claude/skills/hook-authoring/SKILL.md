@@ -84,6 +84,28 @@ interface HookInput {
 - **Continue:** `{ "continue": true }`
 - **Block:** `{ "continue": false, "reason": "..." }`
 - **Inject content:** `{ "result": "<system-reminder>...</system-reminder>" }`
+- **Add context (CC 2.1.9+):** `{ "decision": "continue", "additionalContext": "..." }`
+
+### Session ID Tracking (CC 2.1.9+)
+
+Hooks receive `session_id` in input JSON. For persistent storage:
+
+```typescript
+// Use session_id from hook input
+const sessionFile = `${PAI_DIR}/state/sessions/${input.session_id}.json`;
+
+// Or use ${CLAUDE_SESSION_ID} substitution in settings.json:
+{
+  "hooks": {
+    "SessionStart": [{
+      "hooks": [{
+        "type": "command", 
+        "command": "${PAI_DIR}/hooks/init-session.ts --session ${CLAUDE_SESSION_ID}"
+      }]
+    }]
+  }
+}
+```
 
 ---
 
