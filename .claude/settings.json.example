@@ -1,41 +1,43 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "_comment_1": "=================================================================",
-  "_comment_2": "PAI Settings Configuration Example",
+  "_comment_2": "Qara PAI Settings Configuration Example",
   "_comment_3": "=================================================================",
   "_comment_4": "This file shows a complete PAI setup with all hooks configured.",
   "_comment_5": "Copy this to settings.json and customize for your environment.",
   "_comment_6": "",
   "_comment_7": "IMPORTANT: Update these values:",
-  "_comment_8": "  - PAI_DIR: Absolute path to your .claude directory (e.g., /home/username/.claude)",
-  "_comment_9": "  - DA: Your digital assistant name",
-  "_comment_10": "  - NOTE: PAI_DIR must be an ABSOLUTE path, not $HOME or ~",
+  "_comment_8": "  - PAI_DIR: Absolute path to your .claude directory",
+  "_comment_9": "  - PATH: Add your custom binary paths",
+  "_comment_10": "  - DA: Your digital assistant name (default: Qara)",
   "_comment_11": "=================================================================",
+
+  "respectGitignore": true,
 
   "env": {
     "DA": "Qara",
     "PAI_DIR": "/home/username/.claude",
     "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "64000",
-    "PATH": "/home/jean-marc/.local/share/mise/shims:/home/jean-marc/.local/bin:/home/jean-marc/.cargo/bin:/home/jean-marc/.bun/bin:/usr/local/bin:/usr/bin:/bin"
+    "PATH": "/home/username/.local/share/mise/shims:/home/username/.local/bin:/home/username/.cargo/bin:/home/username/.bun/bin:/usr/local/bin:/usr/bin:/bin"
   },
 
   "permissions": {
     "allow": [
       "Bash",
-      "Read(*)",
-      "Write(*)",
-      "Edit(*)",
-      "MultiEdit(*)",
-      "Glob(*)",
-      "Grep(*)",
-      "LS(*)",
+      "Read",
+      "Write",
+      "Edit",
+      "MultiEdit",
+      "Glob",
+      "Grep",
       "WebFetch(domain:*)",
       "WebSearch",
-      "NotebookRead(*)",
-      "NotebookEdit(*)",
-      "TodoWrite(*)",
-      "ExitPlanMode(*)",
-      "Task(*)"
+      "NotebookRead",
+      "NotebookEdit",
+      "TodoWrite",
+      "ExitPlanMode",
+      "Task",
+      "mcp__*"
     ],
     "deny": [
       "Bash(diskutil partitionDisk)",
@@ -61,6 +63,7 @@
       "Bash(rm -rf /*)",
       "Bash(rm -rf ~)",
       "Bash(rm -rf $HOME)",
+      "Bash(rm -rf $PAI_HOME)",
       "Bash(rm -rf $PAI_DIR)",
       "Bash(sudo rm -rf /)",
       "Bash(sudo rm -rf /*)",
@@ -72,28 +75,41 @@
     ]
   },
 
+  "model": "opus",
+  "enableAllProjectMcpServers": false,
+  "enabledMcpjsonServers": [],
 
   "_hooks_comment_1": "=================================================================",
   "_hooks_comment_2": "HOOKS CONFIGURATION - Complete set of PAI lifecycle hooks",
   "_hooks_comment_3": "=================================================================",
-  "_hooks_comment_4": "PreToolUse: Captures events BEFORE each tool execution",
-  "_hooks_comment_5": "PostToolUse: Captures events AFTER each tool completes",
-  "_hooks_comment_6": "SessionEnd: Runs when conversation ends - creates summaries",
-  "_hooks_comment_7": "UserPromptSubmit: Runs on prompt submit - updates UI",
-  "_hooks_comment_8": "SessionStart: Runs on session start - loads context",
-  "_hooks_comment_9": "Stop: Runs when user clicks Stop button",
-  "_hooks_comment_10": "SubagentStop: Runs when subagent process stops",
-  "_hooks_comment_11": "PreCompact: Runs before context compression",
-  "_hooks_comment_12": "=================================================================",
+  "_hooks_comment_4": "PreToolUse: Security checks + event capture BEFORE tool execution",
+  "_hooks_comment_5": "PostToolUse: Audit + event capture AFTER tool completes",
+  "_hooks_comment_6": "SessionStart: Load CORE context, initialize session state",
+  "_hooks_comment_7": "SessionEnd: Capture session summary",
+  "_hooks_comment_8": "UserPromptSubmit: Update tab titles, capture user input",
+  "_hooks_comment_9": "Stop: Extract completion info, update state",
+  "_hooks_comment_10": "SubagentStart: Track subagent initialization",
+  "_hooks_comment_11": "SubagentStop: Track subagent completion",
+  "_hooks_comment_12": "PreCompact: Context compression management",
+  "_hooks_comment_13": "=================================================================",
 
   "hooks": {
     "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/pre-tool-use-security.ts"
+          }
+        ]
+      },
       {
         "matcher": "*",
         "hooks": [
           {
             "type": "command",
-            "command": "${PAI_DIR}/hooks/capture-all-events.ts --event-type PreToolUse"
+            "command": "${PAI_DIR}/hooks/capture-all-events.ts"
           }
         ]
       }
@@ -104,7 +120,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${PAI_DIR}/hooks/capture-all-events.ts --event-type PostToolUse"
+            "command": "${PAI_DIR}/hooks/post-tool-use-audit.ts"
+          },
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/capture-all-events.ts"
           }
         ]
       }
@@ -114,11 +134,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${PAI_DIR}/hooks/capture-session-summary.ts"
-          },
-          {
-            "type": "command",
-            "command": "${PAI_DIR}/hooks/capture-all-events.ts --event-type SessionEnd"
+            "command": "${PAI_DIR}/hooks/capture-all-events.ts"
           }
         ]
       }
@@ -128,7 +144,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${PAI_DIR}/hooks/capture-all-events.ts --event-type UserPromptSubmit"
+            "command": "${PAI_DIR}/hooks/update-tab-titles.ts"
+          },
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/capture-all-events.ts"
           }
         ]
       }
@@ -138,11 +158,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${PAI_DIR}/hooks/initialize-pai-session.ts"
+            "command": "${PAI_DIR}/hooks/session-start.ts"
           },
           {
             "type": "command",
-            "command": "${PAI_DIR}/hooks/capture-all-events.ts --event-type SessionStart"
+            "command": "${PAI_DIR}/hooks/capture-all-events.ts"
           }
         ]
       }
@@ -156,7 +176,21 @@
           },
           {
             "type": "command",
-            "command": "${PAI_DIR}/hooks/capture-all-events.ts --event-type Stop"
+            "command": "${PAI_DIR}/hooks/capture-all-events.ts"
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/subagent-start-hook.ts"
+          },
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/capture-all-events.ts"
           }
         ]
       }
@@ -170,7 +204,7 @@
           },
           {
             "type": "command",
-            "command": "${PAI_DIR}/hooks/capture-all-events.ts --event-type SubagentStop"
+            "command": "${PAI_DIR}/hooks/capture-all-events.ts"
           }
         ]
       }
@@ -181,11 +215,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${PAI_DIR}/hooks/context-compression-hook.ts"
+            "command": "${PAI_DIR}/hooks/pre-compact-context.ts"
           },
           {
             "type": "command",
-            "command": "${PAI_DIR}/hooks/capture-all-events.ts --event-type PreCompact"
+            "command": "${PAI_DIR}/hooks/capture-all-events.ts"
           }
         ]
       }
@@ -194,14 +228,14 @@
 
   "statusLine": {
     "type": "command",
-    "command": "${PAI_DIR}/statusline-command.sh"
+    "command": "bash ${PAI_DIR}/statusline-command.sh"
   },
 
+  "enabledPlugins": {},
   "alwaysThinkingEnabled": true,
+  "showTurnDuration": true,
+  "plansDirectory": "thoughts/shared/plans",
 
-  "feedbackSurveyState": {
-    "lastShownTime": 1735430400000
-  },
-
+  "_comment": "IMPORTANT: Change PAI_DIR above to your actual path (e.g., /Users/john/.claude or /home/john/.claude)",
   "max_tokens": 4096
 }
