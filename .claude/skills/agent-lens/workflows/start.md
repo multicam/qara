@@ -1,83 +1,36 @@
-# Start Agent Observability Workflow
+# Start Agent Lens
 
-## Trigger
-
-User says: "start observability", "monitor agents", "track agent activity"
-
-## Purpose
-
-Initialize and configure the agent observability dashboard for tracking AI agent activity.
-
-## Workflow
-
-### 1. Prerequisites Check
-
-- Bun installed
-- Agent observability skill configured
-- Hook enabled in settings.json
-
-### 2. Start Server
+## Quick Start
 
 ```bash
-cd ~/.claude/skills/agent-observability/apps/server
-bun install
+# Start server (Terminal 1)
+cd ~/.claude/skills/agent-lens/apps/server
 bun run dev
-```
 
-### 3. Start Client
-
-```bash
-cd ~/.claude/skills/agent-observability/apps/client
-bun install
+# Start client (Terminal 2)
+cd ~/.claude/skills/agent-lens/apps/client
 bun run dev
+
+# Or use the convenience script from project root:
+bun run start-obs
 ```
 
-### 4. Configure Hook
+Open browser: **http://localhost:5173**
 
-Ensure capture-all-events hook is active in settings.json:
+## Prerequisites
 
-```json
-{
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${PAI_DIR}/hooks/capture-all-events.ts --event-type PostToolUse"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
+- Bun runtime installed
+- Agent Lens skill configured
+- Hooks enabled in `~/.claude/settings.json`
 
-### 5. Verify Capture
+## What You'll See
 
-- Execute some agent tasks
-- Check dashboard at http://localhost:5173
-- Verify events are being captured
+- **Real-time event streaming** from Claude Code sessions
+- **Dual-pane layout** (process timeline + metrics)
+- **Hierarchical event visualization** with parent-child relationships
+- **HITL approval interface** for human-in-the-loop requests
+- **Performance metrics** (tokens, costs, latency)
 
-### 6. Monitor Activity
+## Documentation
 
-Dashboard shows:
-
-- Agent invocations
-- Tool usage
-- Session timelines
-- Performance metrics
-
-## Configuration
-
-See agent-observability/README.md for:
-
-- Database setup
-- Custom event filtering
-- Performance tuning
-- Troubleshooting
-
-## Reference
-
-Main agent-observability SKILL.md for complete documentation.
+See [SKILL.md](../SKILL.md) for complete documentation.

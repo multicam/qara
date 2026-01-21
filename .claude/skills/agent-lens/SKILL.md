@@ -1,6 +1,6 @@
 ---
 name: agent-lens
-aliases: [agent-observability]
+aliases: [agent-lens]
 context: fork
 model: haiku
 description: |
@@ -17,104 +17,82 @@ description: |
   - 🎨 OLED-optimized dark theme (2026 standards)
   - 💾 Filesystem-based (no database required)
 
-  **Version 2.0** - Complete modernization with Agent Lens branding
-
-  **Inspired by [@indydevdan](https://github.com/indydevdan)**'s work on multi-agent observability.
-
-  **Our approach:** Filesystem + in-memory streaming + span hierarchy vs. indydevdan's SQLite database approach.
+  **Version 2.0**
 ---
 
 # Agent Lens
 
-**Formerly:** agent-observability
-**Version:** 2.0.0
-**Status:** Production-ready with Phases 1-3 complete
+Real-time observability dashboard for multi-agent Claude Code sessions.
 
-## Prerequisites
+## Features
 
-- Bun runtime installed
-- Claude Code with hooks configured
-- PAI_DIR environment variable set
+### Dual-Pane Interface
+- **Process Timeline** - Hierarchical view of events with parent-child relationships
+- **Results & Metrics** - Session statistics, event details, and performance data
+- **Resizable panes** - Drag to adjust layout (25%-60% width)
 
-## Installation
+### Event Visualization
+- **Hierarchical timeline** - Nested events show tool call relationships
+- **Collapse/expand** - Show/hide child events
+- **Event icons** - Visual indicators for tool types
+- **Session cards** - Track individual sessions and lifecycle
 
-**Quick Setup:**
+### Metrics & Monitoring
+- **Token tracking** - Estimate usage per session
+- **Cost calculation** - Track AI model costs (2026 pricing)
+- **Tool usage breakdown** - Most frequently used tools
+- **Performance metrics** - Latency, duration, error rates
+- **Context tracking** - Monitor context window usage (CC 2.1.6)
 
-```bash
-# 1. Set environment variable
-export PAI_DIR="$HOME/.claude"  # Add to ~/.zshrc or ~/.bashrc
-
-# 2. Configure hooks (merge into ~/.claude/settings.json)
-cat settings.json.example
-
-# 3. Create directory structure
-mkdir -p ~/.claude/history/raw-outputs
-
-# 4. Install dependencies
-cd apps/server && bun install
-cd ../client && bun install
-```
-
-## Usage
-
-### Start the Observability Dashboard
-
-**Terminal 1 - Server:**
-
-```bash
-cd ~/Projects/PAI/skills/agent-observability/apps/server
-bun run dev
-```
-
-**Terminal 2 - Client:**
-
-```bash
-cd ~/Projects/PAI/skills/agent-observability/apps/client
-bun run dev
-```
-
-**Open browser:** [http://localhost:5173](http://localhost:5173)
-
-### Using Claude Code
-
-Once the dashboard is running, any Claude Code activity will appear in real-time:
-
-1. Open Claude Code
-2. Use any tool (Read, Write, Bash, etc.)
-3. Launch subagents with Task tool
-4. Watch events appear in the dashboard
+### HITL (Human-in-the-Loop)
+- **Approval interface** - Review and approve/reject requests
+- **Timeout indicators** - Visual countdown for time-sensitive actions
+- **Three-action pattern** - Approve, Edit, or Reject
+- **Browser notifications** - Alert on urgent requests
 
 ### Event Types Captured
-
 - **SessionStart** - New Claude Code session begins
 - **UserPromptSubmit** - User sends a message
-- **PreToolUse** - Before a tool is executed
-- **PostToolUse** - After a tool completes
+- **PreToolUse** - Before tool execution
+- **PostToolUse** - After tool completion
 - **Stop** - Main agent task completes
 - **SubagentStop** - Subagent task completes
 - **SessionEnd** - Session ends
 
-## Features
+## Quick Start
 
-### Real-Time Visualization
+### Start the Dashboard
 
-- **Agent Swim Lanes:** See multiple agents (qara, designer, engineer, etc.) running in parallel
-- **Event Timeline:** Chronological view of all events
-- **Tool Usage Charts:** Visualize which tools are being used most
-- **Session Tracking:** Track individual sessions and their lifecycles
+```bash
+# Terminal 1: Start server
+cd ~/.claude/skills/agent-lens/apps/server
+bun run dev
 
-### Filtering & Search
+# Terminal 2: Start client
+cd ~/.claude/skills/agent-lens/apps/client
+bun run dev
 
-- Filter by agent name (qara, designer, engineer, pentester, etc.)
-- Filter by event type (PreToolUse, PostToolUse, etc.)
-- Filter by session ID
-- Search event payloads
+# Or use the project convenience script:
+cd /path/to/qara
+bun run start-obs
+```
 
-### Data Storage
+Open browser: **http://localhost:5173**
+
+### Using with Claude Code
+
+Once the dashboard is running:
+
+1. Open Claude Code
+2. Use any tool (Read, Write, Bash, etc.)
+3. Launch subagents with Task tool
+4. Watch events appear in real-time on the dashboard
+
+## Data Storage
 
 Events are stored in JSONL (JSON Lines) format:
 
-```bash
+```
 ~/.claude/history/raw-outputs/YYYY-MM/YYYY-MM-DD_all-events.jsonl
 ```
 
@@ -124,52 +102,11 @@ Each line is a complete JSON object:
 {"source_app":"qara","session_id":"abc123","hook_event_type":"PreToolUse","payload":{...},"timestamp":1234567890,"timestamp_aedt":"2025-01-28 14:30:00 AEDT"}
 ```
 
-### In-Memory Streaming
-
-- Server keeps last 1000 events in memory
-- Low memory footprint
-- Fast real-time updates via WebSocket
-- No database overhead
-
-## Architecture
-
-```txt
-┌─────────────────┐
-│  Claude Code    │  Executes hooks on events
-│   (with hooks)  │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│ capture-all-    │  Appends events to JSONL
-│ events.ts hook  │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────────────────────────┐
-│ ~/.claude/history/raw-outputs/      │  Daily JSONL files
-│ 2025-01/2025-01-28_all-events.jsonl │
-└────────┬────────────────────────────┘
-         │
-         ▼
-┌─────────────────┐
-│ file-ingest.ts  │  Watches files, streams to memory
-│  (Bun server)   │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Vue 3 Client   │  Real-time dashboard visualization
-│  (Vite + Tail)  │
-└─────────────────┘
-```
-
 ## Configuration
 
 ### Environment Variables
 
-**PAI_DIR:**
-Path to your PAI directory (defaults to `~/.claude/`)
+**PAI_DIR** - Path to PAI directory (defaults to `~/.claude/`)
 
 ```bash
 export PAI_DIR="/Users/yourname/.claude"
@@ -177,94 +114,45 @@ export PAI_DIR="/Users/yourname/.claude"
 
 ### Hooks Configuration
 
-Add to `~/.claude/settings.json` (see `settings.json.example` for full template):
-
-```json
-{
-  "hooks": {
-    "PreToolUse": [{
-      "matcher": "*",
-      "hooks": [{
-        "type": "command",
-        "command": "${PAI_DIR}/hooks/capture-all-events.ts --event-type PreToolUse"
-      }]
-    }],
-    // ... other hooks
-  }
-}
-```
+Hooks should be configured in `~/.claude/settings.json`. The `capture-all-events` hook is required for Agent Lens to function.
 
 ## Troubleshooting
 
 ### No events appearing
 
-1. Check PAI_DIR is set: `echo $PAI_DIR`
-2. Verify directory exists: `ls ~/.claude/history/raw-outputs/`
+1. Check PAI_DIR: `echo $PAI_DIR`
+2. Verify hooks exist: `ls ~/.claude/hooks/capture-all-events.ts`
 3. Check hook is executable: `ls -l ~/.claude/hooks/capture-all-events.ts`
-4. Look for today's events file: `ls ~/.claude/history/raw-outputs/$(date +%Y-%m)/`
+4. Verify today's events file: `ls ~/.claude/history/raw-outputs/$(date +%Y-%m)/`
 
 ### Server won't start
 
-1. Check Bun is installed: `bun --version`
-2. Verify dependencies: `cd apps/server && bun install`
-3. Check port 4000 isn't in use: `lsof -i :4000`
+1. Check Bun: `bun --version`
+2. Install dependencies: `cd apps/server && bun install`
+3. Check port: `lsof -i :4000`
 
 ### Client won't connect
 
 1. Ensure server is running first
-2. Check WebSocket connection in browser console
-3. Verify no firewall blocking localhost:4000
+2. Check browser console for WebSocket errors
+3. Verify firewall not blocking localhost:4000
+
+## Architecture
+
+```
+Claude Code (with hooks)
+    ↓
+capture-all-events.ts hook → JSONL files
+    ↓
+file-ingest.ts (Bun server) → In-memory stream
+    ↓
+Vue 3 Client → Real-time dashboard
+```
+
+**Approach:** Filesystem-based event capture with in-memory streaming. No database required.
 
 ## Credits
 
-**Inspired by [@indydevdan](https://github.com/disler)**'s pioneering work on multi-agent observability for Claude Code.
+Inspired by [@indydevdan](https://github.com/indydevdan)'s work on multi-agent observability for Claude Code.
 
-**Our implementation differs** by using filesystem-based event capture and in-memory streaming instead of SQLite database persistence. Both approaches have their merits! Check out indydevdan's work for a database-backed solution with full historical persistence.
-
-## Development
-
-### Running in Development
-
-```bash
-# Server (hot reload)
-cd apps/server
-bun --watch src/index.ts
-
-# Client (Vite dev server)
-cd apps/client
-bun run dev
-```
-
-### Building for Production
-
-```bash
-# Client build
-cd apps/client
-bun run build
-bun run preview
-```
-
-### Adding New Event Types
-
-1. Update `capture-all-events.ts` hook if needed
-2. Add hook configuration to `settings.json`
-3. Client will automatically display new event types
-
-## Documentation
-
-- [README.md](./README.md) - Complete documentation
-- [SETUP.md](./SETUP.md) - Installation guide
-- [history-structure/](./history-structure/) - Data storage structure
-- [settings.json.example](./settings.json.example) - Hook configuration template
-
-
-## Contributing
-
-Contributions welcome! Areas for improvement:
-
-- Historical data persistence options
-- Export functionality (CSV, JSON)
-- Alert/notification system
-- Advanced filtering and search
-- Session replay capability
-- Integration with other PAI skills
+Our implementation uses filesystem-based event capture and in-memory streaming instead of SQLite database persistence.

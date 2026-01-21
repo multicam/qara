@@ -42,6 +42,7 @@ export function useWebSocket(url: string) {
           }
         } catch (err) {
           console.error('Failed to parse WebSocket message:', err);
+          return;
         }
       };
       
