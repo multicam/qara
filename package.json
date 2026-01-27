@@ -8,12 +8,14 @@
     "update": "cd .claude/skills/agent-lens/apps/server && ~/.bun/bin/bun update -i --latest && cd ../client && ~/.bun/bin/bun update -i --latest"
   },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "@types/jsonwebtoken": "^9.0.10"
   },
   "peerDependencies": {
     "typescript": "^5.9.3"
   },
   "dependencies": {
+    "jsonwebtoken": "^9.0.3",
     "lightweight-charts": "^5.0.9"
   }
 }

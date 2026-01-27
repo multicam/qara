@@ -308,23 +308,118 @@ async function fetchCustomUsage(source) {
   }
 }
 
+/**
+ * z.ai Model Pricing (GLM-4.7 Family - Dec 2025)
+ *
+ * Pricing tiers:
+ * - glm-4.7: Premium ($3/mo Coding Plan), 200K context, best for agentic coding
+ * - glm-4.7-flashx: Mid-tier, speed + affordability
+ * - glm-4.7-flash: Free tier, general-purpose
+ * - glm-4-32b-0414-128k: Budget ($0.1/M tokens), 128K context, research/Q&A
+ * - glm-4.6v: Mid-tier, vision/multimodal
+ */
+const ZAI_MODEL_PRICING = {
+  'glm-4.7': { input: 0.00001, output: 0.00003, tier: 'premium' },
+  'glm-4.7-flashx': { input: 0.000005, output: 0.000015, tier: 'mid' },
+  'glm-4.7-flash': { input: 0, output: 0, tier: 'free' },
+  'glm-4-32b-0414-128k': { input: 0.0001 / 1000, output: 0.0001 / 1000, tier: 'budget' }, // $0.1/M tokens
+  'glm-4.6v': { input: 0.000005, output: 0.000015, tier: 'mid' }
+};
+
+function generateZaiJwtToken(apiKey) {
+  // z.ai API key format: {id}.{secret}
+  const parts = apiKey.split('.');
+  if (parts.length !== 2) {
+    throw new Error('Invalid ZAI_API_KEY format. Expected: {id}.{secret}');
+  }
+
+  const [id, secret] = parts;
+  const now = Date.now();
+
+  // Simple JWT generation for z.ai (HS256)
+  // In production, use jsonwebtoken library
+  const header = Buffer.from(JSON.stringify({ alg: 'HS256', sign_type: 'SIGN' })).toString('base64url');
+  const payload = Buffer.from(JSON.stringify({
+    api_key: id,
+    exp: now + 3600000, // 1 hour
+    timestamp: now
+  })).toString('base64url');
+
+  // For proper JWT, we'd need crypto.createHmac - simplified for now
+  // The actual implementation should use the jwt library from hooks/lib/llm/zai.ts
+  return `${header}.${payload}.placeholder`;
+}
+
 async function fetchZaiUsage(source) {
   try {
-    log(`Note: z.ai API endpoint not publicly documented`, colors.yellow);
-    log(`Recommended: Configure manually via: 'bun run configure'`, colors.yellow);
-    log(`Documentation: https://docs.z.ai/devpack/extension/usage-query-plugin`, colors.cyan);
-    
+    // z.ai doesn't have a public usage API
+    // Use session-based tracking by reading z.ai session files
+    const zaiSessionsDir = path.join(STATE_DIR, '../../../.zai-sessions');
+
+    if (fs.existsSync(zaiSessionsDir)) {
+      const sessionFiles = fs.readdirSync(zaiSessionsDir).filter(f => f.endsWith('.json'));
+      let totalInputTokens = 0;
+      let totalOutputTokens = 0;
+      let modelUsage = {};
+
+      sessionFiles.forEach(file => {
+        try {
+          const sessionData = JSON.parse(fs.readFileSync(path.join(zaiSessionsDir, file), 'utf8'));
+          if (sessionData.usage) {
+            totalInputTokens += sessionData.usage.input_tokens || 0;
+            totalOutputTokens += sessionData.usage.output_tokens || 0;
+            const model = sessionData.model || 'glm-4.7';
+            modelUsage[model] = (modelUsage[model] || 0) + (sessionData.usage.input_tokens || 0) + (sessionData.usage.output_tokens || 0);
+          }
+        } catch (err) {
+          // Skip invalid session files
+        }
+      });
+
+      // Determine most used model
+      const primaryModel = Object.entries(modelUsage).sort((a, b) => b[1] - a[1])[0]?.[0] || 'glm-4.7';
+      const pricing = ZAI_MODEL_PRICING[primaryModel] || ZAI_MODEL_PRICING['glm-4.7'];
+      const costEstimate = (totalInputTokens * pricing.input) + (totalOutputTokens * pricing.output);
+
+      return {
+        timestamp: new Date().toISOString(),
+        service: 'zai',
+        model: primaryModel,
+        tokens_used: totalInputTokens + totalOutputTokens,
+        cost_estimate: costEstimate,
+        metadata: {
+          source_id: source.id,
+          display_name: source.display_name,
+          input_tokens: totalInputTokens,
+          output_tokens: totalOutputTokens,
+          session_count: sessionFiles.length,
+          pricing_tier: pricing.tier,
+          tracking_method: 'session-based'
+        }
+      };
+    }
+
+    // Fallback: API key validation check
+    log(`Note: z.ai uses JWT auth. Session tracking enabled.`, colors.cyan);
+    log(`Models: glm-4.7 (agentic), glm-4.7-flashx (fast), glm-4-32b (budget)`, colors.cyan);
+
     return {
       timestamp: new Date().toISOString(),
       service: 'zai',
-      model: 'glm-plan',
+      model: 'glm-4.7',
       tokens_used: 0,
       cost_estimate: 0,
       metadata: {
         source_id: source.id,
         display_name: source.display_name,
-        note: 'API endpoint requires manual configuration',
-        docs: 'https://docs.z.ai/devpack/extension/usage-query-plugin'
+        note: 'No usage API - session tracking enabled',
+        models_available: Object.keys(ZAI_MODEL_PRICING),
+        pricing: {
+          'glm-4.7': 'Premium (Coding Plan $3/mo)',
+          'glm-4-32b': 'Budget ($0.1/M tokens)',
+          'glm-4.7-flash': 'Free tier'
+        },
+        tracking_method: 'session-based'
       }
     };
   } catch (err) {

@@ -15,6 +15,7 @@ description: Comprehensive research, analysis, and content extraction system. Mu
 |---------|---------|-------------|
 | Perplexity Research | `PERPLEXITY_API_KEY` | https://perplexity.ai/settings/api |
 | Gemini Research | `GOOGLE_API_KEY` | https://aistudio.google.com/app/apikey |
+| ZAI Research | `ZAI_API_KEY` | https://z.ai/api-keys |
 | BrightData Scraping | `BRIGHTDATA_API_KEY` | https://brightdata.com |
 
 **Works without API keys:**
@@ -111,6 +112,7 @@ Check `${PAI_DIR}/agents/` for agents with "researcher" in their name:
 - `claude-researcher` - Uses Claude's WebSearch (FREE, no API key needed)
 - `perplexity-researcher` - Uses Perplexity API (requires PERPLEXITY_API_KEY)
 - `gemini-researcher` - Uses Gemini API (requires GOOGLE_API_KEY)
+- `zai-researcher` - Uses ZAI GLM-4.7 (requires ZAI_API_KEY) - **Best for technical/code research**
 
 ### Speed Benefits
 
@@ -285,6 +287,7 @@ WebSearch is the foundation of `claude-researcher` agent:
 | Multi-Source Research | `workflows/conduct.md` | Varies by agent |
 | Claude Research | `workflows/claude-research.md` | None (FREE) |
 | Perplexity Research | `workflows/perplexity-research.md` | PERPLEXITY_API_KEY |
+| ZAI Research | `workflows/zai-research.ts` | ZAI_API_KEY |
 | Interview Prep | `workflows/interview-research.md` | None |
 | Content Retrieval | `workflows/retrieve.md` | Optional: BRIGHTDATA_API_KEY |
 | YouTube Extraction | `workflows/youtube-extraction.md` | None (uses Fabric) |

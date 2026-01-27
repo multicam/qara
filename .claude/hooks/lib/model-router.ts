@@ -25,28 +25,90 @@ export interface Complexity {
 }
 
 /**
- * Model options
+ * Model options (Anthropic models)
  */
 export type ModelChoice = 'haiku' | 'sonnet' | 'opus';
+
+/**
+ * Provider options
+ */
+export type Provider = 'anthropic' | 'openai' | 'zai';
 
 /**
  * Model characteristics for routing decisions
  */
 const MODEL_CHARACTERISTICS = {
+  // Anthropic models
   haiku: {
     maxTokens: 1500,
     goodFor: ['file lookup', 'simple search', 'quick validation', 'status check'],
     costMultiplier: 1, // baseline
+    provider: 'anthropic' as Provider,
   },
   sonnet: {
     maxTokens: 8000,
     goodFor: ['code implementation', 'documentation', 'moderate analysis', 'testing'],
     costMultiplier: 5,
+    provider: 'anthropic' as Provider,
   },
   opus: {
     maxTokens: 32000,
     goodFor: ['architecture design', 'complex reasoning', 'deep analysis', 'creative writing'],
     costMultiplier: 15,
+    provider: 'anthropic' as Provider,
+  },
+  // ZAI GLM-4.7 Family (Dec 2025 - Coding/Agentic optimized)
+  'glm-4.7': {
+    maxTokens: 128000,
+    contextWindow: 200000,
+    goodFor: [
+      'agentic coding',
+      'multi-step reasoning',
+      'tool invocation',
+      'complex debugging',
+      'multi-file refactoring',
+    ],
+    costMultiplier: 8, // $3/mo Coding Plan - premium tier
+    provider: 'zai' as Provider,
+    thinkingModes: ['interleaved', 'retention-based', 'round-level'],
+  },
+  'glm-4.7-flashx': {
+    maxTokens: 128000,
+    contextWindow: 200000,
+    goodFor: ['fast code generation', 'rapid prototyping', 'algorithm implementation'],
+    costMultiplier: 4, // Mid-tier pricing
+    provider: 'zai' as Provider,
+  },
+  'glm-4.7-flash': {
+    maxTokens: 128000,
+    contextWindow: 200000,
+    goodFor: ['general-purpose', 'Chinese writing', 'translation', 'long-form text'],
+    costMultiplier: 0, // Free tier
+    provider: 'zai' as Provider,
+  },
+  // ZAI GLM-4 Foundation (Research optimized)
+  'glm-4-32b-0414-128k': {
+    maxTokens: 16000,
+    contextWindow: 128000,
+    goodFor: [
+      'Q&A services',
+      'information extraction',
+      'financial analysis',
+      'research synthesis',
+      'trend detection',
+      'data cleansing',
+    ],
+    costMultiplier: 1, // $0.1/M tokens - most cost-effective
+    provider: 'zai' as Provider,
+    webSearch: true,
+    functionCalling: true,
+  },
+  'glm-4.6v': {
+    maxTokens: 4000,
+    contextWindow: 8000,
+    goodFor: ['vision tasks', 'image analysis', 'multimodal'],
+    costMultiplier: 3,
+    provider: 'zai' as Provider,
   },
 } as const;
 
@@ -117,6 +179,12 @@ export const TASK_TYPE_COMPLEXITY: Record<string, Complexity> = {
   'deep-analysis': { tokens: 6000, analysis: true, creativity: false, urgency: 'low' },
   'creative-writing': { tokens: 5000, analysis: false, creativity: true, urgency: 'low' },
   'research-synthesis': { tokens: 7000, analysis: true, creativity: true, urgency: 'low' },
+
+  // ZAI-optimized tasks (code generation, rapid prototyping)
+  'code-generation': { tokens: 3000, analysis: false, creativity: false, urgency: 'medium' },
+  'rapid-prototyping': { tokens: 2500, analysis: false, creativity: true, urgency: 'high' },
+  'code-snippet': { tokens: 1000, analysis: false, creativity: false, urgency: 'high' },
+  'algorithm-implementation': { tokens: 2000, analysis: true, creativity: false, urgency: 'medium' },
 };
 
 /**
@@ -165,6 +233,10 @@ export const AGENT_MODEL_MAP: Record<string, ModelChoice> = {
   'claude-researcher': 'sonnet',
   'gemini-researcher': 'sonnet',
   'web-search-researcher': 'sonnet',
+  'zai-researcher': 'sonnet',
+
+  // ZAI agents
+  'zai-coder': 'sonnet',
 };
 
 /**
@@ -209,4 +281,114 @@ export function explainModelSelection(
   }
 
   return `Model: ${model} - ${reasons.join(', ')}`;
+}
+
+/**
+ * Task types that should prefer ZAI provider
+ */
+const ZAI_PREFERRED_TASKS = [
+  // GLM-4.7 (Flagship) - Agentic coding
+  'agentic-coding',
+  'multi-step-debugging',
+  'complex-refactoring',
+  'tool-chain-orchestration',
+  // GLM-4.7-FlashX - Fast coding
+  'code-generation',
+  'rapid-prototyping',
+  'code-snippet',
+  'algorithm-implementation',
+  // GLM-4-32B - Research
+  'technical-research',
+  'qa-service',
+  'information-extraction',
+  'financial-analysis',
+  'trend-detection',
+];
+
+/**
+ * ZAI model selection based on task type
+ */
+export type ZaiModelChoice =
+  | 'glm-4.7'
+  | 'glm-4.7-flashx'
+  | 'glm-4.7-flash'
+  | 'glm-4-32b-0414-128k'
+  | 'glm-4.6v';
+
+const ZAI_TASK_MODEL_MAP: Record<string, ZaiModelChoice> = {
+  // GLM-4.7 (Flagship) - Complex agentic tasks
+  'agentic-coding': 'glm-4.7',
+  'multi-step-debugging': 'glm-4.7',
+  'complex-refactoring': 'glm-4.7',
+  'tool-chain-orchestration': 'glm-4.7',
+  'architecture-implementation': 'glm-4.7',
+
+  // GLM-4.7-FlashX - Fast coding tasks
+  'code-generation': 'glm-4.7-flashx',
+  'rapid-prototyping': 'glm-4.7-flashx',
+  'code-snippet': 'glm-4.7-flashx',
+  'algorithm-implementation': 'glm-4.7-flashx',
+
+  // GLM-4.7-Flash - General purpose (free)
+  'general-qa': 'glm-4.7-flash',
+  'translation': 'glm-4.7-flash',
+  'summarization': 'glm-4.7-flash',
+  'chinese-content': 'glm-4.7-flash',
+
+  // GLM-4-32B - Research (cost-effective)
+  'technical-research': 'glm-4-32b-0414-128k',
+  'qa-service': 'glm-4-32b-0414-128k',
+  'information-extraction': 'glm-4-32b-0414-128k',
+  'financial-analysis': 'glm-4-32b-0414-128k',
+  'trend-detection': 'glm-4-32b-0414-128k',
+  'research-synthesis': 'glm-4-32b-0414-128k',
+
+  // GLM-4.6v - Vision tasks
+  'image-analysis': 'glm-4.6v',
+  'multimodal': 'glm-4.6v',
+};
+
+/**
+ * Select the best ZAI model for a task type
+ *
+ * @param taskType - The type of task
+ * @returns The recommended ZAI model
+ */
+export function selectZaiModel(taskType: string): ZaiModelChoice {
+  return ZAI_TASK_MODEL_MAP[taskType] || 'glm-4.7-flashx'; // Default to fast coder
+}
+
+/**
+ * Select the appropriate provider based on task type
+ *
+ * @param taskType - The type of task
+ * @returns The recommended provider
+ */
+export function selectProvider(taskType: string): Provider {
+  // Check if ZAI is configured
+  const zaiConfigured = !!process.env.ZAI_API_KEY;
+
+  // ZAI preferred tasks route to ZAI when available
+  if (zaiConfigured && ZAI_PREFERRED_TASKS.includes(taskType)) {
+    return 'zai';
+  }
+
+  // Default to Anthropic
+  return 'anthropic';
+}
+
+/**
+ * Get provider for a specific model
+ *
+ * @param model - The model name
+ * @returns The provider for that model
+ */
+export function getProviderForModel(model: string): Provider {
+  if (model.startsWith('glm-')) {
+    return 'zai';
+  }
+  if (model.startsWith('gpt-') || model.startsWith('o1') || model.startsWith('o3')) {
+    return 'openai';
+  }
+  return 'anthropic';
 }

@@ -24,10 +24,25 @@ CC_SOURCES=(
   "https://github.com/anthropics/claude-code/releases"
   "https://docs.anthropic.com/en/docs/claude-code"
   "https://github.com/marckrenn/claude-code-changelog/blob/main/cc-prompt.md"
+  "https://skills.sh/anthropics/skills/frontend-design"
 )
 ```
 
 Reference `references/cc-trusted-sources.md` for complete source list and update frequency recommendations.
+
+### 1b. Gather Latest Z.AI/ZAI Features
+
+Also track Z.AI model evolution:
+
+```bash
+# Trusted ZAI sources
+ZAI_SOURCES=(
+  "https://z.ai/model-api"
+  "https://docs.z.ai/guides/llm"
+  "https://docs.z.ai/guides/llm/glm-4.7"
+  "https://docs.z.ai/guides/llm/glm-4-32b-0414-128k"
+)
+```
 
 ### 2. Load PAI Repository
 
@@ -119,6 +134,30 @@ Compare PAI implementation against CC capabilities:
 | additionalContext | 2.1.9 | PreToolUse hooks | No context injection to model |
 | plansDirectory | 2.1.9 | `settings.json` | Using default plans location |
 | Session ID | 2.1.9 | Skills | No session tracking in skills |
+| ZAI integration | PAI-custom | `hooks/lib/llm/zai.ts` | No ZAI model routing |
+
+### ZAI/Z.AI Model Integration Analysis
+
+Check ZAI integration status:
+
+| Component | Check Location | Optimization Signal |
+|-----------|----------------|---------------------|
+| ZAI client | `hooks/lib/llm/zai.ts` | Missing JWT auth, model selection |
+| Model router | `hooks/lib/model-router.ts` | No ZAI task routing |
+| zai-researcher | `agents/zai-researcher.md` | Not using GLM-4-32B for research |
+| zai-coder | `agents/zai-coder.md` | Not leveraging thinking modes |
+| CLI tool | `~/.local/bin/zai` | Missing model selection |
+
+#### ZAI Model Availability (Jan 2026)
+
+**Coding Plan ($3/mo):**
+- `glm-4.7` - Flagship agentic coding (200K ctx, 128K output)
+- `glm-4.7-flash` - Free tier general-purpose
+
+**Pay-as-you-go:**
+- `glm-4.7-flashx` - Mid-tier fast coding
+- `glm-4-32b-0414-128k` - Research ($0.1/M tokens, 128K ctx)
+- `glm-4.6v` - Vision/multimodal
 
 ### 12-Factor Compliance Check
 
@@ -150,6 +189,20 @@ Generate report as:
 
 ## Hooks Configuration
 [settings.json hooks audit]
+
+## ZAI Integration Status
+| Component | Status | Model(s) | Notes |
+|-----------|--------|----------|-------|
+| zai.ts client | ✅/❌ | glm-4.7 | JWT auth, model info |
+| model-router.ts | ✅/❌ | Task routing | ZAI task types |
+| zai-researcher | ✅/❌ | glm-4.7-flash | Research optimized |
+| zai-coder | ✅/❌ | glm-4.7 | Thinking modes |
+| CLI tool | ✅/❌ | All models | Model selection |
+
+## External Skills Sync
+| Skill | Upstream | Status |
+|-------|----------|--------|
+| frontend-design | skills.sh | ✅/❌ |
 
 ## 12-Factor Compliance
 [Factor-by-factor status]
@@ -224,6 +277,101 @@ const CC_2_1_FEATURES = {
   mcpConnectionFix: "2.1.11",  // Fixed excessive HTTP/SSE MCP reconnection
   // 2.1.12
   messageRenderingFix: "2.1.12", // Fixed message rendering bug
+};
+```
+
+## External Skill Tracking
+
+Ensure these skills are synchronized with upstream sources:
+
+### Frontend Design Skill
+**Source:** https://skills.sh/anthropics/skills/frontend-design
+**Location:** `skills/frontend-design/SKILL.md`
+
+Check for updates:
+```bash
+# Fetch latest from skills.sh
+curl -s "https://skills.sh/anthropics/skills/frontend-design" | \
+  grep -A 100 "SKILL.md"
+```
+
+### Z.AI Model Documentation
+**Source:** https://docs.z.ai/guides/llm
+**Location:** `hooks/lib/llm/zai.ts`, `agents/zai-*.md`
+
+Check for model updates:
+```bash
+# Verify available models
+source ~/.claude/.env && zai --help
+```
+
+## ZAI Version Tracking
+
+```javascript
+// Z.AI GLM Model Evolution
+const ZAI_MODELS = {
+  // GLM-4.7 Family (Dec 2025)
+  "glm-4.7": {
+    release: "2025-12-22",
+    params: "355B total / 32B activated (MoE)",
+    context: 200000,
+    maxOutput: 128000,
+    codingPlan: true,
+    benchmarks: {
+      swebench: "73.8%",
+      livecodebench: "84.9%",
+      terminalbench: "41%",
+    },
+    features: ["thinking-modes", "interleaved", "retention-based", "tool-invocation"],
+  },
+  "glm-4.7-flashx": {
+    release: "2025-12-22",
+    params: "~30B (MoE, lightweight)",
+    context: 200000,
+    maxOutput: 128000,
+    codingPlan: false, // Requires pay-as-you-go
+  },
+  "glm-4.7-flash": {
+    release: "2026-01-19",
+    params: "~30B total / ~3B activated (MoE)",
+    context: 200000,
+    maxOutput: 128000,
+    codingPlan: true, // Free tier
+    bestFor: ["general-purpose", "chinese-writing", "translation", "long-text"],
+  },
+  // GLM-4 Foundation
+  "glm-4-32b-0414-128k": {
+    release: "2025-04-14",
+    params: "32B",
+    context: 128000,
+    maxOutput: 16000,
+    codingPlan: false, // $0.1/M tokens
+    bestFor: ["qa-services", "information-extraction", "financial-analysis", "research"],
+    webSearch: true,
+    functionCalling: true,
+  },
+  "glm-4.6v": {
+    release: "2025",
+    params: "unknown",
+    context: 8000,
+    maxOutput: 4000,
+    codingPlan: false,
+    multimodal: true,
+  },
+};
+
+// ZAI API Evolution
+const ZAI_API_FEATURES = {
+  // Authentication
+  jwtAuth: "2024-01", // JWT token auth with {id}.{secret} format
+  // Endpoints
+  codingEndpoint: "2025-12", // /api/coding/paas/v4/chat/completions
+  generalEndpoint: "2024-01", // /api/paas/v4/chat/completions
+  // Features
+  thinkingModes: "2025-12", // Interleaved, Retention-Based, Round-Level
+  contextCaching: "2025-12", // Performance optimization
+  structuredOutput: "2025-12", // JSON responses
+  webSearchJina: "2025-04", // $0.01 per search via Jina AI
 };
 ```
 

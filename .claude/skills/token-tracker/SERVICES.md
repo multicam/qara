@@ -59,10 +59,16 @@ bun run configure
 - **Cost Model:** Varies by model ($0.00001-$0.00015/token)
 
 ### z.ai
-- **Status:** Requires manual config
-- **Issue:** Endpoint may be different (404 error)
-- **Action:** Verify correct endpoint from z.ai documentation
-- **Custom Config Recommended:** Yes
+- **Status:** Session-based tracking (auto)
+- **Auth:** JWT token from API key format `{id}.{secret}`
+- **Models:** glm-4.7, glm-4.7-flashx, glm-4.7-flash, glm-4-32b-0414-128k, glm-4.6v
+- **Pricing:**
+  - glm-4.7: Premium (Coding Plan $3/mo)
+  - glm-4.7-flashx: Mid-tier (speed + affordability)
+  - glm-4.7-flash: Free tier
+  - glm-4-32b: Budget ($0.1/M tokens)
+  - glm-4.6v: Mid-tier (vision)
+- **Tracking:** Session-based (no public usage API)
 
 ### Gemini (antigravity.ai)
 - **Status:** Requires manual config
@@ -144,6 +150,13 @@ When exact API costs aren't available, token-tracker estimates based on:
 ### Gemini
 - gemini-1.5-pro: ~$0.0000035/token
 - gemini-1.5-flash: ~$0.000000075/token
+
+### z.ai GLM
+- glm-4.7: Premium (Coding Plan, estimated ~$0.00001/input + $0.00003/output)
+- glm-4.7-flashx: Mid-tier (~$0.000005/input + $0.000015/output)
+- glm-4.7-flash: Free tier ($0)
+- glm-4-32b-0414-128k: Budget ($0.1/M tokens = $0.0000001/token)
+- glm-4.6v: Mid-tier (~$0.000005/input + $0.000015/output)
 
 ## Getting Real API Keys
 
