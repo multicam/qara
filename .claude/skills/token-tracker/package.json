@@ -1,0 +1,18 @@
+{
+  "name": "token-tracker",
+  "version": "1.0.0",
+  "description": "Track and graph token usage across multiple API services",
+  "type": "module",
+  "scripts": {
+    "track": "bun workflows/track-usage.js",
+    "graph": "bun workflows/generate-graph.js",
+    "configure": "bun workflows/configure-source.js",
+    "report": "bun workflows/show-report.js"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  },
+  "engines": {
+    "bun": ">=1.0.0"
+  }
+}
