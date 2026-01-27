@@ -601,9 +601,70 @@ For Promise.all, Promise.allSettled, and concurrency control patterns, Claude kn
 
 ---
 
+## Model Routing Guidelines
+
+Select the right model for each task to optimize cost and performance.
+
+### Model Selection Table
+
+| Task Type | Model | Rationale |
+|-----------|-------|-----------|
+| File lookup, simple search | **haiku** | Fast, cheap, sufficient for simple tasks |
+| Status checks, validation | **haiku** | Quick confirmation doesn't need heavy models |
+| Code implementation | **sonnet** | Balanced capability and speed |
+| Documentation writing | **sonnet** | Good quality without overthinking |
+| Testing & debugging | **sonnet** | Reliable for systematic work |
+| Architecture design | **opus** | Deep reasoning for complex decisions |
+| PRD creation | **opus** | Comprehensive planning needs depth |
+| Research synthesis | **opus** | Cross-domain connections require depth |
+
+### Agent Type to Model Mapping
+
+| Agent Type | Recommended Model | Notes |
+|------------|-------------------|-------|
+| codebase-locator | haiku | Quick lookups |
+| thoughts-locator | haiku | Simple searches |
+| Explore | haiku | Fast exploration |
+| codebase-analyzer | sonnet | Moderate analysis |
+| engineer | sonnet | Implementation work |
+| designer | sonnet | Design decisions |
+| architect | sonnet (or opus for complex PRDs) | Planning depth varies |
+| spotcheck | sonnet | Verification needs thoroughness |
+
+### When to Upgrade/Downgrade
+
+**Upgrade to opus when:**
+- Task involves architectural decisions
+- Multiple valid approaches need evaluation
+- Deep cross-domain analysis required
+- Time pressure is low
+
+**Downgrade to haiku when:**
+- Simple file/pattern lookup
+- Quick status check
+- Validation only (yes/no answer)
+- Time pressure is high
+
+### Implementation
+
+The model router is available at:
+```typescript
+import { selectModelForAgent, selectModelForTaskType } from './hooks/lib/model-router';
+```
+
+---
+
+## Swarm Coordination Patterns
+
+For advanced multi-agent patterns (Map-Reduce, Voting, Specialist Router), see:
+- **swarm-patterns.md** - Detailed swarm coordination patterns with diagrams
+
+---
+
 ## Related Documentation
 
 - **agent-guide.md** - Agent hierarchy, roles, and escalation patterns
+- **swarm-patterns.md** - Advanced swarm coordination patterns
 - **SKILL.md** - Quick delegation reference
 
 ---

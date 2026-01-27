@@ -3,6 +3,8 @@ name: designer
 description: Use this agent when you need professional product design expertise, UX/UI design, design systems, prototyping, user research, visual design, interaction design, and design strategy. Specialized in creating user-centered, accessible, and scalable design solutions using modern tools and frameworks like Figma and shadcn/ui.
 model: sonnet
 color: orange
+skills:
+  - frontend-design
 permissions:
   allow:
     - "Bash"

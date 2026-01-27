@@ -107,6 +107,12 @@ function recordAgentRelationship(data: SubagentStartInput): void {
 /**
  * Set agent-type specific environment variables
  * Provides context optimization hints
+ *
+ * Context modes:
+ * - "minimal": Quick lookups, file location (locators)
+ * - "normal": Standard operations (engineer, designer, default)
+ * - "deep": Analysis requiring broader context (architect, analyzers)
+ * - "full": Verification needing complete context (spotcheck, reviewer)
  */
 function setupAgentEnvironment(data: SubagentStartInput): void {
   const agentType = data.agent_type || "unknown";
@@ -117,23 +123,35 @@ function setupAgentEnvironment(data: SubagentStartInput): void {
 
   // Agent-type specific optimizations
   switch (agentType) {
+    // Minimal context - quick lookups
     case "codebase-locator":
     case "thoughts-locator":
+    case "Explore":
       // Read-only agents - disable write operations for safety
       process.env.AGENT_READ_ONLY = "true";
+      process.env.AGENT_CONTEXT_MODE = "minimal";
       break;
 
+    // Deep context - analysis and planning
+    case "architect":
+    case "Plan":
     case "codebase-analyzer":
     case "thoughts-analyzer":
+    case "codebase-pattern-finder":
       // Analysis agents - increase context budget
       process.env.AGENT_CONTEXT_MODE = "deep";
       break;
 
+    // Full context - verification and review
     case "spotcheck":
+    case "design-implementation-reviewer":
       // Verification agents - need full recent context
       process.env.AGENT_CONTEXT_MODE = "full";
       break;
 
+    // Normal context - standard operations
+    case "engineer":
+    case "designer":
     default:
       // Standard agents
       process.env.AGENT_CONTEXT_MODE = "normal";

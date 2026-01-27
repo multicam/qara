@@ -9,12 +9,19 @@
 
 import { readStdinWithTimeout } from './lib/stdin-utils';
 import { findTaskResult, extractCompletionMessage } from './lib/transcript-utils';
+import { completeAgent } from './lib/agent-state-utils';
+
+interface SubagentStopInput {
+  agent_id?: string;
+  transcript_path?: string;
+}
 
 async function main() {
   console.error('🔍 SubagentStop hook started');
 
   // Read input from stdin using shared utility
   let transcriptPath: string;
+  let agentId: string | undefined;
   try {
     const input = await readStdinWithTimeout(500);
     if (!input) {
@@ -22,8 +29,9 @@ async function main() {
       process.exit(0);
     }
 
-    const parsed = JSON.parse(input);
-    transcriptPath = parsed.transcript_path;
+    const parsed: SubagentStopInput = JSON.parse(input);
+    transcriptPath = parsed.transcript_path || '';
+    agentId = parsed.agent_id;
 
     if (!transcriptPath) {
       console.error('No transcript path provided');
@@ -59,6 +67,19 @@ async function main() {
   
   // Voice notification removed - voice server is no longer used
   console.log(`✅ Completed: [${agentName}] ${fullMessage}`);
+
+  // Update agent state file with completion info for resume capability
+  if (agentId) {
+    try {
+      const status = taskOutput.includes('error') || taskOutput.includes('failed')
+        ? 'failed'
+        : 'completed';
+      completeAgent(agentId, fullMessage, status);
+      console.error(`📝 Agent state updated: ${agentId} -> ${status}`);
+    } catch (e) {
+      console.error('Failed to update agent state:', e);
+    }
+  }
 }
 
 main().catch(console.error);

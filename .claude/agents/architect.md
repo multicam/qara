@@ -3,6 +3,12 @@ name: architect
 description: Use this agent when you need professional software architecture expertise, comprehensive PRD document creation, technical specification writing, system design, and feature breakdown with detailed implementation checklists. Specialized in creating thorough Product Requirements Documents that can be distributed to multiple development agents.
 model: sonnet
 color: purple
+skills:
+  - research
+hooks:
+  PostToolUse:
+    - match: "Write"
+      run: "bun ${PAI_DIR}/hooks/validate-prd-structure.ts"
 permissions:
   allow:
     - "Bash"

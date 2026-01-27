@@ -351,6 +351,44 @@ Create a comprehensive report that:
 - **Confidence Level:** [High/Medium/Low] ([percentage]%)
 - **Result:** [Brief summary answer]
 
+## 🔄 AGENT RESUME DETECTION
+
+**Before launching new research agents, check for resumable agents:**
+
+When starting any research workflow, first check if there are stale running agents that can be resumed:
+
+```typescript
+import { findResumableAgents } from './hooks/lib/agent-state-utils';
+
+// Check for resumable agents before launching new ones
+const resumable = findResumableAgents({
+  sessionId: process.env.SESSION_ID,
+  topic: researchTopic,  // Optional: filter by topic keyword
+  staleThresholdMs: 5 * 60 * 1000  // Consider running > 5 min as stale
+});
+
+if (resumable.length > 0) {
+  console.log(`Found ${resumable.length} resumable agents:`);
+  resumable.forEach(agent => {
+    console.log(`  - ${agent.agent_type}: ${agent.description} (started ${agent.start_time})`);
+  });
+  // Offer to resume or start fresh
+}
+```
+
+**Resume criteria:**
+- Agent has `status="running"`
+- Agent's `start_time` is older than stale threshold (5 min default)
+- These are likely orphaned agents from crashed sessions
+
+**Resume workflow:**
+1. Check for resumable agents matching current topic
+2. If found, offer user choice: resume existing or start fresh
+3. Resume using `resume: agent_id` parameter in Task call
+4. Fresh start: proceed with normal research workflow
+
+---
+
 ## 🚨 CRITICAL RULES FOR QARA
 
 ### ⏱️ TIMEOUT RULES (MOST IMPORTANT):
@@ -495,3 +533,103 @@ If research commands report being blocked, encountering CAPTCHAs, or facing bot 
 - ✅ **New way:** Parallel agents (all available types) → Under 1 minute
 
 **This is the correct architecture. Use it for FAST research.**
+
+---
+
+## 🌙 BACKGROUND EXECUTION MODE
+
+**ACTIVATION:** User says "background research", "research while I work", "async research", or "start research and continue"
+
+**Purpose:** Launch research agents that run in the background while the user continues with other tasks. Results are collected when ready.
+
+### When to Use Background Mode
+
+✅ **Good for:**
+- Long-running extensive research (8+ agents)
+- Research not blocking immediate work
+- Gathering information for later synthesis
+- Multiple independent research topics
+
+❌ **Not good for:**
+- Questions needing immediate answers
+- Research that blocks next steps
+- Quick lookups or simple questions
+
+### Background Research Workflow
+
+**Step 1: Launch with `run_in_background: true`**
+
+```typescript
+// Launch all research agents in background
+const researchTasks = [
+  Task({
+    subagent_type: "perplexity-researcher",
+    description: "Background: [topic] [perplexity-researcher-1]",
+    prompt: "Research [topic]. Return findings when complete.",
+    run_in_background: true  // KEY: Returns immediately with output_file
+  }),
+  Task({
+    subagent_type: "claude-researcher",
+    description: "Background: [topic] [claude-researcher-1]",
+    prompt: "Research [topic]. Return findings when complete.",
+    run_in_background: true
+  }),
+  // ... more agents
+];
+```
+
+**Step 2: Return Output File Paths to User**
+
+```markdown
+📋 **Background Research Launched**
+
+I've started research on [topic] with [N] agents running in background.
+
+**Output files to check when ready:**
+- `/path/to/output-1.txt` (perplexity-researcher)
+- `/path/to/output-2.txt` (claude-researcher)
+- ... more files
+
+**Check progress:** `tail -f [output_file]`
+**Get results:** Read files or ask me to synthesize when ready
+```
+
+**Step 3: Continue Other Work**
+
+User can continue with other tasks while research runs.
+
+**Step 4: Synthesize When Ready**
+
+When user asks for results:
+1. Read all output files
+2. Check for completion markers
+3. Synthesize findings using standard format
+
+### Background Mode Response Format
+
+📋 **SUMMARY:** Launched [N] background research agents on [topic]
+**🔍 ANALYSIS:** Agents deployed: [list agent types]
+**⚡ ACTIONS:** Launched parallel background research
+**✅ RESULTS:** Output files: [list paths]
+**📊 STATUS:** Research running in background - not blocking
+**➡️ NEXT:** Continue other work, check results when needed
+**🎯 COMPLETED:** Background research on [topic] launched
+
+### Resume Detection for Background Research
+
+Before launching new background research, check for existing:
+
+```typescript
+// Check for resumable agents on this topic
+const resumable = findResumableAgents({
+  sessionId: currentSessionId,
+  topic: researchTopic,
+  staleThresholdMs: 5 * 60 * 1000  // 5 minutes
+});
+
+if (resumable.length > 0) {
+  // Notify user about existing research
+  console.log(`Found ${resumable.length} existing research agents on similar topic`);
+  // Offer to resume or start fresh
+}
+```

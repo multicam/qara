@@ -45,6 +45,10 @@ description: |
 **When user says "explore codebase", "understand architecture", "before we start":**
 → **READ:** `${PAI_DIR}/skills/CORE/workflows/exploration-pattern.md`
 
+**When user says "background research", "research while I work", "async research":**
+→ **READ:** `${PAI_DIR}/skills/research/workflows/conduct.md`
+→ **USE:** Background Execution Mode section
+
 ---
 
 ## 📚 Documentation Index
