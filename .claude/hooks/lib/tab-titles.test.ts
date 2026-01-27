@@ -191,4 +191,56 @@ describe('Tab Titles', () => {
       });
     });
   });
+
+  describe('setTerminalTabTitle', () => {
+    it('should export setTerminalTabTitle function', async () => {
+      const mod = await import('./tab-titles');
+      expect(typeof mod.setTerminalTabTitle).toBe('function');
+    });
+
+    it('should not throw when called with a title', async () => {
+      const { setTerminalTabTitle } = await import('./tab-titles');
+      // This writes to stderr, which is fine in tests
+      expect(() => setTerminalTabTitle('Test Title')).not.toThrow();
+    });
+
+    it('should handle special characters in title', async () => {
+      const { setTerminalTabTitle } = await import('./tab-titles');
+      expect(() => setTerminalTabTitle('Title with "quotes" and \'apostrophes\'')).not.toThrow();
+    });
+
+    it('should handle empty title', async () => {
+      const { setTerminalTabTitle } = await import('./tab-titles');
+      expect(() => setTerminalTabTitle('')).not.toThrow();
+    });
+
+    it('should handle unicode in title', async () => {
+      const { setTerminalTabTitle } = await import('./tab-titles');
+      expect(() => setTerminalTabTitle('Test 🎯 Title')).not.toThrow();
+    });
+  });
+
+  describe('setTabTitleSync', () => {
+    it('should export setTabTitleSync function', async () => {
+      const mod = await import('./tab-titles');
+      expect(typeof mod.setTabTitleSync).toBe('function');
+    });
+
+    it('should not throw when called with a title', async () => {
+      const { setTabTitleSync } = await import('./tab-titles');
+      // Uses execSync internally - should silently fail or succeed
+      expect(() => setTabTitleSync('Test Sync Title')).not.toThrow();
+    });
+
+    it('should handle special characters in title', async () => {
+      const { setTabTitleSync } = await import('./tab-titles');
+      // The function escapes single quotes
+      expect(() => setTabTitleSync("Title with 'quotes'")).not.toThrow();
+    });
+
+    it('should handle empty title', async () => {
+      const { setTabTitleSync } = await import('./tab-titles');
+      expect(() => setTabTitleSync('')).not.toThrow();
+    });
+  });
 });

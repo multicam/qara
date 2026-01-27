@@ -49,8 +49,8 @@ const SKILL_SUGGESTIONS: SkillSuggestion[] = [
     description: 'for production-quality TypeScript CLIs'
   },
   {
-    pattern: ['optimize pai', 'cc features', 'audit repo', '12-factor'],
-    skill: '/cc-pai-optimiser',
+    pattern: ['optimize pai', 'cc features', 'audit repo', '12-factor', 'upgrade pai'],
+    skill: '/cc-pai-upgrade',
     description: 'for PAI optimization and CC feature adoption'
   },
   {

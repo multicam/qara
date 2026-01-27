@@ -1,12 +1,85 @@
 ---
-name: cc-pai-optimiser
+name: cc-pai-upgrade
 context: fork
 description: Review and optimize PAI (Personal AI Infrastructure) codebases as Claude Code evolves. Use when analyzing PAI repositories against 12-factor agent principles, checking for Claude Code feature compatibility, auditing context management patterns, or generating upgrade recommendations. Triggers on requests involving PAI optimization, Claude Code feature adoption, agent architecture review, or context engineering improvements.
 ---
 
-# CC-PAI Optimizer (v2.1.12)
+# CC-PAI Upgrade (v2.1.13)
 
 Review and optimize PAI codebases by tracking Claude Code evolution and applying 12-factor agent principles.
+
+## Test Coverage Workflow
+
+### Run Tests with Coverage
+
+```bash
+cd ${PAI_DIR}/hooks && bun test --coverage
+```
+
+### Coverage Targets
+
+| Category | Target | Current |
+|----------|--------|---------|
+| Overall | 80% | ~71% |
+| Lib modules | 90% | ~75% |
+| LLM clients | 50%* | ~35% |
+| Pure functions | 95% | ~95% |
+
+\* LLM clients have lower targets due to network dependencies
+
+### Integration-Heavy Modules
+
+These modules have intentionally lower coverage due to external dependencies:
+
+| Module | Coverage | Reason |
+|--------|----------|--------|
+| `llm/anthropic.ts` | ~8% | Requires SDK mocking |
+| `llm/openai.ts` | ~8% | Requires SDK mocking |
+| `hitl.ts` | ~15% | Requires WebSocket/network |
+| `stdin-utils.ts` | ~15% | Requires stdin mocking |
+| `summarizer.ts` | ~2% | Calls LLM client |
+
+Tests for these modules verify:
+- Module exports and function signatures
+- Response parsing logic (extracted)
+- Error handling patterns
+
+### Adding Missing Tests
+
+When coverage falls below target:
+
+1. **Identify gaps:** Run `bun test --coverage` and check `Uncovered Line #s`
+2. **Prioritize:** Focus on files with <80% function coverage (exclude integration modules)
+3. **Create tests:** Add `*.test.ts` file next to source file
+4. **Test patterns:**
+   - Pure functions: Direct unit tests
+   - I/O functions: Mock fs/network, test logic
+   - Classes: Test constructor + public methods
+   - Integration modules: Test exports, parsing logic, extract testable pieces
+
+### Test File Convention
+
+```
+lib/
+├── module.ts           # Source
+├── module.test.ts      # Tests (same directory)
+└── llm/
+    ├── provider.ts
+    └── provider.test.ts
+```
+
+### Running Specific Tests
+
+```bash
+# Single file
+bun test lib/module.test.ts
+
+# Pattern match
+bun test --filter "model-router"
+
+# Watch mode
+bun test --watch
+```
 
 ## Core Workflow
 
@@ -222,14 +295,25 @@ Generate report as:
 
 ### Full Audit
 ```bash
-cd ${PAI_DIR}/skills/cc-pai-optimiser
+cd ${PAI_DIR}/skills/cc-pai-upgrade
 bun run scripts/analyse-pai.js ${PAI_DIR}/..
 ```
 
 ### Version Check
 ```bash
-cd ${PAI_DIR}/skills/cc-pai-optimiser
+cd ${PAI_DIR}/skills/cc-pai-upgrade
 bun run scripts/cc-version-check.js ${PAI_DIR}/..
+```
+
+### Test Coverage
+```bash
+cd ${PAI_DIR}/hooks && bun test --coverage
+```
+
+### Add Missing Tests
+```bash
+# Find files with low coverage
+cd ${PAI_DIR}/hooks && bun test --coverage 2>&1 | grep -E "^\s+lib.*\|.*[0-7][0-9]\.[0-9]+"
 ```
 
 ## Version Tracking
