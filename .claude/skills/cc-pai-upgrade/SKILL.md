@@ -4,82 +4,9 @@ context: fork
 description: Review and optimize PAI (Personal AI Infrastructure) codebases as Claude Code evolves. Use when analyzing PAI repositories against 12-factor agent principles, checking for Claude Code feature compatibility, auditing context management patterns, or generating upgrade recommendations. Triggers on requests involving PAI optimization, Claude Code feature adoption, agent architecture review, or context engineering improvements.
 ---
 
-# CC-PAI Upgrade (v2.1.13)
+# CC-PAI Upgrade (v2.1.14)
 
 Review and optimize PAI codebases by tracking Claude Code evolution and applying 12-factor agent principles.
-
-## Test Coverage Workflow
-
-### Run Tests with Coverage
-
-```bash
-cd ${PAI_DIR}/hooks && bun test --coverage
-```
-
-### Coverage Targets
-
-| Category | Target | Current |
-|----------|--------|---------|
-| Overall | 80% | ~71% |
-| Lib modules | 90% | ~75% |
-| LLM clients | 50%* | ~35% |
-| Pure functions | 95% | ~95% |
-
-\* LLM clients have lower targets due to network dependencies
-
-### Integration-Heavy Modules
-
-These modules have intentionally lower coverage due to external dependencies:
-
-| Module | Coverage | Reason |
-|--------|----------|--------|
-| `llm/anthropic.ts` | ~8% | Requires SDK mocking |
-| `llm/openai.ts` | ~8% | Requires SDK mocking |
-| `hitl.ts` | ~15% | Requires WebSocket/network |
-| `stdin-utils.ts` | ~15% | Requires stdin mocking |
-| `summarizer.ts` | ~2% | Calls LLM client |
-
-Tests for these modules verify:
-- Module exports and function signatures
-- Response parsing logic (extracted)
-- Error handling patterns
-
-### Adding Missing Tests
-
-When coverage falls below target:
-
-1. **Identify gaps:** Run `bun test --coverage` and check `Uncovered Line #s`
-2. **Prioritize:** Focus on files with <80% function coverage (exclude integration modules)
-3. **Create tests:** Add `*.test.ts` file next to source file
-4. **Test patterns:**
-   - Pure functions: Direct unit tests
-   - I/O functions: Mock fs/network, test logic
-   - Classes: Test constructor + public methods
-   - Integration modules: Test exports, parsing logic, extract testable pieces
-
-### Test File Convention
-
-```
-lib/
-├── module.ts           # Source
-├── module.test.ts      # Tests (same directory)
-└── llm/
-    ├── provider.ts
-    └── provider.test.ts
-```
-
-### Running Specific Tests
-
-```bash
-# Single file
-bun test lib/module.test.ts
-
-# Pattern match
-bun test --filter "model-router"
-
-# Watch mode
-bun test --watch
-```
 
 ## Core Workflow
 
@@ -291,6 +218,59 @@ Generate report as:
 [Ready-to-use code for top recommendations]
 ```
 
+## Simplification Analysis
+
+**Run this BEFORE tests.** Identify superfluous code across skills:
+
+### Analysis Categories
+
+1. **Dead Code** - Functions/exports never used
+2. **Redundant Patterns** - Duplicates functionality elsewhere
+3. **Over-Engineering** - Unnecessary abstractions, excessive config
+4. **Outdated Patterns** - Doesn't align with modern CC patterns
+
+### Execution
+
+Use codebase-analyzer agent to scan all skills:
+
+```
+Analyze all skills in ${PAI_DIR}/.claude/skills. For each skill, identify:
+1. Dead code: Functions/exports never used
+2. Redundant patterns: Code duplicating functionality elsewhere
+3. Over-engineering: Unnecessary abstractions, excessive configuration
+4. Outdated patterns: Code not aligned with modern Claude Code patterns
+
+List specific files and line numbers for removal/simplification.
+```
+
+### Common Findings
+
+| Pattern | Example | Action |
+|---------|---------|--------|
+| Legacy integrations | Unused API clients | Delete entire file |
+| Duplicate workflows | Same workflow in subdirs | Keep one, delete rest |
+| Inline formulas | Config that could be params | Consolidate to single file |
+| Pre-2.1.x context mgmt | Manual UFC patterns | Remove (CC handles natively) |
+| Excessive routing | Decision trees for similar outputs | Single workflow with params |
+
+### Output Format
+
+```markdown
+## Simplification Report
+
+### High Priority Removals (Dead Code)
+- `skill/lib/file.ts` - Remove entire file (~N lines)
+
+### High Priority Consolidations (Redundancy)
+- `skill/workflows/` - Consolidate N formats into 1 (~N lines saved)
+
+### Medium Priority Simplifications (Over-Engineering)
+- `skill/SKILL.md` - Remove section X (~N lines)
+
+### Low Priority Updates (Outdated)
+- `skill/` - Update to use CC 2.1.x feature Y
+```
+
 ## Quick Commands
 
 ### Full Audit
@@ -460,3 +440,78 @@ const ZAI_API_FEATURES = {
 ```
 
 See `scripts/cc-version-check.js` for automated compatibility checking.
+
+## Test Coverage (Post-Upgrade)
+
+**Run AFTER completing upgrade work.** Validates changes don't break functionality.
+
+### Run Tests with Coverage
+
+```bash
+cd ${PAI_DIR}/hooks && bun test --coverage
+```
+
+### Coverage Targets
+
+| Category | Target | Notes |
+|----------|--------|-------|
+| Overall | 80% | Line coverage |
+| Lib modules | 90% | Core logic |
+| LLM clients | 50%* | Network dependencies |
+| Pure functions | 95% | No side effects |
+
+\* LLM clients have lower targets due to network dependencies
+
+### Integration-Heavy Modules
+
+These modules have intentionally lower coverage due to external dependencies:
+
+| Module | Coverage | Reason |
+|--------|----------|--------|
+| `llm/anthropic.ts` | ~8% | Requires SDK mocking |
+| `llm/openai.ts` | ~8% | Requires SDK mocking |
+| `hitl.ts` | ~15% | Requires WebSocket/network |
+| `stdin-utils.ts` | ~15% | Requires stdin mocking |
+| `summarizer.ts` | ~2% | Calls LLM client |
+
+Tests for these modules verify:
+- Module exports and function signatures
+- Response parsing logic (extracted)
+- Error handling patterns
+
+### Adding Missing Tests
+
+When coverage falls below target:
+
+1. **Identify gaps:** Run `bun test --coverage` and check `Uncovered Line #s`
+2. **Prioritize:** Focus on files with <80% function coverage (exclude integration modules)
+3. **Create tests:** Add `*.test.ts` file next to source file
+4. **Test patterns:**
+   - Pure functions: Direct unit tests
+   - I/O functions: Mock fs/network, test logic
+   - Classes: Test constructor + public methods
+   - Integration modules: Test exports, parsing logic, extract testable pieces
+
+### Test File Convention
+
+```
+lib/
+├── module.ts           # Source
+├── module.test.ts      # Tests (same directory)
+└── llm/
+    ├── provider.ts
+    └── provider.test.ts
+```
+
+### Running Specific Tests
+
+```bash
+# Single file
+bun test lib/module.test.ts
+
+# Pattern match
+bun test --filter "model-router"
+
+# Watch mode
+bun test --watch
+```
