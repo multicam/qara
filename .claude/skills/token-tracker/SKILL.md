@@ -1,5 +1,6 @@
 ---
 name: token-tracker
+context: same
 description: |
   Track and graph token usage data across all your subscriptions and API keys.
   Like toktop but simpler and extended to all accounts you use in opencode.

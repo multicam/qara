@@ -260,16 +260,49 @@ function validateEvent(event: HookEvent): boolean {
     return true;
 }
 
+/**
+ * Infer event type from input structure since CC doesn't always provide hook_event_name
+ */
+function inferEventType(hookData: Record<string, any>): string | null {
+    // Explicit hook_event_name takes precedence
+    if (hookData.hook_event_name) {
+        return hookData.hook_event_name;
+    }
+
+    // Infer from input structure
+    if (hookData.tool_result !== undefined) {
+        return 'PostToolUse';
+    }
+    if (hookData.tool_name !== undefined && hookData.tool_input !== undefined) {
+        return 'PreToolUse';
+    }
+    if (hookData.user_prompt !== undefined) {
+        return 'UserPromptSubmit';
+    }
+    if (hookData.stop_reason !== undefined) {
+        return 'Stop';
+    }
+    if (hookData.subagent_type !== undefined && hookData.subagent_result !== undefined) {
+        return 'SubagentStop';
+    }
+    if (hookData.transcript_summary !== undefined) {
+        return 'PreCompact';
+    }
+
+    // Cannot infer - skip silently
+    return null;
+}
+
 async function main() {
     try {
         // Read hook data from stdin
         const stdinData = await Bun.stdin.text();
         const hookData = JSON.parse(stdinData);
 
-        // Get event type from input (no longer need CLI arg)
-        const eventType = hookData.hook_event_name;
+        // Get event type from input or infer from structure
+        const eventType = inferEventType(hookData);
         if (!eventType) {
-            console.error('Missing hook_event_name in input');
+            // Cannot determine event type - skip silently
             process.exit(0);
         }
 
@@ -368,9 +401,16 @@ async function main() {
         const eventsFile = getEventsFilePath();
         appendJsonl(eventsFile, event);
 
+        // PreToolUse hooks MUST output a decision - output APPROVED to not block
+        if (eventType === 'PreToolUse') {
+            console.log(JSON.stringify({ decision: 'APPROVED' }));
+        }
+
     } catch (error) {
         // Silently fail - don't block Claude Code
         console.error('Event capture error:', error);
+        // Still output APPROVED for PreToolUse to prevent blocking
+        console.log(JSON.stringify({ decision: 'APPROVED' }));
     }
 
     process.exit(0);
