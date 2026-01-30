@@ -1,6 +1,9 @@
 /**
  * Event summarizer using LLM
  * Migrated from Python: utils/summarizer.py
+ *
+ * Factor 9 Compliance: Compact Errors
+ * Pure functions extracted for testability.
  */
 
 import { promptLLM } from './llm/anthropic';
@@ -11,20 +14,34 @@ interface EventData {
 }
 
 /**
- * Generate a concise one-sentence summary of a hook event for engineers.
+ * Pure function: Clean LLM response into a proper summary.
+ * Removes quotes, trailing periods, takes first line, limits length.
  */
-export async function generateEventSummary(
-  eventData: EventData
-): Promise<string | null> {
-  const eventType = eventData.hook_event_type || 'Unknown';
-  let payloadStr = JSON.stringify(eventData.payload || {}, null, 2);
+export function cleanSummaryResponse(summary: string): string {
+  return summary
+    .trim()
+    .replace(/^["']|["']$/g, '')  // Remove surrounding quotes
+    .replace(/\.$/, '')            // Remove trailing period
+    .split('\n')[0]                // Take only first line
+    .slice(0, 100);                // Limit length
+}
 
-  // Truncate if too long
-  if (payloadStr.length > 1000) {
-    payloadStr = payloadStr.slice(0, 1000) + '...';
-  }
+/**
+ * Pure function: Truncate payload to max length for LLM prompt.
+ */
+export function truncatePayload(
+  payload: Record<string, unknown>,
+  maxLength = 1000
+): string {
+  const str = JSON.stringify(payload, null, 2);
+  return str.length > maxLength ? str.slice(0, maxLength) + '...' : str;
+}
 
-  const prompt = `Generate a one-sentence summary of this Claude Code hook event payload for an engineer monitoring the system.
+/**
+ * Pure function: Build the summary prompt for the LLM.
+ */
+export function buildSummaryPrompt(eventType: string, payloadStr: string): string {
+  return `Generate a one-sentence summary of this Claude Code hook event payload for an engineer monitoring the system.
 
 Event Type: ${eventType}
 Payload:
@@ -47,15 +64,19 @@ Examples:
 - Agent responds with implementation plan
 
 Generate the summary based on the payload:`;
+}
+
+/**
+ * Generate a concise one-sentence summary of a hook event for engineers.
+ * Uses extracted pure functions for testability (Factor 9).
+ */
+export async function generateEventSummary(
+  eventData: EventData
+): Promise<string | null> {
+  const eventType = eventData.hook_event_type || 'Unknown';
+  const payloadStr = truncatePayload(eventData.payload || {});
+  const prompt = buildSummaryPrompt(eventType, payloadStr);
 
   const summary = await promptLLM(prompt);
-  if (!summary) return null;
-
-  // Clean up the response
-  return summary
-    .trim()
-    .replace(/^["']|["']$/g, '')  // Remove surrounding quotes
-    .replace(/\.$/, '')            // Remove trailing period
-    .split('\n')[0]                // Take only first line
-    .slice(0, 100);                // Limit length
+  return summary ? cleanSummaryResponse(summary) : null;
 }

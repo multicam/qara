@@ -202,17 +202,26 @@ function generateAdditionalContext(command: string, checkpointAgeMs: number): st
 
 /**
  * Output hook result in CC 2.1.9 JSON format with additionalContext
+ *
+ * CC 2.1.9 expects: { continue: boolean, additionalContext?: string, reason?: string }
+ * - continue: true = allow tool execution, false = block
+ * - additionalContext: injected into model context (Factor 3 compliance)
+ * - reason: explanation when blocking
  */
 function outputResult(decision: string, additionalContext?: string, reason?: string): void {
-  const result: { decision: string; additionalContext?: string } = { decision };
+  const shouldContinue = decision === "APPROVED";
+
+  const result: { continue: boolean; additionalContext?: string; reason?: string } = {
+    continue: shouldContinue
+  };
 
   if (additionalContext) {
     result.additionalContext = additionalContext;
   }
 
-  // Append reason to decision for BLOCKED/REQUIRE_APPROVAL
-  if (reason && decision !== "APPROVED") {
-    result.decision = `${decision}: ${reason}`;
+  // Add reason when blocking or requiring approval
+  if (!shouldContinue && reason) {
+    result.reason = `${decision}: ${reason}`;
   }
 
   console.log(JSON.stringify(result));

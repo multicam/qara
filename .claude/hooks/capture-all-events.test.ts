@@ -100,8 +100,8 @@ describe('capture-all-events hook', () => {
       const result = await runHook(input);
       expect(result.exitCode).toBe(0);
 
-      // PreToolUse should output APPROVED
-      expect(result.stdout).toContain('APPROVED');
+      // PreToolUse should output approve (lowercase per CC schema)
+      expect(result.stdout).toContain('"decision":"approve"');
 
       const events = readEvents();
       expect(events.length).toBe(1);
@@ -426,7 +426,7 @@ describe('capture-all-events hook', () => {
   });
 
   describe('PreToolUse approval', () => {
-    it('should output APPROVED for PreToolUse events', async () => {
+    it('should output approve for PreToolUse events', async () => {
       const input = {
         session_id: 'test',
         tool_name: 'Read',
@@ -434,17 +434,17 @@ describe('capture-all-events hook', () => {
       };
 
       const result = await runHook(input);
-      expect(result.stdout).toContain('"decision":"APPROVED"');
+      expect(result.stdout).toContain('"decision":"approve"');
     });
 
-    it('should not output APPROVED for other event types', async () => {
+    it('should not output approve for other event types', async () => {
       const input = {
         session_id: 'test',
         user_prompt: 'Hello'
       };
 
       const result = await runHook(input);
-      expect(result.stdout).not.toContain('APPROVED');
+      expect(result.stdout).not.toContain('"decision":"approve"');
     });
   });
 
@@ -504,9 +504,9 @@ describe('capture-all-events hook', () => {
       const exitCode = await proc.exited;
       const stdout = await new Response(proc.stdout).text();
 
-      // Should still exit cleanly and output APPROVED (safety fallback)
+      // Should still exit cleanly and output approve (safety fallback)
       expect(exitCode).toBe(0);
-      expect(stdout).toContain('APPROVED');
+      expect(stdout).toContain('"decision":"approve"');
     });
 
     it('should handle empty input gracefully', async () => {
@@ -529,7 +529,7 @@ describe('capture-all-events hook', () => {
 
       // Should still exit cleanly
       expect(exitCode).toBe(0);
-      expect(stdout).toContain('APPROVED');
+      expect(stdout).toContain('"decision":"approve"');
     });
   });
 

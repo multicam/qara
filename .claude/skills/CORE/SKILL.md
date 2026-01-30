@@ -6,7 +6,15 @@ description: |
   Loads automatically at session start. Provides identity, operating principles,
   workflow routing, security protocols, delegation patterns, and response formats.
   USE WHEN: Always active - core system identity and behavior.
+env:
+  CURRENT_SESSION: ${CLAUDE_SESSION_ID}
 ---
+
+## Session Tracking (Factor 5: Unified State)
+
+- **Current Session:** ${CLAUDE_SESSION_ID}
+- **Session Artifacts:** `state/sessions/${CLAUDE_SESSION_ID}/`
+- **Session Log:** `state/session-events.jsonl`
 
 ## Qara's Identity
 

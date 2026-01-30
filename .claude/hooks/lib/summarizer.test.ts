@@ -2,71 +2,61 @@
  * Tests for summarizer.ts
  *
  * Tests the event summarization logic without making actual API calls.
+ * Factor 9 Compliance: Pure functions are now exported and fully testable.
  */
 
 import { describe, it, expect } from 'bun:test';
+import {
+  cleanSummaryResponse,
+  truncatePayload,
+  buildSummaryPrompt,
+} from './summarizer';
 
-// Test the response cleaning logic that generateEventSummary applies
+// Test the exported pure functions
 describe('Summarizer', () => {
-  describe('Response cleaning logic', () => {
-    function cleanSummary(summary: string): string {
-      return summary
-        .trim()
-        .replace(/^["']|["']$/g, '') // Remove surrounding quotes
-        .replace(/\.$/, '') // Remove trailing period
-        .split('\n')[0] // Take only first line
-        .slice(0, 100); // Limit length
-    }
+  describe('cleanSummaryResponse (exported)', () => {
 
     it('should trim whitespace', () => {
-      expect(cleanSummary('  Hello World  ')).toBe('Hello World');
+      expect(cleanSummaryResponse('  Hello World  ')).toBe('Hello World');
     });
 
     it('should remove surrounding double quotes', () => {
-      expect(cleanSummary('"Hello World"')).toBe('Hello World');
+      expect(cleanSummaryResponse('"Hello World"')).toBe('Hello World');
     });
 
     it('should remove surrounding single quotes', () => {
-      expect(cleanSummary("'Hello World'")).toBe('Hello World');
+      expect(cleanSummaryResponse("'Hello World'")).toBe('Hello World');
     });
 
     it('should remove trailing period', () => {
-      expect(cleanSummary('Hello World.')).toBe('Hello World');
+      expect(cleanSummaryResponse('Hello World.')).toBe('Hello World');
     });
 
     it('should take only first line', () => {
-      expect(cleanSummary('First line\nSecond line\nThird line')).toBe('First line');
+      expect(cleanSummaryResponse('First line\nSecond line\nThird line')).toBe('First line');
     });
 
     it('should limit length to 100 characters', () => {
       const longText = 'A'.repeat(150);
-      expect(cleanSummary(longText).length).toBe(100);
+      expect(cleanSummaryResponse(longText).length).toBe(100);
     });
 
     it('should handle combined cleaning operations', () => {
       // Period removal only works at end of string, first line extraction preserves internal periods
       const messy = '"Reads file from disk\nMore details."';
-      expect(cleanSummary(messy)).toBe('Reads file from disk');
+      expect(cleanSummaryResponse(messy)).toBe('Reads file from disk');
     });
 
     it('should handle empty string', () => {
-      expect(cleanSummary('')).toBe('');
+      expect(cleanSummaryResponse('')).toBe('');
     });
 
     it('should preserve internal quotes', () => {
-      expect(cleanSummary('Says "hello" to user')).toBe('Says "hello" to user');
+      expect(cleanSummaryResponse('Says "hello" to user')).toBe('Says "hello" to user');
     });
   });
 
-  describe('Payload truncation logic', () => {
-    function truncatePayload(payload: object): string {
-      let payloadStr = JSON.stringify(payload, null, 2);
-      if (payloadStr.length > 1000) {
-        payloadStr = payloadStr.slice(0, 1000) + '...';
-      }
-      return payloadStr;
-    }
-
+  describe('truncatePayload (exported)', () => {
     it('should not truncate small payloads', () => {
       const payload = { key: 'value' };
       const result = truncatePayload(payload);
@@ -102,6 +92,36 @@ describe('Summarizer', () => {
       const result = truncatePayload(payload);
       expect(result).toContain('[');
       expect(result).toContain(']');
+    });
+
+    it('should accept custom max length', () => {
+      const payload = { data: 'A'.repeat(100) };
+      const result = truncatePayload(payload, 50);
+      expect(result.length).toBe(53); // 50 + '...'
+    });
+  });
+
+  describe('buildSummaryPrompt (exported)', () => {
+    it('should include event type in prompt', () => {
+      const prompt = buildSummaryPrompt('PreToolUse', '{}');
+      expect(prompt).toContain('Event Type: PreToolUse');
+    });
+
+    it('should include payload in prompt', () => {
+      const prompt = buildSummaryPrompt('PostToolUse', '{"action": "test"}');
+      expect(prompt).toContain('{"action": "test"}');
+    });
+
+    it('should include requirements section', () => {
+      const prompt = buildSummaryPrompt('SessionStart', '{}');
+      expect(prompt).toContain('Requirements:');
+      expect(prompt).toContain('ONE sentence only');
+    });
+
+    it('should include examples', () => {
+      const prompt = buildSummaryPrompt('Test', '{}');
+      expect(prompt).toContain('Examples:');
+      expect(prompt).toContain('Reads configuration file');
     });
   });
 
