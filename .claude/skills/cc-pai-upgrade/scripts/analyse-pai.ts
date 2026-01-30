@@ -1,17 +1,44 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 /**
- * analyze-pai.js
+ * analyse-pai.ts
  * Comprehensive PAI repository analysis against 12-factor principles
  *
- * Usage: bun run scripts/analyze-pai.js [pai-path]
+ * Usage: bun run scripts/analyse-pai.ts [pai-path]
+ *
+ * P2: Migrated from JavaScript to TypeScript for PAI stack compliance
  */
 
-import { execSync } from 'child_process';
 import { existsSync, readFileSync, readdirSync, statSync } from 'fs';
 import { join, relative } from 'path';
 
+// Type definitions
+interface AnalysisResult {
+    score: number;
+    maxScore: number;
+    findings: string[];
+    recommendations: string[];
+}
+
+interface ExpectedDir {
+    path: string;
+    required: boolean;
+    weight: number;
+}
+
+interface Report {
+    timestamp: string;
+    paiPath: string;
+    modules: Record<string, AnalysisResult>;
+    totalScore: number;
+    maxScore: number;
+    recommendations: Array<{ module: string; recommendation: string }>;
+    compliancePercentage: number;
+}
+
+type AnalyzerFunction = (paiPath: string) => AnalysisResult;
+
 // Analysis categories (updated for PAI v2.1.x)
-const ANALYSIS_MODULES = {
+const ANALYSIS_MODULES: Record<string, AnalyzerFunction> = {
     structure: analyzeStructure,
     contextManagement: analyzeContextManagement,
     skillsSystem: analyzeSkillsSystem,
@@ -23,22 +50,22 @@ const ANALYSIS_MODULES = {
 };
 
 // Analyze PAI directory structure
-function analyzeStructure(paiPath) {
-    const results = {
+function analyzeStructure(paiPath: string): AnalysisResult {
+    const results: AnalysisResult = {
         score: 0,
         maxScore: 10,
         findings: [],
         recommendations: []
     };
 
-    const expectedDirs = [
+    const expectedDirs: ExpectedDir[] = [
         { path: '.claude', required: true, weight: 2 },
         { path: '.claude/context', required: true, weight: 2 },
-        { path: '.claude/skills', required: false, weight: 2 },  // PAI v2.x skills (replaces .claude/rules)
+        { path: '.claude/skills', required: false, weight: 2 },
         { path: '.claude/agents', required: false, weight: 1 },
         { path: '.claude/commands', required: false, weight: 1 },
         { path: '.claude/hooks', required: false, weight: 1 },
-        { path: '.claude/state', required: false, weight: 1 }    // State persistence
+        { path: '.claude/state', required: false, weight: 1 }
     ];
 
     for (const dir of expectedDirs) {
@@ -54,7 +81,6 @@ function analyzeStructure(paiPath) {
         }
     }
 
-    // Check for CLAUDE.md files
     const claudeFiles = findFiles(paiPath, 'CLAUDE.md');
     results.findings.push(`📄 Found ${claudeFiles.length} CLAUDE.md files`);
     if (claudeFiles.length === 0) {
@@ -65,8 +91,8 @@ function analyzeStructure(paiPath) {
 }
 
 // Analyze context management patterns
-function analyzeContextManagement(paiPath) {
-    const results = {
+function analyzeContextManagement(paiPath: string): AnalysisResult {
+    const results: AnalysisResult = {
         score: 0,
         maxScore: 20,
         findings: [],
@@ -83,15 +109,12 @@ function analyzeContextManagement(paiPath) {
 
     results.score += 5;
 
-    // Analyze context file sizes
     const contextFiles = findFiles(contextPath, '*.md');
     let oversizedFiles = 0;
-    let totalLines = 0;
 
     for (const file of contextFiles) {
         const content = readFileSync(file, 'utf-8');
         const lines = content.split('\n').length;
-        totalLines += lines;
 
         if (lines > 500) {
             oversizedFiles++;
@@ -101,12 +124,11 @@ function analyzeContextManagement(paiPath) {
 
     if (oversizedFiles === 0 && contextFiles.length > 0) {
         results.score += 5;
-        results.findings.push(`✅ All context files under 500 lines`);
+        results.findings.push('✅ All context files under 500 lines');
     } else if (oversizedFiles > 0) {
         results.recommendations.push(`Split ${oversizedFiles} oversized context files using progressive disclosure pattern`);
     }
 
-    // Check for progressive disclosure patterns
     const hasReferences = existsSync(join(contextPath, 'references')) ||
         contextFiles.some(f => readFileSync(f, 'utf-8').includes('See '));
     if (hasReferences) {
@@ -116,7 +138,6 @@ function analyzeContextManagement(paiPath) {
         results.recommendations.push('Implement progressive disclosure with references/ directory');
     }
 
-    // Check for context loading enforcement (context files + SKILL.md files)
     const skillsPath = join(paiPath, '.claude', 'skills');
     const skillFiles = existsSync(skillsPath) ? findFiles(skillsPath, 'SKILL.md') : [];
     const allContextFiles = [...contextFiles, ...skillFiles];
@@ -126,8 +147,8 @@ function analyzeContextManagement(paiPath) {
         return content.includes('MANDATORY') ||
                content.includes('MUST') ||
                content.includes('READ THESE FILES') ||
-               content.includes('→ READ:') ||  // PAI routing pattern
-               content.includes('READ:');      // Alternate routing pattern
+               content.includes('→ READ:') ||
+               content.includes('READ:');
     });
 
     if (hasEnforcement) {
@@ -141,18 +162,17 @@ function analyzeContextManagement(paiPath) {
 }
 
 // Analyze skills system (PAI v2.x)
-function analyzeSkillsSystem(paiPath) {
-    const results = {
+function analyzeSkillsSystem(paiPath: string): AnalysisResult {
+    const results: AnalysisResult = {
         score: 0,
-        maxScore: 28,  // Updated for session ID check (+3)
+        maxScore: 28,
         findings: [],
         recommendations: []
     };
 
     const skillsPath = join(paiPath, '.claude', 'skills');
-    const rulesPath = join(paiPath, '.claude', 'rules'); // Legacy
+    const rulesPath = join(paiPath, '.claude', 'rules');
 
-    // Check for legacy rules vs modern skills
     if (existsSync(rulesPath) && !existsSync(skillsPath)) {
         results.findings.push('⚠️  Using legacy .claude/rules/ - consider migrating to .claude/skills/');
         results.recommendations.push('Migrate from .claude/rules/ to .claude/skills/ for PAI v2.x compatibility');
@@ -167,7 +187,6 @@ function analyzeSkillsSystem(paiPath) {
     results.score += 5;
     results.findings.push('✅ Skills directory exists');
 
-    // Analyze each skill
     const skillDirs = readdirSync(skillsPath, { withFileTypes: true })
         .filter(d => d.isDirectory())
         .map(d => d.name);
@@ -189,16 +208,12 @@ function analyzeSkillsSystem(paiPath) {
 
         const content = readFileSync(skillMdPath, 'utf-8');
 
-        // Check for proper frontmatter
         const hasFrontmatter = content.startsWith('---');
         const hasName = /^name:\s*.+/m.test(content);
-        const hasDescription = /^description:\s*.+/m.test(content);
-        const hasContext = /^context:\s*(fork|same)/m.test(content);
 
         if (hasFrontmatter && hasName) {
             wellFormedSkills++;
 
-            // Check context type
             if (/context:\s*fork/m.test(content)) {
                 hasForkContextSkill = true;
                 results.findings.push(`✅ ${skillDir}: fork context (subagent)`);
@@ -206,18 +221,16 @@ function analyzeSkillsSystem(paiPath) {
                 results.findings.push(`✅ ${skillDir}: same context`);
             }
 
-            // Check for invocability (user-invocable commands)
             if (/invocable|user-invocable|slash command/i.test(content)) {
                 hasInvocableSkill = true;
             }
         } else {
-            const issues = [];
+            const issues: string[] = [];
             if (!hasFrontmatter) issues.push('missing frontmatter');
             if (!hasName) issues.push('missing name');
             results.findings.push(`⚠️  ${skillDir}: ${issues.join(', ')}`);
         }
 
-        // Check for proper skill structure
         const hasReferences = existsSync(join(skillsPath, skillDir, 'references'));
         const hasScripts = existsSync(join(skillsPath, skillDir, 'scripts'));
         const hasWorkflows = existsSync(join(skillsPath, skillDir, 'workflows'));
@@ -227,7 +240,6 @@ function analyzeSkillsSystem(paiPath) {
         }
     }
 
-    // Score based on skill quality
     if (wellFormedSkills === skillDirs.length && skillDirs.length > 0) {
         results.score += 10;
         results.findings.push('✅ All skills have proper SKILL.md format');
@@ -254,7 +266,6 @@ function analyzeSkillsSystem(paiPath) {
         if (!existsSync(skillMdPath)) continue;
 
         const content = readFileSync(skillMdPath, 'utf-8');
-        // Check for ${CLAUDE_SESSION_ID} substitution
         if (content.includes('${CLAUDE_SESSION_ID}') || content.includes('CURRENT_SESSION')) {
             skillsWithSessionId++;
         }
@@ -271,10 +282,10 @@ function analyzeSkillsSystem(paiPath) {
 }
 
 // Analyze hooks configuration
-function analyzeHooksConfiguration(paiPath) {
-    const results = {
+function analyzeHooksConfiguration(paiPath: string): AnalysisResult {
+    const results: AnalysisResult = {
         score: 0,
-        maxScore: 24,  // Updated for output format (+2) and additionalContext (+2) checks
+        maxScore: 26,
         findings: [],
         recommendations: []
     };
@@ -282,16 +293,14 @@ function analyzeHooksConfiguration(paiPath) {
     const hooksDir = join(paiPath, '.claude', 'hooks');
     const settingsPath = join(paiPath, '.claude', 'settings.json');
 
-    // Check for hooks directory (scripts)
     let hasHooksDir = false;
-    let hookScripts = [];
+    let hookScripts: string[] = [];
     if (existsSync(hooksDir)) {
         hasHooksDir = true;
         hookScripts = readdirSync(hooksDir).filter(f => f.endsWith('.ts') || f.endsWith('.js') || f.endsWith('.sh'));
         results.findings.push(`📁 Hooks directory: ${hookScripts.length} script(s)`);
     }
 
-    // Check settings.json for hooks configuration (CC 2.1.x)
     if (existsSync(settingsPath)) {
         try {
             const settings = JSON.parse(readFileSync(settingsPath, 'utf-8'));
@@ -301,13 +310,10 @@ function analyzeHooksConfiguration(paiPath) {
                 results.score += 10;
                 results.findings.push(`✅ Hooks configured in settings.json: ${hookEvents.join(', ')}`);
 
-                // Analyze hook event coverage (updated for CC 2.1.18)
                 const coreEvents = ['PreToolUse', 'PostToolUse', 'SessionStart', 'SessionEnd', 'UserPromptSubmit'];
                 const advancedEvents = ['Setup', 'SubagentStart', 'SubagentStop', 'PreCompact', 'Stop'];
-                const allRecommendedEvents = [...coreEvents, ...advancedEvents];
 
                 const missingCoreEvents = coreEvents.filter(e => !hookEvents.includes(e));
-                const missingAdvancedEvents = advancedEvents.filter(e => !hookEvents.includes(e));
 
                 if (missingCoreEvents.length === 0) {
                     results.score += 5;
@@ -317,7 +323,6 @@ function analyzeHooksConfiguration(paiPath) {
                     results.findings.push(`⚪ Missing core hook events: ${missingCoreEvents.join(', ')}`);
                 }
 
-                // Check for advanced events (CC 2.1.13+)
                 const hasAdvancedEvents = advancedEvents.some(e => hookEvents.includes(e));
                 if (hasAdvancedEvents) {
                     results.score += 3;
@@ -325,14 +330,12 @@ function analyzeHooksConfiguration(paiPath) {
                     results.findings.push(`✅ Advanced hook events: ${configuredAdvanced.join(', ')}`);
                 }
 
-                // Specific check for Setup hook (CC 2.1.13 - Factor 6 compliance)
                 if (hookEvents.includes('Setup')) {
                     results.findings.push('✅ Setup hook configured (--init automation, Factor 6)');
                 } else {
                     results.recommendations.push('Add Setup hook for repository initialization (CC 2.1.13, Factor 6)');
                 }
 
-                // Check for specific patterns
                 const hasPreToolHooks = hookEvents.includes('PreToolUse');
                 const hasSessionHooks = hookEvents.includes('SessionStart') || hookEvents.includes('SessionEnd');
 
@@ -348,13 +351,12 @@ function analyzeHooksConfiguration(paiPath) {
                 results.recommendations.push('Configure hooks in settings.json for CC 2.1.x automation');
             }
 
-            // Check for statusLine (related to hooks/automation)
             if (settings.statusLine) {
                 results.score += 5;
                 results.findings.push('✅ Status line configured');
             }
 
-        } catch (e) {
+        } catch {
             results.findings.push('⚠️  Could not parse settings.json');
         }
     } else {
@@ -369,7 +371,6 @@ function analyzeHooksConfiguration(paiPath) {
         let usesAdditionalContext = false;
 
         for (const script of hookScripts) {
-            // Skip test files and lib directories
             if (script.includes('.test.') || script === 'lib') continue;
 
             const scriptPath = join(hooksDir, script);
@@ -378,9 +379,6 @@ function analyzeHooksConfiguration(paiPath) {
             try {
                 const content = readFileSync(scriptPath, 'utf-8');
 
-                // Check for correct output format (CC 2.1.14)
-                // Correct: decision: "approve" or decision: "block" (lowercase)
-                // Incorrect: decision: "APPROVED" or decision: "BLOCKED" (uppercase)
                 const hasCorrectDecision = /decision['"]?\s*:\s*['"](?:approve|block)['"]/i.test(content) &&
                                           !/decision['"]?\s*:\s*['"](?:APPROVED|BLOCKED)['"]/i.test(content);
                 const hasCorrectContinue = /continue['"]?\s*:\s*(?:true|false|shouldContinue)/i.test(content);
@@ -389,13 +387,11 @@ function analyzeHooksConfiguration(paiPath) {
                     correctOutputFormat++;
                 }
 
-                // Check for uppercase APPROVED/BLOCKED (incorrect per CC 2.1.14)
                 if (/['"](?:APPROVED|BLOCKED)['"]/i.test(content) && !/['"]approve['"]|['"]block['"]/i.test(content)) {
                     incorrectOutputFormat++;
                     results.findings.push(`⚠️  ${script}: Uses uppercase APPROVED/BLOCKED (should be lowercase)`);
                 }
 
-                // P1: Check for additionalContext usage (CC 2.1.9)
                 if (content.includes('additionalContext')) {
                     usesAdditionalContext = true;
                 }
@@ -409,13 +405,33 @@ function analyzeHooksConfiguration(paiPath) {
             results.recommendations.push(`Fix ${incorrectOutputFormat} hook(s) using uppercase decision values`);
         }
 
-        // P1: additionalContext check
         if (usesAdditionalContext) {
             results.score += 2;
             results.findings.push('✅ Hooks use additionalContext injection (CC 2.1.9, Factor 3)');
         } else {
             results.recommendations.push('PreToolUse hooks can inject additionalContext to model (CC 2.1.9)');
         }
+    }
+
+    // P2: Check for keybindings.json (CC 2.1.18)
+    const keybindingsPath = join(paiPath, '.claude', 'keybindings.json');
+    const homeKeybindingsPath = join(process.env.HOME || '', '.claude', 'keybindings.json');
+
+    if (existsSync(keybindingsPath)) {
+        results.score += 2;
+        results.findings.push('✅ Project keybindings.json configured (CC 2.1.18)');
+        try {
+            const keybindings = JSON.parse(readFileSync(keybindingsPath, 'utf-8'));
+            const sections = Object.keys(keybindings);
+            if (sections.length > 0) {
+                results.findings.push(`  └─ Sections: ${sections.join(', ')}`);
+            }
+        } catch { /* ignore parse errors */ }
+    } else if (existsSync(homeKeybindingsPath)) {
+        results.score += 1;
+        results.findings.push('✅ Global keybindings.json configured (CC 2.1.18)');
+    } else {
+        results.recommendations.push('Add keybindings.json for custom shortcuts (CC 2.1.18)');
     }
 
     // Check for legacy hooks.json (deprecated)
@@ -429,15 +445,14 @@ function analyzeHooksConfiguration(paiPath) {
 }
 
 // Analyze delegation patterns (multi-agent)
-function analyzeDelegationPatterns(paiPath) {
-    const results = {
+function analyzeDelegationPatterns(paiPath: string): AnalysisResult {
+    const results: AnalysisResult = {
         score: 0,
         maxScore: 15,
         findings: [],
         recommendations: []
     };
 
-    // Search for delegation patterns in CLAUDE.md files and context
     const allMdFiles = findFiles(paiPath, '*.md');
 
     let hasDelegationGuide = false;
@@ -448,18 +463,15 @@ function analyzeDelegationPatterns(paiPath) {
         const content = readFileSync(file, 'utf-8').toLowerCase();
         const relativePath = relative(paiPath, file);
 
-        // Check for delegation guide
         if (relativePath.includes('delegation') || content.includes('delegation-guide')) {
             hasDelegationGuide = true;
             results.findings.push(`✅ Delegation guide: ${relativePath}`);
         }
 
-        // Check for parallel agent patterns
         if (content.includes('parallel') && (content.includes('agent') || content.includes('task tool'))) {
             hasParallelPatterns = true;
         }
 
-        // Check for agent hierarchy documentation
         if (content.includes('agent-guide') || content.includes('agent hierarchy') || content.includes('orchestrator')) {
             hasAgentHierarchy = true;
         }
@@ -485,7 +497,6 @@ function analyzeDelegationPatterns(paiPath) {
         results.recommendations.push('Define agent hierarchy and escalation paths');
     }
 
-    // Check for Task tool patterns in commands
     const commandsDir = join(paiPath, '.claude', 'commands');
     if (existsSync(commandsDir)) {
         const commands = readdirSync(commandsDir).filter(f => f.endsWith('.md'));
@@ -507,8 +518,8 @@ function analyzeDelegationPatterns(paiPath) {
 }
 
 // Analyze agent configuration
-function analyzeAgentConfiguration(paiPath) {
-    const results = {
+function analyzeAgentConfiguration(paiPath: string): AnalysisResult {
+    const results: AnalysisResult = {
         score: 0,
         maxScore: 15,
         findings: [],
@@ -529,7 +540,6 @@ function analyzeAgentConfiguration(paiPath) {
         results.score += 5;
     }
 
-    // Check agent specialization (Factor 10)
     const generalPurposeIndicators = ['general', 'main', 'default', 'master'];
     let specializedCount = 0;
 
@@ -551,7 +561,6 @@ function analyzeAgentConfiguration(paiPath) {
         results.recommendations.push('Split general-purpose agents into specialized, single-purpose agents');
     }
 
-    // Check agent file sizes
     let oversizedAgents = 0;
     for (const file of agentFiles) {
         const content = readFileSync(join(agentsPath, file), 'utf-8');
@@ -571,15 +580,14 @@ function analyzeAgentConfiguration(paiPath) {
 }
 
 // Analyze tool integration
-function analyzeToolIntegration(paiPath) {
-    const results = {
+function analyzeToolIntegration(paiPath: string): AnalysisResult {
+    const results: AnalysisResult = {
         score: 0,
         maxScore: 10,
         findings: [],
         recommendations: []
     };
 
-    // Check for MCP tools documentation
     const toolsContext = join(paiPath, '.claude', 'context', 'tools');
     if (existsSync(toolsContext)) {
         results.score += 5;
@@ -588,7 +596,6 @@ function analyzeToolIntegration(paiPath) {
         results.findings.push('⚪ No tools context directory (optional)');
     }
 
-    // Check for MCP server configurations
     const settingsPath = join(paiPath, '.claude', 'settings.json');
     if (existsSync(settingsPath)) {
         try {
@@ -604,23 +611,21 @@ function analyzeToolIntegration(paiPath) {
 }
 
 // Analyze workflow patterns
-function analyzeWorkflowPatterns(paiPath) {
-    const results = {
+function analyzeWorkflowPatterns(paiPath: string): AnalysisResult {
+    const results: AnalysisResult = {
         score: 0,
         maxScore: 20,
         findings: [],
         recommendations: []
     };
 
-    // Check for commands
     const commandsPath = join(paiPath, '.claude', 'commands');
     if (existsSync(commandsPath)) {
         const commands = readdirSync(commandsPath).filter(f => f.endsWith('.md'));
         results.score += 5;
         results.findings.push(`✅ Found ${commands.length} command workflows`);
 
-        // Analyze command structure
-        for (const cmd of commands.slice(0, 5)) { // Check first 5
+        for (const cmd of commands.slice(0, 5)) {
             const content = readFileSync(join(commandsPath, cmd), 'utf-8');
             const hasSteps = content.includes('##') || content.includes('1.') || content.includes('Step');
             if (!hasSteps) {
@@ -632,7 +637,6 @@ function analyzeWorkflowPatterns(paiPath) {
         results.recommendations.push('Create reusable workflows in .claude/commands/');
     }
 
-    // Check for hooks (Factor 6 - Launch/Pause/Resume)
     const hooksPath = join(paiPath, '.claude', 'hooks');
     if (existsSync(hooksPath)) {
         const hooks = readdirSync(hooksPath);
@@ -642,7 +646,6 @@ function analyzeWorkflowPatterns(paiPath) {
         results.recommendations.push('Add hooks for event-based automation');
     }
 
-    // Check for working directory (Factor 5 - Unified State)
     const workingPath = join(paiPath, '.claude', 'context', 'working');
     if (existsSync(workingPath)) {
         results.score += 5;
@@ -651,7 +654,6 @@ function analyzeWorkflowPatterns(paiPath) {
         results.recommendations.push('Create .claude/context/working/ for unified execution state');
     }
 
-    // Check for control flow patterns (Factor 8)
     const allFiles = findFiles(paiPath, '*.md');
     const hasControlFlow = allFiles.some(f => {
         const content = readFileSync(f, 'utf-8');
@@ -669,7 +671,7 @@ function analyzeWorkflowPatterns(paiPath) {
 }
 
 // Helper: Find files matching pattern
-function findFiles(dir, pattern, results = []) {
+function findFiles(dir: string, pattern: string, results: string[] = []): string[] {
     if (!existsSync(dir)) return results;
 
     const files = readdirSync(dir);
@@ -688,14 +690,15 @@ function findFiles(dir, pattern, results = []) {
 }
 
 // Generate full report
-function generateReport(paiPath) {
-    const report = {
+function generateReport(paiPath: string): Report {
+    const report: Report = {
         timestamp: new Date().toISOString(),
         paiPath: paiPath,
         modules: {},
         totalScore: 0,
         maxScore: 0,
-        recommendations: []
+        recommendations: [],
+        compliancePercentage: 0
     };
 
     for (const [name, analyzer] of Object.entries(ANALYSIS_MODULES)) {
@@ -712,8 +715,8 @@ function generateReport(paiPath) {
 }
 
 // Format report for console
-function formatReport(report) {
-    const lines = [];
+function formatReport(report: Report): string {
+    const lines: string[] = [];
 
     lines.push('\n╔══════════════════════════════════════════════════════════════╗');
     lines.push('║              PAI OPTIMIZATION ANALYSIS                       ║');
@@ -723,12 +726,10 @@ function formatReport(report) {
     lines.push(`📁 PAI Path: ${report.paiPath}`);
     lines.push(`📊 Overall Score: ${report.totalScore}/${report.maxScore} (${report.compliancePercentage}%)\n`);
 
-    // Score bar
     const filled = Math.round(report.compliancePercentage / 5);
     const bar = '█'.repeat(filled) + '░'.repeat(20 - filled);
     lines.push(`Progress: [${bar}] ${report.compliancePercentage}%\n`);
 
-    // Module details
     for (const [name, result] of Object.entries(report.modules)) {
         lines.push(`─── ${name.toUpperCase()} (${result.score}/${result.maxScore}) ───`);
         for (const finding of result.findings) {
@@ -737,10 +738,9 @@ function formatReport(report) {
         lines.push('');
     }
 
-    // Recommendations
     if (report.recommendations.length > 0) {
         lines.push('─── RECOMMENDATIONS ──────────────────────────────────────────\n');
-        const grouped = {};
+        const grouped: Record<string, string[]> = {};
         for (const rec of report.recommendations) {
             if (!grouped[rec.module]) grouped[rec.module] = [];
             grouped[rec.module].push(rec.recommendation);
@@ -759,7 +759,7 @@ function formatReport(report) {
 }
 
 // Main execution
-async function main() {
+async function main(): Promise<void> {
     const paiPath = process.argv[2] || process.cwd();
 
     console.log('Analyzing PAI repository...\n');
@@ -767,7 +767,6 @@ async function main() {
     const report = generateReport(paiPath);
     console.log(formatReport(report));
 
-    // Output JSON for programmatic use
     if (process.argv.includes('--json')) {
         console.log('\n─── JSON OUTPUT ──────────────────────────────────────────────\n');
         console.log(JSON.stringify(report, null, 2));

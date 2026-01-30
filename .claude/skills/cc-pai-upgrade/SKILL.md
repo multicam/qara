@@ -279,7 +279,7 @@ List specific files and line numbers for removal/simplification.
 ### Full Audit
 ```bash
 cd ${PAI_DIR}/skills/cc-pai-upgrade
-bun run scripts/analyse-pai.js ${PAI_DIR}/..
+bun run scripts/analyse-pai.ts ${PAI_DIR}/..
 ```
 
 ### Version Check
@@ -406,6 +406,29 @@ const ZAI_MODELS = {
       terminalbench: "41%",
     },
     features: ["thinking-modes", "interleaved", "retention-based", "tool-invocation"],
+    // P2: Detailed thinking modes documentation
+    thinkingModes: {
+      interleaved: {
+        description: "Default mode - thinking blocks between content blocks",
+        usage: "Automatic, no special configuration needed",
+        output: "<thinking>...</thinking> tags in response",
+      },
+      retentionBased: {
+        description: "Control thinking visibility via HTTP header",
+        usage: "x-zhipu-retain-thinking: true|false",
+        output: "Thinking retained or stripped from response",
+      },
+      roundLevel: {
+        description: "Per-turn thinking aggregation for multi-turn conversations",
+        usage: "Thinking summarized at conversation boundaries",
+        output: "Aggregated insights per conversation round",
+      },
+      toolInvocation: {
+        description: "Thinking during tool/function calling",
+        usage: "Model reasons about which tools to call",
+        output: "Tool selection rationale in thinking blocks",
+      },
+    },
   },
   "glm-4.7-flashx": {
     release: "2025-12-22",
