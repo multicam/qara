@@ -144,7 +144,7 @@ function analyzeContextManagement(paiPath) {
 function analyzeSkillsSystem(paiPath) {
     const results = {
         score: 0,
-        maxScore: 25,
+        maxScore: 28,  // Updated for session ID check (+3)
         findings: [],
         recommendations: []
     };
@@ -247,6 +247,26 @@ function analyzeSkillsSystem(paiPath) {
         results.recommendations.push('Consider making skills user-invocable with Skill tool');
     }
 
+    // P1: Check for session ID substitution (CC 2.1.9, Factor 5)
+    let skillsWithSessionId = 0;
+    for (const skillDir of skillDirs) {
+        const skillMdPath = join(skillsPath, skillDir, 'SKILL.md');
+        if (!existsSync(skillMdPath)) continue;
+
+        const content = readFileSync(skillMdPath, 'utf-8');
+        // Check for ${CLAUDE_SESSION_ID} substitution
+        if (content.includes('${CLAUDE_SESSION_ID}') || content.includes('CURRENT_SESSION')) {
+            skillsWithSessionId++;
+        }
+    }
+
+    if (skillsWithSessionId > 0) {
+        results.score += 3;
+        results.findings.push(`✅ ${skillsWithSessionId} skill(s) use session ID substitution (CC 2.1.9, Factor 5)`);
+    } else if (skillDirs.length > 0) {
+        results.recommendations.push('Use ${CLAUDE_SESSION_ID} in skills for session tracking (CC 2.1.9)');
+    }
+
     return results;
 }
 
@@ -254,7 +274,7 @@ function analyzeSkillsSystem(paiPath) {
 function analyzeHooksConfiguration(paiPath) {
     const results = {
         score: 0,
-        maxScore: 20,
+        maxScore: 24,  // Updated for output format (+2) and additionalContext (+2) checks
         findings: [],
         recommendations: []
     };
@@ -340,6 +360,62 @@ function analyzeHooksConfiguration(paiPath) {
     } else {
         results.findings.push('❌ No settings.json found');
         results.recommendations.push('Create settings.json with hooks configuration');
+    }
+
+    // P1: Check hook output schema compliance (CC 2.1.14)
+    if (hasHooksDir && hookScripts.length > 0) {
+        let correctOutputFormat = 0;
+        let incorrectOutputFormat = 0;
+        let usesAdditionalContext = false;
+
+        for (const script of hookScripts) {
+            // Skip test files and lib directories
+            if (script.includes('.test.') || script === 'lib') continue;
+
+            const scriptPath = join(hooksDir, script);
+            if (!statSync(scriptPath).isFile()) continue;
+
+            try {
+                const content = readFileSync(scriptPath, 'utf-8');
+
+                // Check for correct output format (CC 2.1.14)
+                // Correct: decision: "approve" or decision: "block" (lowercase)
+                // Incorrect: decision: "APPROVED" or decision: "BLOCKED" (uppercase)
+                const hasCorrectDecision = /decision['"]?\s*:\s*['"](?:approve|block)['"]/i.test(content) &&
+                                          !/decision['"]?\s*:\s*['"](?:APPROVED|BLOCKED)['"]/i.test(content);
+                const hasCorrectContinue = /continue['"]?\s*:\s*(?:true|false|shouldContinue)/i.test(content);
+
+                if (hasCorrectDecision || hasCorrectContinue) {
+                    correctOutputFormat++;
+                }
+
+                // Check for uppercase APPROVED/BLOCKED (incorrect per CC 2.1.14)
+                if (/['"](?:APPROVED|BLOCKED)['"]/i.test(content) && !/['"]approve['"]|['"]block['"]/i.test(content)) {
+                    incorrectOutputFormat++;
+                    results.findings.push(`⚠️  ${script}: Uses uppercase APPROVED/BLOCKED (should be lowercase)`);
+                }
+
+                // P1: Check for additionalContext usage (CC 2.1.9)
+                if (content.includes('additionalContext')) {
+                    usesAdditionalContext = true;
+                }
+            } catch { /* skip unreadable files */ }
+        }
+
+        if (correctOutputFormat > 0 && incorrectOutputFormat === 0) {
+            results.score += 2;
+            results.findings.push('✅ Hook output format compliant (CC 2.1.14)');
+        } else if (incorrectOutputFormat > 0) {
+            results.recommendations.push(`Fix ${incorrectOutputFormat} hook(s) using uppercase decision values`);
+        }
+
+        // P1: additionalContext check
+        if (usesAdditionalContext) {
+            results.score += 2;
+            results.findings.push('✅ Hooks use additionalContext injection (CC 2.1.9, Factor 3)');
+        } else {
+            results.recommendations.push('PreToolUse hooks can inject additionalContext to model (CC 2.1.9)');
+        }
     }
 
     // Check for legacy hooks.json (deprecated)
