@@ -281,16 +281,35 @@ function analyzeHooksConfiguration(paiPath) {
                 results.score += 10;
                 results.findings.push(`✅ Hooks configured in settings.json: ${hookEvents.join(', ')}`);
 
-                // Analyze hook event coverage
-                const recommendedEvents = ['PreToolUse', 'PostToolUse', 'SessionStart', 'SessionEnd', 'UserPromptSubmit'];
-                const missingEvents = recommendedEvents.filter(e => !hookEvents.includes(e));
+                // Analyze hook event coverage (updated for CC 2.1.18)
+                const coreEvents = ['PreToolUse', 'PostToolUse', 'SessionStart', 'SessionEnd', 'UserPromptSubmit'];
+                const advancedEvents = ['Setup', 'SubagentStart', 'SubagentStop', 'PreCompact', 'Stop'];
+                const allRecommendedEvents = [...coreEvents, ...advancedEvents];
 
-                if (missingEvents.length === 0) {
+                const missingCoreEvents = coreEvents.filter(e => !hookEvents.includes(e));
+                const missingAdvancedEvents = advancedEvents.filter(e => !hookEvents.includes(e));
+
+                if (missingCoreEvents.length === 0) {
                     results.score += 5;
-                    results.findings.push('✅ All recommended hook events configured');
-                } else if (missingEvents.length < 3) {
+                    results.findings.push('✅ All core hook events configured');
+                } else if (missingCoreEvents.length < 3) {
                     results.score += 2;
-                    results.findings.push(`⚪ Optional hook events not configured: ${missingEvents.join(', ')}`);
+                    results.findings.push(`⚪ Missing core hook events: ${missingCoreEvents.join(', ')}`);
+                }
+
+                // Check for advanced events (CC 2.1.13+)
+                const hasAdvancedEvents = advancedEvents.some(e => hookEvents.includes(e));
+                if (hasAdvancedEvents) {
+                    results.score += 3;
+                    const configuredAdvanced = advancedEvents.filter(e => hookEvents.includes(e));
+                    results.findings.push(`✅ Advanced hook events: ${configuredAdvanced.join(', ')}`);
+                }
+
+                // Specific check for Setup hook (CC 2.1.13 - Factor 6 compliance)
+                if (hookEvents.includes('Setup')) {
+                    results.findings.push('✅ Setup hook configured (--init automation, Factor 6)');
+                } else {
+                    results.recommendations.push('Add Setup hook for repository initialization (CC 2.1.13, Factor 6)');
                 }
 
                 // Check for specific patterns

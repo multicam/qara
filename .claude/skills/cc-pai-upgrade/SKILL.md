@@ -4,7 +4,7 @@ context: fork
 description: Review and optimize PAI (Personal AI Infrastructure) codebases as Claude Code evolves. Use when analyzing PAI repositories against 12-factor agent principles, checking for Claude Code feature compatibility, auditing context management patterns, or generating upgrade recommendations. Triggers on requests involving PAI optimization, Claude Code feature adoption, agent architecture review, or context engineering improvements.
 ---
 
-# CC-PAI Upgrade (v2.1.14)
+# CC-PAI Upgrade (v2.1.18)
 
 Review and optimize PAI codebases by tracking Claude Code evolution and applying 12-factor agent principles.
 
@@ -134,6 +134,9 @@ Compare PAI implementation against CC capabilities:
 | additionalContext | 2.1.9 | PreToolUse hooks | No context injection to model |
 | plansDirectory | 2.1.9 | `settings.json` | Using default plans location |
 | Session ID | 2.1.9 | Skills | No session tracking in skills |
+| Setup hooks | 2.1.13 | `settings.json` | No --init automation |
+| Hook output schema | 2.1.14 | Hook scripts | Using wrong output format |
+| Keybindings | 2.1.18 | `keybindings.json` | No custom shortcuts |
 | ZAI integration | PAI-custom | `hooks/lib/llm/zai.ts` | No ZAI model routing |
 
 ### ZAI/Z.AI Model Integration Analysis
@@ -341,6 +344,22 @@ const CC_2_1_FEATURES = {
   mcpConnectionFix: "2.1.11",  // Fixed excessive HTTP/SSE MCP reconnection
   // 2.1.12
   messageRenderingFix: "2.1.12", // Fixed message rendering bug
+  // 2.1.13
+  setupHooks: "2.1.13",          // Setup hook event (--init, --init-only, --maintenance)
+  // 2.1.14
+  hookOutputSchema: "2.1.14",    // Strict JSON schema validation for hook output
+  permissionDecisionFormat: "2.1.14", // permissionDecision: "allow" | "deny" | "ask"
+  decisionFormat: "2.1.14",      // decision: "approve" | "block" (lowercase required)
+  // 2.1.15
+  mcpToolFiltering: "2.1.15",    // Improved MCP tool filtering
+  // 2.1.16
+  backgroundAgentFixes: "2.1.16", // Background agent stability improvements
+  // 2.1.17
+  taskOutputTool: "2.1.17",      // TaskOutput tool for reading background task results
+  taskStopTool: "2.1.17",        // TaskStop tool for stopping background tasks
+  // 2.1.18
+  keybindings: "2.1.18",         // ~/.claude/keybindings.json customization
+  chordBindings: "2.1.18",       // Multi-key chord shortcuts (e.g., ctrl+k ctrl+c)
 };
 ```
 
