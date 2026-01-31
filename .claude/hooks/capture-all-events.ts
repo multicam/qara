@@ -401,16 +401,16 @@ async function main() {
         const eventsFile = getEventsFilePath();
         appendJsonl(eventsFile, event);
 
-        // PreToolUse hooks MUST output a decision - use lowercase "approve" per CC schema
+        // PreToolUse hooks MUST output continue: true to allow execution
         if (eventType === 'PreToolUse') {
-            console.log(JSON.stringify({ decision: 'approve' }));
+            console.log(JSON.stringify({ continue: true }));
         }
 
     } catch (error) {
         // Silently fail - don't block Claude Code
         console.error('Event capture error:', error);
-        // Still output approve for PreToolUse to prevent blocking
-        console.log(JSON.stringify({ decision: 'approve' }));
+        // Still output continue: true for PreToolUse to prevent blocking
+        console.log(JSON.stringify({ continue: true }));
     }
 
     process.exit(0);

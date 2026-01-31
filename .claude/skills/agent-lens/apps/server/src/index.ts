@@ -12,6 +12,7 @@ import {
 import { startFileIngestion, getRecentEvents, getFilterOptions, getIngestionHealth } from './file-ingest';
 import { logConfiguration, SERVER_PORT } from './config';
 import { initDatabase } from './db';
+import { log } from './logger';
 
 // Store WebSocket clients
 const wsClients = new Set<any>();
@@ -19,36 +20,64 @@ const wsClients = new Set<any>();
 // Track whether the theme database initialized successfully
 let isDatabaseInitialized = false;
 
+// Show startup banner
+log.banner();
+
 // Initialize theme database and log configuration on startup
 try {
   initDatabase();
   isDatabaseInitialized = true;
 } catch (error: unknown) {
-  console.error('❌ Failed to initialize theme database:', error);
+  log.error('Failed to initialize theme database', 'db');
 }
 
 logConfiguration();
 
+// Extract useful fields from payload for logging
+function payloadSummary(event: any): string {
+  const p = event.payload || {};
+  const parts: string[] = [];
+
+  if (p.hook_event_name) parts.push(p.hook_event_name);
+  if (p.agent_type || p.subagent_type) parts.push(p.agent_type || p.subagent_type);
+  if (p.tool_name) parts.push(p.tool_name);
+  if (p.prompt) parts.push(`"${p.prompt.slice(0, 50)}${p.prompt.length > 50 ? '…' : ''}"`);
+
+  return parts.join(' ') || '-';
+}
+
 // Start file-based ingestion (reads from ~/.claude/history/raw-outputs/)
 // Pass a callback to broadcast new events to connected WebSocket clients
 startFileIngestion((events) => {
-  console.log(`📡 Broadcasting ${events.length} event(s) to ${wsClients.size} WebSocket client(s)`);
+  events.forEach(event => {
+    const p = event.payload || {};
+    const agentType = p.agent_type || p.subagent_type;
+    const toolName = p.tool_name;
+
+    if (agentType || toolName) {
+      log.ingest.event(event.hook_event_type, payloadSummary(event));
+    } else {
+      log.ingest.event(event.hook_event_type, payloadSummary(event));
+    }
+  });
 
   // Broadcast each event to all connected WebSocket clients
   events.forEach(event => {
     const message = JSON.stringify({ type: 'event', data: event });
-    console.log(`   → Event: ${event.source_app} | ${event.hook_event_type}`);
 
     wsClients.forEach(client => {
       try {
         client.send(message);
       } catch (err) {
-        console.log(`   ⚠️  Failed to send to client, removing from list`);
         // Client disconnected, remove from set
         wsClients.delete(client);
       }
     });
   });
+
+  if (events.length > 0 && wsClients.size > 0) {
+    log.ws.broadcast(events[0].hook_event_type, wsClients.size);
+  }
 });
 
 // Create Bun server with HTTP and WebSocket support
@@ -281,29 +310,24 @@ const server = Bun.serve({
 
   websocket: {
     open(ws) {
-      console.log(`🔌 WebSocket client connected (total clients: ${wsClients.size + 1})`);
       wsClients.add(ws);
+      log.ws.connect(wsClients.size);
 
       // Send recent events on connection
       const events = getRecentEvents(50);
-      console.log(`   → Sending ${events.length} initial events to new client`);
       ws.send(JSON.stringify({ type: 'initial', data: events }));
     },
 
     message(ws, message) {
       // Handle any client messages if needed
-      console.log('Received message:', message);
     },
 
     close(ws) {
       wsClients.delete(ws);
-      console.log(`🔌 WebSocket client disconnected (remaining clients: ${wsClients.size})`);
+      log.ws.disconnect(wsClients.size);
     }
   }
 });
 
-console.log(`🚀 Server running on http://localhost:${server.port}`);
-console.log(`📊 WebSocket endpoint: ws://localhost:${server.port}/stream`);
-console.log(`� REST events endpoints:`);
-console.log(`   • GET http://localhost:${server.port}/events/recent`);
-console.log(`   • GET http://localhost:${server.port}/events/filter-options`);
+log.server.start(server.port);
+log.server.ready();

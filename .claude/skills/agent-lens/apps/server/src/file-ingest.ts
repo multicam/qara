@@ -22,6 +22,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import type { HookEvent } from './types';
 import { MAX_EVENTS_IN_MEMORY, HISTORY_DIR } from './config';
+import { log } from './logger';
 
 // In-memory event store (last N events only)
 const MAX_EVENTS = MAX_EVENTS_IN_MEMORY;
@@ -59,39 +60,39 @@ let onEventsReceived: ((events: HookEvent[]) => void) | null = null;
 function isValidHookEvent(event: any): event is HookEvent {
   // Check required fields
   if (typeof event.source_app !== 'string' || !event.source_app.trim()) {
-    console.warn('⚠️  Invalid event: missing or invalid source_app');
+    log.warn('Invalid event: missing or invalid source_app', 'validate');
     return false;
   }
 
   if (typeof event.session_id !== 'string' || !event.session_id.trim()) {
-    console.warn('⚠️  Invalid event: missing or invalid session_id');
+    log.warn('Invalid event: missing or invalid session_id', 'validate');
     return false;
   }
 
   // Validate session ID format
   if (event.session_id.length < 3 || event.session_id.length > 100) {
-    console.warn(`⚠️  Invalid event: session_id length out of bounds (${event.session_id.length})`);
+    log.warn(`Invalid event: session_id length out of bounds (${event.session_id.length})`, 'validate');
     return false;
   }
 
   if (typeof event.hook_event_type !== 'string' || !event.hook_event_type.trim()) {
-    console.warn('⚠️  Invalid event: missing or invalid hook_event_type');
+    log.warn('Invalid event: missing or invalid hook_event_type', 'validate');
     return false;
   }
 
   // Validate event type is in whitelist
   if (!VALID_EVENT_TYPES.includes(event.hook_event_type as any)) {
-    console.warn(`⚠️  Invalid event: unknown hook_event_type "${event.hook_event_type}"`);
+    log.warn(`Invalid event: unknown hook_event_type "${event.hook_event_type}"`, 'validate');
     return false;
   }
 
   if (typeof event.payload !== 'object' || event.payload === null) {
-    console.warn('⚠️  Invalid event: missing or invalid payload');
+    log.warn('Invalid event: missing or invalid payload', 'validate');
     return false;
   }
 
   if (typeof event.timestamp !== 'number' || event.timestamp <= 0) {
-    console.warn('⚠️  Invalid event: missing or invalid timestamp');
+    log.warn('Invalid event: missing or invalid timestamp', 'validate');
     return false;
   }
 
@@ -101,17 +102,17 @@ function isValidHookEvent(event: any): event is HookEvent {
   const oneYearInPast = now - (365 * 24 * 60 * 60 * 1000);
 
   if (event.timestamp > oneHourInFuture) {
-    console.warn(`⚠️  Invalid event: timestamp is more than 1 hour in the future`);
+    log.warn('Invalid event: timestamp is more than 1 hour in the future', 'validate');
     return false;
   }
 
   if (event.timestamp < oneYearInPast) {
-    console.warn(`⚠️  Invalid event: timestamp is more than 1 year in the past`);
+    log.warn('Invalid event: timestamp is more than 1 year in the past', 'validate');
     return false;
   }
 
   if (typeof event.timestamp_aedt !== 'string' || !event.timestamp_aedt.trim()) {
-    console.warn('⚠️  Invalid event: missing or invalid timestamp_aedt');
+    log.warn('Invalid event: missing or invalid timestamp_aedt', 'validate');
     return false;
   }
 
@@ -146,7 +147,6 @@ function getTodayEventsFile(): string {
  */
 function readNewEvents(filePath: string): HookEvent[] {
   if (!existsSync(filePath)) {
-    console.log(`⚠️  File does not exist: ${filePath}`);
     return [];
   }
 
@@ -156,13 +156,12 @@ function readNewEvents(filePath: string): HookEvent[] {
     const content = readFileSync(filePath, 'utf-8');
     const newContent = content.slice(lastPosition);
 
-    console.log(`📖 Reading from position ${lastPosition} to ${content.length} (${newContent.length} bytes)`);
+    // Reading from position
 
     // Update position to end of file
     filePositions.set(filePath, content.length);
 
     if (!newContent.trim()) {
-      console.log(`   No new content to read`);
       return [];
     }
 
@@ -170,8 +169,7 @@ function readNewEvents(filePath: string): HookEvent[] {
     const lines = newContent.trim().split('\n');
     const newEvents: HookEvent[] = [];
 
-    console.log(`   Parsing ${lines.length} line(s)`);
-
+    // Parsing lines
     for (const line of lines) {
       if (!line.trim()) continue;
 
@@ -188,14 +186,13 @@ function readNewEvents(filePath: string): HookEvent[] {
         event.id = events.length + newEvents.length + 1;
         newEvents.push(event);
       } catch (error) {
-        console.error(`Failed to parse line: ${line.slice(0, 100)}...`, error);
+        log.error(`Failed to parse line: ${line.slice(0, 100)}...`, 'parse');
       }
     }
 
-    console.log(`   Parsed ${newEvents.length} event(s)`);
     return newEvents;
   } catch (error) {
-    console.error(`Error reading file ${filePath}:`, error);
+    log.error(`Error reading file ${filePath}`, 'file');
     return [];
   }
 }
@@ -221,17 +218,15 @@ function buildHierarchy(eventsToProcess: HookEvent[]): void {
       if (parent) {
         parent.children = parent.children || [];
         parent.children.push(event.event_id);
-      } else {
-        // Parent not found (might be outside our window)
-        console.warn(`⚠️  Parent event ${event.parent_event_id} not found for event ${event.event_id}`);
       }
+      // Parent not found = outside our 1000-event window, silently skip
     }
   });
 
   // Third pass: calculate depth
   function calculateDepth(eventId: string, visited = new Set<string>()): number {
     if (visited.has(eventId)) {
-      console.warn(`⚠️  Circular reference detected for event ${eventId}`);
+      log.warn(`Circular reference detected for event ${eventId}`, 'hierarchy');
       return 0; // Prevent infinite loops
     }
     visited.add(eventId);
@@ -275,8 +270,6 @@ function storeEvents(newEvents: HookEvent[]): void {
   // This ensures parent-child links work even across batches
   buildHierarchy(events);
 
-  console.log(`✅ Received ${newEvents.length} event(s) (${events.length} in memory, hierarchy built)`);
-
   // Notify subscribers (WebSocket clients)
   // Send enriched events with hierarchy metadata
   if (onEventsReceived) {
@@ -289,14 +282,12 @@ function storeEvents(newEvents: HookEvent[]): void {
  */
 function loadExistingEvents(filePath: string): void {
   if (!existsSync(filePath)) {
-    console.log(`⚠️  Today's file does not exist yet: ${filePath}`);
     return;
   }
 
   try {
     const content = readFileSync(filePath, 'utf-8');
     if (!content.trim()) {
-      console.log(`📂 Today's file is empty`);
       return;
     }
 
@@ -313,19 +304,18 @@ function loadExistingEvents(filePath: string): void {
           loadedEvents.push(event);
         }
       } catch (err) {
-        console.warn(`⚠️  Failed to parse event line: ${err}`);
+        log.warn(`Failed to parse event line: ${err}`, 'load');
       }
     }
 
     // Store in memory (keep most recent MAX_EVENTS_IN_MEMORY)
     const maxEvents = MAX_EVENTS_IN_MEMORY;
     events.push(...loadedEvents.slice(-maxEvents));
-    console.log(`📂 Loaded ${loadedEvents.length} existing events into memory (kept last ${events.length})`);
 
     // Set file position to END so we only read NEW events from now on
     filePositions.set(filePath, content.length);
   } catch (error) {
-    console.error(`❌ Failed to load existing events from ${filePath}:`, error);
+    log.error(`Failed to load existing events from ${filePath}`, 'load');
   }
 }
 
@@ -337,14 +327,14 @@ function watchFile(filePath: string): void {
     return; // Already watching
   }
 
-  console.log(`👀 Watching: ${filePath}`);
+  log.info(filePath.split('/').slice(-2).join('/'), 'watch');
 
   // Check if file exists - if not, poll until it does
   if (!existsSync(filePath)) {
-    console.log(`⏳ File doesn't exist yet, will poll every 5s until created...`);
+    log.ingest.polling();
     const pollInterval = setInterval(() => {
       if (existsSync(filePath)) {
-        console.log(`✅ File created! Starting watch...`);
+        log.ingest.fileFound();
         clearInterval(pollInterval);
         watchFile(filePath); // Recursive call now that file exists
       }
@@ -355,25 +345,21 @@ function watchFile(filePath: string): void {
   watchedFiles.add(filePath);
 
   // Set file position to END of file - only read NEW events from now on
-  // Do NOT load historical events from before server start
   const content = readFileSync(filePath, 'utf-8');
   filePositions.set(filePath, content.length);
-  console.log(`📍 Positioned at end of file - only new events will be captured`);
 
   // Watch for changes
   const watcher = watch(filePath, (eventType: string) => {
-    console.log(`📝 File change detected: ${eventType} on ${filePath}`);
     if (eventType === 'change') {
       const newEvents = readNewEvents(filePath);
       if (newEvents.length > 0) {
-        console.log(`🔥 Read ${newEvents.length} new event(s) from file`);
       }
       storeEvents(newEvents);
     }
   });
 
   watcher.on('error', (error: Error) => {
-    console.error(`Error watching ${filePath}:`, error);
+    log.error(`Error watching ${filePath}`, 'watch');
     watchedFiles.delete(filePath);
   });
 }
@@ -383,9 +369,7 @@ function watchFile(filePath: string): void {
  * @param callback Optional callback to be notified when new events arrive
  */
 export function startFileIngestion(callback?: (events: HookEvent[]) => void): void {
-  console.log('🚀 Starting file-based event streaming (in-memory only)');
-  const historyDir = HISTORY_DIR;
-  console.log(`📂 Reading from: ${historyDir}/raw-outputs/`);
+  log.ingest.start(`${HISTORY_DIR}/raw-outputs/`);
 
   // Mark ingestion as started
   ingestionStartedAt = Date.now();
@@ -397,10 +381,8 @@ export function startFileIngestion(callback?: (events: HookEvent[]) => void): vo
 
   // Determine today's file path
   const todayFile = getTodayEventsFile();
-  console.log(`📅 Today's file: ${todayFile}`);
 
   // Load existing events from today's file into memory (for initial WebSocket sends)
-  console.log('📂 Loading existing events from today\'s file...');
   loadExistingEvents(todayFile);
 
   // Watch today's file for NEW events
@@ -410,12 +392,12 @@ export function startFileIngestion(callback?: (events: HookEvent[]) => void): vo
   setInterval(() => {
     const newTodayFile = getTodayEventsFile();
     if (newTodayFile !== todayFile) {
-      console.log('📅 New day detected, watching new file');
+      // New day detected
       watchFile(newTodayFile);
     }
   }, 60 * 60 * 1000); // Check every hour
 
-  console.log('✅ File streaming started');
+  // Watcher running silently
 }
 
 /**

@@ -7,6 +7,7 @@
 
 import { homedir } from 'os';
 import { join } from 'path';
+import { log } from './logger';
 
 /**
  * Default agent name for the primary agent
@@ -52,16 +53,17 @@ export function getDefaultAgentName(): string {
  * Log configuration on startup
  */
 export function logConfiguration(): void {
-  console.log('📋 Agent Observability Configuration:');
-  console.log(`   • Default Agent Name: ${DEFAULT_AGENT_NAME}`);
-  console.log(`   • PAI Directory: ${PAI_DIR}`);
-  console.log(`   • History Directory: ${HISTORY_DIR}`);
-  console.log(`   • Max Events in Memory: ${MAX_EVENTS_IN_MEMORY}`);
-  console.log(`   • Server Port: ${SERVER_PORT}`);
+  log.config({
+    'Default Agent Name': DEFAULT_AGENT_NAME,
+    'PAI Directory': PAI_DIR,
+    'History Directory': HISTORY_DIR,
+    'Max Events': MAX_EVENTS_IN_MEMORY,
+    'Server Port': SERVER_PORT,
+  });
 
   if (process.env.PAI_AGENT_NAME) {
-    console.log(`   ✅ Custom agent name set via PAI_AGENT_NAME`);
+    log.success('Custom agent name set via PAI_AGENT_NAME', 'env');
   } else {
-    console.log(`   ℹ️  Using default agent name (set PAI_AGENT_NAME to customize)`);
+    log.info('Using default agent name (set PAI_AGENT_NAME to customize)', 'env');
   }
 }
