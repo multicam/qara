@@ -9,6 +9,7 @@
  * - CC 2.1.6 context tracking integration
  * - Skill invocation tracking
  * - OpenTelemetry span kind classification
+ * - PERFORMANCE: Only captures when Agent Lens server is running (port 4000)
  *
  * SETUP REQUIRED:
  * 1. Install Bun: https://bun.sh
@@ -18,6 +19,7 @@
  */
 
 import { existsSync, readFileSync, writeFileSync } from 'fs';
+import { createConnection } from 'net';
 import { join } from 'path';
 import { randomUUID } from 'crypto';
 import { PAI_DIR, ensureDir } from './lib/pai-paths';
@@ -53,6 +55,32 @@ const VALID_EVENT_TYPES = [
 ] as const;
 
 type ValidEventType = typeof VALID_EVENT_TYPES[number];
+
+/**
+ * Check if Agent Lens server is running on port 4000
+ * Returns true if server is accepting connections, false otherwise
+ */
+function isAgentLensRunning(): Promise<boolean> {
+    return new Promise<boolean>((resolve) => {
+        const socket = createConnection(4000, '127.0.0.1');
+        socket.setTimeout(100); // 100ms timeout
+
+        socket.on('connect', () => {
+            socket.destroy();
+            resolve(true);
+        });
+
+        socket.on('timeout', () => {
+            socket.destroy();
+            resolve(false);
+        });
+
+        socket.on('error', () => {
+            socket.destroy();
+            resolve(false);
+        });
+    });
+}
 
 // Session mapping with metadata
 interface SessionMapping {
@@ -295,6 +323,21 @@ function inferEventType(hookData: Record<string, any>): string | null {
 
 async function main() {
     try {
+        // PERFORMANCE: Check if Agent Lens server is running before doing any work
+        // This prevents ~1000+ hook executions per session when dashboard isn't active
+        const agentLensActive = await isAgentLensRunning();
+        if (!agentLensActive) {
+            // Agent Lens not running - skip event capture entirely
+            // PreToolUse hooks still need to output continue: true
+            const stdinData = await Bun.stdin.text();
+            const hookData = JSON.parse(stdinData);
+            const eventType = inferEventType(hookData);
+            if (eventType === 'PreToolUse') {
+                console.log(JSON.stringify({ continue: true }));
+            }
+            process.exit(0);
+        }
+
         // Read hook data from stdin
         const stdinData = await Bun.stdin.text();
         const hookData = JSON.parse(stdinData);

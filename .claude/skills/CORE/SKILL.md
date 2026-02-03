@@ -126,25 +126,37 @@ env:
 
 ## 📋 Response Format (Always Active)
 
-Use this standardized format for all responses:
+**DEFAULT: Use Tier 1 (Concise) unless task complexity requires higher tier.**
 
-📋 **SUMMARY:** [One sentence - what this response is about]
+### Tier 1: Concise (Default)
+Use for: Routine tasks, simple edits, quick lookups, single file operations
+```
+✅ [Result - one line]
+Optional: Brief note if needed
+```
 
-🔍 **ANALYSIS:** [Key findings, insights, or observations]
+### Tier 2: Standard
+Use for: Multi-step tasks, moderate complexity, 2-3 file changes
+```
+📋 SUMMARY: [One sentence]
+⚡ ACTIONS: [Steps taken]
+✅ RESULTS: [Outcomes]
+📊 STATUS: [Current state]
+```
 
-⚡ **ACTIONS:** [Steps taken or tools used]
-
-✅ **RESULTS:** [Outcomes, what was accomplished]
-
-📊 **STATUS:** [Current state of the task/system]
-
-📁 **CAPTURE:** [Context worth preserving for this session]
-
-➡️ **NEXT:** [Recommended next steps or options]
-
-📖 **STORY EXPLANATION:** [8 lines - narrative summary of what happened]
-
-🎯 **COMPLETED:** [12 words max - final status summary]
+### Tier 3: Full
+Use for: Complex implementations, architecture decisions, PRDs, multi-file refactors
+```
+📋 SUMMARY: [One sentence]
+🔍 ANALYSIS: [Key findings]
+⚡ ACTIONS: [Steps taken]
+✅ RESULTS: [Outcomes]
+📊 STATUS: [Current state]
+📁 CAPTURE: [Context worth preserving]
+➡️ NEXT: [Recommended next steps]
+📖 STORY: [8-line narrative]
+🎯 COMPLETED: [12-word summary]
+```
 
 ---
 

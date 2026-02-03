@@ -12,7 +12,7 @@ import {
 import { startFileIngestion, getRecentEvents, getFilterOptions, getIngestionHealth } from './file-ingest';
 import { logConfiguration, SERVER_PORT } from './config';
 import { initDatabase } from './db';
-import { log } from './logger';
+import { log, pc } from './logger';
 
 // Store WebSocket clients
 const wsClients = new Set<any>();
@@ -50,15 +50,8 @@ function payloadSummary(event: any): string {
 // Pass a callback to broadcast new events to connected WebSocket clients
 startFileIngestion((events) => {
   events.forEach(event => {
-    const p = event.payload || {};
-    const agentType = p.agent_type || p.subagent_type;
-    const toolName = p.tool_name;
-
-    if (agentType || toolName) {
-      log.ingest.event(event.hook_event_type, payloadSummary(event));
-    } else {
-      log.ingest.event(event.hook_event_type, payloadSummary(event));
-    }
+    // Use compact logging format with timestamps and icons
+    log.compact(event);
   });
 
   // Broadcast each event to all connected WebSocket clients
@@ -331,3 +324,18 @@ const server = Bun.serve({
 
 log.server.start(server.port);
 log.server.ready();
+
+// Graceful shutdown with session summary
+process.on('SIGINT', () => {
+  console.log('\n');
+  log.summary();
+  console.log(pc.green('👋 Agent Lens shutting down...'));
+  process.exit(0);
+});
+
+process.on('SIGTERM', () => {
+  console.log('\n');
+  log.summary();
+  console.log(pc.green('👋 Agent Lens shutting down...'));
+  process.exit(0);
+});
