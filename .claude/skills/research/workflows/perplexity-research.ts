@@ -26,6 +26,8 @@ import { promisify } from 'util';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
+// Import to auto-load .env from PAI_DIR
+import '../../../hooks/lib/pai-paths';
 
 const exec = promisify(require('child_process').exec);
 
@@ -41,8 +43,10 @@ if (!originalQuestion) {
 // Load API key from environment
 const apiKey = process.env.PERPLEXITY_API_KEY;
 if (!apiKey) {
+  const paiDir = process.env.PAI_DIR || path.join(os.homedir(), 'qara', '.claude');
   console.error('❌ PERPLEXITY_API_KEY not found');
-  console.error('Please add PERPLEXITY_API_KEY to your ${PAI_DIR}/.env file');
+  console.error(`Please add your key to: ${paiDir}/.env`);
+  console.error('Get your key from: https://www.perplexity.ai/settings/api');
   process.exit(1);
 }
 

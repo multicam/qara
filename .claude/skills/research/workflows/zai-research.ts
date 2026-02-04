@@ -42,8 +42,8 @@ Requirements:
 
 Queries:`;
 
-  // Use coding endpoint (default) - required for Coding Plan
-  const result = await promptLLM(prompt, ZAI_MODELS.GLM_4_7, 500);
+  // Use coding endpoint - GLM-4.7 needs ~2000 tokens for reasoning + response
+  const result = await promptLLM(prompt, ZAI_MODELS.GLM_4_7, 2000);
 
   if (!result) {
     // Fallback: create basic queries

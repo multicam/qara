@@ -10,7 +10,7 @@
 
 import { homedir } from 'os';
 import { resolve, join } from 'path';
-import { existsSync, mkdirSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync } from 'fs';
 
 /**
  * Smart PAI_DIR detection with fallback
@@ -81,3 +81,39 @@ export function ensureDir(dir: string): void {
         mkdirSync(dir, { recursive: true });
     }
 }
+
+/**
+ * Load .env file from PAI_DIR into process.env
+ * Only sets variables that aren't already set (environment takes precedence)
+ */
+export function loadEnv(): void {
+    const envPath = join(PAI_DIR, '.env');
+    if (!existsSync(envPath)) {
+        return;
+    }
+
+    try {
+        const envContent = readFileSync(envPath, 'utf-8');
+        for (const line of envContent.split('\n')) {
+            const trimmed = line.trim();
+            // Skip empty lines and comments
+            if (!trimmed || trimmed.startsWith('#')) continue;
+
+            const match = trimmed.match(/^([^=]+)=(.*)$/);
+            if (match) {
+                const [, key, value] = match;
+                // Only set if not already in environment
+                if (!process.env[key]) {
+                    // Handle $HOME and other variable expansion
+                    const expandedValue = value.replace(/\$HOME/g, homedir());
+                    process.env[key] = expandedValue;
+                }
+            }
+        }
+    } catch (error) {
+        console.error(`Warning: Failed to load ${envPath}:`, error);
+    }
+}
+
+// Auto-load .env on module import
+loadEnv();

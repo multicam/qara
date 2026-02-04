@@ -10,6 +10,8 @@
  */
 
 import jwt from 'jsonwebtoken';
+// Import pai-paths to auto-load .env
+import '../pai-paths';
 
 // API endpoints
 const ZAI_GENERAL_API = 'https://api.z.ai/api/paas/v4/chat/completions';
@@ -148,9 +150,11 @@ interface ChatCompletionResponse {
   choices: Array<{
     message: {
       content: string;
+      reasoning_content?: string;  // GLM-4.7 returns reasoning separately
     };
     delta?: {
       content?: string;
+      reasoning_content?: string;
     };
   }>;
 }
@@ -200,7 +204,7 @@ async function makeRequest(
 export async function promptLLM(
   prompt: string,
   model: ZaiModel = ZAI_MODELS.GLM_4_7,
-  maxTokens: number = 150,
+  maxTokens: number = 500,  // Increased default - GLM-4.7 needs room for reasoning
   useCodingEndpoint: boolean = true
 ): Promise<string | null> {
   try {
@@ -210,7 +214,9 @@ export async function promptLLM(
     const response = await makeRequest(endpoint, model, messages, maxTokens, false);
     const data = (await response.json()) as ChatCompletionResponse;
 
-    return data.choices[0]?.message?.content || null;
+    const message = data.choices[0]?.message;
+    // GLM-4.7 may return reasoning_content separately; prefer content, fallback to reasoning
+    return message?.content || message?.reasoning_content || null;
   } catch (error) {
     console.error('ZAI prompt failed:', error);
     return null;

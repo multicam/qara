@@ -151,11 +151,3 @@ fi
 
 # Output with blank line separator
 printf '%b\n\n%b' "$line1" "$line2"
-
-Location: ~/.claude/statusline-command.sh
-
-Settings.json entry:
-"statusLine": {
-"type": "command",
-"command": "~/.claude/statusline-command.sh"
-}
