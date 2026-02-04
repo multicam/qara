@@ -6,9 +6,16 @@ import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
 import { existsSync, rmSync, mkdirSync, writeFileSync, readFileSync } from 'fs';
 import { join, dirname } from 'path';
 
-// We need to test the extractErrorType function which is not exported
-// So we'll test it indirectly through logErrorPattern and lookupErrorPattern
-import { logErrorPattern, lookupErrorPattern, type ErrorPattern } from './error-patterns';
+// Import all functions including new ones
+import {
+  logErrorPattern,
+  lookupErrorPattern,
+  getErrorsByCategory,
+  getErrorStats,
+  compactErrorPatterns,
+  type ErrorPattern,
+  type ErrorCategory
+} from './error-patterns';
 
 const STATE_DIR = join(process.env.PAI_DIR || process.env.HOME + '/qara', 'state');
 const ERROR_PATTERNS_FILE = join(STATE_DIR, 'error-patterns.jsonl');
@@ -218,6 +225,322 @@ describe('Error Patterns', () => {
       const result = await lookupErrorPattern('ENOENT: no such file');
 
       expect(result).toBeNull();
+    });
+  });
+
+  describe('Deduplication', () => {
+    it('should deduplicate identical errors and increment frequency', async () => {
+      await logErrorPattern('ENOENT: no such file', 'reading config.json', 'Read');
+      await logErrorPattern('ENOENT: no such file', 'reading config.json', 'Read');
+      await logErrorPattern('ENOENT: no such file', 'reading config.json', 'Read');
+
+      const content = readFileSync(ERROR_PATTERNS_FILE, 'utf-8');
+      const lines = content.trim().split('\n');
+
+      // Should only have one entry (deduplicated)
+      expect(lines.length).toBe(1);
+
+      const entry = JSON.parse(lines[0]);
+      expect(entry.frequency).toBe(3);
+    });
+
+    it('should not deduplicate different errors', async () => {
+      await logErrorPattern('ENOENT: no such file', 'reading config.json', 'Read');
+      await logErrorPattern('EACCES: permission denied', 'writing log.txt', 'Write');
+      await logErrorPattern('MODULE_NOT_FOUND', 'importing lodash', 'Bash');
+
+      const content = readFileSync(ERROR_PATTERNS_FILE, 'utf-8');
+      const lines = content.trim().split('\n');
+
+      // Should have three different entries
+      expect(lines.length).toBe(3);
+
+      const entries = lines.map(l => JSON.parse(l));
+      expect(entries.every(e => e.frequency === 1)).toBe(true);
+    });
+
+    it('should generate unique hashes for different contexts', async () => {
+      await logErrorPattern('ENOENT: no such file', 'reading config.json', 'Read');
+      await logErrorPattern('ENOENT: no such file', 'reading data.db', 'Read');
+
+      const content = readFileSync(ERROR_PATTERNS_FILE, 'utf-8');
+      const lines = content.trim().split('\n');
+
+      // Different contexts should create different entries
+      expect(lines.length).toBe(2);
+
+      const entries = lines.map(l => JSON.parse(l));
+      expect(entries[0].hash).not.toBe(entries[1].hash);
+    });
+  });
+
+  describe('Resolution Hints', () => {
+    it('should add automatic resolution hints for known errors', async () => {
+      await logErrorPattern('ENOENT: no such file or directory', 'reading file', 'Read');
+
+      const content = readFileSync(ERROR_PATTERNS_FILE, 'utf-8');
+      const entry = JSON.parse(content.trim());
+
+      expect(entry.solution).toBeTruthy();
+      expect(entry.solution.length).toBeGreaterThan(0);
+      expect(entry.solution).toContain('file');
+    });
+
+    it('should add hints for TypeScript errors', async () => {
+      await logErrorPattern('error TS2339: Property does not exist', 'compiling', 'Bash');
+
+      const content = readFileSync(ERROR_PATTERNS_FILE, 'utf-8');
+      const entry = JSON.parse(content.trim());
+
+      expect(entry.solution).toBeTruthy();
+      expect(entry.solution).toContain('Property');
+    });
+
+    it('should add hints for HTTP errors', async () => {
+      await logErrorPattern('Request failed with status 404', 'API call', 'WebFetch');
+
+      const content = readFileSync(ERROR_PATTERNS_FILE, 'utf-8');
+      const entry = JSON.parse(content.trim());
+
+      expect(entry.solution).toBeTruthy();
+      expect(entry.solution).toContain('Not Found');
+    });
+
+    it('should preserve user solutions over auto-hints on duplicate', async () => {
+      // First, log the error to get the proper hash
+      await logErrorPattern('ENOENT: no such file', 'reading config.json', 'Read');
+
+      // Read it back and update with user solution
+      const content1 = readFileSync(ERROR_PATTERNS_FILE, 'utf-8');
+      const entry1 = JSON.parse(content1.trim());
+      entry1.solution = 'User custom solution';
+      writeFileSync(ERROR_PATTERNS_FILE, JSON.stringify(entry1) + '\n');
+
+      // Log same error again - should keep user solution
+      await logErrorPattern('ENOENT: no such file', 'reading config.json', 'Read');
+
+      const content2 = readFileSync(ERROR_PATTERNS_FILE, 'utf-8');
+      const entry2 = JSON.parse(content2.trim());
+
+      expect(entry2.solution).toBe('User custom solution');
+      expect(entry2.frequency).toBe(2);
+    });
+  });
+
+  describe('Error Categorization', () => {
+    it('should categorize filesystem errors', async () => {
+      await logErrorPattern('ENOENT: no such file', 'reading file', 'Read');
+
+      const content = readFileSync(ERROR_PATTERNS_FILE, 'utf-8');
+      const entry = JSON.parse(content.trim());
+
+      expect(entry.category).toBe('filesystem');
+    });
+
+    it('should categorize network errors', async () => {
+      await logErrorPattern('ECONNREFUSED: connection refused', 'connecting', 'WebFetch');
+
+      const content = readFileSync(ERROR_PATTERNS_FILE, 'utf-8');
+      const entry = JSON.parse(content.trim());
+
+      expect(entry.category).toBe('network');
+    });
+
+    it('should categorize permission errors', async () => {
+      await logErrorPattern('EACCES: permission denied', 'writing file', 'Write');
+
+      const content = readFileSync(ERROR_PATTERNS_FILE, 'utf-8');
+      const entry = JSON.parse(content.trim());
+
+      expect(entry.category).toBe('permission');
+    });
+
+    it('should categorize module errors', async () => {
+      await logErrorPattern('MODULE_NOT_FOUND: Cannot find module', 'import', 'Bash');
+
+      const content = readFileSync(ERROR_PATTERNS_FILE, 'utf-8');
+      const entry = JSON.parse(content.trim());
+
+      expect(entry.category).toBe('module');
+    });
+
+    it('should categorize type errors', async () => {
+      await logErrorPattern('error TS2339: Property does not exist', 'compile', 'Bash');
+
+      const content = readFileSync(ERROR_PATTERNS_FILE, 'utf-8');
+      const entry = JSON.parse(content.trim());
+
+      expect(entry.category).toBe('type');
+    });
+
+    it('should categorize syntax errors', async () => {
+      await logErrorPattern('SyntaxError: Unexpected token', 'parse', 'Bash');
+
+      const content = readFileSync(ERROR_PATTERNS_FILE, 'utf-8');
+      const entry = JSON.parse(content.trim());
+
+      expect(entry.category).toBe('syntax');
+    });
+  });
+
+  describe('getErrorsByCategory', () => {
+    it('should group errors by category', async () => {
+      await logErrorPattern('ENOENT: no such file', 'reading', 'Read');
+      await logErrorPattern('EACCES: permission denied', 'writing', 'Write');
+      await logErrorPattern('TS2339: Property missing', 'compile', 'Bash');
+      await logErrorPattern('HTTP404: Not found', 'fetch', 'WebFetch');
+
+      const grouped = await getErrorsByCategory();
+
+      expect(grouped.filesystem.length).toBe(1);
+      expect(grouped.permission.length).toBe(1);
+      expect(grouped.type.length).toBe(1);
+      expect(grouped.network.length).toBe(1);
+    });
+
+    it('should sort each category by frequency', async () => {
+      // Create patterns with different frequencies and different contexts
+      await logErrorPattern('ENOENT: file1', 'reading config.json', 'Read');
+      await logErrorPattern('ENOENT: file1', 'reading config.json', 'Read'); // freq 2
+      await logErrorPattern('ENOENT: file1', 'reading config.json', 'Read'); // freq 3
+
+      await logErrorPattern('ENOENT: file2', 'writing data.db', 'Write'); // Different context/tool
+
+      const grouped = await getErrorsByCategory();
+
+      expect(grouped.filesystem.length).toBe(2);
+      expect(grouped.filesystem[0].frequency).toBe(3);
+      expect(grouped.filesystem[1].frequency).toBe(1);
+    });
+
+    it('should return empty categories when no errors exist', async () => {
+      const grouped = await getErrorsByCategory();
+
+      expect(grouped.filesystem).toEqual([]);
+      expect(grouped.network).toEqual([]);
+      expect(grouped.permission).toEqual([]);
+    });
+  });
+
+  describe('getErrorStats', () => {
+    it('should calculate basic statistics', async () => {
+      await logErrorPattern('ENOENT: file1', 'reading', 'Read');
+      await logErrorPattern('EACCES: perm', 'writing', 'Write');
+      await logErrorPattern('TS2339: prop', 'compile', 'Bash');
+
+      const stats = await getErrorStats();
+
+      expect(stats.total).toBe(3);
+      expect(stats.byCategory.filesystem).toBe(1);
+      expect(stats.byCategory.permission).toBe(1);
+      expect(stats.byCategory.type).toBe(1);
+    });
+
+    it('should identify top errors by frequency', async () => {
+      await logErrorPattern('ENOENT: common', 'reading', 'Read');
+      await logErrorPattern('ENOENT: common', 'reading', 'Read');
+      await logErrorPattern('ENOENT: common', 'reading', 'Read');
+      await logErrorPattern('ENOENT: common', 'reading', 'Read');
+      await logErrorPattern('ENOENT: common', 'reading', 'Read');
+
+      await logErrorPattern('EACCES: rare', 'writing', 'Write');
+
+      const stats = await getErrorStats();
+
+      expect(stats.topErrors.length).toBeGreaterThan(0);
+      expect(stats.topErrors[0].frequency).toBe(5);
+      expect(stats.topErrors[0].error).toBe('ENOENT');
+    });
+
+    it('should track recent errors', async () => {
+      await logErrorPattern('ENOENT: recent', 'reading', 'Read');
+
+      const stats = await getErrorStats();
+
+      expect(stats.recentErrors.length).toBe(1);
+      expect(stats.recentErrors[0].error).toBe('ENOENT');
+    });
+
+    it('should return zero stats when no errors exist', async () => {
+      const stats = await getErrorStats();
+
+      expect(stats.total).toBe(0);
+      expect(stats.topErrors).toEqual([]);
+      expect(stats.recentErrors).toEqual([]);
+    });
+  });
+
+  describe('compactErrorPatterns', () => {
+    it('should remove old infrequent errors', async () => {
+      mkdirSync(dirname(ERROR_PATTERNS_FILE), { recursive: true });
+
+      const oldTime = Date.now() - 100 * 24 * 60 * 60 * 1000; // 100 days ago
+      const oldPattern: ErrorPattern = {
+        error: 'OLD_ERROR',
+        pattern: 'old',
+        solution: 'old solution',
+        frequency: 1,
+        lastSeen: oldTime,
+        category: 'unknown',
+        hash: 'old123'
+      };
+
+      const recentPattern: ErrorPattern = {
+        error: 'RECENT_ERROR',
+        pattern: 'recent',
+        solution: 'recent solution',
+        frequency: 1,
+        lastSeen: Date.now(),
+        category: 'unknown',
+        hash: 'recent123'
+      };
+
+      writeFileSync(ERROR_PATTERNS_FILE,
+        JSON.stringify(oldPattern) + '\n' +
+        JSON.stringify(recentPattern) + '\n'
+      );
+
+      const removed = await compactErrorPatterns();
+
+      expect(removed).toBe(1);
+
+      const content = readFileSync(ERROR_PATTERNS_FILE, 'utf-8');
+      const lines = content.trim().split('\n');
+
+      expect(lines.length).toBe(1);
+      expect(JSON.parse(lines[0]).error).toBe('RECENT_ERROR');
+    });
+
+    it('should keep high-frequency errors even if old', async () => {
+      mkdirSync(dirname(ERROR_PATTERNS_FILE), { recursive: true });
+
+      const oldTime = Date.now() - 100 * 24 * 60 * 60 * 1000; // 100 days ago
+      const oldFrequentPattern: ErrorPattern = {
+        error: 'OLD_FREQUENT',
+        pattern: 'old but frequent',
+        solution: 'solution',
+        frequency: 10, // High frequency
+        lastSeen: oldTime,
+        category: 'unknown',
+        hash: 'oldfreq123'
+      };
+
+      writeFileSync(ERROR_PATTERNS_FILE, JSON.stringify(oldFrequentPattern) + '\n');
+
+      const removed = await compactErrorPatterns();
+
+      expect(removed).toBe(0);
+
+      const content = readFileSync(ERROR_PATTERNS_FILE, 'utf-8');
+      const lines = content.trim().split('\n');
+
+      expect(lines.length).toBe(1);
+    });
+
+    it('should return zero when no file exists', async () => {
+      const removed = await compactErrorPatterns();
+
+      expect(removed).toBe(0);
     });
   });
 });

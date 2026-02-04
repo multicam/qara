@@ -325,7 +325,8 @@ async function main() {
     try {
         // PERFORMANCE: Check if Agent Lens server is running before doing any work
         // This prevents ~1000+ hook executions per session when dashboard isn't active
-        const agentLensActive = await isAgentLensRunning();
+        // Skip check in test mode (HOOK_TEST_MODE=1)
+        const agentLensActive = process.env.HOOK_TEST_MODE === '1' || await isAgentLensRunning();
         if (!agentLensActive) {
             // Agent Lens not running - skip event capture entirely
             // PreToolUse hooks still need to output continue: true

@@ -1,0 +1,305 @@
+#!/usr/bin/env bun
+
+/**
+ * Session Manager CLI - Manage Claude Code sessions
+ *
+ * Commands:
+ *   list                  - List all sessions
+ *   info <session-id>     - Show session details
+ *   pause <session-id>    - Pause a session
+ *   resume <session-id>   - Resume a paused session
+ *   export <session-id>   - Export session to JSON
+ *   import <file>         - Import session from JSON
+ *   cleanup               - Clean up old sessions
+ *   snapshot <session-id> - Create state snapshot
+ *
+ * Usage:
+ *   session-manager list
+ *   session-manager info abc123
+ *   session-manager pause abc123
+ *   session-manager resume abc123
+ *   session-manager export abc123 > session-backup.json
+ *   session-manager import session-backup.json
+ *   session-manager cleanup --keep-count 50 --keep-days 30
+ */
+
+import {
+  listSessions,
+  loadSessionSnapshot,
+  pauseSession,
+  resumeSession,
+  exportSession,
+  importSession,
+  cleanupOldSessions,
+  createStateSnapshot,
+  loadConversationHistory,
+  loadTaskHistory,
+  loadCheckpointHistory,
+  type SessionInfo
+} from '../hooks/lib/session-persistence';
+import { readFileSync } from 'fs';
+
+// Color utilities for terminal output
+const colors = {
+  reset: '\x1b[0m',
+  bright: '\x1b[1m',
+  dim: '\x1b[2m',
+  red: '\x1b[31m',
+  green: '\x1b[32m',
+  yellow: '\x1b[33m',
+  blue: '\x1b[34m',
+  magenta: '\x1b[35m',
+  cyan: '\x1b[36m'
+};
+
+function formatTimestamp(timestamp: string): string {
+  const date = new Date(timestamp);
+  return date.toLocaleString();
+}
+
+function formatStatus(status: string): string {
+  const statusColors: Record<string, string> = {
+    active: colors.green,
+    paused: colors.yellow,
+    completed: colors.blue,
+    failed: colors.red
+  };
+
+  const color = statusColors[status] || colors.reset;
+  return `${color}${status}${colors.reset}`;
+}
+
+function printSessionInfo(info: SessionInfo, verbose: boolean = false): void {
+  console.log(`\n${colors.bright}Session: ${info.session_id}${colors.reset}`);
+  console.log(`  Status: ${formatStatus(info.status)}`);
+  console.log(`  Started: ${formatTimestamp(info.start_time)}`);
+  console.log(`  Last Activity: ${formatTimestamp(info.last_activity)}`);
+
+  if (info.agent_type) {
+    console.log(`  Agent Type: ${colors.cyan}${info.agent_type}${colors.reset}`);
+  }
+
+  if (info.parent_session_id) {
+    console.log(`  Parent Session: ${colors.dim}${info.parent_session_id}${colors.reset}`);
+  }
+
+  if (verbose && info.metadata) {
+    console.log(`  Metadata: ${JSON.stringify(info.metadata, null, 2)}`);
+  }
+}
+
+function printSessionList(sessions: SessionInfo[]): void {
+  if (sessions.length === 0) {
+    console.log('No sessions found.');
+    return;
+  }
+
+  console.log(`\n${colors.bright}Sessions (${sessions.length}):${colors.reset}\n`);
+
+  // Group by status
+  const grouped = sessions.reduce((acc, session) => {
+    if (!acc[session.status]) {
+      acc[session.status] = [];
+    }
+    acc[session.status].push(session);
+    return acc;
+  }, {} as Record<string, SessionInfo[]>);
+
+  // Print each group
+  for (const [status, statusSessions] of Object.entries(grouped)) {
+    console.log(`${colors.bright}${status.toUpperCase()}:${colors.reset}`);
+    for (const session of statusSessions) {
+      const time = formatTimestamp(session.last_activity);
+      const agentType = session.agent_type ? ` (${session.agent_type})` : '';
+      console.log(`  ${session.session_id}${colors.dim}${agentType} - ${time}${colors.reset}`);
+    }
+    console.log();
+  }
+}
+
+function printSessionDetails(sessionId: string): void {
+  const snapshot = loadSessionSnapshot(sessionId);
+
+  if (!snapshot) {
+    console.error(`${colors.red}No snapshot found for session: ${sessionId}${colors.reset}`);
+    console.error('Run: session-manager snapshot <session-id> to create one.');
+    return;
+  }
+
+  printSessionInfo(snapshot.session_info, true);
+
+  console.log(`\n${colors.bright}Session Statistics:${colors.reset}`);
+  console.log(`  Conversation Turns: ${snapshot.conversation_turns}`);
+  console.log(`  Checkpoints: ${snapshot.checkpoints_count}`);
+  console.log(`  Active Tasks: ${snapshot.active_tasks.length}`);
+
+  if (snapshot.active_tasks.length > 0) {
+    console.log(`\n${colors.bright}Active Tasks:${colors.reset}`);
+    for (const task of snapshot.active_tasks) {
+      console.log(`  [${formatStatus(task.status)}] ${task.subject} (${task.task_id})`);
+    }
+  }
+
+  if (snapshot.context_state) {
+    console.log(`\n${colors.bright}Context State:${colors.reset}`);
+    console.log(`  Used: ${snapshot.context_state.used} (${snapshot.context_state.used_percentage}%)`);
+    console.log(`  Remaining: ${snapshot.context_state.remaining} (${snapshot.context_state.remaining_percentage}%)`);
+  }
+
+  if (snapshot.last_error) {
+    console.log(`\n${colors.red}Last Error:${colors.reset}`);
+    console.log(`  ${snapshot.last_error}`);
+  }
+
+  // Show recent conversation
+  const conversation = loadConversationHistory(sessionId);
+  if (conversation.length > 0) {
+    console.log(`\n${colors.bright}Recent Conversation (last 3 turns):${colors.reset}`);
+    const recent = conversation.slice(-3);
+    for (const turn of recent) {
+      console.log(`\n  ${colors.cyan}Turn ${turn.turn_number}:${colors.reset}`);
+      if (turn.user_prompt) {
+        console.log(`    User: ${turn.user_prompt.substring(0, 100)}${turn.user_prompt.length > 100 ? '...' : ''}`);
+      }
+      if (turn.assistant_response) {
+        console.log(`    Assistant: ${turn.assistant_response.substring(0, 100)}${turn.assistant_response.length > 100 ? '...' : ''}`);
+      }
+      if (turn.tool_calls && turn.tool_calls.length > 0) {
+        console.log(`    Tools: ${turn.tool_calls.map(t => t.tool_name).join(', ')}`);
+      }
+    }
+  }
+}
+
+async function main() {
+  const args = process.argv.slice(2);
+  const command = args[0];
+
+  try {
+    switch (command) {
+      case 'list': {
+        const sessions = listSessions();
+        printSessionList(sessions);
+        break;
+      }
+
+      case 'info': {
+        const sessionId = args[1];
+        if (!sessionId) {
+          console.error('Usage: session-manager info <session-id>');
+          process.exit(1);
+        }
+        printSessionDetails(sessionId);
+        break;
+      }
+
+      case 'pause': {
+        const sessionId = args[1];
+        if (!sessionId) {
+          console.error('Usage: session-manager pause <session-id>');
+          process.exit(1);
+        }
+        pauseSession(sessionId);
+        console.log(`${colors.green}Session paused: ${sessionId}${colors.reset}`);
+        break;
+      }
+
+      case 'resume': {
+        const sessionId = args[1];
+        if (!sessionId) {
+          console.error('Usage: session-manager resume <session-id>');
+          process.exit(1);
+        }
+        const snapshot = resumeSession(sessionId);
+        if (snapshot) {
+          console.log(`${colors.green}Session resumed: ${sessionId}${colors.reset}`);
+          console.log(`  Conversation turns: ${snapshot.conversation_turns}`);
+          console.log(`  Active tasks: ${snapshot.active_tasks.length}`);
+        } else {
+          console.error(`${colors.red}Failed to resume session${colors.reset}`);
+          process.exit(1);
+        }
+        break;
+      }
+
+      case 'export': {
+        const sessionId = args[1];
+        if (!sessionId) {
+          console.error('Usage: session-manager export <session-id> > output.json');
+          process.exit(1);
+        }
+        const data = exportSession(sessionId);
+        console.log(JSON.stringify(data, null, 2));
+        break;
+      }
+
+      case 'import': {
+        const filePath = args[1];
+        if (!filePath) {
+          console.error('Usage: session-manager import <file.json>');
+          process.exit(1);
+        }
+        const data = JSON.parse(readFileSync(filePath, 'utf-8'));
+        const sessionId = args[2] || data.session_info.session_id;
+        importSession(sessionId, data);
+        console.log(`${colors.green}Session imported: ${sessionId}${colors.reset}`);
+        break;
+      }
+
+      case 'cleanup': {
+        const keepCountIdx = args.indexOf('--keep-count');
+        const keepDaysIdx = args.indexOf('--keep-days');
+
+        const keepCount = keepCountIdx >= 0 ? parseInt(args[keepCountIdx + 1], 10) : 50;
+        const keepDays = keepDaysIdx >= 0 ? parseInt(args[keepDaysIdx + 1], 10) : 30;
+
+        console.log(`Cleaning up sessions (keeping ${keepCount} most recent, ${keepDays} days)...`);
+        const deleted = cleanupOldSessions({ keepCount, keepDays });
+        console.log(`${colors.green}Cleaned up ${deleted} sessions${colors.reset}`);
+        break;
+      }
+
+      case 'snapshot': {
+        const sessionId = args[1];
+        if (!sessionId) {
+          console.error('Usage: session-manager snapshot <session-id>');
+          process.exit(1);
+        }
+        createStateSnapshot(sessionId);
+        console.log(`${colors.green}Snapshot created for session: ${sessionId}${colors.reset}`);
+        break;
+      }
+
+      default: {
+        console.log(`${colors.bright}Session Manager CLI${colors.reset}
+
+Commands:
+  ${colors.cyan}list${colors.reset}                     List all sessions
+  ${colors.cyan}info <session-id>${colors.reset}        Show session details
+  ${colors.cyan}pause <session-id>${colors.reset}       Pause a session
+  ${colors.cyan}resume <session-id>${colors.reset}      Resume a paused session
+  ${colors.cyan}export <session-id>${colors.reset}      Export session to JSON
+  ${colors.cyan}import <file>${colors.reset}            Import session from JSON
+  ${colors.cyan}cleanup${colors.reset}                  Clean up old sessions
+  ${colors.cyan}snapshot <session-id>${colors.reset}    Create state snapshot
+
+Examples:
+  session-manager list
+  session-manager info abc123
+  session-manager pause abc123
+  session-manager resume abc123
+  session-manager export abc123 > session-backup.json
+  session-manager import session-backup.json
+  session-manager cleanup --keep-count 50 --keep-days 30
+  session-manager snapshot abc123
+`);
+        break;
+      }
+    }
+  } catch (error) {
+    console.error(`${colors.red}Error: ${error}${colors.reset}`);
+    process.exit(1);
+  }
+}
+
+main();

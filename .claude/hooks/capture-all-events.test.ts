@@ -9,6 +9,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
 import { existsSync, mkdirSync, rmSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { spawn } from 'bun';
+import { getDateParts } from './lib/datetime-utils';
 
 const TEST_DIR = '/tmp/capture-all-events-test';
 const HOOK_PATH = join(import.meta.dir, 'capture-all-events.ts');
@@ -31,6 +32,7 @@ async function runHook(
     env: {
       ...process.env,
       PAI_DIR: MOCK_PAI_DIR,
+      HOOK_TEST_MODE: '1',
       ...env
     }
   });
@@ -48,14 +50,10 @@ async function runHook(
 }
 
 /**
- * Get today's events file path (matches hook logic)
+ * Get today's events file path (matches hook logic exactly)
  */
 function getEventsFilePath(): string {
-  const now = new Date();
-  const year = now.getFullYear().toString();
-  const month = (now.getMonth() + 1).toString().padStart(2, '0');
-  const day = now.getDate().toString().padStart(2, '0');
-  const yearMonth = `${year}-${month}`;
+  const { year, month, day, yearMonth } = getDateParts();
   return join(MOCK_PAI_DIR, 'history', 'raw-outputs', yearMonth, `${year}-${month}-${day}_all-events.jsonl`);
 }
 
@@ -100,8 +98,8 @@ describe('capture-all-events hook', () => {
       const result = await runHook(input);
       expect(result.exitCode).toBe(0);
 
-      // PreToolUse should output approve (lowercase per CC schema)
-      expect(result.stdout).toContain('"decision":"approve"');
+      // PreToolUse should output continue: true
+      expect(result.stdout).toContain('"continue":true');
 
       const events = readEvents();
       expect(events.length).toBe(1);
@@ -234,7 +232,7 @@ describe('capture-all-events hook', () => {
 
       const result = await runHook(input);
       expect(result.exitCode).toBe(0);
-      expect(result.stderr).toContain('session_id length out of bounds');
+      expect(result.stderr).toContain('Invalid event: session_id length out of bounds');
 
       const events = readEvents();
       expect(events.length).toBe(0);
@@ -434,7 +432,7 @@ describe('capture-all-events hook', () => {
       };
 
       const result = await runHook(input);
-      expect(result.stdout).toContain('"decision":"approve"');
+      expect(result.stdout).toContain('"continue":true');
     });
 
     it('should not output approve for other event types', async () => {
@@ -444,7 +442,7 @@ describe('capture-all-events hook', () => {
       };
 
       const result = await runHook(input);
-      expect(result.stdout).not.toContain('"decision":"approve"');
+      expect(result.stdout).not.toContain('"continue":true');
     });
   });
 
@@ -504,9 +502,9 @@ describe('capture-all-events hook', () => {
       const exitCode = await proc.exited;
       const stdout = await new Response(proc.stdout).text();
 
-      // Should still exit cleanly and output approve (safety fallback)
+      // Should still exit cleanly and output continue: true (safety fallback)
       expect(exitCode).toBe(0);
-      expect(stdout).toContain('"decision":"approve"');
+      expect(stdout).toContain('"continue":true');
     });
 
     it('should handle empty input gracefully', async () => {
@@ -529,7 +527,7 @@ describe('capture-all-events hook', () => {
 
       // Should still exit cleanly
       expect(exitCode).toBe(0);
-      expect(stdout).toContain('"decision":"approve"');
+      expect(stdout).toContain('"continue":true');
     });
   });
 
