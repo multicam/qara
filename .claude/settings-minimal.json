@@ -113,7 +113,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "bash /home/jean-marc/.claude/statusline-command.sh"
+    "command": "bash /home/jean-marc/qara/.claude/statusline-command.sh"
   },
   "enabledPlugins": {},
   "alwaysThinkingEnabled": true,
