@@ -194,7 +194,7 @@ Generate report as:
 
 ### Version Check
 ```bash
-bun run .claude/skills/cc-upgrade/scripts/cc-version-check.js .
+bun run .claude/skills/cc-upgrade/scripts/cc-version-check.ts .
 ```
 
 ### Full Analysis
@@ -240,4 +240,4 @@ const CC_2_1_FEATURES = {
 };
 ```
 
-See `scripts/cc-version-check.js` for automated compatibility checking.
+See `scripts/cc-version-check.ts` for automated compatibility checking.

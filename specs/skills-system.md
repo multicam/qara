@@ -80,13 +80,16 @@ Skills are self-contained knowledge containers with progressive disclosure. Each
 ### cc-upgrade
 - **Context:** fork
 - **Workflows:** 0 (analysis pipeline)
+- **Scripts:** `shared.ts` (common types/utilities), `analyse-claude-folder.ts` (exports 5 analyzers), `cc-version-check.ts` (feature compatibility), 3 test files
 - **Purpose:** Generic Claude Code folder analysis, feature compatibility, 12-factor compliance
+- **Composition:** Exports `analyzeStructure`, `analyzeSkills`, `analyzeHooks`, `analyzeContext`, `analyzeAgents` for extension skills to import
 - **Triggers:** Analyzing .claude/ folders, checking CC version compatibility
 
 ### cc-upgrade-pai
 - **Context:** fork
-- **Workflows:** 0 (extends cc-upgrade)
-- **Purpose:** PAI-specific CC analysis (CORE audit, delegation patterns)
+- **Workflows:** 0 (imports from cc-upgrade)
+- **Scripts:** `analyse-pai.ts` imports 3 base analyzers (structure, context, agents) from cc-upgrade + adds 5 PAI-specific analyzers
+- **Purpose:** PAI-specific CC analysis (CORE audit, delegation patterns, tool integration)
 - **Triggers:** Optimizing PAI codebases
 
 ### example-skill
@@ -100,7 +103,7 @@ Skills are self-contained knowledge containers with progressive disclosure. Each
 ```
 CORE (foundation -- all skills depend on it)
 ├── cc-upgrade
-│   └── cc-upgrade-pai (extends base)
+│   └── cc-upgrade-pai (imports base analyzers via shared.ts)
 ├── research
 │   └── story-explanation (complementary)
 ├── design-implementation

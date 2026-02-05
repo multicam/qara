@@ -20,6 +20,7 @@
 
 #### 3. Anthropic Platform Documentation
 - **URL**: https://docs.anthropic.com/en/docs/claude-code
+- **Redirects to**: `code.claude.com/docs` (301)
 - **Content**: API reference, core concepts
 - **Update Frequency**: Check weekly
 - **Reliability**: Highest
@@ -31,9 +32,9 @@
 - **Reliability**: Highest
 
 #### 5. Anthropic Engineering Blog
-- **URL**: https://www.anthropic.com/engineering/claude-code-best-practices
+- **URL**: https://www.anthropic.com/engineering
+- **Note**: `/claude-code-best-practices` now 308 redirects to `code.claude.com/docs`
 - **Content**: Best practices from Anthropic teams, multi-agent workflows
-- **Key Resource**: "How Anthropic teams use Claude Code" (PDF)
 - **Update Frequency**: Check quarterly
 - **Reliability**: Highest
 
@@ -60,7 +61,8 @@
 - **Reliability**: Highest
 
 #### 9. Hooks Reference
-- **URL**: https://docs.claude.com/en/docs/claude-code/hooks
+- **URL**: https://code.claude.com/docs/en/hooks
+- **Note**: Old URL `docs.claude.com/en/docs/claude-code/hooks` 301 redirects here
 - **Content**: PreToolUse, PostToolUse, UserPromptSubmit hooks
 - **Key Features**: Event-driven automation, tool interception
 - **Update Frequency**: Check monthly
@@ -147,13 +149,13 @@
 #### 20. Awesome Claude Code
 - **URL**: https://github.com/hesreallyhim/awesome-claude-code
 - **Content**: Curated commands, workflows, tools, slash commands
-- **Key Features**: 4,000+ stars, actively maintained
+- **Key Features**: 22k+ stars, actively maintained
 - **Update Frequency**: Check monthly
 - **Reliability**: High
 
 #### 21. Awesome Claude Skills
 - **URL**: https://github.com/ComposioHQ/awesome-claude-skills
-- **Content**: 4,167+ community skills (as of Jan 2026)
+- **Content**: 33 curated skill categories, 30k+ stars
 - **Key Features**: Multiple curated collections, skill pattern library
 - **Update Frequency**: Check monthly
 - **Reliability**: Medium-High

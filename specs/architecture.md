@@ -34,10 +34,10 @@ Agents are CC built-ins (Task tool `subagent_type`). No custom definitions neede
 ~/qara/                          # Repository root
 ├── .claude/                     # PAI configuration (symlinked to ~/.claude/)
 │   ├── skills/                  # 13 skill containers
-│   │   └── CORE/               # Foundation skill (always loaded, 24 files)
+│   │   └── CORE/               # Foundation skill (always loaded, 25 files)
 │   ├── hooks/                   # 3 event hooks + 3 shared libs
 │   │   └── lib/                 # Shared TypeScript utilities
-│   ├── commands/                # 11 slash commands
+│   ├── commands/                # 10 slash commands
 │   ├── agents/                  # Empty (CC built-ins used directly)
 │   ├── context/                 # Context files (@include'd into sessions)
 │   ├── templates/               # Reusable output templates

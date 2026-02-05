@@ -1,4 +1,4 @@
-# CC-Upgrade Skill (v1.0.0)
+# CC-Upgrade Skill (v2.0.0)
 
 Generic Claude Code folder analysis and optimization for any codebase.
 
@@ -35,14 +35,18 @@ This skill provides a systematic approach to track CC updates and apply them to 
 
 ```
 cc-upgrade/
-├── SKILL.md                  # Main skill definition
-├── Readme.md                 # This file
+├── SKILL.md                        # Main skill definition
+├── Readme.md                       # This file
 ├── references/
-│   ├── cc-trusted-sources.md # Trusted sources detail
-│   └── 12-factor-checklist.md # Compliance audit criteria
+│   ├── cc-trusted-sources.md       # Trusted sources detail
+│   └── 12-factor-checklist.md      # Compliance audit criteria
 └── scripts/
-    ├── cc-version-check.js   # Version compatibility checker
-    └── analyse-claude-folder.ts # Analysis tool
+    ├── shared.ts                   # Shared types/utilities (imported by extensions)
+    ├── shared.test.ts              # Tests for shared module
+    ├── cc-version-check.ts         # Version compatibility checker
+    ├── cc-version-check.test.ts    # Tests for version checker
+    ├── analyse-claude-folder.ts    # Base analysis (exports analyzers)
+    └── analyse-claude-folder.test.ts # Tests for base analysis
 ```
 
 ## Usage
@@ -50,7 +54,7 @@ cc-upgrade/
 ### Quick Version Check
 
 ```bash
-bun run .claude/skills/cc-upgrade/scripts/cc-version-check.js .
+bun run .claude/skills/cc-upgrade/scripts/cc-version-check.ts .
 ```
 
 ### Full Analysis

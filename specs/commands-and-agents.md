@@ -17,6 +17,7 @@ Files in this directory become available as `/command-name`. They use `$ARGUMENT
 | `/research_codebase` | -- | Documents codebase with thoughts directory |
 | `/create_handoff` | -- | Creates handoff document for session transfer |
 | `/load-dynamic-requirements` | -- | Loads dynamic requirements into context |
+| `/Readme` | -- | Shows custom slash command documentation |
 
 ### Planning Workflow
 
