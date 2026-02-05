@@ -7,3 +7,5 @@ agent-sessions.json
 # Local settings (user-specific)
 settings.json
 settings.local.json
+
+history/

@@ -6,6 +6,16 @@
 
 import { describe, it, expect, mock, beforeEach, afterEach, spyOn } from 'bun:test';
 
+// Check if @anthropic-ai/sdk is available
+const hasAnthropicSdk = (() => {
+  try {
+    require.resolve('@anthropic-ai/sdk');
+    return true;
+  } catch {
+    return false;
+  }
+})();
+
 // Mock the Anthropic SDK before importing the module
 const mockCreate = mock(() =>
   Promise.resolve({
@@ -28,7 +38,8 @@ const mockClient = {
 };
 
 // We'll test the module's behavior with mocked responses
-describe('Anthropic LLM', () => {
+// Skip if @anthropic-ai/sdk is not installed
+(hasAnthropicSdk ? describe : describe.skip)('Anthropic LLM', () => {
   let originalEnv: string | undefined;
 
   beforeEach(() => {
@@ -116,7 +127,8 @@ describe('Anthropic LLM', () => {
   });
 });
 
-describe('Anthropic Response Parsing', () => {
+// Skip if @anthropic-ai/sdk is not installed
+(hasAnthropicSdk ? describe : describe.skip)('Anthropic Response Parsing', () => {
   describe('Text content extraction', () => {
     it('should extract text from content block', () => {
       const mockResponse = {

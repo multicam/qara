@@ -166,7 +166,8 @@ describe('Security Hook Runtime', () => {
     });
 
     const output = JSON.parse(result.stdout.trim());
-    expect(output.decision).toBe('APPROVED');
+    // CC 2.1.9 format: { continue: boolean, reason?: string }
+    expect(output.continue).toBe(true);
   });
 
   it('should block rm -rf /', async () => {
@@ -176,7 +177,9 @@ describe('Security Hook Runtime', () => {
     });
 
     const output = JSON.parse(result.stdout.trim());
-    expect(output.decision).toContain('BLOCKED');
+    // CC 2.1.9 format: continue=false with reason containing BLOCKED
+    expect(output.continue).toBe(false);
+    expect(output.reason).toContain('BLOCKED');
   });
 
   it('should require approval for git push --force', async () => {
@@ -186,7 +189,9 @@ describe('Security Hook Runtime', () => {
     });
 
     const output = JSON.parse(result.stdout.trim());
-    expect(output.decision).toContain('REQUIRE_APPROVAL');
+    // CC 2.1.9 format: continue=false with reason containing REQUIRE_APPROVAL
+    expect(output.continue).toBe(false);
+    expect(output.reason).toContain('REQUIRE_APPROVAL');
   });
 
   it('should approve non-Bash tools', async () => {
@@ -196,7 +201,8 @@ describe('Security Hook Runtime', () => {
     });
 
     const output = JSON.parse(result.stdout.trim());
-    expect(output.decision).toBe('APPROVED');
+    // CC 2.1.9 format: { continue: boolean }
+    expect(output.continue).toBe(true);
   });
 
   it('should include additionalContext for git operations', async () => {
@@ -206,14 +212,25 @@ describe('Security Hook Runtime', () => {
     });
 
     const output = JSON.parse(result.stdout.trim());
-    // Safe git push may have additional context hints
-    expect(output.decision).toBe('APPROVED');
+    // Safe git push - CC 2.1.9 format: continue=true
+    expect(output.continue).toBe(true);
   });
 });
 
 // =============================================================================
 // SECTION 5: LLM Client Modules
 // =============================================================================
+
+// Check if SDK packages are available
+const hasAnthropicSdk = (() => {
+  try { require.resolve('@anthropic-ai/sdk'); return true; }
+  catch { return false; }
+})();
+
+const hasOpenAiSdk = (() => {
+  try { require.resolve('openai'); return true; }
+  catch { return false; }
+})();
 
 describe('LLM Client Modules', () => {
   describe('ZAI Client', () => {
@@ -241,7 +258,8 @@ describe('LLM Client Modules', () => {
     });
   });
 
-  describe('Anthropic Client', () => {
+  // Skip Anthropic tests if SDK not installed
+  (hasAnthropicSdk ? describe : describe.skip)('Anthropic Client', () => {
     it('should export required functions', async () => {
       const anthropic = await import('../hooks/lib/llm/anthropic');
 
@@ -250,7 +268,8 @@ describe('LLM Client Modules', () => {
     });
   });
 
-  describe('OpenAI Client', () => {
+  // Skip OpenAI tests if SDK not installed
+  (hasOpenAiSdk ? describe : describe.skip)('OpenAI Client', () => {
     it('should export required functions', async () => {
       const openai = await import('../hooks/lib/llm/openai');
 

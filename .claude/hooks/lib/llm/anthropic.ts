@@ -1,17 +1,38 @@
 /**
  * Anthropic LLM utility for hooks
  * Migrated from Python: utils/llm/anth.py
+ *
+ * Note: Gracefully handles missing @anthropic-ai/sdk package.
  */
 
-import Anthropic from '@anthropic-ai/sdk';
+// Dynamic import to handle missing SDK gracefully
+let Anthropic: any = null;
+let sdkAvailable = false;
 
-let client: Anthropic | null = null;
+try {
+  Anthropic = require('@anthropic-ai/sdk').default;
+  sdkAvailable = true;
+} catch {
+  // SDK not installed - functions will return null
+}
 
-function getClient(): Anthropic {
+let client: any = null;
+
+function getClient(): any {
+  if (!sdkAvailable) {
+    throw new Error('Anthropic SDK not installed. Run: bun add @anthropic-ai/sdk');
+  }
   if (!client) {
     client = new Anthropic();
   }
   return client;
+}
+
+/**
+ * Check if the Anthropic SDK is available.
+ */
+export function isConfigured(): boolean {
+  return sdkAvailable && !!process.env.ANTHROPIC_API_KEY;
 }
 
 /**
@@ -22,6 +43,10 @@ export async function promptLLM(
   model: string = 'claude-3-haiku-20240307',
   maxTokens: number = 150
 ): Promise<string | null> {
+  if (!sdkAvailable) {
+    console.error('Anthropic SDK not installed');
+    return null;
+  }
   try {
     const response = await getClient().messages.create({
       model,
@@ -49,6 +74,10 @@ export async function promptLLMStream(
   model: string = 'claude-3-haiku-20240307',
   maxTokens: number = 150
 ): Promise<string | null> {
+  if (!sdkAvailable) {
+    console.error('Anthropic SDK not installed');
+    return null;
+  }
   try {
     const stream = await getClient().messages.stream({
       model,

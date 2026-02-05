@@ -6,7 +6,18 @@
 
 import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
 
-describe('OpenAI LLM', () => {
+// Check if openai package is available
+const hasOpenAiSdk = (() => {
+  try {
+    require.resolve('openai');
+    return true;
+  } catch {
+    return false;
+  }
+})();
+
+// Skip if openai package is not installed
+(hasOpenAiSdk ? describe : describe.skip)('OpenAI LLM', () => {
   let originalEnv: string | undefined;
 
   beforeEach(() => {
@@ -65,7 +76,8 @@ describe('OpenAI LLM', () => {
   });
 });
 
-describe('OpenAI Response Parsing', () => {
+// Skip if openai package is not installed
+(hasOpenAiSdk ? describe : describe.skip)('OpenAI Response Parsing', () => {
   describe('Chat completion response', () => {
     it('should extract message content from response', () => {
       const mockResponse = {
@@ -171,7 +183,8 @@ describe('OpenAI Response Parsing', () => {
   });
 });
 
-describe('OpenAI Client Singleton', () => {
+// Skip if openai package is not installed
+(hasOpenAiSdk ? describe : describe.skip)('OpenAI Client Singleton', () => {
   it('should reuse client instance', async () => {
     // The module uses a singleton pattern for the client
     // Multiple imports should use the same client

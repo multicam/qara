@@ -1,17 +1,38 @@
 /**
  * OpenAI LLM utility for hooks
  * Migrated from Python: utils/llm/oai.py
+ *
+ * Note: Gracefully handles missing openai package.
  */
 
-import OpenAI from 'openai';
+// Dynamic import to handle missing SDK gracefully
+let OpenAI: any = null;
+let sdkAvailable = false;
 
-let client: OpenAI | null = null;
+try {
+  OpenAI = require('openai').default;
+  sdkAvailable = true;
+} catch {
+  // SDK not installed - functions will return null
+}
 
-function getClient(): OpenAI {
+let client: any = null;
+
+function getClient(): any {
+  if (!sdkAvailable) {
+    throw new Error('OpenAI SDK not installed. Run: bun add openai');
+  }
   if (!client) {
     client = new OpenAI();
   }
   return client;
+}
+
+/**
+ * Check if the OpenAI SDK is available.
+ */
+export function isConfigured(): boolean {
+  return sdkAvailable && !!process.env.OPENAI_API_KEY;
 }
 
 /**
@@ -22,6 +43,10 @@ export async function promptLLM(
   model: string = 'gpt-4o-mini',
   maxTokens: number = 150
 ): Promise<string | null> {
+  if (!sdkAvailable) {
+    console.error('OpenAI SDK not installed');
+    return null;
+  }
   try {
     const response = await getClient().chat.completions.create({
       model,
@@ -45,6 +70,10 @@ export async function promptLLMStream(
   model: string = 'gpt-4o-mini',
   maxTokens: number = 150
 ): Promise<string | null> {
+  if (!sdkAvailable) {
+    console.error('OpenAI SDK not installed');
+    return null;
+  }
   try {
     const stream = await getClient().chat.completions.create({
       model,
