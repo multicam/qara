@@ -29,7 +29,6 @@ Supported services (from .env.example):
 - `PERPLEXITY_API_KEY` -- Perplexity research
 - `GOOGLE_API_KEY` -- Gemini research
 - `REPLICATE_API_KEY` -- Replicate
-- `ZAI_API_KEY` -- ZAI (archived)
 
 ## Permission System
 
@@ -60,6 +59,18 @@ MCP: mcp__* (wildcard)
 | `showTurnDuration` | true | Display response time |
 | `max_tokens` | 8192 | Output token limit |
 
+## Hooks Configuration
+
+3 active hooks in settings.json:
+
+| Event | Script | Timeout |
+|-------|--------|---------|
+| SessionStart | `session-start.ts` | 3000ms |
+| UserPromptSubmit | `update-tab-titles.ts` | 500ms |
+| Stop | `stop-hook.ts` | 2000ms |
+
+Security is handled by CC's native permission system (allow/deny lists above), not by hooks.
+
 ## Status Line (statusline-command.sh)
 
 Two-line display:
@@ -71,8 +82,6 @@ Context window color coding:
 - Green (0-60%): OK
 - Yellow (60-80%): Caution
 - Red (80-100%): Critical
-
-Uses native CC 2.1.6+ percentage when available, falls back to manual calculation with 60% effective budget.
 
 ## Git Configuration
 

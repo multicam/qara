@@ -2,9 +2,9 @@
 
 ## What Qara Is
 
-Qara is Jean-Marc Giorgi's Personal AI Infrastructure (PAI) -- a Claude Code configuration system that transforms Claude into a personalized, multi-agent development assistant with persistent identity, event-driven automation, and domain-specific skills.
+Qara is Jean-Marc Giorgi's Personal AI Infrastructure (PAI) -- a Claude Code configuration system that transforms Claude into a personalized development assistant with persistent identity, event-driven automation, and domain-specific skills.
 
-It is NOT a traditional application. It's a `.claude/` directory structure that configures Claude Code's behavior via skills, hooks, agents, commands, and context files.
+It is NOT a traditional application. It's a `.claude/` directory structure (symlinked to `~/.claude/`) that configures Claude Code's behavior via skills, hooks, commands, and context files.
 
 ## Core Philosophy (CONSTITUTION.md)
 
@@ -19,13 +19,14 @@ Eight founding principles:
 7. **Meta/Self Updates** -- System improves itself
 8. **Custom Skill Management** -- Skills are the organizational unit
 
-## The Three Primitives
+## The Two Primitives
 
 | Primitive | Purpose | When to Use |
 |-----------|---------|-------------|
 | **Skills** | Meta-containers for domain expertise | Need competence in a topic/domain |
 | **Commands** | Discrete task workflows (slash commands) | Repeatable task with clear steps |
-| **Agents** | Autonomous task executors | Need specialized expertise or parallel execution |
+
+Agents are CC built-ins (Task tool `subagent_type`). No custom definitions needed.
 
 ## Directory Layout
 
@@ -33,11 +34,11 @@ Eight founding principles:
 ~/qara/                          # Repository root
 ├── .claude/                     # PAI configuration (symlinked to ~/.claude/)
 │   ├── skills/                  # 13 skill containers
-│   │   └── CORE/               # Foundation skill (always loaded)
-│   ├── hooks/                   # 4 active event hooks + 7 shared libs
+│   │   └── CORE/               # Foundation skill (always loaded, 24 files)
+│   ├── hooks/                   # 3 event hooks + 3 shared libs
 │   │   └── lib/                 # Shared TypeScript utilities
-│   ├── commands/                # Slash commands (/research, /create_plan, etc.)
-│   ├── agents/                  # 14 specialized agent definitions
+│   ├── commands/                # 11 slash commands
+│   ├── agents/                  # Empty (CC built-ins used directly)
 │   ├── context/                 # Context files (@include'd into sessions)
 │   ├── templates/               # Reusable output templates
 │   ├── tests/                   # Validation test suites
@@ -67,7 +68,6 @@ Session Start
   -> Subagent check (skip if subagent)
   -> Debounce check (2s lockfile)
   -> Load CORE/SKILL.md into context
-  -> Suggest relevant skills based on cwd/package.json
   -> Set terminal tab title
 
 User Prompt
@@ -75,17 +75,11 @@ User Prompt
   -> Update tab title with processing indicator
 
 Tool Use (Bash)
-  -> PreToolUse hook fires
-  -> Security pattern check (block/approve/require-approval)
-  -> Checkpoint age check
-  -> Additional context injection (CC 2.1.9)
+  -> CC native permission system (allow/deny in settings.json)
 
 Claude Completes
   -> Stop hook fires
-  -> Extract COMPLETED line from transcript
-  -> Compact errors to JSONL summary
-  -> Set final tab title
-  -> Suggest recovery if error threshold exceeded
+  -> Set tab title from last user query
 ```
 
 ### Context Loading (Progressive Disclosure)
@@ -93,7 +87,7 @@ Claude Completes
 | Tier | Location | When Loaded | Budget |
 |------|----------|-------------|--------|
 | 1 | Skill YAML `description:` | Always (session start) | ~100 tokens each |
-| 2 | SKILL.md body | When skill activates | ~2000 tokens |
+| 2 | SKILL.md body | When skill activates | ~1000 tokens |
 | 3 | Reference files | Just-in-time via `-> READ:` | 500-2000 tokens each |
 
 ## Technology Stack

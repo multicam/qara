@@ -2,7 +2,7 @@
 
 Specifications for the Qara Personal AI Infrastructure (PAI).
 
-**Generated:** 2026-02-06 | **Repo state:** `664ed64` (post weight-loss program)
+**Generated:** 2026-02-06 | **Repo state:** `7d8835d` (post weight-loss: purged redundant agents, hooks, CORE files)
 
 ## Document Index
 

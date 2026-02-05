@@ -10,24 +10,15 @@ Multi-source parallel research using available researcher agents. Auto-selects b
 2. **Claude WebSearch** (always available, FREE) -- Built-in, no API key needed
 3. **Gemini** (if `GOOGLE_API_KEY` exists) -- Multi-perspective decomposition
 
+All agents are CC built-ins (Task tool `subagent_type`).
+
 ## Three Research Modes
 
 | Mode | Agents/Type | Timeout | Use Case |
 |------|-------------|---------|----------|
 | Quick | 1 | 2 min | Simple questions, fast answers |
 | Standard | 3 | 3 min | Default, comprehensive coverage |
-| Extensive | 8 | 10 min | Deep research, 24 parallel agents |
-
-### Extensive Mode Detail (24 agents)
-
-```
-Step 0: UltraThink generates creative research angles
-Step 1: Decompose into 8 focused sub-questions per researcher type
-Step 2: Launch 24 agents (8 perplexity + 8 claude + 8 gemini)
-Step 3: Collect results with 10-minute timeout
-Step 4: Synthesize into comprehensive report
-Step 5: Report in mandatory response format
-```
+| Extensive | 8 | 10 min | Deep research, multi-perspective |
 
 ## Workflows
 
@@ -50,18 +41,10 @@ Working:    scratchpad/YYYY-MM-DD-HHMMSS_research-[topic]/
 Permanent:  history/research/YYYY-MM/YYYY-MM-DD_[topic]/
 ```
 
-## Slash Commands
+## Slash Command
 
 | Command | Behavior |
 |---------|----------|
-| `/research [query]` | Auto-selects best agent |
-| `/research-perplexity [query]` | Forces Perplexity |
-| `/research-claude [query]` | Forces Claude WebSearch |
-| `/research-gemini [query]` | Forces Gemini |
+| `/research [query]` | Auto-selects best agent based on available API keys |
 
-## Agent Instance IDs
-
-For observability, agents get sequential IDs:
-- `[perplexity-researcher-1]`, `[perplexity-researcher-2]`, ...
-- `[claude-researcher-1]`, `[claude-researcher-2]`, ...
-- Enables distinguishing parallel agents in logs
+Provider can be specified in natural language (e.g., "use perplexity for this research").

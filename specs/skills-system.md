@@ -5,24 +5,8 @@
 Skills are self-contained knowledge containers with progressive disclosure. Each skill has:
 
 - **SKILL.md** -- Core definition with YAML frontmatter and routing logic
-- **workflows/** -- Discrete task workflows
-- **references/** / **assets/** -- Supporting documentation and templates
-
-## Mandatory Structure Rules
-
-From `CORE/skill-structure.md` -- violations break the system:
-
-1. **Workflow Routing section goes FIRST** in SKILL.md (after YAML frontmatter)
-2. **Every workflow file MUST be routed** -- unrouted workflows are invisible
-3. **Every secondary file MUST be linked** from the main SKILL.md body
-
-## Three Archetypes
-
-| Archetype | Workflows | Structure | Examples |
-|-----------|-----------|-----------|----------|
-| Minimal | 0-3 | SKILL.md + workflows/ or assets/ | humaniser, prompting, example-skill |
-| Standard | 3-15 | SKILL.md + workflows/ + optional dirs | research, story-explanation, system-create-cli |
-| Complex | 15+ | Full directory tree with docs, tools, state | CORE (37+ files) |
+- **workflows/** -- Discrete task workflows (optional)
+- **references/** / **assets/** -- Supporting documentation and templates (optional)
 
 ## Skill Context Types
 
@@ -31,22 +15,13 @@ From `CORE/skill-structure.md` -- violations break the system:
 | `context: same` | Loads in main conversation | CORE, humaniser |
 | `context: fork` | Isolated subagent execution | All other 11 skills |
 
-## 4-Level Routing Hierarchy
-
-```
-1. System Level (CORE)     -- Routes user request to appropriate skill
-2. Skill Level (SKILL.md)  -- Routes to appropriate workflow
-3. Workflow Level (.md)     -- Routes to specific steps/actions
-4. Execution Level          -- Tools and agents execute
-```
-
 ## All 13 Active Skills
 
 ### CORE (Foundation)
 - **Context:** same (loaded every session)
-- **Files:** 37+ including 8 workflows, delegation guides, routing docs
-- **Purpose:** Identity, routing hub, stack preferences, security, delegation
-- **Key files:** CONSTITUTION.md (8 principles), skill-structure.md (mandatory rules)
+- **Files:** 24 (including workflows, reference docs)
+- **Purpose:** Identity, routing hub, stack preferences, security
+- **Key files:** CONSTITUTION.md (8 principles), security-protocols.md, contacts.md
 
 ### research
 - **Context:** fork | **Model:** sonnet
@@ -111,7 +86,7 @@ From `CORE/skill-structure.md` -- violations break the system:
 ### cc-upgrade-pai
 - **Context:** fork
 - **Workflows:** 0 (extends cc-upgrade)
-- **Purpose:** PAI-specific CC analysis (CORE audit, delegation patterns, UFC compliance)
+- **Purpose:** PAI-specific CC analysis (CORE audit, delegation patterns)
 - **Triggers:** Optimizing PAI codebases
 
 ### example-skill
@@ -130,7 +105,7 @@ CORE (foundation -- all skills depend on it)
 │   └── story-explanation (complementary)
 ├── design-implementation
 │   └── frontend-design (design philosophy)
-├── system-create-skill (reads CORE/skill-structure.md)
+├── system-create-skill
 ├── system-create-cli
 ├── hook-authoring
 ├── prompting
