@@ -444,11 +444,7 @@ if (resumable.length > 0) {
 
 ## 🚧 HANDLING BLOCKED OR FAILED CRAWLS
 
-If research commands report being blocked, encountering CAPTCHAs, or facing bot detection, note this in your synthesis and recommend using the BrightData CLI or retrieve workflow for:
-- Scraping single URLs that bypass bot detection
-- Scraping multiple URLs (up to 10)
-- Searching Google, Bing, or Yandex with CAPTCHA bypass
-- Multiple search queries simultaneously
+If research commands report being blocked, encountering CAPTCHAs, or facing bot detection, note this in your synthesis and recommend using the retrieve workflow for alternative content retrieval strategies.
 
 ## 💡 EXAMPLE EXECUTION
 

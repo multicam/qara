@@ -27,7 +27,7 @@ The research skill provides:
 - Multi-source parallel research with multiple researcher agents
 - Content extraction and analysis workflows
 - YouTube extraction via Fabric CLI
-- Web scraping with multi-layer fallback (WebFetch → BrightData → Apify)
+- Web scraping via WebFetch
 
 For simple queries, use Claude's built-in tools directly:
 1. Use WebSearch for current information and news

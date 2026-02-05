@@ -163,7 +163,6 @@ Jean-Marc, please review this incident.
    # ~/.claude/.env
    OPENAI_API_KEY=sk-...
    ANTHROPIC_API_KEY=...
-   BRIGHT_DATA_API_KEY=...
    ```
 
 2. **Reference via environment variables**
@@ -183,7 +182,6 @@ Jean-Marc, please review this incident.
 # .env.example (safe to commit)
 OPENAI_API_KEY=sk-your-key-here
 ANTHROPIC_API_KEY=your-key-here
-BRIGHT_DATA_API_KEY=your-key-here
 
 # Instructions:
 # 1. Copy this file to .env

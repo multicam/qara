@@ -35,10 +35,7 @@ WebFetch({ url: "https://example.com", prompt: "Extract the main content" })
 // - Specific data extraction
 ```
 
-**Escalation Path:**
-1. WebFetch (free, built-in)
-2. BrightData (CAPTCHA solving)
-3. Apify (specialized scrapers)
+**Usage:** Use WebFetch (free, built-in) for content retrieval.
 
 ### AskUserQuestion
 Interactive user queries with structured options.

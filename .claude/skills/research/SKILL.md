@@ -51,7 +51,7 @@ Examples: "prepare interview questions for X", "interview research on Y"
 **When user indicates difficulty accessing content:**
 Examples: "can't get this content", "site is blocking me", "CAPTCHA blocking"
 → **READ:** `${PAI_DIR}/skills/research/workflows/retrieve.md`
-→ **EXECUTE:** Escalation through layers (WebFetch → Apify)
+→ **EXECUTE:** Content retrieval via WebFetch
 
 **When user provides YouTube URL:**
 Examples: "get this youtube video", "extract from youtube URL"
@@ -120,11 +120,6 @@ Check `${PAI_DIR}/agents/` for agents with "researcher" in their name:
 - WebFetch - Standard web content fetching
 - WebSearch - Search engine queries
 - When to use: Default for all content retrieval
-
-**Layer 2: Apify (requires Apify account)**
-- Specialized site scrapers (Instagram, LinkedIn, etc.)
-- Complex extraction logic
-- When to use: Layer 1 failed or need specialized extraction
 
 **Critical Rules:**
 - Always try simplest approach first (Layer 1)

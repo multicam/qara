@@ -25,7 +25,7 @@ The research skill provides:
 - Multi-source parallel research with multiple researcher agents
 - Content extraction and analysis workflows
 - YouTube extraction via Fabric CLI
-- Web scraping with multi-layer fallback (WebFetch → BrightData → Apify)
+- Web scraping via WebFetch
 - Perplexity API integration for deep search
 
 For simple queries, you can use tools directly:
