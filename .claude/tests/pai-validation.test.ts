@@ -296,7 +296,6 @@ describe('Hooks System', () => {
       expect(existsSync(llmPath)).toBe(true);
       expect(existsSync(join(llmPath, 'anthropic.ts'))).toBe(true);
       expect(existsSync(join(llmPath, 'openai.ts'))).toBe(true);
-      expect(existsSync(join(llmPath, 'zai.ts'))).toBe(true);
     });
   });
 });

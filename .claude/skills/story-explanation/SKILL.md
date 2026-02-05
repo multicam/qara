@@ -43,7 +43,7 @@ Based on:
 - Slash commands: `/create-story-explanation`, `/cse`, `/cse5`
 
 **DO NOT use this skill when:**
-- User wants comprehensive extraction (use research skill with fabric)
+- User wants comprehensive extraction (use research skill)
 - User wants quick technical summary
 - Speed matters more than narrative quality
 
@@ -118,7 +118,8 @@ User request → Analyze intent:
 
 **For YouTube videos:**
 ```bash
-fabric -y "YOUTUBE_URL"
+yt-dlp --write-auto-sub --sub-lang en --skip-download -o "/tmp/%(title)s" "YOUTUBE_URL"
+# Then read the generated subtitle file
 ```
 
 **For URLs/articles:**
@@ -234,7 +235,7 @@ When this skill activates, Qara should:
 1. **Determine format** - Based on user request, select appropriate workflow
 2. **Create scratchpad directory** - `${PAI_DIR}/scratchpad/${CLAUDE_SESSION_ID}/story-explanation-[topic]/`
 3. **Load be-creative skill** - Activate research-backed creativity framework
-4. **Load content** via appropriate method (fabric -y, WebFetch, Read, or paste)
+4. **Load content** via appropriate method (yt-dlp, WebFetch, Read, or paste)
 5. **Save raw content to scratchpad** - Store extracted content for reference
 6. **Engage UltraThink mode** - Deep analysis across 10 narrative dimensions
 7. **Save UltraThink notes to scratchpad** - Document narrative analysis process
@@ -276,7 +277,7 @@ When this skill activates, Qara should:
 
 **Four-step process:**
 1. Activate be-creative skill (UltraThink)
-2. Extract content (fabric -y, WebFetch, Read, paste)
+2. Extract content (WebFetch, Read, yt-dlp, or paste)
 3. Deep UltraThink (10-dimension narrative analysis)
 4. Explore multiple framings (5 different narrative approaches) → Select BEST → Output in selected format
 

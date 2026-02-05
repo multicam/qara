@@ -15,13 +15,10 @@ description: Comprehensive research, analysis, and content extraction system. Mu
 |---------|---------|-------------|
 | Perplexity Research | `PERPLEXITY_API_KEY` | https://perplexity.ai/settings/api |
 | Gemini Research | `GOOGLE_API_KEY` | https://aistudio.google.com/app/apikey |
-| ZAI Research | `ZAI_API_KEY` | https://z.ai/api-keys |
-| BrightData Scraping | `BRIGHTDATA_API_KEY` | https://brightdata.com |
 
 **Works without API keys:**
 - Claude-based research (uses built-in WebSearch)
 - Basic web fetching (uses built-in WebFetch)
-- Fabric patterns (if Fabric CLI installed)
 
 ---
 
@@ -54,24 +51,17 @@ Examples: "prepare interview questions for X", "interview research on Y"
 **When user indicates difficulty accessing content:**
 Examples: "can't get this content", "site is blocking me", "CAPTCHA blocking"
 → **READ:** `${PAI_DIR}/skills/research/workflows/retrieve.md`
-→ **EXECUTE:** Escalation through layers (WebFetch → BrightData → Apify)
+→ **EXECUTE:** Escalation through layers (WebFetch → Apify)
 
 **When user provides YouTube URL:**
 Examples: "get this youtube video", "extract from youtube URL"
 → **READ:** `${PAI_DIR}/skills/research/workflows/youtube-extraction.md`
-→ **EXECUTE:** YouTube content extraction using fabric -y
+→ **EXECUTE:** YouTube content extraction
 
 **When user requests web scraping:**
 Examples: "scrape this site", "extract data from this website"
 → **READ:** `${PAI_DIR}/skills/research/workflows/web-scraping.md`
 → **EXECUTE:** Web scraping techniques and tools
-
-### Fabric Pattern Processing
-
-**When user requests Fabric pattern usage:**
-Examples: "use fabric to X", "create threat model", "summarize with fabric"
-→ **READ:** `${PAI_DIR}/skills/research/workflows/fabric.md`
-→ **EXECUTE:** Auto-select best pattern from 242+ Fabric patterns
 
 ### Content Enhancement Workflows
 
@@ -112,7 +102,6 @@ Check `${PAI_DIR}/agents/` for agents with "researcher" in their name:
 - `claude-researcher` - Uses Claude's WebSearch (FREE, no API key needed)
 - `perplexity-researcher` - Uses Perplexity API (requires PERPLEXITY_API_KEY)
 - `gemini-researcher` - Uses Gemini API (requires GOOGLE_API_KEY)
-- `zai-researcher` - Uses ZAI GLM-4.7 (requires ZAI_API_KEY) - **Best for technical/code research**
 
 ### Speed Benefits
 
@@ -132,62 +121,15 @@ Check `${PAI_DIR}/agents/` for agents with "researcher" in their name:
 - WebSearch - Search engine queries
 - When to use: Default for all content retrieval
 
-**Layer 2: BrightData (requires BRIGHTDATA_API_KEY)**
-- CAPTCHA solving via Scraping Browser
-- Advanced JavaScript rendering
-- When to use: Bot detection blocking, CAPTCHA protection
-
-**Layer 3: Apify (requires Apify account)**
+**Layer 2: Apify (requires Apify account)**
 - Specialized site scrapers (Instagram, LinkedIn, etc.)
 - Complex extraction logic
-- When to use: Layers 1 and 2 both failed
+- When to use: Layer 1 failed or need specialized extraction
 
 **Critical Rules:**
 - Always try simplest approach first (Layer 1)
 - Escalate only when previous layer fails
 - Document which layers were used and why
-
----
-
-## Fabric Pattern Selection
-
-### Categories (242+ Patterns)
-
-**Threat Modeling & Security:**
-- `create_threat_model`, `create_stride_threat_model`
-- `analyze_threat_report`, `analyze_incident`
-
-**Summarization:**
-- `summarize`, `create_5_sentence_summary`
-- `summarize_meeting`, `summarize_paper`, `youtube_summary`
-
-**Wisdom Extraction:**
-- `extract_wisdom`, `extract_article_wisdom`
-- `extract_insights`, `extract_main_idea`
-
-**Analysis:**
-- `analyze_claims`, `analyze_code`, `analyze_debate`
-- `analyze_logs`, `analyze_paper`
-
-**Content Creation:**
-- `create_prd`, `create_design_document`
-- `create_mermaid_visualization`, `create_user_story`
-
-**Improvement:**
-- `improve_writing`, `improve_prompt`, `review_code`
-
-### Usage
-
-```bash
-# Auto-select pattern based on intent
-fabric [input] -p [selected_pattern]
-
-# From URL
-fabric -u "URL" -p [pattern]
-
-# From YouTube
-fabric -y "YOUTUBE_URL" -p [pattern]
-```
 
 ---
 
@@ -287,11 +229,9 @@ WebSearch is the foundation of `claude-researcher` agent:
 | Multi-Source Research | `workflows/conduct.md` | Varies by agent |
 | Claude Research | `workflows/claude-research.md` | None (FREE) |
 | Perplexity Research | `workflows/perplexity-research.md` | PERPLEXITY_API_KEY |
-| ZAI Research | `workflows/zai-research.ts` | ZAI_API_KEY |
 | Interview Prep | `workflows/interview-research.md` | None |
-| Content Retrieval | `workflows/retrieve.md` | Optional: BRIGHTDATA_API_KEY |
-| YouTube Extraction | `workflows/youtube-extraction.md` | None (uses Fabric) |
-| Web Scraping | `workflows/web-scraping.md` | Optional: BRIGHTDATA_API_KEY |
-| Fabric Patterns | `workflows/fabric.md` | None |
+| Content Retrieval | `workflows/retrieve.md` | None |
+| YouTube Extraction | `workflows/youtube-extraction.md` | None |
+| Web Scraping | `workflows/web-scraping.md` | None |
 | Content Enhancement | `workflows/enhance.md` | None |
 | Knowledge Extraction | `workflows/extract-knowledge.md` | None |

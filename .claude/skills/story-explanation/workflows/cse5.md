@@ -29,7 +29,7 @@ This command creates clean, scannable 5-line story explanations from blog posts,
 
 1. **Check if input is a URL**:
    - If the input starts with http:// or https://
-   - First run: `fabric -y <URL>` to fetch the content
+   - First run: `WebFetch` to fetch the content
    - Use the fetched content as input for step 2
 
 2. **Apply Story Explanation Format** - Create a detailed story explanation from the content
@@ -65,7 +65,7 @@ The output must be exactly 5 lines, numbered, with one clear concept per line:
 
 1. **Check for URL Input**:
    - Detect if input is a URL (starts with http:// or https://)
-   - If URL: Run `fabric -y <URL>` to fetch content
+   - If URL: Run `WebFetch` to fetch content
    - Store fetched content as input for next step
 
 2. **Apply Story Explanation Format**:

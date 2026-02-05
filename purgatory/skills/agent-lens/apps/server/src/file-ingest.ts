@@ -20,9 +20,9 @@
 import { watch, existsSync } from 'fs';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import type { HookEvent } from './types';
-import { MAX_EVENTS_IN_MEMORY, HISTORY_DIR } from './config';
-import { log } from './logger';
+import type { HookEvent } from './types.ts';
+import { MAX_EVENTS_IN_MEMORY, HISTORY_DIR } from './config.ts';
+import { log } from './logger.ts';
 
 // In-memory event store (last N events only)
 const MAX_EVENTS = MAX_EVENTS_IN_MEMORY;

@@ -30,7 +30,7 @@ This command creates ultra-concise 5-line story explanations (5-12 words per lin
 
 2. **Fetch Content**:
    - **YouTube**: Run `yt --transcript <URL>` to get video transcript
-   - **URL**: Run `fabric -y <URL>` to fetch web content
+   - **URL**: Run `WebFetch` to fetch web content
    - **Raw Text**: Use directly as input
 
 3. **Process Content**:
@@ -82,8 +82,8 @@ yt --transcript <YOUTUBE_URL>
 ```
 
 **For URLs**:
-```bash
-fabric -y <URL>
+```
+WebFetch with URL
 ```
 
 **For Raw Text**:
@@ -125,7 +125,7 @@ fabric -y <URL>
 
 **Process**:
 1. Detect: Regular URL
-2. Fetch: `fabric -y https://example.com/article`
+2. Fetch: `WebFetch(url)`
 3. Process: Apply 5-line story explanation format
 4. Output: 5-line explanation
 

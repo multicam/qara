@@ -4,8 +4,8 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "start-obs": "cd .claude/skills/agent-lens/apps/server && ~/.bun/bin/bun run dev & cd .claude/skills/agent-lens/apps/client && ~/.bun/bin/bun run dev",
-    "update": "cd .claude/skills/agent-lens/apps/server && ~/.bun/bin/bun update -i --latest && cd ../client && ~/.bun/bin/bun update -i --latest"
+    "start-obs": "echo 'agent-lens is in purgatory - not available'",
+    "update": "echo 'agent-lens is in purgatory - not available'"
   },
   "devDependencies": {
     "@types/bun": "latest",

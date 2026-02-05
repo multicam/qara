@@ -5,8 +5,8 @@ import {
   getThemes, 
   deleteTheme, 
   incrementThemeDownloadCount 
-} from './db';
-import type { Theme, ThemeSearchQuery, ThemeValidationError, ApiResponse } from './types';
+} from './db.ts';
+import type { Theme, ThemeSearchQuery, ThemeValidationError, ApiResponse } from './types.ts';
 
 // Utility functions
 function generateId(): string {

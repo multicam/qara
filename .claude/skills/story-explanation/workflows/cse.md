@@ -46,7 +46,7 @@ This command creates comprehensive story explanations from blog posts, articles,
 
 2. **Check if input is a URL**:
    - If the input starts with http:// or https://
-   - First run: `fabric -y <URL>` to fetch the content
+   - First run: `WebFetch` to fetch the content
    - Use the fetched content as input for next step
 
 3. **Apply the Story Explanation Prompt** - Use the embedded Foundry prompt below with the input content and line count
@@ -195,7 +195,7 @@ The output is a comprehensive narrative explanation that:
 
 2. **Check for URL Input**:
    - Detect if remaining input is a URL (starts with http:// or https://)
-   - If URL: Run `fabric -y <URL>` to fetch content
+   - If URL: Run `WebFetch` to fetch content
    - Store fetched content as input for next step
 
 3. **Apply the Embedded Prompt**:

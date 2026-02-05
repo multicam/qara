@@ -124,7 +124,6 @@ research/
     ├── enhance.md
     ├── extract-alpha.md
     ├── extract-knowledge.md
-    ├── fabric.md
     ├── interview-research.md
     ├── perplexity-research.md
     ├── retrieve.md

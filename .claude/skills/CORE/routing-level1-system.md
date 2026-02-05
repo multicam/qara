@@ -18,7 +18,7 @@ research:
   description: |
     Comprehensive research, analysis, and content extraction system.
     USE WHEN user says 'do research', 'extract wisdom', 'analyze content',
-    'can't get this content', 'use fabric', or any research/analysis request.
+    'can't get this content', or any research/analysis request.
 ```
 
 **Routing Decision:**

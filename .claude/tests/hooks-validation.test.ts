@@ -262,7 +262,7 @@ describe('Hook Library', () => {
       expect(existsSync(llmPath)).toBe(true);
     });
 
-    const clients = ['anthropic.ts', 'openai.ts', 'zai.ts'];
+    const clients = ['anthropic.ts', 'openai.ts'];
 
     for (const client of clients) {
       it(`should have ${client} client`, () => {

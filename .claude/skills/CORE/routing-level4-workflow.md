@@ -22,7 +22,7 @@ This document covers Level 4 routing: specific procedures, tools, or executable 
 - **extract-alpha.md** - Extract key insights and wisdom from content
 
 ### Content Workflows
-- **enhance.md** - Enhance content with fabric patterns
+- **enhance.md** - Enhance content quality
 - **retrieve.md** - Retrieve difficult-to-access content
 ```
 

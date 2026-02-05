@@ -1,8 +1,8 @@
 /* Import theme system */
-@import './themes.css';
+@import 'themes.css';
 
 /* Import compact layout system */
-@import './compact.css';
+@import 'compact.css';
 
 @tailwind base;
 @tailwind components;

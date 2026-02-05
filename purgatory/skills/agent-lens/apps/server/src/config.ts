@@ -7,7 +7,7 @@
 
 import { homedir } from 'os';
 import { join } from 'path';
-import { log } from './logger';
+import { log } from './logger.ts';
 
 /**
  * Default agent name for the primary agent

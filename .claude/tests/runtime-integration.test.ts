@@ -233,31 +233,6 @@ const hasOpenAiSdk = (() => {
 })();
 
 describe('LLM Client Modules', () => {
-  describe('ZAI Client', () => {
-    it('should export required functions', async () => {
-      const zai = await import('../hooks/lib/llm/zai');
-
-      expect(typeof zai.promptLLM).toBe('function');
-      expect(typeof zai.promptLLMStream).toBe('function');
-      expect(typeof zai.isConfigured).toBe('function');
-      expect(typeof zai.isCodingQuery).toBe('function');
-    });
-
-    it('isCodingQuery should detect code queries', async () => {
-      const { isCodingQuery } = await import('../hooks/lib/llm/zai');
-
-      expect(isCodingQuery('Write a TypeScript function')).toBe(true);
-      expect(isCodingQuery('What is the weather?')).toBe(false);
-    });
-
-    it('should export model constants', async () => {
-      const { ZAI_MODELS, ZAI_MODEL_INFO } = await import('../hooks/lib/llm/zai');
-
-      expect(ZAI_MODELS.GLM_4_7).toBe('glm-4.7');
-      expect(ZAI_MODEL_INFO['glm-4.7'].contextWindow).toBe(200000);
-    });
-  });
-
   // Skip Anthropic tests if SDK not installed
   (hasAnthropicSdk ? describe : describe.skip)('Anthropic Client', () => {
     it('should export required functions', async () => {

@@ -224,11 +224,6 @@ describe('Model Router', () => {
       expect(AGENT_MODEL_MAP['perplexity-researcher']).toBe('sonnet');
       expect(AGENT_MODEL_MAP['claude-researcher']).toBe('sonnet');
       expect(AGENT_MODEL_MAP['gemini-researcher']).toBe('sonnet');
-      expect(AGENT_MODEL_MAP['zai-researcher']).toBe('sonnet');
-    });
-
-    it('should map ZAI agents to sonnet', () => {
-      expect(AGENT_MODEL_MAP['zai-coder']).toBe('sonnet');
     });
   });
 
@@ -236,8 +231,6 @@ describe('Model Router', () => {
     it('should return correct model for known agents', () => {
       expect(selectModelForAgent('codebase-locator')).toBe('haiku');
       expect(selectModelForAgent('engineer')).toBe('sonnet');
-      expect(selectModelForAgent('zai-researcher')).toBe('sonnet');
-      expect(selectModelForAgent('zai-coder')).toBe('sonnet');
     });
 
     it('should return sonnet for unknown agents', () => {
@@ -290,72 +283,7 @@ describe('Model Router', () => {
     });
   });
 
-  describe('selectProvider', () => {
-    const originalEnv = process.env.ZAI_API_KEY;
-
-    beforeEach(() => {
-      // Clear ZAI_API_KEY before each test
-      delete process.env.ZAI_API_KEY;
-    });
-
-    afterEach(() => {
-      // Restore original value
-      if (originalEnv) {
-        process.env.ZAI_API_KEY = originalEnv;
-      } else {
-        delete process.env.ZAI_API_KEY;
-      }
-    });
-
-    it('should return anthropic by default', () => {
-      expect(selectProvider('unknown-task')).toBe('anthropic');
-    });
-
-    it('should return anthropic for non-ZAI tasks even with API key', () => {
-      process.env.ZAI_API_KEY = 'test-key';
-      expect(selectProvider('file-lookup')).toBe('anthropic');
-      expect(selectProvider('architecture-design')).toBe('anthropic');
-    });
-
-    it('should return zai for code-generation when API key is set', () => {
-      process.env.ZAI_API_KEY = 'test-key';
-      expect(selectProvider('code-generation')).toBe('zai');
-    });
-
-    it('should return zai for rapid-prototyping when API key is set', () => {
-      process.env.ZAI_API_KEY = 'test-key';
-      expect(selectProvider('rapid-prototyping')).toBe('zai');
-    });
-
-    it('should return zai for code-snippet when API key is set', () => {
-      process.env.ZAI_API_KEY = 'test-key';
-      expect(selectProvider('code-snippet')).toBe('zai');
-    });
-
-    it('should return zai for algorithm-implementation when API key is set', () => {
-      process.env.ZAI_API_KEY = 'test-key';
-      expect(selectProvider('algorithm-implementation')).toBe('zai');
-    });
-
-    it('should return zai for technical-research when API key is set', () => {
-      process.env.ZAI_API_KEY = 'test-key';
-      expect(selectProvider('technical-research')).toBe('zai');
-    });
-
-    it('should return anthropic for ZAI tasks when API key is NOT set', () => {
-      delete process.env.ZAI_API_KEY;
-      expect(selectProvider('code-generation')).toBe('anthropic');
-      expect(selectProvider('rapid-prototyping')).toBe('anthropic');
-    });
-  });
-
   describe('getProviderForModel', () => {
-    it('should return zai for GLM models', () => {
-      expect(getProviderForModel('glm-4.7')).toBe('zai');
-      expect(getProviderForModel('glm-4.6v')).toBe('zai');
-      expect(getProviderForModel('glm-future')).toBe('zai');
-    });
-
     it('should return openai for GPT models', () => {
       expect(getProviderForModel('gpt-4')).toBe('openai');
       expect(getProviderForModel('gpt-4o')).toBe('openai');

@@ -71,7 +71,7 @@
    - Implemented suggestSkills() function
    - Analyzes: package.json, session-context.md, current directory name
    - Matches patterns and displays relevant skills at session start
-   - Skills: brightdata, research, frontend-design, cli, pai-optimiser, story, hook-authoring, skill creation
+   - Skills: research, frontend-design, cli, pai-optimiser, story, hook-authoring, skill creation
    - **Impact**: Proactive skill discovery, increased feature utilization
 
 **Seed Data Added:**
@@ -595,8 +595,8 @@ interface SkillSuggestion {
 const SKILL_SUGGESTIONS: SkillSuggestion[] = [
   {
     pattern: ['scrape', 'fetch content', 'pull from url', 'web data'],
-    skill: '/brightdata',
-    description: 'for scraping difficult URLs with bot detection'
+    skill: '/research',
+    description: 'for content retrieval and research'
   },
   {
     pattern: ['research', 'analyze content', 'find information', 'multi-source'],

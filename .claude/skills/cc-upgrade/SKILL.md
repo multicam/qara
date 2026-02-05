@@ -15,7 +15,6 @@ This skill serves as the base for domain-specific upgrade skills:
 | Skill | Extends With | Use Case |
 |-------|--------------|----------|
 | `cc-upgrade-pai` | PAI-specific analysis | Personal AI Infrastructure repos |
-| `cc-upgrade-zai` | ZAI model integration | Z.AI/GLM model routing |
 
 **Composition Pattern:**
 ```markdown

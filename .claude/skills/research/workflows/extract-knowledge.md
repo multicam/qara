@@ -24,16 +24,13 @@ When this command is invoked:
 ### Step 1: Detect Source Type and Fetch Content
 
 **YouTube Videos** (youtube.com, youtu.be):
-```bash
-fabric --youtube "<url>"
+```
+Use WebFetch to get video page, or use yt-dlp for transcript extraction
 ```
 
 **Web URLs** (http/https):
-```bash
-# Try fabric first
-fabric -u "<url>"
-# If that fails, use BrightData CLI
-brightdata scrape "<url>"
+```
+Use WebFetch tool to retrieve content from the URL
 ```
 
 **PDFs and Files**:

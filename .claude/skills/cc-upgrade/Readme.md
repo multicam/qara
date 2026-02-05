@@ -62,4 +62,3 @@ bun run .claude/skills/cc-upgrade/scripts/analyse-claude-folder.ts .
 ## Related Skills
 
 - **cc-upgrade-pai** - PAI-specific extensions (extends this skill)
-- **cc-upgrade-zai** - ZAI/Z.AI model integration analysis

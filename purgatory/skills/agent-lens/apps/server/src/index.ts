@@ -1,4 +1,4 @@
-import type { HookEvent } from './types';
+import type { HookEvent } from './types.ts';
 import {
   createTheme,
   updateThemeById,
@@ -8,11 +8,11 @@ import {
   exportThemeById,
   importTheme,
   getThemeStats
-} from './theme';
-import { startFileIngestion, getRecentEvents, getFilterOptions, getIngestionHealth } from './file-ingest';
-import { logConfiguration, SERVER_PORT } from './config';
-import { initDatabase } from './db';
-import { log, pc } from './logger';
+} from './theme.ts';
+import { startFileIngestion, getRecentEvents, getFilterOptions, getIngestionHealth } from './file-ingest.ts';
+import { logConfiguration, SERVER_PORT } from './config.ts';
+import { initDatabase } from './db.ts';
+import { log, pc } from './logger.ts';
 
 // Store WebSocket clients
 const wsClients = new Set<any>();

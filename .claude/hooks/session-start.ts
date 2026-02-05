@@ -29,11 +29,6 @@ interface SkillSuggestion {
 
 const SKILL_SUGGESTIONS: SkillSuggestion[] = [
   {
-    pattern: ['scrape', 'fetch content', 'pull from url', 'web data', 'brightdata'],
-    skill: '/brightdata',
-    description: 'for scraping difficult URLs with bot detection'
-  },
-  {
     pattern: ['research', 'analyze content', 'find information', 'multi-source'],
     skill: '/research',
     description: 'for multi-source parallel research'

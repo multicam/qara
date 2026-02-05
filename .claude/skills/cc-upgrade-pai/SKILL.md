@@ -69,7 +69,7 @@ PAI hooks follow TypeScript patterns:
 ```
 .claude/hooks/
 ├── lib/
-│   ├── llm/           # LLM clients (anthropic, openai, zai)
+│   ├── llm/           # LLM clients (anthropic, openai)
 │   ├── model-router.ts
 │   └── context-utils.ts
 ├── pre-tool-use.ts

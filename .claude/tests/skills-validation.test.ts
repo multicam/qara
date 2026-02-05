@@ -318,8 +318,7 @@ describe('Skill Dependencies', () => {
     for (const skill of getSkillDirs()) {
       const nodeModulesPath = join(SKILLS_DIR, skill, 'node_modules');
       // node_modules in skills is discouraged (should be in hooks/)
-      // Exception: skills with their own apps (like agent-lens)
-      if (existsSync(nodeModulesPath) && skill !== 'agent-lens') {
+      if (existsSync(nodeModulesPath)) {
         // Check if it's a skill with its own app
         const hasPackageJson = existsSync(join(SKILLS_DIR, skill, 'package.json'));
         if (!hasPackageJson) {

@@ -1,5 +1,5 @@
 import { Database, type SQLQueryBindings } from 'bun:sqlite';
-import type { Theme, ThemeSearchQuery } from './types';
+import type { Theme, ThemeSearchQuery } from './types.ts';
 
 let db: Database;
 

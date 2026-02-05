@@ -24,8 +24,8 @@ Use UltraThink for deep analysis and enhanced narrative framing.
 ## STEP 2: Gather Input Content
 
 **If YouTube URL:**
-```bash
-fabric -y "YOUTUBE_URL"
+```
+Use WebFetch to get video page content, or yt-dlp for transcript extraction
 ```
 
 **If article/blog URL:**

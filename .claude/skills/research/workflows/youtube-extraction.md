@@ -1,18 +1,6 @@
 # YouTube Extraction Workflow
 
-Extract content from YouTube videos using Fabric CLI. Automatically downloads, transcribes, and processes video content with optional pattern application for analysis and summarization.
-
-## 🎯 Load Full PAI Context
-
-**Before starting any task with this skill, load complete PAI context:**
-
-`Skill("CORE")` or `read ${PAI_DIR}/skills/CORE/SKILL.md`
-
-This provides access to:
-- Stack preferences and tool configurations
-- Security rules and repository safety protocols
-- Response format requirements
-- Personal preferences and operating instructions
+Extract content from YouTube videos using yt-dlp for subtitle/transcript extraction, then process with Claude for analysis and summarization.
 
 ## When to Activate This Skill
 - Extract content from YouTube video
@@ -23,54 +11,33 @@ This provides access to:
 
 ## The Command
 
-Extract content from any YouTube video:
+Extract subtitles/transcript from any YouTube video:
 
 ```bash
-fabric -y "YOUTUBE_URL"
+yt-dlp --write-auto-sub --sub-lang en --skip-download -o "%(title)s" "YOUTUBE_URL"
 ```
 
-## With Pattern Processing
+Then read the generated `.vtt` or `.srt` file and process with Claude.
 
-Process extracted content through Fabric pattern:
+## Alternative: WebFetch
 
-```bash
-fabric -y "YOUTUBE_URL" -p extract_wisdom
+For simpler cases, try WebFetch on the YouTube page to extract available description and metadata:
+
 ```
-
-## Critical Facts
-
-- **NEVER** use yt-dlp or youtube-dl
-- **NEVER** use web scraping for YouTube
-- **NEVER** use transcription APIs directly
-- **Fabric handles everything**: Download, transcription, extraction automatically
-- **Output**: Clean text content from video
-
-## Common Patterns
-
-- `extract_wisdom` - Extract key insights
-- `summarize` - Create concise summary
-- `extract_main_idea` - Get core message
-- `create_summary` - Detailed summary
+WebFetch({ url: "YOUTUBE_URL", prompt: "Extract video description, key topics, and any available transcript" })
+```
 
 ## Example Usage
 
 ```bash
-# Extract raw content
-fabric -y "https://www.youtube.com/watch?v=VIDEO_ID"
+# Download auto-generated subtitles
+yt-dlp --write-auto-sub --sub-lang en --skip-download -o "/tmp/%(title)s" "https://www.youtube.com/watch?v=VIDEO_ID"
 
-# Extract wisdom
-fabric -y "https://www.youtube.com/watch?v=VIDEO_ID" -p extract_wisdom
-
-# Summarize video
-fabric -y "https://www.youtube.com/watch?v=VIDEO_ID" -p summarize
+# Then read and process the subtitle file
 ```
 
 ## How It Works
-1. Fabric downloads video
-2. Fabric extracts audio
-3. Fabric transcribes audio
-4. Fabric returns clean text
-5. If pattern specified, processes through pattern
-
-## Supplementary Resources
-For Fabric patterns: `read ${PAI_DIR}/docs/fabric-patterns.md`
+1. yt-dlp downloads auto-generated subtitles
+2. Read the subtitle file (.vtt/.srt)
+3. Claude processes and analyzes the content
+4. Generate summary, insights, or analysis as requested

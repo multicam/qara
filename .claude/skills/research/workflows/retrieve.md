@@ -43,14 +43,12 @@ This provides access to:
 
 ## 🎯 Intelligent Retrieval Strategy
 
-The Retrieve skill uses a **3-layer fallback strategy** to ensure content can always be retrieved:
+The Retrieve skill uses a **2-layer fallback strategy** to ensure content can always be retrieved:
 
 ```
 Layer 1: Built-in Tools (Fast, Simple)
   ↓ (If blocked, rate-limited, or fails)
-Layer 2: BrightData (CAPTCHA handling, advanced scraping)
-  ↓ (If specialized scraping needed)
-Layer 3: Apify (RAG browser, Actor ecosystem)
+Layer 2: Apify (RAG browser, Actor ecosystem)
 ```
 
 ### Decision Tree: Which Layer to Use?
@@ -61,20 +59,15 @@ Layer 3: Apify (RAG browser, Actor ecosystem)
 - Standard HTML content
 - Quick one-off fetch
 
-**Use Layer 2 (BrightData) if:**
-- Layer 1 blocked or failed
-- Known bot detection (CloudFlare, etc.)
-- CAPTCHA protection
-- Rate limiting encountered
-- Multiple pages from same domain
-- Search engine results needed (Google, Bing, Yandex)
-
-**Use Layer 3 (Apify) if:**
+**Use Layer 2 (Apify) if:**
 - Need specialized extraction (social media, e-commerce)
 - Complex JavaScript rendering required
 - Specific Actor exists for the site
 - Layer 1 and 2 both failed
 - Need RAG-optimized content (markdown format for LLM processing)
+- Layer 1 blocked or failed
+- Known bot detection (CloudFlare, etc.)
+- CAPTCHA protection
 
 ## Layer 1: Built-in Tools
 
@@ -96,7 +89,7 @@ WebFetch({
 - Gets rate-limited (429 status)
 - Receives CAPTCHA challenge
 - Returns empty/broken content
-→ **Escalate to Layer 2 (BrightData)**
+→ **Escalate to Layer 2 (Apify)**
 
 ### WebSearch Tool
 
@@ -113,65 +106,10 @@ WebSearch({
 
 **When it fails:**
 - Need more comprehensive search results
-- Need specific search engine (Google, Bing, Yandex)
-→ **Escalate to Layer 2 (BrightData search_engine)**
+- Need specific search engine results
+→ **Escalate to Layer 2 (Apify)**
 
-## Layer 2: BrightData
-
-### scrape_as_markdown
-
-**Best for:** Sites with bot protection, CAPTCHA, JavaScript rendering
-
-**Key Features:**
-- Bypasses CloudFlare, bot detection, CAPTCHAs
-- Returns clean markdown (perfect for LLM consumption)
-- Handles JavaScript-heavy sites
-- Residential proxy network
-
-**Usage via BrightData CLI or API:**
-```bash
-# Single URL scraping with bot protection bypass
-brightdata scrape "https://protected-site.com/article"
-
-# Multiple URLs in parallel (up to 10)
-brightdata scrape-batch "https://site.com/page1" "https://site.com/page2" "https://site.com/page3"
-```
-
-**When to use:**
-- Layer 1 WebFetch failed with blocking/CAPTCHA
-- Known protected sites (CloudFlare, etc.)
-- Need batch scraping from same domain
-- Want markdown output for LLM processing
-
-**When it fails:**
-- Site requires very specialized extraction logic
-- Need social media specific scraping
-- **Escalate to Layer 3 (Apify Actors)**
-
-### search_engine
-
-**Best for:** Getting search results from Google, Bing, Yandex
-
-**Usage via BrightData CLI or API:**
-```bash
-# Search Google for results
-brightdata search --engine google "React 19 server components"
-
-# Search multiple engines
-brightdata search --engine google "React 19 features"
-brightdata search --engine bing "React 19 features"
-```
-
-**Output format:**
-- Google: JSON with structured results
-- Bing/Yandex: Markdown with URLs, titles, descriptions
-
-**When to use:**
-- Need search engine results (not just website content)
-- Want multiple search engines for comprehensive coverage
-- Layer 1 WebSearch insufficient
-
-## Layer 3: Apify
+## Layer 2: Apify
 
 ### RAG Web Browser Actor
 
@@ -220,7 +158,7 @@ apify call apify/instagram-scraper -i '{"username": "example", "resultsLimit": 1
 
 **When to use:**
 - Specialized site needs (social media, e-commerce)
-- Layer 1 and 2 failed
+- Layer 1 failed
 - Need platform-specific extraction logic
 
 ## 🔄 Complete Retrieval Workflow
@@ -235,10 +173,7 @@ apify call apify/instagram-scraper -i '{"username": "example", "resultsLimit": 1
 # 1. Try Layer 1 (Built-in) first
 # Use WebFetch tool with URL and prompt
 
-# 2. If Layer 1 fails (blocked/CAPTCHA):
-brightdata scrape "https://example.com/article"
-
-# 3. If Layer 2 fails (needs specialized extraction):
+# 2. If Layer 1 fails (blocked/CAPTCHA), use Layer 2:
 apify call apify/rag-web-browser -i '{"query": "https://example.com/article", "maxResults": 1}'
 ```
 
@@ -256,10 +191,7 @@ apify call apify/rag-web-browser -i '{"query": "https://example.com/article", "m
 # 2. Fetch each URL with Layer 1:
 # Use WebFetch tool for each URL (can run in parallel)
 
-# 3. If any Layer 1 fetches fail, use Layer 2 batch:
-brightdata scrape-batch "$url1" "$url2" "$url3" "$url4" "$url5"
-
-# 4. OR use Layer 3 for all-in-one search + scrape:
+# 3. If any Layer 1 fetches fail, use Layer 2:
 apify call apify/rag-web-browser -i '{"query": "React 19 features documentation", "maxResults": 5}'
 ```
 
@@ -271,27 +203,24 @@ apify call apify/rag-web-browser -i '{"query": "React 19 features documentation"
 
 ```bash
 # Skip Layer 1 (known to fail on protected sites)
-# Start with Layer 2:
-brightdata scrape "https://cloudflare-protected-site.com"
-
-# If Layer 2 fails, try Layer 3:
+# Go straight to Layer 2:
 apify call apify/rag-web-browser -i '{"query": "https://cloudflare-protected-site.com", "maxResults": 1}'
 ```
 
 ## 📊 Layer Comparison Matrix
 
-| Feature | Layer 1 (Built-in) | Layer 2 (BrightData) | Layer 3 (Apify) |
-|---------|-------------------|----------------------|-----------------|
-| **Speed** | Fast (< 5s) | Medium (10-30s) | Slower (30-60s) |
-| **Bot Detection Bypass** | ❌ No | ✅ Yes | ✅ Yes |
-| **CAPTCHA Handling** | ❌ No | ✅ Yes | ✅ Yes |
-| **JavaScript Rendering** | ⚠️ Limited | ✅ Full | ✅ Full |
-| **Batch Operations** | Manual | ✅ Up to 10 | ✅ Unlimited |
-| **Search Integration** | ✅ Basic | ✅ Multi-engine | ✅ Google only |
-| **Markdown Output** | ✅ Yes | ✅ Yes | ✅ Optimized |
-| **Specialized Extraction** | ❌ No | ❌ No | ✅ Yes (Actors) |
-| **Cost** | Free | Paid | Paid |
-| **Best For** | Simple pages | Protected sites | Specialized scraping |
+| Feature | Layer 1 (Built-in) | Layer 2 (Apify) |
+|---------|-------------------|-----------------|
+| **Speed** | Fast (< 5s) | Slower (30-60s) |
+| **Bot Detection Bypass** | ❌ No | ✅ Yes |
+| **CAPTCHA Handling** | ❌ No | ✅ Yes |
+| **JavaScript Rendering** | ⚠️ Limited | ✅ Full |
+| **Batch Operations** | Manual | ✅ Unlimited |
+| **Search Integration** | ✅ Basic | ✅ Google |
+| **Markdown Output** | ✅ Yes | ✅ Optimized |
+| **Specialized Extraction** | ❌ No | ✅ Yes (Actors) |
+| **Cost** | Free | Paid |
+| **Best For** | Simple pages | Protected/specialized scraping |
 
 ## 🚨 Error Handling & Escalation
 
@@ -303,13 +232,7 @@ apify call apify/rag-web-browser -i '{"query": "https://cloudflare-protected-sit
 - CAPTCHA challenge detected
 - Bot detection messages
 
-**Layer 2 Errors → Escalate to Layer 3:**
-- Scraping failed after retries
-- Site requires very specialized logic
-- Need social media specific extraction
-- Platform-specific data structures needed
-
-**Layer 3 Errors → Report to User:**
+**Layer 2 Errors → Report to User:**
 - All layers exhausted
 - Site technically impossible to scrape
 - Requires manual intervention or login
@@ -406,16 +329,11 @@ ${PAI_DIR}/history/research/2025-10-26_react19-documentation/
 - Quick one-off fetches
 - Basic search queries
 
-**Use Layer 2 (BrightData):**
+**Use Layer 2 (Apify):**
 - Bot detection blocking Layer 1
 - CAPTCHA protection
 - Rate limiting encountered
-- Need batch scraping (2-10 URLs)
-- Search engine results needed
-
-**Use Layer 3 (Apify):**
 - Specialized site scraping (social media, e-commerce)
-- Layer 1 and 2 both failed
 - Need RAG-optimized markdown
 - Complex extraction logic required
 

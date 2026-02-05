@@ -49,7 +49,6 @@
 ```
 skills/
 ├── CORE/                 # Core identity and infrastructure
-├── brightdata/           # Web scraping with Bright Data
 ├── system-create-skill/  # Skill creation tooling
 └── [domain-skills]/      # Your custom skills
 ```
