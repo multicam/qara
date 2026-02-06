@@ -1,0 +1,3 @@
+[test]
+# Coverage: exclude purgatory and node_modules
+coveragePathIgnorePatterns = ["purgatory/", "node_modules/"]

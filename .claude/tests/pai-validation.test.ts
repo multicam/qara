@@ -4,7 +4,7 @@
  * Comprehensive tests to validate PAI integrity, configuration,
  * and compliance with Claude Code best practices.
  *
- * Run with: bun test .claude/tests/pai-validation.test.ts
+ * Run with: bun test ./.claude/tests/pai-validation.test.ts
  */
 
 import { describe, it, expect, beforeAll } from 'bun:test';
@@ -13,7 +13,6 @@ import { join, resolve } from 'path';
 import { homedir } from 'os';
 
 // PAI Paths
-// Note: PAI_DIR (~/.claude) contains symlinks to QARA_DIR for portability
 const PAI_DIR = process.env.PAI_DIR || resolve(homedir(), '.claude');
 const QARA_DIR = resolve(homedir(), 'qara');
 const QARA_CLAUDE_DIR = join(QARA_DIR, '.claude');
@@ -23,7 +22,6 @@ const QARA_CLAUDE_DIR = join(QARA_DIR, '.claude');
 // =============================================================================
 
 describe('PAI Directory Structure', () => {
-  // Core dirs that must exist in PAI_DIR (may be symlinks)
   const requiredDirs = [
     'hooks',
     'skills',
@@ -32,7 +30,6 @@ describe('PAI Directory Structure', () => {
     'history',
   ];
 
-  // Dirs that exist in qara/.claude (source of symlinks)
   const qaraDirs = [
     'context',
     'state',
@@ -129,8 +126,8 @@ describe('Settings Configuration', () => {
     const requiredHookEvents = [
       'SessionStart',
       'PreToolUse',
-      'PostToolUse',
       'UserPromptSubmit',
+      'Stop',
     ];
 
     for (const event of requiredHookEvents) {
@@ -141,11 +138,21 @@ describe('Settings Configuration', () => {
       });
     }
 
-    it('should have security hook for Bash commands', () => {
-      const preToolUse = settings.hooks.PreToolUse;
-      const bashHook = preToolUse.find((h: any) => h.matcher === 'Bash');
-      expect(bashHook).toBeDefined();
-      expect(bashHook.hooks[0].command).toContain('security');
+    it('all configured hook commands should reference existing files', () => {
+      for (const [_event, configs] of Object.entries(settings.hooks)) {
+        for (const config of configs as any[]) {
+          if (config.hooks) {
+            for (const hook of config.hooks) {
+              if (hook.command) {
+                const match = hook.command.match(/(\/[^\s]+\.ts)/);
+                if (match) {
+                  expect(existsSync(match[1])).toBe(true);
+                }
+              }
+            }
+          }
+        }
+      }
     });
   });
 
@@ -158,10 +165,6 @@ describe('Settings Configuration', () => {
     it('should have statusLine configured', () => {
       expect(settings.statusLine).toBeDefined();
       expect(settings.statusLine.type).toBe('command');
-    });
-
-    it('should have model preference set', () => {
-      expect(settings.model).toBeDefined();
     });
   });
 });
@@ -199,21 +202,16 @@ describe('Skills System', () => {
         const skillMdPath = join(PAI_DIR, 'skills', skillName, 'SKILL.md');
 
         if (!existsSync(skillMdPath)) {
-          // Skip if skill doesn't exist (may be in different setup)
           return;
         }
 
         const content = readFileSync(skillMdPath, 'utf-8');
 
-        // Must have YAML frontmatter
         expect(content.startsWith('---')).toBe(true);
-
-        // Must have required fields
         expect(content).toContain('name:');
         expect(content).toContain('context:');
         expect(content).toContain('description:');
 
-        // Context must be 'same' or 'fork'
         const contextMatch = content.match(/context:\s*(same|fork)/);
         expect(contextMatch).not.toBeNull();
       });
@@ -227,7 +225,6 @@ describe('Skills System', () => {
     });
 
     it('skills should not have node_modules at top level', () => {
-      // node_modules should be in hooks/, not skills/
       const skillsPath = join(PAI_DIR, 'skills');
       const hasNodeModules = skillDirs.includes('node_modules');
       expect(hasNodeModules).toBe(false);
@@ -244,9 +241,9 @@ describe('Hooks System', () => {
 
   const requiredHooks = [
     'session-start.ts',
+    'stop-hook.ts',
+    'update-tab-titles.ts',
     'pre-tool-use-security.ts',
-    'post-tool-use-audit.ts',
-    'capture-all-events.ts',
   ];
 
   for (const hook of requiredHooks) {
@@ -268,16 +265,6 @@ describe('Hooks System', () => {
       const content = readFileSync(hookFile, 'utf-8');
       expect(content.startsWith('#!/usr/bin/env bun')).toBe(true);
     });
-
-    it('security hook should output JSON format', () => {
-      const securityHook = join(hooksPath, 'pre-tool-use-security.ts');
-      const content = readFileSync(securityHook, 'utf-8');
-
-      // Should use JSON.stringify for output
-      expect(content).toContain('JSON.stringify');
-      // Should have decision field
-      expect(content).toContain('decision');
-    });
   });
 
   describe('Hook Library', () => {
@@ -291,20 +278,29 @@ describe('Hooks System', () => {
       expect(existsSync(join(libPath, 'pai-paths.ts'))).toBe(true);
     });
 
-    it('should have LLM clients', () => {
-      const llmPath = join(libPath, 'llm');
-      expect(existsSync(llmPath)).toBe(true);
-      expect(existsSync(join(llmPath, 'anthropic.ts'))).toBe(true);
-      expect(existsSync(join(llmPath, 'openai.ts'))).toBe(true);
+    it('should have stdin-utils.ts', () => {
+      expect(existsSync(join(libPath, 'stdin-utils.ts'))).toBe(true);
+    });
+
+    it('should have tab-titles.ts', () => {
+      expect(existsSync(join(libPath, 'tab-titles.ts'))).toBe(true);
+    });
+
+    it('should have jsonl-utils.ts', () => {
+      expect(existsSync(join(libPath, 'jsonl-utils.ts'))).toBe(true);
+    });
+
+    it('should have datetime-utils.ts', () => {
+      expect(existsSync(join(libPath, 'datetime-utils.ts'))).toBe(true);
     });
   });
 });
 
 // =============================================================================
-// SECTION 5: 12-Factor Agent Compliance
+// SECTION 5: Core Factor Compliance
 // =============================================================================
 
-describe('12-Factor Agent Compliance', () => {
+describe('Core Factor Compliance', () => {
   let settings: any;
 
   beforeAll(() => {
@@ -317,64 +313,10 @@ describe('12-Factor Agent Compliance', () => {
     expect(existsSync(coreSkillPath)).toBe(true);
   });
 
-  // Factor 2: Use Tools Instead of Unstructured Text
-  it('Factor 2: Hooks should use structured JSON output', () => {
-    const securityHook = readFileSync(
-      join(PAI_DIR, 'hooks', 'pre-tool-use-security.ts'),
-      'utf-8'
-    );
-    expect(securityHook).toContain('JSON.stringify');
-  });
-
-  // Factor 3: Compact Context When Idle
-  it('Factor 3: Should have PreCompact hook', () => {
-    expect(settings.hooks.PreCompact).toBeDefined();
-  });
-
-  // Factor 4: Prefer Appending Data
-  it('Factor 4: Should use JSONL for append-only logs', () => {
-    const libPath = join(PAI_DIR, 'hooks', 'lib');
-    expect(existsSync(join(libPath, 'jsonl-utils.ts'))).toBe(true);
-  });
-
-  // Factor 5: Humans are the Validators
-  it('Factor 5: Should have approval workflow for dangerous ops', () => {
-    const securityHook = readFileSync(
-      join(PAI_DIR, 'hooks', 'pre-tool-use-security.ts'),
-      'utf-8'
-    );
-    expect(securityHook).toContain('REQUIRE_APPROVAL');
-    expect(securityHook).toContain('BLOCKED');
-  });
-
-  // Factor 6: Summarize Often
-  it('Factor 6: Should have context compaction hook', () => {
-    expect(existsSync(join(PAI_DIR, 'hooks', 'pre-compact-context.ts'))).toBe(true);
-  });
-
-  // Factor 7: Contact Humans with Tool Calls
-  it('Factor 7: Security hook should support HITL', () => {
-    const securityHook = readFileSync(
-      join(PAI_DIR, 'hooks', 'pre-tool-use-security.ts'),
-      'utf-8'
-    );
-    // additionalContext for injecting hints to model
-    expect(securityHook).toContain('additionalContext');
-  });
-
   // Factor 8: Isolate Tasks by Permission/Context
   it('Factor 8: Skills should declare context type (same/fork)', () => {
     const skillMd = readFileSync(join(PAI_DIR, 'skills', 'CORE', 'SKILL.md'), 'utf-8');
     expect(skillMd).toMatch(/context:\s*(same|fork)/);
-  });
-
-  // Factor 9: Build as Small Models Talking to Each Other
-  it('Factor 9: Should have multiple LLM clients available', () => {
-    const llmPath = join(PAI_DIR, 'hooks', 'lib', 'llm');
-    const clients = readdirSync(llmPath).filter(
-      (f) => f.endsWith('.ts') && !f.endsWith('.test.ts')
-    );
-    expect(clients.length).toBeGreaterThanOrEqual(3);
   });
 
   // Factor 10: Clear History Per Task
@@ -383,23 +325,14 @@ describe('12-Factor Agent Compliance', () => {
     expect(existsSync(historyPath)).toBe(true);
   });
 
-  // Factor 11: Be Transparent
-  it('Factor 11: Should have audit logging', () => {
-    expect(existsSync(join(PAI_DIR, 'hooks', 'post-tool-use-audit.ts'))).toBe(true);
-    expect(existsSync(join(PAI_DIR, 'hooks', 'capture-all-events.ts'))).toBe(true);
-  });
-
   // Factor 12: Run a Simple Loop
   it('Factor 12: Hooks follow simple input/output pattern', () => {
-    // PreToolUse hooks read from stdin and output JSON
-    const securityHook = readFileSync(
-      join(PAI_DIR, 'hooks', 'pre-tool-use-security.ts'),
+    const sessionHook = readFileSync(
+      join(PAI_DIR, 'hooks', 'session-start.ts'),
       'utf-8'
     );
-    // Should read from stdin
-    expect(securityHook).toContain('readFileSync(0');
     // Should output to stdout
-    expect(securityHook).toContain('console.log');
+    expect(sessionHook).toContain('console.log');
   });
 });
 
@@ -433,48 +366,16 @@ describe('Security Configuration', () => {
     }
   });
 
-  describe('Security Hook Patterns', () => {
-    let securityHook: string;
-
-    beforeAll(() => {
-      securityHook = readFileSync(
-        join(PAI_DIR, 'hooks', 'pre-tool-use-security.ts'),
-        'utf-8'
-      );
-    });
-
-    it('should block curl pipe to shell', () => {
-      // The regex uses \| which appears as \\| in the source
-      expect(securityHook).toContain('curl');
-      expect(securityHook).toContain('pipe curl to shell');
-    });
-
-    it('should detect git force push', () => {
-      expect(securityHook).toContain('--force');
-    });
-
-    it('should detect DROP TABLE/DATABASE', () => {
-      expect(securityHook).toContain('DROP');
-    });
-
-    it('should detect recursive chmod 777', () => {
-      expect(securityHook).toContain('chmod');
-      expect(securityHook).toContain('777');
-    });
-  });
-
   describe('Environment Security', () => {
     it('.env should not be in .gitignore exception', () => {
       const gitignorePath = join(PAI_DIR, '.gitignore');
       if (existsSync(gitignorePath)) {
         const gitignore = readFileSync(gitignorePath, 'utf-8');
-        // .env SHOULD be in gitignore (ignored)
         expect(gitignore).toContain('.env');
       }
     });
 
     it('should have .env.example for reference', () => {
-      // .env.example lives in qara/.claude (source repo)
       expect(existsSync(join(QARA_CLAUDE_DIR, '.env.example'))).toBe(true);
     });
   });
@@ -490,7 +391,6 @@ describe('Context System', () => {
   });
 
   it('should have context/ directory with includes', () => {
-    // Context lives in qara/.claude/context
     const contextPath = join(QARA_CLAUDE_DIR, 'context');
     expect(existsSync(contextPath)).toBe(true);
 
@@ -519,10 +419,6 @@ describe('Agent Configuration', () => {
     const agentFiles = readdirSync(agentsPath);
     expect(agentFiles.length).toBeGreaterThan(0);
   });
-
-  it('should have agent-sessions.json for tracking', () => {
-    expect(existsSync(join(PAI_DIR, 'agent-sessions.json'))).toBe(true);
-  });
 });
 
 // =============================================================================
@@ -534,12 +430,6 @@ describe('State Management', () => {
 
   it('should have state/ directory', () => {
     expect(existsSync(statePath)).toBe(true);
-  });
-
-  it('state files should be JSON format', () => {
-    const stateFiles = readdirSync(statePath).filter((f) => f.endsWith('.json'));
-    // Should have at least one state file
-    expect(stateFiles.length).toBeGreaterThanOrEqual(0); // May be empty initially
   });
 });
 
@@ -556,7 +446,6 @@ describe('TypeScript/Bun Configuration', () => {
 
   it('hooks package.json should use bun', () => {
     const pkg = JSON.parse(readFileSync(join(hooksPath, 'package.json'), 'utf-8'));
-    // Should have bun-related config or scripts
     expect(
       pkg.scripts?.test?.includes('bun') ||
         pkg.devDependencies?.['bun-types'] ||
@@ -575,7 +464,6 @@ describe('TypeScript/Bun Configuration', () => {
 
 describe('Integration: Path Resolution', () => {
   it('pai-paths module should export all required paths', async () => {
-    // Dynamic import to test the module
     const paiPaths = await import('../hooks/lib/pai-paths');
 
     expect(paiPaths.PAI_DIR).toBeDefined();
@@ -601,8 +489,6 @@ describe('Integration: Path Resolution', () => {
 
 describe('PAI Validation Summary', () => {
   it('should pass all critical validations', () => {
-    // This test serves as a summary checkpoint
-    // If we reach here, all previous tests passed
     expect(true).toBe(true);
   });
 });

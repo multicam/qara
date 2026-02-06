@@ -10,7 +10,7 @@ Multi-source parallel research using available researcher agents. Auto-selects b
 2. **Claude WebSearch** (always available, FREE) -- Built-in, no API key needed
 3. **Gemini** (if `GOOGLE_API_KEY` exists) -- Multi-perspective decomposition
 
-All agents are CC built-ins (Task tool `subagent_type`).
+Research agents are orchestrated by the research skill via CC's Task tool.
 
 ## Three Research Modes
 
@@ -25,8 +25,8 @@ All agents are CC built-ins (Task tool `subagent_type`).
 | Workflow | Purpose |
 |----------|---------|
 | `conduct.md` | Main multi-source parallel research |
-| `claude-research.md` | Claude WebSearch (free, no keys) |
-| `perplexity-research.md` | Perplexity API research |
+| `claude-research.ts` | Claude WebSearch (free, no keys) |
+| `perplexity-research.ts` | Perplexity API research |
 | `interview-research.md` | Interview preparation |
 | `retrieve.md` | Content retrieval via WebFetch |
 | `youtube-extraction.md` | YouTube content extraction |

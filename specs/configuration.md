@@ -83,6 +83,18 @@ Context window color coding:
 - Yellow (60-80%): Caution
 - Red (80-100%): Critical
 
+## MCP Servers
+
+Configured via `.mcp.json` at project root (symlinked to `~/.claude/mcp.json`). Server implementations live in `.claude/mcp-servers/` (symlinked to `~/.claude/mcp-servers/`).
+
+| Server | Transport | Purpose |
+|--------|-----------|---------|
+| `ollama` | stdio (bun) | Local LLM integration via Ollama API. 6 tools: chat, analyze_code, review_diff, explain, generate, models |
+
+Agents inherit all project-level MCP servers automatically — no per-agent config needed.
+
+`enableAllProjectMcpServers` in settings.json controls whether `.mcp.json` servers auto-activate.
+
 ## Git Configuration
 
 ### .gitignore

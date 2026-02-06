@@ -24,10 +24,9 @@ Files in this directory become available as `/command-name`. They use `$ARGUMENT
 ```
 /create_plan [ticket-path]
   -> Read ticket fully
-  -> Spawn parallel: thoughts-locator + codebase-locator + codebase-analyzer
+  -> Spawn parallel: thoughts-locator + Explore + codebase-analyzer
   -> Present findings, get feedback
   -> Write plan to thoughts/shared/plans/YYYY-MM-DD-ENG-XXXX-description.md
-  -> Sync via humanlayer thoughts sync
 
 /implement_plan [plan-path]
   -> Read plan, check existing checkmarks [x]
@@ -39,15 +38,37 @@ Files in this directory become available as `/command-name`. They use `$ARGUMENT
   -> Report gaps
 ```
 
-## Agents
+## Custom Agents (.claude/agents/)
 
-All agent types are CC built-ins via the Task tool's `subagent_type` parameter. No custom agent definitions are maintained -- CC ships them all natively:
+Five custom agent definitions extend CC's built-in subagent types. Used via `Task` tool with `subagent_type` parameter.
 
-- `codebase-analyzer`, `codebase-locator`, `codebase-pattern-finder`
-- `researcher`, `claude-researcher`, `perplexity-researcher`, `gemini-researcher`, `web-search-researcher`
-- `engineer`, `architect`, `designer`, `design-iterator`, `design-implementation-reviewer`
-- `thoughts-analyzer`, `thoughts-locator`
-- `Explore`, `Plan`
+### Codebase Agents
+
+| Agent | Model | Purpose |
+|-------|-------|---------|
+| `codebase-analyzer` | sonnet | Traces data flow, finds patterns, explains how components work |
+
+### Thoughts Agents
+
+| Agent | Model | Purpose |
+|-------|-------|---------|
+| `thoughts-analyzer` | sonnet | Extracts decisions, insights, and actionable info from thoughts/ docs |
+| `thoughts-locator` | haiku | Discovers relevant documents in thoughts/ directory |
+
+### Specialist Agents
+
+| Agent | Model | Skills | Purpose |
+|-------|-------|--------|---------|
+| `designer` | sonnet | frontend-design | Design review, UX/UI, typography, visual polish |
+| `architect` | sonnet | research | PRD creation, system design, technical specifications |
+
+### CC Built-in Agents (no custom definition needed)
+
+- `Explore` — fast codebase exploration with thoroughness levels
+- `Plan` — implementation planning
+- `Bash` — command execution
+- `general-purpose` — multi-step tasks
+- `claude-code-guide` — CC documentation questions
 
 ## Context Files (.claude/context/)
 

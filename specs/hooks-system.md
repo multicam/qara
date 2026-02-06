@@ -36,7 +36,7 @@ Event-driven TypeScript hooks executed by Bun at Claude Code lifecycle points. C
 | Library | Purpose |
 |---------|---------|
 | `pai-paths.ts` | Path resolution, SKILLS_DIR/STATE_DIR, .env loading, validation |
-| `stdin-utils.ts` | Read stdin with timeout, parse HookInput JSON |
+| `stdin-utils.ts` | Read stdin with timeout, parse HookInput JSON (100% test coverage) |
 | `tab-titles.ts` | Generate titles from prompts, set terminal tab (Ghostty/Kitty/xterm) |
 
 ## Hook I/O Contract

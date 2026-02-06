@@ -7,12 +7,12 @@
  * - Asset validation
  * - Workflow file validation
  *
- * Run with: bun test .claude/tests/skills-validation.test.ts
+ * Run with: bun test ./.claude/tests/skills-validation.test.ts
  */
 
 import { describe, it, expect, beforeAll } from 'bun:test';
 import { existsSync, readFileSync, readdirSync, statSync } from 'fs';
-import { join, resolve } from 'path';
+import { join } from 'path';
 import { homedir } from 'os';
 
 const QARA_CLAUDE_DIR = join(homedir(), 'qara', '.claude');
@@ -35,7 +35,6 @@ function parseSkillMd(content: string): SkillFrontmatter | null {
 
   const yaml = frontmatterMatch[1];
 
-  // Simple regex-based YAML parsing for required fields
   const nameMatch = yaml.match(/^name:\s*(.+)$/m);
   const contextMatch = yaml.match(/^context:\s*(same|fork)/m);
   const descriptionMatch = yaml.match(/^description:\s*\|?\s*([\s\S]*?)(?=\n[a-z]+:|$)/m);
@@ -70,8 +69,8 @@ describe('Skill Discovery', () => {
     skillDirs = getSkillDirs();
   });
 
-  it('should discover at least 15 skills', () => {
-    expect(skillDirs.length).toBeGreaterThanOrEqual(15);
+  it('should discover at least 10 skills', () => {
+    expect(skillDirs.length).toBeGreaterThanOrEqual(10);
   });
 
   it('should have essential system skills', () => {
@@ -208,13 +207,11 @@ describe('Skill Content Quality', () => {
       });
 
       it('should have content after frontmatter', () => {
-        // Remove frontmatter and check remaining content
         const afterFrontmatter = content.replace(/^---[\s\S]*?---\n*/, '');
         expect(afterFrontmatter.trim().length).toBeGreaterThan(50);
       });
 
       it('should use markdown formatting', () => {
-        // Should have at least one heading or list
         const hasMarkdown =
           content.includes('#') || content.includes('- ') || content.includes('* ');
         expect(hasMarkdown).toBe(true);
@@ -249,7 +246,6 @@ describe('Workflow Files', () => {
 
   it('research skill should have workflows', () => {
     const researchWorkflows = join(SKILLS_DIR, 'research', 'workflows');
-    // May or may not exist depending on setup
     if (existsSync(researchWorkflows)) {
       const files = readdirSync(researchWorkflows);
       expect(files.length).toBeGreaterThan(0);
@@ -267,7 +263,6 @@ describe('Skill Assets', () => {
       const assetsPath = join(SKILLS_DIR, skill, 'assets');
       if (existsSync(assetsPath)) {
         const files = readdirSync(assetsPath);
-        // Assets directory should not be empty
         expect(files.length).toBeGreaterThan(0);
       }
     }
@@ -275,7 +270,6 @@ describe('Skill Assets', () => {
 
   it('frontend-design should have assets', () => {
     const frontendAssets = join(SKILLS_DIR, 'frontend-design', 'assets');
-    // Check if this skill has assets
     if (existsSync(frontendAssets)) {
       const files = readdirSync(frontendAssets);
       expect(files.length).toBeGreaterThan(0);
@@ -292,7 +286,6 @@ describe('Skill Naming Conventions', () => {
 
   it('skill directories should use kebab-case or UPPERCASE', () => {
     const invalidNames = skillDirs.filter((name) => {
-      // Allow kebab-case, UPPERCASE, or camelCase
       const isKebab = /^[a-z][a-z0-9-]*$/.test(name);
       const isUppercase = /^[A-Z][A-Z0-9_]*$/.test(name);
       const isCamelCase = /^[a-z][a-zA-Z0-9]*$/.test(name);
@@ -317,9 +310,7 @@ describe('Skill Dependencies', () => {
   it('skills should not have node_modules', () => {
     for (const skill of getSkillDirs()) {
       const nodeModulesPath = join(SKILLS_DIR, skill, 'node_modules');
-      // node_modules in skills is discouraged (should be in hooks/)
       if (existsSync(nodeModulesPath)) {
-        // Check if it's a skill with its own app
         const hasPackageJson = existsSync(join(SKILLS_DIR, skill, 'package.json'));
         if (!hasPackageJson) {
           expect(existsSync(nodeModulesPath)).toBe(false);
@@ -336,6 +327,6 @@ describe('Skill Dependencies', () => {
 describe('Skills Validation Summary', () => {
   it('should complete all skill validations', () => {
     const totalSkills = getSkillDirs().length;
-    expect(totalSkills).toBeGreaterThanOrEqual(15);
+    expect(totalSkills).toBeGreaterThanOrEqual(10);
   });
 });

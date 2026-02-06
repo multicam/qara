@@ -4,6 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "test": "bun test ./.claude/",
     "start-obs": "echo 'agent-lens is in purgatory - not available'",
     "update": "echo 'agent-lens is in purgatory - not available'"
   },

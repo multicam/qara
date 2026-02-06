@@ -1,14 +1,39 @@
 /**
  * Tests for stdin-utils.ts
  *
- * Note: Testing stdin reading is challenging in unit tests.
- * These tests verify the module structure and helper functions.
+ * Uses in-process Bun.stdin mocking to exercise all code paths
+ * while remaining visible to Bun's coverage instrumenter.
  */
 
-import { describe, it, expect } from 'bun:test';
-import { delay, type HookInput } from './stdin-utils';
+import { describe, it, expect, afterEach } from 'bun:test';
+import { delay, readStdin, readHookInput, readStdinWithTimeout, type HookInput } from './stdin-utils';
+
+// Save originals for restoration
+const originalText = Bun.stdin.text.bind(Bun.stdin);
+const originalStream = Bun.stdin.stream.bind(Bun.stdin);
+
+function mockStdinText(data: string) {
+  (Bun.stdin as any).text = () => Promise.resolve(data);
+}
+
+function mockStdinStream(data: string, opts?: { neverClose?: boolean }) {
+  (Bun.stdin as any).stream = () => new ReadableStream({
+    start(controller) {
+      if (opts?.neverClose) return; // simulate blocking stdin
+      if (data) controller.enqueue(new TextEncoder().encode(data));
+      controller.close();
+    },
+  });
+}
+
+function restoreStdin() {
+  (Bun.stdin as any).text = originalText;
+  (Bun.stdin as any).stream = originalStream;
+}
 
 describe('Stdin Utils', () => {
+  afterEach(() => restoreStdin());
+
   describe('HookInput interface', () => {
     it('should accept valid hook input structure', () => {
       const input: HookInput = {
@@ -47,6 +72,90 @@ describe('Stdin Utils', () => {
     });
   });
 
+  describe('readStdin', () => {
+    it('should read text from stdin', async () => {
+      mockStdinText('hello world');
+      const result = await readStdin();
+      expect(result).toBe('hello world');
+    });
+
+    it('should handle empty stdin', async () => {
+      mockStdinText('');
+      const result = await readStdin();
+      expect(result).toBe('');
+    });
+
+    it('should handle multiline input', async () => {
+      mockStdinText('line1\nline2\nline3');
+      const result = await readStdin();
+      expect(result).toBe('line1\nline2\nline3');
+    });
+  });
+
+  describe('readHookInput', () => {
+    it('should parse valid JSON from stdin', async () => {
+      mockStdinText(JSON.stringify({ session_id: 'test-123', prompt: 'hi' }));
+      const input = await readHookInput();
+      expect(input.session_id).toBe('test-123');
+      expect(input.prompt).toBe('hi');
+    });
+
+    it('should throw on empty stdin', async () => {
+      mockStdinText('');
+      await expect(readHookInput()).rejects.toThrow('Empty stdin');
+    });
+
+    it('should throw on whitespace-only stdin', async () => {
+      mockStdinText('   \n  \t  ');
+      await expect(readHookInput()).rejects.toThrow('Empty stdin');
+    });
+
+    it('should throw on invalid JSON', async () => {
+      mockStdinText('not json at all');
+      await expect(readHookInput()).rejects.toThrow();
+    });
+
+    it('should handle complex hook input with all fields', async () => {
+      const hookData = {
+        session_id: 'sess-abc',
+        prompt: 'do something',
+        transcript_path: '/tmp/transcript.jsonl',
+        hook_event_name: 'PreToolUse',
+        tool_name: 'Bash',
+        tool_input: { command: 'ls' },
+      };
+      mockStdinText(JSON.stringify(hookData));
+      const input = await readHookInput();
+      expect(input.tool_name).toBe('Bash');
+      expect(input.tool_input.command).toBe('ls');
+    });
+  });
+
+  describe('readStdinWithTimeout', () => {
+    it('should read stdin data within timeout', async () => {
+      mockStdinStream('timeout test data');
+      const result = await readStdinWithTimeout(5000);
+      expect(result).toBe('timeout test data');
+    });
+
+    it('should use default timeout when not specified', async () => {
+      mockStdinStream('default timeout data');
+      const result = await readStdinWithTimeout();
+      expect(result).toBe('default timeout data');
+    });
+
+    it('should handle empty stream', async () => {
+      mockStdinStream('');
+      const result = await readStdinWithTimeout(1000);
+      expect(result).toBe('');
+    });
+
+    it('should timeout when stdin blocks', async () => {
+      mockStdinStream('', { neverClose: true });
+      await expect(readStdinWithTimeout(50)).rejects.toThrow('Stdin read timeout');
+    });
+  });
+
   describe('delay', () => {
     it('should return a Promise', () => {
       const result = delay(0);
@@ -58,7 +167,6 @@ describe('Stdin Utils', () => {
       await delay(50);
       const elapsed = Date.now() - start;
 
-      // Allow some tolerance for timing
       expect(elapsed).toBeGreaterThanOrEqual(45);
       expect(elapsed).toBeLessThan(100);
     });
@@ -80,53 +188,7 @@ describe('Stdin Utils', () => {
 
       await Promise.all([promise1, promise2, promise3]);
 
-      // Shorter delays should resolve first
       expect(results).toEqual([2, 3, 1]);
-    });
-  });
-
-  describe('Module exports', () => {
-    it('should export readStdin function', async () => {
-      const mod = await import('./stdin-utils');
-      expect(typeof mod.readStdin).toBe('function');
-    });
-
-    it('should export readHookInput function', async () => {
-      const mod = await import('./stdin-utils');
-      expect(typeof mod.readHookInput).toBe('function');
-    });
-
-    it('should export readStdinWithTimeout function', async () => {
-      const mod = await import('./stdin-utils');
-      expect(typeof mod.readStdinWithTimeout).toBe('function');
-    });
-
-    it('should export delay function', async () => {
-      const mod = await import('./stdin-utils');
-      expect(typeof mod.delay).toBe('function');
-    });
-  });
-
-  describe('Function signatures', () => {
-    it('readStdin should return Promise<string>', async () => {
-      const mod = await import('./stdin-utils');
-      // Verify the function exists and has expected shape
-      expect(mod.readStdin.length).toBe(0); // No required parameters
-    });
-
-    it('readHookInput should return Promise<HookInput>', async () => {
-      const mod = await import('./stdin-utils');
-      expect(mod.readHookInput.length).toBe(0);
-    });
-
-    it('readStdinWithTimeout should accept timeout parameter', async () => {
-      const mod = await import('./stdin-utils');
-      // Default timeout is 5000ms, parameter is optional
-      expect(mod.readStdinWithTimeout.length).toBeLessThanOrEqual(1);
-    });
-
-    it('delay should accept ms parameter', () => {
-      expect(delay.length).toBe(1);
     });
   });
 });

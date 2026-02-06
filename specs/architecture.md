@@ -4,7 +4,7 @@
 
 Qara is Jean-Marc Giorgi's Personal AI Infrastructure (PAI) -- a Claude Code configuration system that transforms Claude into a personalized development assistant with persistent identity, event-driven automation, and domain-specific skills.
 
-It is NOT a traditional application. It's a `.claude/` directory structure (symlinked to `~/.claude/`) that configures Claude Code's behavior via skills, hooks, commands, and context files.
+It is NOT a traditional application. It's a `.claude/` directory structure (symlinked to `~/.claude/`) that configures Claude Code's behavior via skills, hooks, commands, agents, and context files.
 
 ## Core Philosophy (CONSTITUTION.md)
 
@@ -19,14 +19,15 @@ Eight founding principles:
 7. **Meta/Self Updates** -- System improves itself
 8. **Custom Skill Management** -- Skills are the organizational unit
 
-## The Two Primitives
+## The Three Primitives
 
 | Primitive | Purpose | When to Use |
 |-----------|---------|-------------|
 | **Skills** | Meta-containers for domain expertise | Need competence in a topic/domain |
 | **Commands** | Discrete task workflows (slash commands) | Repeatable task with clear steps |
+| **Agents** | Custom subagent types with specialized prompts | Need a specialist role for delegation |
 
-Agents are CC built-ins (Task tool `subagent_type`). No custom definitions needed.
+CC also provides built-in agent types (`Explore`, `Plan`, `Bash`, `general-purpose`, `claude-code-guide`).
 
 ## Directory Layout
 
@@ -34,17 +35,20 @@ Agents are CC built-ins (Task tool `subagent_type`). No custom definitions neede
 ~/qara/                          # Repository root
 ├── .claude/                     # PAI configuration (symlinked to ~/.claude/)
 │   ├── skills/                  # 13 skill containers
-│   │   └── CORE/               # Foundation skill (always loaded, 25 files)
+│   │   └── CORE/               # Foundation skill (always loaded, 19 files)
 │   ├── hooks/                   # 3 event hooks + 3 shared libs
 │   │   └── lib/                 # Shared TypeScript utilities
-│   ├── commands/                # 10 slash commands
-│   ├── agents/                  # Empty (CC built-ins used directly)
+│   ├── commands/                # 11 slash commands
+│   ├── agents/                  # 5 custom agent definitions
 │   ├── context/                 # Context files (@include'd into sessions)
+│   ├── mcp-servers/             # MCP server implementations (symlinked to ~/.claude/)
+│   │   └── ollama/             # Local Ollama LLM integration
 │   ├── templates/               # Reusable output templates
 │   ├── tests/                   # Validation test suites
 │   ├── bin/                     # Utility scripts
 │   ├── state/                   # Runtime state (gitignored)
 │   └── settings.json            # Claude Code configuration
+├── .mcp.json                    # MCP server config (symlinked to ~/.claude/)
 ├── docs/                        # User-facing documentation
 ├── scripts/                     # Quality assurance shell scripts
 ├── purgatory/                   # Archived/deprecated features
@@ -93,9 +97,9 @@ Claude Completes
 ## Technology Stack
 
 - **Runtime:** Bun (NOT Node.js)
-- **Language:** TypeScript (NOT Python -- "we hate Python")
+- **Language:** TypeScript (NOT Python -- minimized; use uv when required)
 - **Package manager:** bun (NOT npm/yarn/pnpm); uv for Python when forced
 - **Content format:** Markdown (NOT HTML unless custom components)
 - **Testing:** bun test, Playwright for UI
-- **AI tools:** Fabric (242+ prompts), Gemini CLI, Ollama
+- **AI tools:** Fabric (242+ prompts), Gemini CLI, Ollama (via MCP)
 - **Modern CLI tools:** fd, rg, ast-grep, bat

@@ -233,3 +233,18 @@ After living with the cuts for 2-4 weeks:
 | Total files purged | ~50 | → purgatory/ |
 
 Net effect: Less context per session, fewer moving parts, same effective capability. Everything recoverable from purgatory if needed.
+
+---
+
+## Post-Mortem: Phase 1 Partially Reversed
+
+**Phase 1 was based on a false premise.** The plan claimed "Every [agent] maps 1:1 to a CC built-in `subagent_type`." This is incorrect — CC's built-in subagent types are only: `Bash`, `general-purpose`, `Explore`, `Plan`, `claude-code-guide`, `statusline-setup`. Custom agents like `codebase-analyzer`, `architect`, `designer` etc. are NOT built-in and require `.claude/agents/` definitions to exist.
+
+**Reversed:** 6 agents restored from purgatory, optimized (73% token reduction from originals), and wired back into CORE SKILL.md:
+- `codebase-pattern-finder`, `codebase-analyzer` (codebase specialists)
+- `thoughts-analyzer`, `thoughts-locator` (thoughts/ specialists)
+- `designer` (with frontend-design skill), `architect` (with research skill)
+
+**Still deleted (correctly):** `engineer` (main agent covers this), `codebase-locator` (Explore built-in replaces it), all research-specific agents (research skill handles routing), `design-iterator`, `design-implementation-reviewer`, `zai-coder`, `zai-researcher`.
+
+**Updated metric:** Agent definitions: 15 → 0 → **6** (optimized)

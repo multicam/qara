@@ -100,7 +100,30 @@ env:
 
 ## 📋 Response Style
 
-Be concise by default. Scale detail to task complexity.
+| Tier | When | Format |
+|------|------|--------|
+| **Micro** | Confirmations, yes/no, quick facts | 1-2 sentences, no headers or lists |
+| **Standard** | Regular tasks, single-file changes, direct questions | Concise paragraphs, minimal structure |
+| **Deep** | Multi-file changes, debugging, implementation | Headers, code blocks, structured sections |
+| **Comprehensive** | Architecture decisions, analysis reports, planning | Full document with sections, tables, trade-off analysis |
+
+Default to **Micro** or **Standard**. Scale up only when complexity demands it.
+
+---
+
+## 🤖 Custom Agents
+
+Use via `Task` tool with `subagent_type`:
+
+| Agent | Model | Use when |
+|-------|-------|----------|
+| `codebase-analyzer` | sonnet | Deep-diving into how code works, tracing data flow, finding reusable patterns |
+| `designer` | sonnet | Design review, UX/UI, typography, visual polish (loads frontend-design skill) |
+| `architect` | sonnet | PRD creation, system design, technical specifications (loads research skill) |
+| `thoughts-analyzer` | sonnet | Extracting decisions and insights from thoughts/ documents |
+| `thoughts-locator` | haiku | Finding relevant docs in thoughts/ directory |
+
+Parallelize when possible — launch multiple agents in a single message.
 
 ---
 

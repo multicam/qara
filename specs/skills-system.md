@@ -19,9 +19,10 @@ Skills are self-contained knowledge containers with progressive disclosure. Each
 
 ### CORE (Foundation)
 - **Context:** same (loaded every session)
-- **Files:** 24 (including workflows, reference docs)
-- **Purpose:** Identity, routing hub, stack preferences, security
+- **Files:** 19 (including workflows directory, reference docs)
+- **Purpose:** Identity, routing hub, stack preferences, security, agent roster, response tiers
 - **Key files:** CONSTITUTION.md (8 principles), security-protocols.md, contacts.md
+- **SKILL.md sections:** Session tracking, identity, operating principles, workflow routing, documentation index, stack preferences, security protocols, response style (4-tier), custom agents roster (6 agents)
 
 ### research
 - **Context:** fork | **Model:** sonnet
