@@ -4,5 +4,4 @@ PATH includes: /home/jean-marc/.local/share/mise/shims:/home/jean-marc/.local/sh
 
 ## Guides
 
-@include .claude/context/bun-guide.md
-@include .claude/context/hooks-guide.md
+Guides load just-in-time via CORE's Documentation Index — not included here to save context tokens.

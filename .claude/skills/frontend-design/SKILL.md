@@ -2,7 +2,11 @@
 name: frontend-design
 context: fork
 model: sonnet
-description: Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, artifacts, posters, or applications (examples include websites, landing pages, dashboards, React components, HTML/CSS layouts, or when styling/beautifying any web UI). Generates creative, polished code and UI design that avoids generic AI aesthetics.
+description: |
+  Build frontend interfaces (components, pages, dashboards, posters) with distinctive,
+  non-generic design. Writes actual HTML/CSS/React code with production-grade aesthetics.
+  USE WHEN: "build a landing page", "style this component", "make this look good".
+  NOT for automated dev-server verify/fix loops — use design-implementation for that.
 license: Complete terms in LICENSE.txt
 upstream: https://github.com/anthropics/skills/blob/main/skills/frontend-design/SKILL.md
 synced: 2026-01-27

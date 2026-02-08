@@ -31,9 +31,11 @@ Always include dimension metadata with images:
 - Preserve aspect ratios, note original dimensions before resizing
 - Prefer WebP/AVIF for web, PNG for transparency
 
-## Output
+## Returning Results
 
-Include:
-- What you assessed or built
-- Key design decisions made
-- What still needs iteration
+Your full output lands in the caller's context window. Front-load the signal:
+
+1. **Start with a Summary** — 3-5 bullets: what you assessed/built, key design decisions, what still needs iteration
+2. **Then provide details** — screenshots, code snippets, specific measurements, iteration notes
+
+The caller should be able to read just your summary and know whether to dig into the details.

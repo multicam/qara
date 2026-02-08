@@ -398,12 +398,13 @@ services:
 ## 🌐 Web Framework Preferences
 
 ### Frontend
-- **Vue** - Component-based UI
 - **Svelte** - Component-based UI
+- **SvelteLKit** - Svelte with SSR/SSG
 - **React** - Component-based UI
 - **Next.js** - React with SSR/SSG
 - **Tailwind CSS** - Utility-first styling
-- **shadcn/ui** - Component library
+- **shadcn/ui** - Component library React
+- **shadcn-svelte** - Component library Svelte
 
 ### Backend
 - **Hono** - Fast, lightweight web framework (Bun-compatible)

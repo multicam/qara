@@ -1,14 +1,13 @@
 ---
 name: humaniser
-context: same
+context: fork
 model: haiku
 description: |
-  Remove signs of AI-generated writing from text. Use when editing or reviewing
-  text to make it sound more natural and human-written. Based on Wikipedia's
-  comprehensive "Signs of AI writing" guide. Detects and fixes patterns including:
-  inflated symbolism, promotional language, superficial -ing analyses, vague
-  attributions, em dash overuse, rule of three, AI vocabulary words, negative
-  parallelisms, and excessive conjunctive phrases.
+  Edit existing text to remove AI-generated writing patterns. Detects and fixes:
+  inflated symbolism, promotional language, em dash overuse, rule of three,
+  AI vocabulary, negative parallelisms, conjunctive phrases.
+  USE WHEN: "humanise this", "remove AI patterns", "make this sound natural".
+  NOT for creating new narrative content — use story-explanation for that.
 allowed-tools:
   - Read
   - Write

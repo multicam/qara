@@ -1,7 +1,10 @@
 ---
 name: cc-upgrade-pai
 context: fork
-description: PAI-specific Claude Code upgrade analysis. Extends cc-upgrade with PAI repository patterns, delegation workflows, and CORE skill integration. Use when optimizing PAI (Personal AI Infrastructure) codebases.
+description: |
+  PAI-specific .claude/ analysis extending cc-upgrade: CORE skill integration, delegation
+  workflows, PAI repository patterns. Only for PAI (Personal AI Infrastructure) repos.
+  USE WHEN: "upgrade this PAI repo", "optimize Qara's CC setup", "PAI compliance check".
 ---
 
 # CC-Upgrade-PAI (v1.0.0)

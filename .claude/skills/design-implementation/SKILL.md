@@ -2,17 +2,11 @@
 name: design-implementation
 context: fork
 description: |
-  Streamlined UI development workflow with single-command feature implementation.
-  Automates: dev server, browser, verification, error fixing, iteration loop.
-
-  **Core Command:** "implement next feature" or "implement [feature description]"
-
-  **What It Does:**
-  1. Starts dev server (auto-detects port from package.json)
-  2. Launches browser (visible by default, --headless available)
-  3. Implements feature via frontend-design skill
-  4. Verifies: console errors, TS errors, network failures, visual match
-  5. Fixes iteratively (max 5 iterations)
+  Automated UI development loop: dev server + browser + implement + verify + fix.
+  Launches dev server, implements via frontend-design skill, checks for errors
+  (console, TypeScript, network), and iterates up to 5 times.
+  USE WHEN: "implement next feature", "implement [description]", "verify the UI".
+  NOT for one-off design/code tasks — use frontend-design directly for those.
   6. Reports completion or escalates with detailed report
 
   **Triggers:**

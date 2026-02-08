@@ -41,3 +41,9 @@ Total: N relevant documents found
 ```
 
 Group by document type. Include dates from filenames when visible. Be thorough — check all relevant subdirectories.
+
+## Returning Results
+
+Your full output lands in the caller's context window. Front-load the signal:
+1. **Start with a Summary** — "Found N documents about [topic]. Most relevant: [top 2-3 paths]"
+2. **Then provide the full categorized list** using the format above

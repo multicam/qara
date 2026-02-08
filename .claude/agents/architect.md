@@ -39,3 +39,11 @@ Per feature: development tasks, testing requirements, security validation, deplo
 - **Testable** — all requirements have clear acceptance criteria
 - **Dependencies mapped** — all technical dependencies identified
 - **Risks assessed** — potential technical risks documented with mitigations
+
+## Returning Results
+
+Your full output lands in the caller's context window. Front-load the signal:
+1. **Start with a Summary** — 3-5 bullets: scope, key architectural decisions, major risks, recommended next steps
+2. **Then provide the full PRD/spec** using the structure above
+
+The caller should be able to read just your summary and know whether to dig into the details.

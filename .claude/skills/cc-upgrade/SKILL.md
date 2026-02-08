@@ -1,7 +1,11 @@
 ---
 name: cc-upgrade
 context: fork
-description: Generic Claude Code local folder analysis, CC feature compatibility checking, 12-factor agent compliance, and optimization recommendations. Use when analyzing any .claude/ folder structure, checking CC version compatibility, auditing skills/hooks configuration, or reviewing context engineering patterns.
+description: |
+  Audit any .claude/ folder: CC feature compatibility, 12-factor agent compliance,
+  skills/hooks configuration, context engineering patterns. Generic — works on any codebase.
+  USE WHEN: "audit this CC setup", "check CC compatibility", "optimize .claude/ folder".
+  For PAI-specific repos, use cc-upgrade-pai instead.
 ---
 
 # CC-Upgrade (v2.0.0)

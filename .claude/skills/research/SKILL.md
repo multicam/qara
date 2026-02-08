@@ -2,7 +2,10 @@
 name: research
 context: fork
 model: sonnet
-description: Comprehensive research, analysis, and content extraction system. Multi-source parallel research using available researcher agents. Deep content analysis with extended thinking. Intelligent retrieval for difficult sites. Fabric pattern selection for 242+ specialized prompts. USE WHEN user says 'do research', 'extract wisdom', 'analyze content', 'find information about', or requests web/content research.
+description: |
+  Web research, content extraction, and deep analysis. Multi-source parallel search
+  with extended thinking. Supports Fabric pattern selection (242+ prompts).
+  USE WHEN: "research X", "extract wisdom from", "analyze this content", "find info about".
 ---
 
 # Research Skill

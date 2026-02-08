@@ -32,7 +32,6 @@ describe('PAI Directory Structure', () => {
 
   const qaraDirs = [
     'context',
-    'state',
   ];
 
   it('should have PAI_DIR exist', () => {
@@ -398,9 +397,10 @@ describe('Context System', () => {
     expect(contextFiles.length).toBeGreaterThan(0);
   });
 
-  it('CLAUDE.md should use @include directives', () => {
+  it('CLAUDE.md should be minimal (JIT loading via CORE)', () => {
     const claudeMd = readFileSync(join(QARA_DIR, 'CLAUDE.md'), 'utf-8');
-    expect(claudeMd).toContain('@include');
+    const lines = claudeMd.trim().split('\n');
+    expect(lines.length).toBeLessThan(20);
   });
 });
 
