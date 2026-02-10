@@ -6,14 +6,11 @@
  * Outputs JSON per CC hook protocol: { continue: boolean, reason?: string, additionalContext?: string }
  */
 
-import { readFileSync, existsSync } from "fs";
+import { readFileSync } from "fs";
 import { join } from "path";
 import { STATE_DIR } from './lib/pai-paths';
 import { appendJsonl } from './lib/jsonl-utils';
 import { getISOTimestamp } from './lib/datetime-utils';
-
-// Checkpoint tracking
-const CHECKPOINT_STATE_FILE = join(STATE_DIR, 'last-checkpoint.json');
 
 // Dangerous patterns that require human approval
 const DANGEROUS_PATTERNS: Array<{ pattern: RegExp; risk: string; severity: "block" | "approve" }> = [
@@ -68,16 +65,6 @@ interface HookInput {
   tool_input: Record<string, unknown>;
 }
 
-function getLastCheckpointAge(): number {
-  try {
-    if (!existsSync(CHECKPOINT_STATE_FILE)) return Infinity;
-    const data = JSON.parse(readFileSync(CHECKPOINT_STATE_FILE, 'utf-8'));
-    return Date.now() - data.timestamp;
-  } catch {
-    return Infinity;
-  }
-}
-
 function logSecurityCheck(
   operation: string,
   pattern: string,
@@ -119,14 +106,10 @@ function checkCommand(command: string): { status: string; risk?: string; pattern
 /**
  * Generate contextual hints for the model based on command type
  */
-function generateAdditionalContext(command: string, checkpointAgeMs: number): string | undefined {
+function generateAdditionalContext(command: string): string | undefined {
   const hints: string[] = [];
-  const checkpointAgeMins = Math.floor(checkpointAgeMs / 60000);
 
   if (/git\s+(push|reset|rebase|merge|checkout|branch\s+-[dD])/.test(command)) {
-    if (checkpointAgeMs > 300000) {
-      hints.push(`Last checkpoint: ${checkpointAgeMins > 60 ? 'over 1 hour ago' : checkpointAgeMins === Infinity ? 'never' : `${checkpointAgeMins}m ago`}.`);
-    }
     if (/git\s+push/.test(command) && !/--force|-f/.test(command)) {
       hints.push('Verify branch and remote before pushing.');
     }
@@ -178,7 +161,6 @@ async function main(): Promise<void> {
       return;
     }
 
-    const checkpointAgeMs = getLastCheckpointAge();
     const result = checkCommand(command);
 
     logSecurityCheck(
@@ -188,7 +170,7 @@ async function main(): Promise<void> {
       result.status
     );
 
-    const additionalContext = generateAdditionalContext(command, checkpointAgeMs);
+    const additionalContext = generateAdditionalContext(command);
     outputResult(result.status, additionalContext, result.risk);
 
   } catch (error) {

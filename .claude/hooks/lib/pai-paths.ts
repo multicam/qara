@@ -65,9 +65,9 @@ validatePAIStructure();
  */
 export function getHistoryFilePath(subdir: string, filename: string): string {
     const now = new Date();
-    const pstDate = new Date(now.toLocaleString('en-US', { timeZone: 'Australia/Sydney' }));
-    const year = pstDate.getFullYear();
-    const month = String(pstDate.getMonth() + 1).padStart(2, '0');
+    const localDate = new Date(now.toLocaleString('en-US', { timeZone: 'Australia/Sydney' }));
+    const year = localDate.getFullYear();
+    const month = String(localDate.getMonth() + 1).padStart(2, '0');
 
     return join(HISTORY_DIR, subdir, `${year}-${month}`, filename);
 }
