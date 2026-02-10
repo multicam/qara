@@ -1,22 +1,14 @@
 {
   "name": "qara",
-  "module": "index.ts",
   "type": "module",
   "private": true,
   "scripts": {
-    "test": "bun test ./.claude/",
-    "start-obs": "echo 'agent-lens is in purgatory - not available'",
-    "update": "echo 'agent-lens is in purgatory - not available'"
+    "test": "bun test ./.claude/"
   },
   "devDependencies": {
-    "@types/bun": "latest",
-    "@types/jsonwebtoken": "^9.0.10"
+    "@types/bun": "latest"
   },
   "peerDependencies": {
     "typescript": "^5.9.3"
-  },
-  "dependencies": {
-    "jsonwebtoken": "^9.0.3",
-    "lightweight-charts": "^5.0.9"
   }
 }

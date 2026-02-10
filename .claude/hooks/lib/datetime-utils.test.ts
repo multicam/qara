@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'bun:test';
-import { getAEDTTimestamp, getDateParts, getISOTimestamp } from './datetime-utils';
+import { getLocalTimestamp, getDateParts, getISOTimestamp } from './datetime-utils';
 
 describe('getISOTimestamp', () => {
   it('should return ISO 8601 formatted string', () => {
@@ -20,10 +20,10 @@ describe('getISOTimestamp', () => {
   });
 });
 
-describe('getAEDTTimestamp', () => {
+describe('getLocalTimestamp', () => {
   it('should return formatted timestamp string', () => {
-    const ts = getAEDTTimestamp();
-    expect(ts).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} AEDT$/);
+    const ts = getLocalTimestamp();
+    expect(ts).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} AE[DS]T$/);
   });
 });
 

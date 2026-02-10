@@ -2,16 +2,16 @@
  * DateTime Utilities
  *
  * Shared functions for timezone-aware date/time formatting.
- * Centralizes Sydney/AEDT timezone handling used across hooks.
+ * Uses Australia/Sydney timezone for consistency.
  */
 
 const TIMEZONE = 'Australia/Sydney';
 
 /**
- * Get Sydney timestamp string (AEDT format)
+ * Get Sydney timestamp string with correct timezone abbreviation (AEDT/AEST)
  * @returns Formatted timestamp like "2025-01-11 08:00:00 AEDT"
  */
-export function getAEDTTimestamp(): string {
+export function getLocalTimestamp(): string {
     const date = new Date();
     const formatter = new Intl.DateTimeFormat('en-AU', {
         timeZone: TIMEZONE,
@@ -31,7 +31,12 @@ export function getAEDTTimestamp(): string {
     const minutes = parts.find(p => p.type === 'minute')!.value;
     const seconds = parts.find(p => p.type === 'second')!.value;
 
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds} AEDT`;
+    const tzAbbr = new Intl.DateTimeFormat('en-AU', {
+        timeZone: TIMEZONE,
+        timeZoneName: 'short'
+    }).formatToParts(date).find(p => p.type === 'timeZoneName')!.value;
+
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds} ${tzAbbr}`;
 }
 
 /**

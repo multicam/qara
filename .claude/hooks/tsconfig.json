@@ -26,16 +26,11 @@
     "types": ["bun-types"],
 
     // Path resolution
-    "baseUrl": ".",
-    "paths": {
-      "@lib/*": ["./lib/*"],
-      "@utils/*": ["./utils/*"]
-    }
+    "baseUrl": "."
   },
   "include": [
     "*.ts",
-    "lib/**/*",
-    "utils/**/*"
+    "lib/**/*"
   ],
   "exclude": [
     "node_modules"

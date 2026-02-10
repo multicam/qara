@@ -80,18 +80,13 @@
   "enabledMcpjsonServers": [],
 
   "_hooks_comment_1": "=================================================================",
-  "_hooks_comment_2": "HOOKS CONFIGURATION - Complete set of PAI lifecycle hooks",
+  "_hooks_comment_2": "HOOKS CONFIGURATION - PAI lifecycle hooks",
   "_hooks_comment_3": "=================================================================",
-  "_hooks_comment_4": "PreToolUse: Security checks + event capture BEFORE tool execution",
-  "_hooks_comment_5": "PostToolUse: Audit + event capture AFTER tool completes",
-  "_hooks_comment_6": "SessionStart: Load CORE context, initialize session state",
-  "_hooks_comment_7": "SessionEnd: Capture session summary",
-  "_hooks_comment_8": "UserPromptSubmit: Update tab titles, capture user input",
-  "_hooks_comment_9": "Stop: Extract completion info, update state",
-  "_hooks_comment_10": "SubagentStart: Track subagent initialization",
-  "_hooks_comment_11": "SubagentStop: Track subagent completion",
-  "_hooks_comment_12": "PreCompact: Context compression management",
-  "_hooks_comment_13": "=================================================================",
+  "_hooks_comment_4": "PreToolUse: Security checks BEFORE tool execution",
+  "_hooks_comment_5": "SessionStart: Load CORE context, initialize session state",
+  "_hooks_comment_6": "UserPromptSubmit: Update tab titles",
+  "_hooks_comment_7": "Stop: Extract completion info, update state",
+  "_hooks_comment_8": "=================================================================",
 
   "hooks": {
     "PreToolUse": [
@@ -103,40 +98,6 @@
             "command": "${PAI_DIR}/hooks/pre-tool-use-security.ts"
           }
         ]
-      },
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${PAI_DIR}/hooks/capture-all-events.ts"
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${PAI_DIR}/hooks/post-tool-use-audit.ts"
-          },
-          {
-            "type": "command",
-            "command": "${PAI_DIR}/hooks/capture-all-events.ts"
-          }
-        ]
-      }
-    ],
-    "SessionEnd": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${PAI_DIR}/hooks/capture-all-events.ts"
-          }
-        ]
       }
     ],
     "UserPromptSubmit": [
@@ -145,10 +106,6 @@
           {
             "type": "command",
             "command": "${PAI_DIR}/hooks/update-tab-titles.ts"
-          },
-          {
-            "type": "command",
-            "command": "${PAI_DIR}/hooks/capture-all-events.ts"
           }
         ]
       }
@@ -159,10 +116,6 @@
           {
             "type": "command",
             "command": "${PAI_DIR}/hooks/session-start.ts"
-          },
-          {
-            "type": "command",
-            "command": "${PAI_DIR}/hooks/capture-all-events.ts"
           }
         ]
       }
@@ -173,53 +126,6 @@
           {
             "type": "command",
             "command": "${PAI_DIR}/hooks/stop-hook.ts"
-          },
-          {
-            "type": "command",
-            "command": "${PAI_DIR}/hooks/capture-all-events.ts"
-          }
-        ]
-      }
-    ],
-    "SubagentStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${PAI_DIR}/hooks/subagent-start-hook.ts"
-          },
-          {
-            "type": "command",
-            "command": "${PAI_DIR}/hooks/capture-all-events.ts"
-          }
-        ]
-      }
-    ],
-    "SubagentStop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${PAI_DIR}/hooks/subagent-stop-hook.ts"
-          },
-          {
-            "type": "command",
-            "command": "${PAI_DIR}/hooks/capture-all-events.ts"
-          }
-        ]
-      }
-    ],
-    "PreCompact": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${PAI_DIR}/hooks/pre-compact-context.ts"
-          },
-          {
-            "type": "command",
-            "command": "${PAI_DIR}/hooks/capture-all-events.ts"
           }
         ]
       }
