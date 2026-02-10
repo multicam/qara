@@ -13,9 +13,9 @@ Skills are self-contained knowledge containers with progressive disclosure. Each
 | Type | Behavior | Used By |
 |------|----------|---------|
 | `context: same` | Loads in main conversation | CORE, humaniser |
-| `context: fork` | Isolated subagent execution | All other 11 skills |
+| `context: fork` | Isolated subagent execution | All other 12 skills |
 
-## All 13 Active Skills
+## All 14 Active Skills
 
 ### CORE (Foundation)
 - **Context:** same (loaded every session)
@@ -93,6 +93,12 @@ Skills are self-contained knowledge containers with progressive disclosure. Each
 - **Purpose:** PAI-specific CC analysis (CORE audit, delegation patterns, tool integration)
 - **Triggers:** Optimizing PAI codebases
 
+### thoughts-consolidate
+- **Context:** fork | **Model:** sonnet
+- **Workflows:** 1 (consolidate)
+- **Purpose:** Consolidate and clean up thoughts/ files with codebase verification
+- **Triggers:** "consolidate thoughts", "clean up thoughts", "merge thoughts files"
+
 ### example-skill
 - **Context:** fork
 - **Workflows:** 3 (simple-task, complex-task, parallel-task)
@@ -114,5 +120,6 @@ CORE (foundation -- all skills depend on it)
 ├── hook-authoring
 ├── prompting
 ├── humaniser
+├── thoughts-consolidate
 └── example-skill
 ```

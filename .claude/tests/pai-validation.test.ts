@@ -143,9 +143,11 @@ describe('Settings Configuration', () => {
           if (config.hooks) {
             for (const hook of config.hooks) {
               if (hook.command) {
-                const match = hook.command.match(/(\/[^\s]+\.ts)/);
+                // Extract .ts file path and expand ${PAI_DIR} variable
+                const match = hook.command.match(/((?:\$\{PAI_DIR\}|\/)[^\s]+\.(?:ts|sh))/);
                 if (match) {
-                  expect(existsSync(match[1])).toBe(true);
+                  const resolved = match[1].replace('${PAI_DIR}', PAI_DIR);
+                  expect(existsSync(resolved)).toBe(true);
                 }
               }
             }

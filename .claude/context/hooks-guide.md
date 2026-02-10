@@ -8,9 +8,8 @@ Claude Code hooks in `.claude/hooks/`. All hooks are Bun TypeScript.
 |------|-------|---------|
 | `session-start.ts` | SessionStart | Loads SKILL.md, sets tab title |
 | `stop-hook.ts` | Stop | Extracts COMPLETED line, updates tab title |
-| `subagent-stop-hook.ts` | SubagentStop | Extracts agent completion |
 | `update-tab-titles.ts` | UserPromptSubmit | Sets processing indicator |
-| `capture-all-events.ts` | All events | Logs to JSONL |
+| `pre-tool-use-security.ts` | PreToolUse:Bash | Detects dangerous patterns, blocks/approves |
 
 ## Shared Utilities
 
@@ -21,9 +20,8 @@ Located in `.claude/hooks/lib/`:
 | `pai-paths.ts` | PAI_DIR, SKILLS_DIR path resolution |
 | `stdin-utils.ts` | readStdinWithTimeout, HookInput interface |
 | `tab-titles.ts` | generateTabTitle, setTerminalTabTitle |
-| `transcript-utils.ts` | contentToText, findTaskResult, extractCompletionMessage |
-| `hitl.ts` | Human-in-the-loop: askQuestion, askPermission, askChoice |
-| `summarizer.ts` | Content summarization utilities |
+| `jsonl-utils.ts` | appendJsonl for structured logging |
+| `datetime-utils.ts` | getISOTimestamp, getDateString |
 
 ## Hook Events Reference
 

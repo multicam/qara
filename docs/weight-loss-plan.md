@@ -142,7 +142,8 @@ mv .claude/skills/CORE/TOOLS.md                    purgatory/skills/CORE/
 - `workflows/git-update-repo.md`, `workflows/merge-conflict-resolution.md`
 - `workflows/exploration-pattern.md`, `workflows/checkpoint-protocol.md`
 - `workflows/file-organization-detailed.md`
-- `workflows/intelligent-assistance-implementation.md`, `workflows/voice-routing-full.md`
+- ~~`workflows/intelligent-assistance-implementation.md`~~ (moved to purgatory/)
+- ~~`workflows/voice-routing-full.md`~~ (removed — no voice system)
 
 ---
 
