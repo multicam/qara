@@ -37,14 +37,19 @@ ${PAI_DIR}/
 
 ---
 
-## Self-Test
+## Validation
 
-Run health check:
+Run tests:
 ```bash
-bun .claude/hooks/self-test.ts
+cd $PAI_DIR && bun test
 ```
 
-Expected: All tests pass (warnings for optional features are OK).
+Verify symlinks:
+```bash
+for item in hooks skills commands agents; do
+  [ -L "$HOME/.claude/$item" ] && echo "$item: OK" || echo "$item: MISSING"
+done
+```
 
 ---
 

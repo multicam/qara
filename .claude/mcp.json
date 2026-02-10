@@ -2,7 +2,7 @@
   "mcpServers": {
     "ollama": {
       "command": "bun",
-      "args": ["run", "/home/jean-marc/.claude/mcp-servers/ollama/index.ts"],
+      "args": ["run", "${PAI_DIR}/mcp-servers/ollama/index.ts"],
       "env": {
         "OLLAMA_URL": "http://localhost:11434",
         "OLLAMA_DEFAULT_MODEL": "qwen3-vl:latest"

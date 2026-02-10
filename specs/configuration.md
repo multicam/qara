@@ -16,7 +16,7 @@
 | Variable | Value | Purpose |
 |----------|-------|---------|
 | `DA` | `Qara` | Digital assistant name |
-| `PAI_DIR` | `/home/jean-marc/.claude` | PAI directory path |
+| `PAI_DIR` | `${HOME}/.claude` | PAI directory path |
 | `CLAUDE_CODE_MAX_OUTPUT_TOKENS` | `64000` | Max output tokens |
 | `API_TIMEOUT_MS` | `3000000` | 50-minute timeout |
 | `PATH` | Extended | Includes Bun, Cargo, mise shims |

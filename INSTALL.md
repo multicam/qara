@@ -45,8 +45,15 @@ curl --version
 
 ### Recommended
 
+**macOS (Homebrew):**
 ```bash
-# Install Bun (JS runtime)
+brew install oven-sh/bun/bun
+brew install fd ripgrep ast-grep bat gh
+```
+
+**Linux:**
+```bash
+# Install Bun
 curl -fsSL https://bun.sh/install | bash
 
 # Install Rust/Cargo (for CLI tools)
@@ -219,8 +226,13 @@ ln -sf $PAI_DIR/.env ~/.claude/.env
 
 ### Missing CLI tools
 
+**macOS:**
 ```bash
-# Install all recommended tools
+brew install fd ripgrep ast-grep bat
+```
+
+**Linux:**
+```bash
 cargo install fd-find ripgrep ast-grep bat
 ```
 

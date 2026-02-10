@@ -7,7 +7,7 @@
 ## 🔴 Two Repository Strategy (CRITICAL)
 
 ### PRIVATE QARA (~/.claude/)
-**Location**: `/home/jean-marc/qara/.claude/` (symlink to `~/.claude/` recommended)
+**Location**: `~/qara/.claude/` (symlink to `~/.claude/` recommended)
 **Git Remote**: `github.com/[username]/.private-qara` or similar PRIVATE repository
 **Contains**:
 - ALL sensitive data (API keys, tokens, secrets)
@@ -20,7 +20,7 @@
 **Status**: 🔒 **PRIVATE FOREVER** - Never make public
 
 ### PUBLIC PAI (Template Repository)
-**Location**: `/home/jean-marc/qara/` (if maintaining public template)
+**Location**: `~/qara/` (if maintaining public template)
 **Git Remote**: Public GitHub repository
 **Contains**:
 - Sanitized skill templates
@@ -80,7 +80,7 @@ git status | grep -E "\.env|config|secrets"
 
 #### 4. Verify File Paths
 - Ensure paths use `${PAI_DIR}` or `~/.claude/` (generic)
-- No hardcoded personal directories like `/home/jean-marc/specific-project/`
+- No hardcoded personal directories like `/home/username/specific-project/`
 - No references to client names or business-specific paths
 
 #### 5. Check .gitignore Coverage
@@ -263,7 +263,7 @@ if git diff --cached | grep -E "api[_-]?key|password|secret|token" -i; then
 fi
 
 # Verify we're not committing from wrong repo
-if [ "$(pwd)" == "/home/jean-marc/qara/.claude" ]; then
+if [ "$(pwd)" == "$HOME/qara/.claude" ]; then
   echo "🚨 CRITICAL: You are committing from PRIVATE .claude directory!"
   git remote -v
   echo "Verify this is correct. Continue? (y/n)"

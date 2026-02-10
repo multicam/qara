@@ -1,4 +1,4 @@
-#!/home/jean-marc/.bun/bin/bun
+#!/usr/bin/env bun
 /**
  * Pre-Tool-Use Security Hook
  *

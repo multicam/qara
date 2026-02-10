@@ -337,7 +337,7 @@ Before marking this skill as complete, verify all triggers work:
 ### Step 1: Create Directory
 
 ```bash
-cd /home/jean-marc/qara
+cd ~/qara
 mkdir -p .claude/skills/personal-context
 ```
 

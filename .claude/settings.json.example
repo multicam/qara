@@ -16,9 +16,9 @@
 
   "env": {
     "DA": "Qara",
-    "PAI_DIR": "/home/username/.claude",
+    "PAI_DIR": "${HOME}/.claude",
     "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "64000",
-    "PATH": "/home/username/.local/share/mise/shims:/home/username/.local/bin:/home/username/.cargo/bin:/home/username/.bun/bin:/usr/local/bin:/usr/bin:/bin"
+    "PATH": "${HOME}/.local/bin:${HOME}/.cargo/bin:/opt/homebrew/bin:/opt/homebrew/sbin:${HOME}/.local/share/mise/shims:/usr/local/bin:/usr/bin:/bin"
   },
 
   "permissions": {

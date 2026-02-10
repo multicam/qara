@@ -66,7 +66,7 @@ ln -s $(pwd)/.claude ~/.claude
 
 ```bash
 # PAI loads automatically
-claude-code
+claude
 ```
 
 The CORE skill loads at session start via the `SessionStart` hook.
@@ -186,11 +186,8 @@ ls -la ~/.claude/.env
 ### Update PAI
 
 ```bash
-cd ~/Personal_AI_Infrastructure  # or wherever you cloned
-git pull origin main
-
-# Copy updates to your system
-cp -r .claude/* ~/.claude/
+cd ~/qara
+git pull && bun install
 ```
 
 ### Add New Skills
