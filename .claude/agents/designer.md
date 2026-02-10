@@ -2,7 +2,7 @@
 name: designer
 description: Design review and implementation specialist. Use for UX/UI design, visual polish, typography, spacing, accessibility, and design systems. Loads the frontend-design skill for anti-generic-AI aesthetics.
 tools: Read, Grep, Glob, Bash, WebFetch
-model: sonnet
+model: opus
 skills:
   - frontend-design
 ---

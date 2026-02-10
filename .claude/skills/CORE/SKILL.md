@@ -114,8 +114,10 @@ Use via `Task` tool with `subagent_type`:
 | Agent | Model | Use when |
 |-------|-------|----------|
 | `codebase-analyzer` | sonnet | Deep-diving into how code works, tracing data flow, finding reusable patterns |
-| `designer` | sonnet | Design review, UX/UI, typography, visual polish (loads frontend-design skill) |
-| `architect` | sonnet | PRD creation, system design, technical specifications (loads research skill) |
+| `designer` | opus | Design review, UX/UI, typography, visual polish (loads frontend-design skill) |
+| `architect` | opus | PRD creation, system design, technical specifications (loads research skill) |
+| `engineer` | sonnet | Code implementation, debugging, optimization, testing from PRDs |
+| `reviewer` | opus | Code review for correctness, security, performance, maintainability |
 | `thoughts-analyzer` | sonnet | Extracting decisions and insights from thoughts/ documents |
 | `thoughts-locator` | haiku | Finding relevant docs in thoughts/ directory |
 
