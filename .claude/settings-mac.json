@@ -3,9 +3,9 @@
   "respectGitignore": true,
   "env": {
     "DA": "Qara",
-    "PAI_DIR": "/home/jean-marc/.claude",
+    "PAI_DIR": "/Users/jmbook/.claude",
     "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "64000",
-    "PATH": "/home/jean-marc/.local/bin:/home/jean-marc/.cargo/bin:/usr/local/bin:/usr/bin:/bin:/home/jean-marc/.local/share/mise/shims"
+    "PATH": "/Users/jmbook/go/bin:/Users/jmbook/.local/bin:/Users/jmbook/.cargo/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/Users/jmbook/.local/share/mise/shims"
   },
   "permissions": {
     "allow": [
