@@ -5,8 +5,6 @@
  * Used by stop-hook.ts and potentially other hooks.
  */
 
-import { execSync } from 'child_process';
-
 /**
  * Common stop words to filter out when generating titles
  */
@@ -18,25 +16,36 @@ const STOP_WORDS = new Set([
 ]);
 
 /**
- * Action verbs to detect and convert to past tense
+ * Irregular past tenses for common dev verbs
+ */
+const IRREGULAR_PAST: Record<string, string> = {
+  write: 'Wrote', make: 'Made', send: 'Sent', build: 'Built',
+  run: 'Ran', get: 'Got', set: 'Set', find: 'Found',
+  read: 'Read', do: 'Did', go: 'Went', put: 'Put',
+};
+
+/**
+ * Action verbs to detect (base forms only, no already-past forms)
  */
 const ACTION_VERBS = [
   'test', 'rename', 'fix', 'debug', 'research', 'write', 'create', 'make',
   'build', 'implement', 'analyze', 'review', 'update', 'modify', 'generate',
   'develop', 'design', 'deploy', 'configure', 'setup', 'install', 'remove',
   'delete', 'add', 'check', 'verify', 'validate', 'optimize', 'refactor',
-  'enhance', 'improve', 'send', 'email', 'help', 'updated', 'fixed',
-  'created', 'built', 'added'
+  'enhance', 'improve', 'send', 'email', 'help', 'run', 'find', 'set',
 ];
 
 /**
  * Convert verb to past tense
  */
 function toPastTense(verb: string): string {
-  if (verb === 'write') return 'Wrote';
-  if (verb === 'make') return 'Made';
-  if (verb === 'send') return 'Sent';
-  if (verb.endsWith('e')) return verb.charAt(0).toUpperCase() + verb.slice(1, -1) + 'ed';
+  const lower = verb.toLowerCase();
+  if (IRREGULAR_PAST[lower]) return IRREGULAR_PAST[lower];
+  if (lower.endsWith('e')) return verb.charAt(0).toUpperCase() + verb.slice(1) + 'd';
+  if (/[bcdfghlmnprstvwz]$/.test(lower) && /[aeiou].$/.test(lower)) {
+    // CVC pattern: double final consonant (e.g., "set" -> but handled by irregulars)
+    return verb.charAt(0).toUpperCase() + verb.slice(1) + 'ed';
+  }
   return verb.charAt(0).toUpperCase() + verb.slice(1) + 'ed';
 }
 
@@ -99,11 +108,7 @@ export function generateTabTitle(prompt: string, completedLine?: string): string
     }
   }
 
-  // Fill with generic words if needed
-  if (titleWords.length === 0) titleWords.push('Completed');
-  if (titleWords.length === 1) titleWords.push('Task');
-  if (titleWords.length === 2) titleWords.push('Successfully');
-  if (titleWords.length === 3) titleWords.push('Done');
+  if (titleWords.length === 0) titleWords.push('Completed', 'Task');
 
   return titleWords.slice(0, 4).join(' ');
 }
@@ -132,18 +137,3 @@ export function setTerminalTabTitle(title: string): void {
   }
 }
 
-/**
- * Set tab title using execSync (for hooks that need synchronous execution)
- * 
- * @param title The title to set
- */
-export function setTabTitleSync(title: string): void {
-  try {
-    const escapedTitle = title.replace(/'/g, "'\\''");
-    execSync(`printf '\\033]0;${escapedTitle}\\007' >&2`);
-    execSync(`printf '\\033]2;${escapedTitle}\\007' >&2`);
-    execSync(`printf '\\033]30;${escapedTitle}\\007' >&2`);
-  } catch (e) {
-    // Silently fail - tab titles are not critical
-  }
-}

@@ -36,12 +36,12 @@ describe('Tab Titles', () => {
         expect(words.length).toBe(4);
       });
 
-      it('should pad with Done if not enough words', () => {
+      it('should handle short completed lines without over-padding', () => {
         const title = generateTabTitle('test', 'COMPLETED: OK');
         const words = title.split(' ');
 
-        expect(words.length).toBe(4);
-        expect(words.some((w) => w === 'Done')).toBe(true);
+        expect(words.length).toBeGreaterThanOrEqual(1);
+        expect(words.length).toBeLessThanOrEqual(4);
       });
     });
 
@@ -67,11 +67,12 @@ describe('Tab Titles', () => {
         expect(title.toLowerCase()).not.toMatch(/\b(the|and|for|this)\b/);
       });
 
-      it('should return exactly 4 words', () => {
+      it('should return 1-4 words', () => {
         const title = generateTabTitle('do something');
         const words = title.split(' ');
 
-        expect(words.length).toBe(4);
+        expect(words.length).toBeGreaterThanOrEqual(1);
+        expect(words.length).toBeLessThanOrEqual(4);
       });
 
       it('should capitalize first letter of each word', () => {
@@ -87,9 +88,7 @@ describe('Tab Titles', () => {
     describe('edge cases', () => {
       it('should handle empty prompt', () => {
         const title = generateTabTitle('');
-        const words = title.split(' ');
 
-        expect(words.length).toBe(4);
         expect(title).toContain('Completed');
       });
 
@@ -97,14 +96,16 @@ describe('Tab Titles', () => {
         const title = generateTabTitle('the and but for');
         const words = title.split(' ');
 
-        expect(words.length).toBe(4);
+        expect(words.length).toBeGreaterThanOrEqual(1);
+        expect(words.length).toBeLessThanOrEqual(4);
       });
 
       it('should handle very short words', () => {
         const title = generateTabTitle('a b c d e f g');
         const words = title.split(' ');
 
-        expect(words.length).toBe(4);
+        expect(words.length).toBeGreaterThanOrEqual(1);
+        expect(words.length).toBeLessThanOrEqual(4);
       });
 
       it('should handle special characters in prompt', () => {
@@ -126,14 +127,16 @@ describe('Tab Titles', () => {
         const title = generateTabTitle('test something', undefined);
         const words = title.split(' ');
 
-        expect(words.length).toBe(4);
+        expect(words.length).toBeGreaterThanOrEqual(1);
+        expect(words.length).toBeLessThanOrEqual(4);
       });
 
       it('should handle empty completed line', () => {
         const title = generateTabTitle('test something', '');
         const words = title.split(' ');
 
-        expect(words.length).toBe(4);
+        expect(words.length).toBeGreaterThanOrEqual(1);
+        expect(words.length).toBeLessThanOrEqual(4);
       });
     });
 
@@ -167,11 +170,10 @@ describe('Tab Titles', () => {
 
       it('should not double-convert already past tense verbs', () => {
         const title = generateTabTitle('updated the code');
-        const words = title.split(' ');
 
-        // Should contain Updated (from the original verb), not Updateded
-        const updateWords = words.filter((w) => w.toLowerCase().includes('updat'));
-        expect(updateWords.length).toBeLessThanOrEqual(1);
+        // "updated" matches "update" in ACTION_VERBS, so it gets past-tensed.
+        // Should not produce "Updateded"
+        expect(title).not.toContain('Updateded');
       });
     });
 
@@ -181,13 +183,13 @@ describe('Tab Titles', () => {
         expect(title).toContain('Completed');
       });
 
-      it('should use Task, Successfully, Done for padding', () => {
-        // With minimal input, should get generic words
+      it('should not over-pad short titles', () => {
         const title = generateTabTitle('x');
         const words = title.split(' ');
 
-        // Should have 4 words with some generic fallbacks
-        expect(words.length).toBe(4);
+        // Short input should produce a short title, not padded to 4
+        expect(words.length).toBeGreaterThanOrEqual(1);
+        expect(words.length).toBeLessThanOrEqual(4);
       });
     });
   });
@@ -220,27 +222,4 @@ describe('Tab Titles', () => {
     });
   });
 
-  describe('setTabTitleSync', () => {
-    it('should export setTabTitleSync function', async () => {
-      const mod = await import('./tab-titles');
-      expect(typeof mod.setTabTitleSync).toBe('function');
-    });
-
-    it('should not throw when called with a title', async () => {
-      const { setTabTitleSync } = await import('./tab-titles');
-      // Uses execSync internally - should silently fail or succeed
-      expect(() => setTabTitleSync('Test Sync Title')).not.toThrow();
-    });
-
-    it('should handle special characters in title', async () => {
-      const { setTabTitleSync } = await import('./tab-titles');
-      // The function escapes single quotes
-      expect(() => setTabTitleSync("Title with 'quotes'")).not.toThrow();
-    });
-
-    it('should handle empty title', async () => {
-      const { setTabTitleSync } = await import('./tab-titles');
-      expect(() => setTabTitleSync('')).not.toThrow();
-    });
-  });
 });

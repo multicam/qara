@@ -7,9 +7,28 @@
  * Sets terminal tab title based on the last user query.
  */
 
-import { readFileSync } from 'fs';
+import { openSync, readSync, fstatSync, closeSync } from 'fs';
 import { generateTabTitle, setTerminalTabTitle } from './lib/tab-titles';
 import { readStdinWithTimeout } from './lib/stdin-utils';
+
+const TAIL_BYTES = 32_768; // Read last 32KB -- enough for recent user messages
+
+/**
+ * Read the last N bytes of a file without loading the whole thing.
+ */
+function readTail(filePath: string, bytes: number): string {
+  const fd = openSync(filePath, 'r');
+  try {
+    const { size } = fstatSync(fd);
+    const start = Math.max(0, size - bytes);
+    const len = size - start;
+    const buf = Buffer.alloc(len);
+    readSync(fd, buf, 0, len, start);
+    return buf.toString('utf-8');
+  } finally {
+    closeSync(fd);
+  }
+}
 
 async function main() {
   // Read input from stdin
@@ -30,16 +49,16 @@ async function main() {
     process.exit(0);
   }
 
-  // Read the transcript
-  let transcript: string;
+  // Read only the tail of the transcript
+  let tail: string;
   try {
-    transcript = readFileSync(transcriptPath, 'utf-8');
+    tail = readTail(transcriptPath, TAIL_BYTES);
   } catch {
     process.exit(0);
   }
 
   // Find last user query for tab title
-  const lines = transcript.trim().split('\n');
+  const lines = tail.trim().split('\n');
   let lastUserQuery = '';
 
   for (let i = lines.length - 1; i >= 0; i--) {
@@ -60,13 +79,13 @@ async function main() {
         if (lastUserQuery) break;
       }
     } catch {
-      // Skip invalid JSON
+      // Skip invalid/partial JSON (first line may be truncated)
     }
   }
 
   // Set tab title
   if (lastUserQuery) {
-    const title = generateTabTitle(lastUserQuery, '');
+    const title = generateTabTitle(lastUserQuery);
     setTerminalTabTitle(title);
   }
 }

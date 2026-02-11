@@ -3,7 +3,7 @@
  * Pre-Tool-Use Security Hook
  *
  * Detects dangerous patterns in Bash commands before execution.
- * Outputs JSON per CC hook protocol: { continue: boolean, reason?: string, additionalContext?: string }
+ * Outputs JSON per CC hook protocol using hookSpecificOutput with permissionDecision (allow/deny/ask).
  */
 
 import { readFileSync } from "fs";
@@ -38,11 +38,11 @@ const DANGEROUS_PATTERNS: Array<{ pattern: RegExp; risk: string; severity: "bloc
   // Remote code execution
   { pattern: /curl.*\|\s*(ba)?sh/, risk: "pipe curl to shell", severity: "block" },
   { pattern: /wget.*\|\s*(ba)?sh/, risk: "pipe wget to shell", severity: "block" },
-  { pattern: /eval\s*\(/, risk: "eval execution", severity: "approve" },
+  { pattern: /\beval\s/, risk: "eval execution", severity: "approve" },
 
   // Credential exposure
   { pattern: /echo.*API_KEY.*>/, risk: "writing API key to file", severity: "approve" },
-  { pattern: /cat.*\.env/, risk: "reading environment file", severity: "approve" },
+  { pattern: /cat\s+.*\.env\b/, risk: "reading environment file", severity: "approve" },
   { pattern: /export\s+.*SECRET/, risk: "exporting secrets", severity: "approve" },
 
   // Production operations
@@ -134,15 +134,32 @@ function generateAdditionalContext(command: string): string | undefined {
 }
 
 function outputResult(decision: string, additionalContext?: string, reason?: string): void {
-  const shouldContinue = decision === "APPROVED";
-  const result: { continue: boolean; additionalContext?: string; reason?: string } = {
-    continue: shouldContinue
-  };
+  if (decision === "APPROVED") {
+    // Allow: exit 0 with optional context
+    if (additionalContext) {
+      console.log(JSON.stringify({
+        hookSpecificOutput: {
+          hookEventName: "PreToolUse",
+          permissionDecision: "allow",
+          additionalContext
+        }
+      }));
+    }
+    // No output = allow (exit 0)
+    return;
+  }
 
-  if (additionalContext) result.additionalContext = additionalContext;
-  if (!shouldContinue && reason) result.reason = `${decision}: ${reason}`;
+  const permissionDecision = decision === "BLOCKED" ? "deny" : "ask";
+  const permissionDecisionReason = reason ? `${decision}: ${reason}` : decision;
 
-  console.log(JSON.stringify(result));
+  console.log(JSON.stringify({
+    hookSpecificOutput: {
+      hookEventName: "PreToolUse",
+      permissionDecision,
+      permissionDecisionReason,
+      ...(additionalContext ? { additionalContext } : {})
+    }
+  }));
 }
 
 async function main(): Promise<void> {
