@@ -1,0 +1,335 @@
+#!/usr/bin/env bash
+
+#
+# devtools-mcp - Global CLI for Chrome DevTools MCP skill
+#
+# Usage: devtools-mcp <command> [options]
+#
+
+set -euo pipefail
+
+# Script directory (resolve symlink)
+SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
+SCRIPT_DIR="$(dirname "$SCRIPT_PATH")"
+SKILL_DIR="$(dirname "$SCRIPT_DIR")"
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Functions
+print_error() {
+    echo -e "${RED}Error:${NC} $1" >&2
+}
+
+print_success() {
+    echo -e "${GREEN}✓${NC} $1"
+}
+
+print_info() {
+    echo -e "${BLUE}ℹ${NC} $1"
+}
+
+print_warning() {
+    echo -e "${YELLOW}⚠${NC} $1"
+}
+
+# Help text
+show_help() {
+    cat << EOF
+DevTools MCP - Chrome DevTools MCP Global CLI
+
+Usage: devtools-mcp <command> [options]
+
+Commands:
+  verify              Verify MCP setup is ready
+  detect              Auto-detect project config
+  url [url]           Build target URL from config
+  browser             Detect available browsers
+
+  smoke [url]         Run smoke test
+  visual [url]        Run visual test (screenshots)
+  debug [url]         Debug console errors
+  perf [url]          Performance trace
+  a11y [url]          Accessibility audit
+
+  interactive         Launch Claude in interactive mode
+
+  help                Show this help message
+  version             Show version information
+
+Options:
+  --url <url>         Override URL (default: auto-detect)
+  --pages <pages>     Comma-separated page paths
+  --no-server         Don't start dev server (for live URLs)
+  --verbose           Show detailed output
+
+Examples:
+  # Verify setup
+  devtools-mcp verify
+
+  # Test local dev server (auto-detected)
+  devtools-mcp smoke
+
+  # Test live URL
+  devtools-mcp smoke --url https://example.com
+
+  # Debug console errors
+  devtools-mcp debug --pages /,/about/,/contact/
+
+  # Interactive mode
+  devtools-mcp interactive
+
+  # Performance trace
+  devtools-mcp perf --url http://localhost:8000
+
+Documentation:
+  ${SKILL_DIR}/README.md
+  ${SKILL_DIR}/docs/
+
+EOF
+}
+
+# Version info
+show_version() {
+    cat << EOF
+DevTools MCP CLI v0.1.0
+Skill location: ${SKILL_DIR}
+Node version: $(node --version)
+EOF
+}
+
+# Verify MCP setup
+cmd_verify() {
+    print_info "Verifying MCP setup..."
+    node "${SKILL_DIR}/lib/mcp-verify.mjs"
+}
+
+# Auto-detect project config
+cmd_detect() {
+    local project_path="${1:-$(pwd)}"
+    print_info "Detecting project config from: ${project_path}"
+    node "${SKILL_DIR}/lib/auto-detect.mjs" "$project_path"
+}
+
+# Build target URL
+cmd_url() {
+    local url="${1:-}"
+    local project_path="$(pwd)"
+
+    if [[ -n "$url" ]]; then
+        print_info "Building URL config for: ${url}"
+        node --input-type=module -e "
+            import { buildTargetUrl, formatUrlConfig } from '${SKILL_DIR}/lib/url-builder.mjs';
+            const config = await buildTargetUrl({ url: '${url}' });
+            console.log(formatUrlConfig(config));
+        "
+    else
+        print_info "Auto-detecting URL from project..."
+        node --input-type=module -e "
+            import { buildTargetUrl, formatUrlConfig } from '${SKILL_DIR}/lib/url-builder.mjs';
+            const config = await buildTargetUrl();
+            console.log(formatUrlConfig(config));
+        "
+    fi
+}
+
+# Detect browsers
+cmd_browser() {
+    print_info "Detecting available browsers..."
+    node "${SKILL_DIR}/lib/browser-detect.mjs" all
+}
+
+# Run smoke test
+cmd_smoke() {
+    local url="${1:-}"
+
+    print_info "Running smoke test..."
+
+    if [[ -n "$url" ]]; then
+        claude "run smoke test on ${url}"
+    else
+        # Auto-detect URL
+        local detected_url=$(node --input-type=module -e "
+            import { buildTargetUrl } from '${SKILL_DIR}/lib/url-builder.mjs';
+            try {
+                const config = await buildTargetUrl();
+                console.log(config.url);
+            } catch (e) {
+                console.error('');
+            }
+        " 2>/dev/null)
+
+        if [[ -z "$detected_url" ]]; then
+            print_error "Could not auto-detect URL. Specify with --url"
+            exit 1
+        fi
+
+        print_info "Auto-detected URL: ${detected_url}"
+        claude "run smoke test on ${detected_url}"
+    fi
+}
+
+# Run visual test
+cmd_visual() {
+    local url="${1:-}"
+
+    print_info "Running visual test..."
+
+    if [[ -n "$url" ]]; then
+        claude "screenshot ${url} at mobile, tablet, and desktop sizes"
+    else
+        claude "screenshot homepage at mobile, tablet, and desktop sizes"
+    fi
+}
+
+# Debug console
+cmd_debug() {
+    local url="${1:-}"
+
+    print_info "Debugging console errors..."
+
+    if [[ -n "$url" ]]; then
+        claude "check console errors on ${url}"
+    else
+        claude "check console errors on current page"
+    fi
+}
+
+# Performance trace
+cmd_perf() {
+    local url="${1:-}"
+
+    print_info "Running performance trace..."
+
+    if [[ -n "$url" ]]; then
+        claude "measure Core Web Vitals for ${url}"
+    else
+        claude "measure Core Web Vitals for homepage"
+    fi
+}
+
+# Accessibility audit
+cmd_a11y() {
+    local url="${1:-}"
+
+    print_info "Running accessibility audit..."
+
+    if [[ -n "$url" ]]; then
+        claude "check accessibility on ${url}"
+    else
+        claude "check accessibility on homepage"
+    fi
+}
+
+# Interactive mode
+cmd_interactive() {
+    print_info "Launching Claude in interactive mode..."
+    print_info "MCP DevTools integration active"
+    echo ""
+
+    # Check MCP is ready first
+    if ! node "${SKILL_DIR}/lib/mcp-verify.mjs" > /dev/null 2>&1; then
+        print_warning "MCP verification failed. Some features may not work."
+        echo ""
+    fi
+
+    # Show detected config if in a project
+    if [[ -f "package.json" ]]; then
+        print_info "Detected project config:"
+        node "${SKILL_DIR}/lib/auto-detect.mjs" 2>/dev/null || true
+        echo ""
+    fi
+
+    print_info "Starting Claude CLI..."
+    echo ""
+
+    claude
+}
+
+# Parse arguments
+COMMAND="${1:-help}"
+shift || true
+
+URL=""
+PAGES=""
+NO_SERVER=false
+VERBOSE=false
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --url)
+            URL="$2"
+            shift 2
+            ;;
+        --pages)
+            PAGES="$2"
+            shift 2
+            ;;
+        --no-server)
+            NO_SERVER=true
+            shift
+            ;;
+        --verbose)
+            VERBOSE=true
+            shift
+            ;;
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        *)
+            print_error "Unknown option: $1"
+            echo "Run 'devtools-mcp help' for usage information"
+            exit 1
+            ;;
+    esac
+done
+
+# Execute command
+case $COMMAND in
+    verify)
+        cmd_verify
+        ;;
+    detect)
+        cmd_detect
+        ;;
+    url)
+        cmd_url "$URL"
+        ;;
+    browser)
+        cmd_browser
+        ;;
+    smoke)
+        cmd_smoke "$URL"
+        ;;
+    visual)
+        cmd_visual "$URL"
+        ;;
+    debug)
+        cmd_debug "$URL"
+        ;;
+    perf)
+        cmd_perf "$URL"
+        ;;
+    a11y)
+        cmd_a11y "$URL"
+        ;;
+    interactive)
+        cmd_interactive
+        ;;
+    help|--help|-h)
+        show_help
+        ;;
+    version|--version|-v)
+        show_version
+        ;;
+    *)
+        print_error "Unknown command: $COMMAND"
+        echo "Run 'devtools-mcp help' for usage information"
+        exit 1
+        ;;
+esac

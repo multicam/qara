@@ -10,6 +10,26 @@ Global skill that provides Chrome DevTools MCP integration for browser automatio
 - **Interactive debugging** - natural language commands to Claude
 - **26+ MCP tools** - navigation, screenshots, console, network, performance, a11y
 
+## Global CLI
+
+The skill includes a global CLI for quick access from anywhere:
+
+```bash
+devtools-mcp <command>
+```
+
+**Available commands:**
+- `verify` - Check MCP setup
+- `detect` - Auto-detect project config
+- `smoke` - Run smoke test
+- `visual` - Multi-viewport screenshots
+- `debug` - Debug console errors
+- `perf` - Performance trace
+- `a11y` - Accessibility audit
+- `interactive` - Launch Claude with MCP
+
+**Documentation:** See `docs/cli-reference.md` for complete CLI reference.
+
 ## Quick Start
 
 ### 1. Install Requirements
