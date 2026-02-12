@@ -47,14 +47,15 @@ Usage: devtools-mcp <command> [options]
 Commands:
   verify              Verify MCP setup is ready
   detect              Auto-detect project config
-  url [url]           Build target URL from config
+  url                 Build target URL from config
   browser             Detect available browsers
 
-  smoke [url]         Run smoke test
-  visual [url]        Run visual test (screenshots)
-  debug [url]         Debug console errors
-  perf [url]          Performance trace
-  a11y [url]          Accessibility audit
+  dev                 Start/restart dev server
+  smoke               Run smoke test (auto-starts server if needed)
+  visual              Visual test - screenshots (auto-starts server)
+  debug               Debug console errors (auto-starts server)
+  perf                Performance trace (auto-starts server)
+  a11y                Accessibility audit (auto-starts server)
 
   interactive         Launch Claude in interactive mode
 
@@ -70,6 +71,9 @@ Options:
 Examples:
   # Verify setup
   devtools-mcp verify
+
+  # Start dev server
+  devtools-mcp dev
 
   # Test local dev server (auto-detected)
   devtools-mcp smoke
@@ -149,6 +153,9 @@ cmd_smoke() {
 
     print_info "Running smoke test..."
 
+    # Ensure dev server is running (if testing localhost)
+    ensure_dev_server "$url" || exit 1
+
     if [[ -n "$url" ]]; then
         claude "run smoke test on ${url}"
     else
@@ -168,7 +175,7 @@ cmd_smoke() {
             exit 1
         fi
 
-        print_info "Auto-detected URL: ${detected_url}"
+        print_info "Testing: ${detected_url}"
         claude "run smoke test on ${detected_url}"
     fi
 }
@@ -178,6 +185,9 @@ cmd_visual() {
     local url="${1:-}"
 
     print_info "Running visual test..."
+
+    # Ensure dev server is running
+    ensure_dev_server "$url" || exit 1
 
     if [[ -n "$url" ]]; then
         claude "screenshot ${url} at mobile, tablet, and desktop sizes"
@@ -192,10 +202,13 @@ cmd_debug() {
 
     print_info "Debugging console errors..."
 
+    # Ensure dev server is running
+    ensure_dev_server "$url" || exit 1
+
     if [[ -n "$url" ]]; then
         claude "check console errors on ${url}"
     else
-        claude "check console errors on current page"
+        claude "check console errors on homepage"
     fi
 }
 
@@ -204,6 +217,9 @@ cmd_perf() {
     local url="${1:-}"
 
     print_info "Running performance trace..."
+
+    # Ensure dev server is running
+    ensure_dev_server "$url" || exit 1
 
     if [[ -n "$url" ]]; then
         claude "measure Core Web Vitals for ${url}"
@@ -218,11 +234,174 @@ cmd_a11y() {
 
     print_info "Running accessibility audit..."
 
+    # Ensure dev server is running
+    ensure_dev_server "$url" || exit 1
+
     if [[ -n "$url" ]]; then
         claude "check accessibility on ${url}"
     else
         claude "check accessibility on homepage"
     fi
+}
+
+# Helper: Ensure dev server is running (auto-start if needed)
+ensure_dev_server() {
+    local url="$1"
+
+    # If URL provided and it's not localhost, no server needed
+    if [[ -n "$url" ]] && [[ ! "$url" =~ ^https?://localhost ]] && [[ ! "$url" =~ ^https?://127\.0\.0\.1 ]]; then
+        return 0
+    fi
+
+    # Detect project config
+    local config=$(node --input-type=module -e "
+        import { detectDevConfig } from '${SKILL_DIR}/lib/auto-detect.mjs';
+        try {
+            const config = await detectDevConfig();
+            if (!config.detected) {
+                process.exit(1);
+            }
+            console.log(JSON.stringify(config));
+        } catch (e) {
+            process.exit(1);
+        }
+    " 2>/dev/null)
+
+    if [[ $? -ne 0 ]]; then
+        print_warning "Could not detect dev server config"
+        return 1
+    fi
+
+    local port=$(echo "$config" | jq -r '.port')
+    local server_url=$(echo "$config" | jq -r '.url')
+
+    # Check if server is already running
+    if curl -s -o /dev/null -w "%{http_code}" "${server_url}" 2>/dev/null | grep -q "200\|404"; then
+        print_info "Dev server already running at ${server_url}"
+        return 0
+    fi
+
+    # Server not running, start it
+    print_info "Dev server not running, starting automatically..."
+
+    local start_cmd=$(echo "$config" | jq -r '.startCommand')
+    local log_file=".dev-server.log"
+
+    nohup bash -c "${start_cmd}" > "${log_file}" 2>&1 &
+    local pid=$!
+    echo $pid > .dev-server.pid
+
+    print_success "Dev server started (PID: ${pid})"
+    print_info "Waiting for server to be ready..."
+
+    local max_wait=60
+    local count=0
+
+    while [[ $count -lt $max_wait ]]; do
+        if curl -s -o /dev/null -w "%{http_code}" "${server_url}" 2>/dev/null | grep -q "200\|404"; then
+            print_success "Server ready at ${server_url}"
+            return 0
+        fi
+        sleep 1
+        count=$((count + 1))
+
+        if [[ $((count % 10)) -eq 0 ]]; then
+            print_info "Still waiting... (${count}s)"
+        fi
+    done
+
+    print_error "Server failed to start within ${max_wait} seconds"
+    return 1
+}
+
+# Start/restart dev server
+cmd_dev() {
+    print_info "Starting dev server..."
+
+    # Detect project config
+    local config=$(node --input-type=module -e "
+        import { detectDevConfig } from '${SKILL_DIR}/lib/auto-detect.mjs';
+        try {
+            const config = await detectDevConfig();
+            if (!config.detected) {
+                console.error('Could not detect dev server config');
+                process.exit(1);
+            }
+            console.log(JSON.stringify(config));
+        } catch (e) {
+            console.error('Error:', e.message);
+            process.exit(1);
+        }
+    " 2>&1)
+
+    if [[ $? -ne 0 ]]; then
+        print_error "Failed to detect project config"
+        echo "$config"
+        exit 1
+    fi
+
+    local framework=$(echo "$config" | jq -r '.framework')
+    local port=$(echo "$config" | jq -r '.port')
+    local url=$(echo "$config" | jq -r '.url')
+    local start_cmd=$(echo "$config" | jq -r '.startCommand')
+
+    print_info "Detected: ${framework} on port ${port}"
+
+    # Check if server is already running
+    if lsof -ti:${port} > /dev/null 2>&1; then
+        print_warning "Port ${port} is already in use"
+        read -p "Kill existing process and restart? [y/N] " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            print_info "Stopping existing server..."
+            lsof -ti:${port} | xargs kill -9 2>/dev/null || true
+            sleep 1
+        else
+            print_info "Server already running at ${url}"
+            exit 0
+        fi
+    fi
+
+    # Start dev server
+    print_info "Starting server with: ${start_cmd}"
+
+    # Run in background, redirect output to log file
+    local log_file=".dev-server.log"
+    nohup bash -c "${start_cmd}" > "${log_file}" 2>&1 &
+    local pid=$!
+
+    # Save PID
+    echo $pid > .dev-server.pid
+
+    print_success "Dev server started (PID: ${pid})"
+    print_info "Logs: ${log_file}"
+
+    # Wait for server to be ready
+    print_info "Waiting for server to be ready..."
+    local max_wait=60
+    local count=0
+
+    while [[ $count -lt $max_wait ]]; do
+        if curl -s -o /dev/null -w "%{http_code}" "${url}" | grep -q "200\|404"; then
+            print_success "Server is ready at ${url}"
+            print_info "PID file: .dev-server.pid"
+            print_info ""
+            print_info "To stop: kill \$(cat .dev-server.pid)"
+            print_info "To view logs: tail -f ${log_file}"
+            exit 0
+        fi
+        sleep 1
+        count=$((count + 1))
+
+        # Show progress every 5 seconds
+        if [[ $((count % 5)) -eq 0 ]]; then
+            print_info "Still waiting... (${count}s)"
+        fi
+    done
+
+    print_error "Server failed to start within ${max_wait} seconds"
+    print_info "Check logs: tail -f ${log_file}"
+    exit 1
 }
 
 # Interactive mode
@@ -302,6 +481,9 @@ case $COMMAND in
         ;;
     browser)
         cmd_browser
+        ;;
+    dev)
+        cmd_dev
         ;;
     smoke)
         cmd_smoke "$URL"

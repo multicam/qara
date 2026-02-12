@@ -104,85 +104,157 @@ Found 2 browser(s):
 
 ---
 
+### Development Server
+
+#### dev
+Start or restart the dev server for the current project.
+
+```bash
+devtools-mcp dev
+```
+
+**Features:**
+- Auto-detects framework and start command
+- Checks if port is already in use
+- Prompts to kill existing process if needed
+- Starts server in background
+- Waits for server to be ready (up to 60s)
+- Logs output to `.dev-server.log`
+- Saves PID to `.dev-server.pid`
+
+**Output:**
+```
+ℹ Starting dev server...
+ℹ Detected: gatsby on port 8000
+ℹ Starting server with: gatsby develop -p 8000
+✓ Dev server started (PID: 12345)
+ℹ Logs: .dev-server.log
+ℹ Waiting for server to be ready...
+✓ Server is ready at http://localhost:8000
+ℹ PID file: .dev-server.pid
+
+To stop: kill $(cat .dev-server.pid)
+To view logs: tail -f .dev-server.log
+```
+
+**If port is in use:**
+```
+⚠ Port 8000 is already in use
+Kill existing process and restart? [y/N]
+```
+
+**To stop the server:**
+```bash
+# Using saved PID
+kill $(cat .dev-server.pid)
+
+# Or manually
+lsof -ti :8000 | xargs kill -9
+```
+
+**To view logs:**
+```bash
+tail -f .dev-server.log
+```
+
+---
+
 ### Testing & Debugging
 
-#### smoke [url]
+**Note:** All test commands auto-start the dev server if testing localhost and server is not running.
+
+#### smoke
 Run smoke test (console, network, a11y checks).
 
 ```bash
-# Auto-detect URL
+# Auto-detect URL and auto-start server if needed
 devtools-mcp smoke
 
-# Specify URL
+# Specify localhost URL (will start server if needed)
 devtools-mcp smoke --url http://localhost:8000
 
-# Live site
+# Live site (no server needed)
 devtools-mcp smoke --url https://example.com
 ```
+
+**Behavior:**
+1. If no `--url` specified: auto-detects from package.json
+2. If localhost URL: checks if server running, starts if needed
+3. If live URL: skips server check, tests directly
+4. Waits for server to be ready (up to 60s)
+5. Then launches Claude with prompt
 
 Launches Claude with prompt:
 ```
 run smoke test on {url}
 ```
 
-#### visual [url]
+#### visual
 Run visual test (multi-viewport screenshots).
 
 ```bash
-# Auto-detect URL
+# Auto-detect URL and auto-start server
 devtools-mcp visual
 
 # Specify URL
 devtools-mcp visual --url http://localhost:8000
 ```
 
+Auto-starts dev server if needed (same as `smoke`).
+
 Launches Claude with prompt:
 ```
 screenshot {url} at mobile, tablet, and desktop sizes
 ```
 
-#### debug [url]
+#### debug
 Debug console errors and network issues.
 
 ```bash
-# Current page
+# Auto-detect URL and auto-start server
 devtools-mcp debug
 
 # Specific URL
 devtools-mcp debug --url http://localhost:8000/contact/
 ```
 
+Auto-starts dev server if needed (same as `smoke`).
+
 Launches Claude with prompt:
 ```
 check console errors on {url}
 ```
 
-#### perf [url]
+#### perf
 Run performance trace and measure Core Web Vitals.
 
 ```bash
-# Homepage
+# Auto-detect URL and auto-start server
 devtools-mcp perf
 
 # Specific page
 devtools-mcp perf --url http://localhost:8000/products/
 ```
 
+Auto-starts dev server if needed (same as `smoke`).
+
 Launches Claude with prompt:
 ```
 measure Core Web Vitals for {url}
 ```
 
-#### a11y [url]
+#### a11y
 Run accessibility audit.
 
 ```bash
-# Homepage
+# Auto-detect URL and auto-start server
 devtools-mcp a11y
 
 # Specific page
 devtools-mcp a11y --url http://localhost:8000/about/
 ```
+
+Auto-starts dev server if needed (same as `smoke`).
 
 Launches Claude with prompt:
 ```
@@ -309,6 +381,9 @@ devtools-mcp verify
 # See what will be tested
 devtools-mcp detect
 
+# Start dev server
+devtools-mcp dev
+
 # Run smoke test
 devtools-mcp smoke
 
@@ -343,7 +418,8 @@ devtools-mcp debug --pages /checkout/,/cart/,/account/
 
 ```bash
 # 1. Start dev server
-pnpm dev
+devtools-mcp dev
+# or manually: pnpm dev
 
 # 2. Verify MCP ready
 devtools-mcp verify
