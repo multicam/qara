@@ -355,7 +355,7 @@ describe('MCP config template', () => {
     expect(config.mcpServers).toBeDefined();
     expect(config.mcpServers['brave-devtools']).toBeDefined();
     expect(config.mcpServers['react-grab-mcp']).toBeDefined();
-    expect(config.mcpServers['react-grab-mcp'].command).toBe('npx');
+    expect(config.mcpServers['react-grab-mcp'].command).toBe('bunx');
     expect(config.mcpServers['react-grab-mcp'].args).toContain('@react-grab/mcp');
   });
 });
@@ -527,7 +527,7 @@ describe('checkGrabMcpConfigured projectPath', () => {
     writeFileSync(
       join(projectDir, '.mcp.json'),
       JSON.stringify({
-        mcpServers: { 'react-grab': { command: 'npx', args: ['-y', '@react-grab/mcp'] } },
+        mcpServers: { 'react-grab': { command: 'bunx', args: ['-y', '@react-grab/mcp'] } },
       })
     );
 

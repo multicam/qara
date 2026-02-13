@@ -21,7 +21,7 @@
       }
     },
     "react-grab-mcp": {
-      "command": "npx",
+      "command": "bunx",
       "args": ["-y", "@react-grab/mcp", "--stdio"]
     }
   }
