@@ -57,7 +57,6 @@ env:
 | Contacts | `contacts.md` | "who is X", "contact info", "email for" |
 | Definitions | `MY_DEFINITIONS.md` | "JM's definition of X", "what does JM mean by" |
 | Security | `security-protocols.md` | "API keys", "repo safety", "secrets management" |
-| History | `history-system.md` | "UOCS", "session capture", "history system" |
 | Tool preferences | `TOOLS.md` | "which CLI tool for", "fd vs find", "bat vs cat" |
 
 **Skills (on-demand):**

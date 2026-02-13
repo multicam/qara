@@ -12,6 +12,8 @@
 import { access, constants } from 'fs/promises';
 import { platform } from 'os';
 import { execSync } from 'child_process';
+import { resolve } from 'path';
+import { fileURLToPath } from 'url';
 
 /**
  * Browser paths by platform
@@ -90,13 +92,14 @@ async function checkExecutable(path) {
 }
 
 /**
- * Try to find browser using 'which' command
+ * Try to find browser using 'command -v' (POSIX-portable)
  */
-function tryWhichCommand(browserName) {
+function tryCommandLookup(browserName) {
   try {
-    const result = execSync(`which ${browserName}`, {
+    const result = execSync(`command -v ${browserName}`, {
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'ignore'],
+      shell: true,
     });
     return result.trim();
   } catch {
@@ -118,13 +121,14 @@ function detectBrowserName(path) {
 }
 
 /**
- * Get browser version
+ * Get browser version (with timeout to avoid snap hangs)
  */
 function getBrowserVersion(path) {
   try {
     const result = execSync(`"${path}" --version`, {
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'ignore'],
+      timeout: 5000,
     });
     return result.trim();
   } catch {
@@ -156,10 +160,10 @@ export async function detectBrowser(options = {}) {
     }
   }
 
-  // Try which command (Linux/macOS)
+  // Try command lookup (Linux/macOS)
   if (currentPlatform !== 'win32') {
     for (const browserName of ['brave', 'google-chrome', 'chromium']) {
-      const path = tryWhichCommand(browserName);
+      const path = tryCommandLookup(browserName);
       if (path) {
         return {
           path,
@@ -238,7 +242,8 @@ Install one of:
 /**
  * CLI usage
  */
-if (import.meta.url === `file://${process.argv[1]}`) {
+const __filename = fileURLToPath(import.meta.url);
+if (process.argv[1] && resolve(process.argv[1]) === resolve(__filename)) {
   const command = process.argv[2];
 
   if (command === 'all') {

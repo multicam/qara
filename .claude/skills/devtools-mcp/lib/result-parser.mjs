@@ -29,7 +29,7 @@ function extractJsonBlocks(text) {
 
   // Also try to find bare JSON objects/arrays
   if (blocks.length === 0) {
-    const bareJsonRegex = /(\{[\s\S]*\}|\[[\s\S]*\])/;
+    const bareJsonRegex = /(\{[\s\S]*?\}|\[[\s\S]*?\])/;
     const bareMatch = text.match(bareJsonRegex);
     if (bareMatch) {
       blocks.push(bareMatch[1].trim());
@@ -247,7 +247,10 @@ export async function saveResult(parsedResult, filePath) {
 /**
  * CLI usage
  */
-if (import.meta.url === `file://${process.argv[1]}`) {
+import { resolve as _resolve } from 'path';
+import { fileURLToPath as _fileURLToPath } from 'url';
+const __filename_rp = _fileURLToPath(import.meta.url);
+if (process.argv[1] && _resolve(process.argv[1]) === _resolve(__filename_rp)) {
   const exampleOutput = `
 # Smoke Test Results
 

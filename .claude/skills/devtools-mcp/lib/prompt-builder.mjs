@@ -233,7 +233,10 @@ ${formatThresholds(config.thresholds)}
 /**
  * CLI usage
  */
-if (import.meta.url === `file://${process.argv[1]}`) {
+import { resolve } from 'path';
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+if (process.argv[1] && resolve(process.argv[1]) === resolve(__filename)) {
   // Example template
   const exampleTemplate = function (config) {
     return `# Example Test — ${config.baseUrl}

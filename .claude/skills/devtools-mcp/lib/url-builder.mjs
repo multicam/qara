@@ -38,7 +38,7 @@ async function parseClaudeMd(projectPath = process.cwd()) {
     const url = urlMatch[1].trim();
 
     // Parse optional pages field
-    const pagesMatch = section.match(/pages:\s*\n([\s\S]*?)(?=\n\w+:|$)/);
+    const pagesMatch = section.match(/pages:\s*\n([\s\S]*?)(?=\n[a-z]\w*:|$)/);
     const pages = [];
     if (pagesMatch) {
       const pagesText = pagesMatch[1];
@@ -49,7 +49,7 @@ async function parseClaudeMd(projectPath = process.cwd()) {
     }
 
     // Parse optional selectors
-    const selectorsMatch = section.match(/selectors:\s*\n([\s\S]*?)(?=\n\w+:|$)/);
+    const selectorsMatch = section.match(/selectors:\s*\n([\s\S]*?)(?=\n[a-z]\w*:|$)/);
     const selectors = {};
     if (selectorsMatch) {
       const selectorsText = selectorsMatch[1];
@@ -63,7 +63,7 @@ async function parseClaudeMd(projectPath = process.cwd()) {
     }
 
     // Parse optional thresholds
-    const thresholdsMatch = section.match(/thresholds:\s*\n([\s\S]*?)(?=\n\w+:|$)/);
+    const thresholdsMatch = section.match(/thresholds:\s*\n([\s\S]*?)(?=\n[a-z]\w*:|$)/);
     const thresholds = {};
     if (thresholdsMatch) {
       const thresholdsText = thresholdsMatch[1];
@@ -232,7 +232,9 @@ export function formatUrlConfig(config) {
 /**
  * CLI usage
  */
-if (import.meta.url === `file://${process.argv[1]}`) {
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+if (process.argv[1] && resolve(process.argv[1]) === resolve(__filename)) {
   const options = {
     projectPath: process.argv[2] || process.cwd(),
     url: process.argv[3],

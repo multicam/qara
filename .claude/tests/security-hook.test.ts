@@ -47,7 +47,22 @@ async function runSecurityHook(
 }
 
 function parseOutput(stdout: string): { continue: boolean; reason?: string; additionalContext?: string } {
-  return JSON.parse(stdout.trim());
+  const trimmed = stdout.trim();
+  if (!trimmed) {
+    // Empty output = allow (exit 0 with no output)
+    return { continue: true };
+  }
+  const parsed = JSON.parse(trimmed);
+  // CC hook protocol: hookSpecificOutput.permissionDecision (allow/deny/ask)
+  if (parsed.hookSpecificOutput) {
+    const hso = parsed.hookSpecificOutput;
+    return {
+      continue: hso.permissionDecision === "allow",
+      ...(hso.permissionDecisionReason ? { reason: hso.permissionDecisionReason } : {}),
+      ...(hso.additionalContext ? { additionalContext: hso.additionalContext } : {}),
+    };
+  }
+  return parsed;
 }
 
 // =============================================================================

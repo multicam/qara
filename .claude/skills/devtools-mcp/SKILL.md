@@ -1,6 +1,6 @@
 ---
 name: devtools-mcp
-context: devtools
+context: fork
 model: sonnet
 description: |
   Chrome DevTools MCP integration for browser automation, testing, and debugging.
@@ -149,7 +149,7 @@ Core functionality in `lib/`:
 The skill was extracted from tgds-website's mature MCP integration (v1.1, Feb 2026).
 
 **tgds-website can:**
-- Keep custom `claude-mcp.sh` orchestrator
+- Use `tgds-test.sh` wrapper for TGDS-specific tests
 - Import skill libraries for core functions
 - Use skill workflows for generic tests
 - Keep TGDS-specific test targets and live-testing framework

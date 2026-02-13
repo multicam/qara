@@ -12,8 +12,9 @@
 
 import { spawn } from 'child_process';
 import { writeFile, readFile, unlink } from 'fs/promises';
+import { createWriteStream } from 'fs';
 import { resolve } from 'path';
-import { existsSync } from 'fs';
+import { fileURLToPath } from 'url';
 
 /**
  * Default configuration
@@ -66,7 +67,7 @@ export async function startDevServer(config, options = {}) {
   });
 
   // Capture logs
-  const logStream = await import('fs').then(m => m.createWriteStream(logPath));
+  const logStream = createWriteStream(logPath);
   server.stdout.pipe(logStream);
   server.stderr.pipe(logStream);
 
@@ -275,12 +276,13 @@ export async function startAndWaitForServer(config, options = {}) {
 /**
  * CLI usage
  */
-if (import.meta.url === `file://${process.argv[1]}`) {
+const __filename = fileURLToPath(import.meta.url);
+if (process.argv[1] && resolve(process.argv[1]) === resolve(__filename)) {
   const command = process.argv[2];
-  const projectPath = process.argv[3] || process.cwd();
 
   try {
     if (command === 'start') {
+      const projectPath = process.argv[3] || process.cwd();
       // Auto-detect config
       const { detectDevConfig } = await import('./auto-detect.mjs');
       const config = await detectDevConfig(projectPath);
@@ -292,6 +294,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       const result = await startAndWaitForServer(config);
       console.log(JSON.stringify(result, null, 2));
     } else if (command === 'stop') {
+      const projectPath = process.argv[3] || process.cwd();
       const pidFile = resolve(projectPath, DEFAULT_CONFIG.pidFile);
       await stopDevServer(pidFile);
       await cleanupPidFile(pidFile);

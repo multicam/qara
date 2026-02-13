@@ -15,7 +15,9 @@ import { readFile, access } from 'fs/promises';
 import { constants } from 'fs';
 import { execSync } from 'child_process';
 import { homedir } from 'os';
-import { resolve } from 'path';
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
+import { detectBrowser } from './browser-detect.mjs';
 
 /**
  * MCP config file path
@@ -35,27 +37,12 @@ const DEVTOOLS_SERVER_NAMES = [
 ];
 
 /**
- * Browser executable paths by platform
+ * Resolve SKILL_DIR from this file's location
  */
-const BROWSER_PATHS = {
-  linux: [
-    '/snap/bin/brave',
-    '/usr/bin/brave-browser',
-    '/usr/bin/google-chrome',
-    '/usr/bin/chromium',
-    '/usr/bin/chromium-browser',
-  ],
-  darwin: [
-    '/Applications/Brave Browser.app/Contents/MacOS/Brave Browser',
-    '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-    '/Applications/Chromium.app/Contents/MacOS/Chromium',
-  ],
-  win32: [
-    'C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe',
-    'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
-    'C:\\Program Files\\Chromium\\Application\\chromium.exe',
-  ],
-};
+function getSkillDir() {
+  const __filename = fileURLToPath(import.meta.url);
+  return dirname(dirname(__filename));
+}
 
 /**
  * Check if MCP config file exists
@@ -65,10 +52,11 @@ async function checkConfigExists() {
     await access(MCP_CONFIG_PATH, constants.F_OK);
     return { passed: true, path: MCP_CONFIG_PATH };
   } catch {
+    const skillDir = getSkillDir();
     return {
       passed: false,
       error: `Config file not found: ${MCP_CONFIG_PATH}`,
-      fix: `Create the file with:\nmkdir -p ~/.config/claude-desktop\ncp ${process.env.PAI_DIR}/skills/devtools-mcp/templates/mcp-config.json ~/.config/claude-desktop/claude_desktop_config.json`,
+      fix: `Create the file with:\nmkdir -p ~/.config/claude-desktop\ncp ${skillDir}/templates/mcp-config.json ~/.config/claude-desktop/claude_desktop_config.json`,
     };
   }
 }
@@ -120,9 +108,10 @@ async function checkServerConfigured() {
  */
 function checkBinaryInstalled() {
   try {
-    const result = execSync('which chrome-devtools-mcp', {
+    const result = execSync('command -v chrome-devtools-mcp', {
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'ignore'],
+      shell: true,
     });
 
     return {
@@ -139,29 +128,20 @@ function checkBinaryInstalled() {
 }
 
 /**
- * Check if browser is available
+ * Check if browser is available — delegates to browser-detect.mjs
  */
 async function checkBrowserAvailable() {
-  const platform = process.platform;
-  const paths = BROWSER_PATHS[platform] || [];
+  const result = await detectBrowser();
 
-  for (const path of paths) {
-    try {
-      await access(path, constants.X_OK);
-      return {
-        passed: true,
-        path,
-        browser: path.includes('brave')
-          ? 'Brave'
-          : path.includes('chrome')
-          ? 'Chrome'
-          : 'Chromium',
-      };
-    } catch {
-      // Try next path
-    }
+  if (result.detected) {
+    return {
+      passed: true,
+      path: result.path,
+      browser: result.name,
+    };
   }
 
+  const platform = process.platform;
   return {
     passed: false,
     error: 'No browser found (Brave, Chrome, or Chromium)',
@@ -297,7 +277,8 @@ export function formatVerificationResults(results) {
 /**
  * CLI usage
  */
-if (import.meta.url === `file://${process.argv[1]}`) {
+const __filename = fileURLToPath(import.meta.url);
+if (process.argv[1] && resolve(process.argv[1]) === resolve(__filename)) {
   try {
     const results = await verifyMcpSetup();
     console.log(formatVerificationResults(results));

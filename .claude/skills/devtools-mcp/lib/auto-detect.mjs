@@ -18,12 +18,12 @@ import { resolve } from 'path';
 const FRAMEWORK_SIGNATURES = {
   gatsby: ['gatsby'],
   next: ['next'],
-  vite: ['vite'],
-  cra: ['react-scripts'],
+  sveltekit: ['@sveltejs/kit'],
   nuxt: ['nuxt'],
   astro: ['astro'],
   remix: ['@remix-run/dev'],
-  sveltekit: ['@sveltejs/kit'],
+  cra: ['react-scripts'],
+  vite: ['vite'],
 };
 
 /**
@@ -75,6 +75,7 @@ export function detectFramework(pkg) {
 /**
  * Find dev script from package.json scripts
  * Priority: dev, start, serve
+ * Returns the script content (value)
  */
 export function findDevScript(scripts) {
   if (!scripts) return null;
@@ -84,6 +85,24 @@ export function findDevScript(scripts) {
   for (const key of priorities) {
     if (scripts[key]) {
       return scripts[key];
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Find dev script name (key) from package.json scripts
+ * Returns the script name for use with package manager (e.g. 'dev', 'start')
+ */
+function findDevScriptName(scripts) {
+  if (!scripts) return null;
+
+  const priorities = ['dev', 'start', 'serve', 'develop'];
+
+  for (const key of priorities) {
+    if (scripts[key]) {
+      return key;
     }
   }
 
@@ -132,6 +151,27 @@ export async function readPackageJson(projectPath = process.cwd()) {
 }
 
 /**
+ * Detect package manager from lockfiles
+ * Priority: pnpm > yarn > bun > npm
+ */
+async function detectPackageManager(projectPath) {
+  const { access } = await import('fs/promises');
+  const checks = [
+    ['pnpm-lock.yaml', 'pnpm'],
+    ['yarn.lock', 'yarn'],
+    ['bun.lockb', 'bun'],
+    ['package-lock.json', 'npm'],
+  ];
+  for (const [lockfile, pm] of checks) {
+    try {
+      await access(resolve(projectPath, lockfile));
+      return pm;
+    } catch {}
+  }
+  return 'npm';
+}
+
+/**
  * Main detection function
  * Returns complete dev server config
  */
@@ -143,8 +183,9 @@ export async function detectDevConfig(projectPath = process.cwd()) {
     // Detect framework
     const framework = detectFramework(pkg);
 
-    // Find dev script
-    const devScript = findDevScript(pkg.scripts);
+    // Find dev script name and content
+    const devScriptName = findDevScriptName(pkg.scripts);
+    const devScript = devScriptName ? pkg.scripts[devScriptName] : null;
 
     // Parse port from script
     const scriptPort = devScript ? parsePort(devScript, framework) : null;
@@ -155,8 +196,9 @@ export async function detectDevConfig(projectPath = process.cwd()) {
     // Build URL
     const url = `http://localhost:${port}`;
 
-    // Build start command
-    const startCommand = devScript || `npm run dev`;
+    // Build start command using package manager + script name
+    const pm = await detectPackageManager(projectPath);
+    const startCommand = devScriptName ? `${pm} ${devScriptName}` : `${pm} run dev`;
 
     return {
       framework,
@@ -184,7 +226,9 @@ export async function detectDevConfig(projectPath = process.cwd()) {
 /**
  * CLI usage
  */
-if (import.meta.url === `file://${process.argv[1]}`) {
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+if (process.argv[1] && resolve(process.argv[1]) === resolve(__filename)) {
   const projectPath = process.argv[2] || process.cwd();
 
   try {

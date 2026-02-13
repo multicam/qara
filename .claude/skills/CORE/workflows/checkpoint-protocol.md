@@ -214,6 +214,5 @@ This protocol supports **12-Factor Agent - Factor 6: Launch, Pause, Resume**:
 
 ## Related Documentation
 
-- `delegation-guide.md` - Multi-agent coordination with checkpoint recovery
 - `pre-tool-use-security.ts` - Security hook that triggers checkpoints
 - `stop-hook.ts` - Stop hook with error detection

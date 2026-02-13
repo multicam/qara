@@ -196,9 +196,6 @@ For detailed implementation, see the reference files below. This section provide
 | CLI-First implementation | `cli-first-guide.md` |
 | Testing guide | `testing-guide.md` |
 | Security protocols | `security-protocols.md` |
-| Agent system | `agent-guide.md` |
-| Delegation patterns | `delegation-guide.md` |
-| History system | `history-system.md` |
 
 ---
 

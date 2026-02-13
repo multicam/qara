@@ -8,9 +8,14 @@
 
 set -euo pipefail
 
-# Script directory (resolve symlink)
-SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
-SCRIPT_DIR="$(dirname "$SCRIPT_PATH")"
+# Script directory (resolve symlink chain — portable across macOS and Linux)
+_source="${BASH_SOURCE[0]}"
+while [ -L "$_source" ]; do
+    _dir="$(cd "$(dirname "$_source")" && pwd -P)"
+    _source="$(readlink "$_source")"
+    [[ "$_source" != /* ]] && _source="$_dir/$_source"
+done
+SCRIPT_DIR="$(cd "$(dirname "$_source")" && pwd -P)"
 SKILL_DIR="$(dirname "$SCRIPT_DIR")"
 
 # Colors
@@ -20,22 +25,24 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Functions
-print_error() {
-    echo -e "${RED}Error:${NC} $1" >&2
+# Output helpers
+print_error() { echo -e "${RED}Error:${NC} $1" >&2; }
+print_success() { echo -e "${GREEN}✓${NC} $1"; }
+print_info() { echo -e "${BLUE}ℹ${NC} $1"; }
+print_warning() { echo -e "${YELLOW}⚠${NC} $1"; }
+print_verbose() { [[ "$VERBOSE" == true ]] && echo -e "${BLUE}  ${NC} $1" || true; }
+
+# Dependency check
+require_cmd() {
+    command -v "$1" >/dev/null 2>&1 || {
+        print_error "'$1' is required but not installed"
+        exit 1
+    }
 }
 
-print_success() {
-    echo -e "${GREEN}✓${NC} $1"
-}
-
-print_info() {
-    echo -e "${BLUE}ℹ${NC} $1"
-}
-
-print_warning() {
-    echo -e "${YELLOW}⚠${NC} $1"
-}
+require_cmd node
+require_cmd jq
+require_cmd curl
 
 # Help text
 show_help() {
@@ -81,8 +88,11 @@ Examples:
   # Test live URL
   devtools-mcp smoke --url https://example.com
 
-  # Debug console errors
+  # Debug console errors on specific pages
   devtools-mcp debug --pages /,/about/,/contact/
+
+  # Smoke test without auto-starting server
+  devtools-mcp smoke --url https://staging.example.com --no-server
 
   # Interactive mode
   devtools-mcp interactive
@@ -106,29 +116,137 @@ Node version: $(node --version)
 EOF
 }
 
-# Verify MCP setup
+# ─── Helpers ────────────────────────────────────────────────────────────────
+
+# Safely get project dev config as JSON (stdout only, stderr suppressed)
+get_dev_config() {
+    local config
+    if ! config=$(node "${SKILL_DIR}/lib/auto-detect.mjs" 2>/dev/null); then
+        return 1
+    fi
+    # Validate it's JSON with a required field
+    if ! echo "$config" | jq -e '.detected' >/dev/null 2>&1; then
+        return 1
+    fi
+    echo "$config"
+}
+
+# Auto-detect target URL from project config
+get_auto_url() {
+    local config
+    config=$(get_dev_config) || return 1
+    echo "$config" | jq -r '.url // empty'
+}
+
+# Build claude prompt with optional page list
+build_claude_prompt() {
+    local action="$1"
+    local url="${2:-}"
+    local pages="${3:-}"
+
+    local prompt="$action"
+
+    if [[ -n "$url" ]]; then
+        prompt="${prompt} on ${url}"
+    else
+        prompt="${prompt} on homepage"
+    fi
+
+    if [[ -n "$pages" ]]; then
+        # Convert comma-separated to "on pages /, /about/, /contact/"
+        prompt="${prompt} on pages ${pages}"
+    fi
+
+    echo "$prompt"
+}
+
+# Ensure dev server is running (auto-start if needed)
+ensure_dev_server() {
+    local url="${1:-}"
+
+    # --no-server flag skips server management entirely
+    if [[ "$NO_SERVER" == true ]]; then
+        print_verbose "Skipping server management (--no-server)"
+        return 0
+    fi
+
+    # If URL provided and it's not localhost, no server needed
+    if [[ -n "$url" ]] && [[ ! "$url" =~ ^https?://localhost ]] && [[ ! "$url" =~ ^https?://127\.0\.0\.1 ]]; then
+        print_verbose "Live URL detected, no server needed"
+        return 0
+    fi
+
+    # Detect project config
+    local config
+    if ! config=$(get_dev_config); then
+        print_warning "Could not detect dev server config"
+        return 1
+    fi
+
+    local port server_url
+    port=$(echo "$config" | jq -r '.port')
+    server_url=$(echo "$config" | jq -r '.url')
+
+    print_verbose "Checking server at ${server_url}"
+
+    # Check if server is already running
+    if curl -s -o /dev/null -w "%{http_code}" "${server_url}" 2>/dev/null | grep -q "200\|404"; then
+        print_info "Dev server already running at ${server_url}"
+        return 0
+    fi
+
+    # Server not running, start it
+    print_info "Dev server not running, starting automatically..."
+
+    local start_cmd log_file=".dev-server.log"
+    start_cmd=$(echo "$config" | jq -r '.startCommand')
+
+    nohup bash -c "${start_cmd}" > "${log_file}" 2>&1 &
+    local pid=$!
+    echo $pid > .dev-server.pid
+
+    print_success "Dev server started (PID: ${pid})"
+    print_info "Waiting for server to be ready..."
+
+    local max_wait=60 count=0
+    while [[ $count -lt $max_wait ]]; do
+        if curl -s -o /dev/null -w "%{http_code}" "${server_url}" 2>/dev/null | grep -q "200\|404"; then
+            print_success "Server ready at ${server_url}"
+            return 0
+        fi
+        sleep 1
+        count=$((count + 1))
+        if [[ $((count % 10)) -eq 0 ]]; then
+            print_info "Still waiting... (${count}s)"
+        fi
+    done
+
+    print_error "Server failed to start within ${max_wait} seconds"
+    return 1
+}
+
+# ─── Commands ───────────────────────────────────────────────────────────────
+
 cmd_verify() {
     print_info "Verifying MCP setup..."
     node "${SKILL_DIR}/lib/mcp-verify.mjs"
 }
 
-# Auto-detect project config
 cmd_detect() {
     local project_path="${1:-$(pwd)}"
     print_info "Detecting project config from: ${project_path}"
     node "${SKILL_DIR}/lib/auto-detect.mjs" "$project_path"
 }
 
-# Build target URL
+# Build target URL — uses env var to avoid injection
 cmd_url() {
     local url="${1:-}"
-    local project_path="$(pwd)"
 
     if [[ -n "$url" ]]; then
         print_info "Building URL config for: ${url}"
-        node --input-type=module -e "
+        DEVTOOLS_URL="$url" node --input-type=module -e "
             import { buildTargetUrl, formatUrlConfig } from '${SKILL_DIR}/lib/url-builder.mjs';
-            const config = await buildTargetUrl({ url: '${url}' });
+            const config = await buildTargetUrl({ url: process.env.DEVTOOLS_URL });
             console.log(formatUrlConfig(config));
         "
     else
@@ -141,211 +259,136 @@ cmd_url() {
     fi
 }
 
-# Detect browsers
 cmd_browser() {
     print_info "Detecting available browsers..."
     node "${SKILL_DIR}/lib/browser-detect.mjs" all
 }
 
-# Run smoke test
 cmd_smoke() {
     local url="${1:-}"
+    local pages="${2:-}"
 
     print_info "Running smoke test..."
-
-    # Ensure dev server is running (if testing localhost)
     ensure_dev_server "$url" || exit 1
 
-    if [[ -n "$url" ]]; then
-        claude "run smoke test on ${url}"
-    else
-        # Auto-detect URL
-        local detected_url=$(node --input-type=module -e "
-            import { buildTargetUrl } from '${SKILL_DIR}/lib/url-builder.mjs';
-            try {
-                const config = await buildTargetUrl();
-                console.log(config.url);
-            } catch (e) {
-                console.error('');
-            }
-        " 2>/dev/null)
-
-        if [[ -z "$detected_url" ]]; then
+    if [[ -z "$url" ]]; then
+        url=$(get_auto_url) || {
             print_error "Could not auto-detect URL. Specify with --url"
             exit 1
-        fi
-
-        print_info "Testing: ${detected_url}"
-        claude "run smoke test on ${detected_url}"
+        }
     fi
+
+    print_verbose "Target: ${url}"
+    [[ -n "$pages" ]] && print_verbose "Pages: ${pages}"
+
+    local prompt
+    prompt=$(build_claude_prompt "run smoke test" "$url" "$pages")
+    claude "$prompt"
 }
 
-# Run visual test
 cmd_visual() {
     local url="${1:-}"
+    local pages="${2:-}"
 
     print_info "Running visual test..."
-
-    # Ensure dev server is running
     ensure_dev_server "$url" || exit 1
 
-    if [[ -n "$url" ]]; then
-        claude "screenshot ${url} at mobile, tablet, and desktop sizes"
-    else
-        claude "screenshot homepage at mobile, tablet, and desktop sizes"
+    if [[ -z "$url" ]]; then
+        url=$(get_auto_url) || {
+            print_error "Could not auto-detect URL. Specify with --url"
+            exit 1
+        }
     fi
+
+    print_verbose "Target: ${url}"
+
+    local prompt
+    prompt=$(build_claude_prompt "screenshot at mobile, tablet, and desktop sizes" "$url" "$pages")
+    claude "$prompt"
 }
 
-# Debug console
 cmd_debug() {
     local url="${1:-}"
+    local pages="${2:-}"
 
     print_info "Debugging console errors..."
-
-    # Ensure dev server is running
     ensure_dev_server "$url" || exit 1
 
-    if [[ -n "$url" ]]; then
-        claude "check console errors on ${url}"
-    else
-        claude "check console errors on homepage"
+    if [[ -z "$url" ]]; then
+        url=$(get_auto_url) || {
+            print_error "Could not auto-detect URL. Specify with --url"
+            exit 1
+        }
     fi
+
+    print_verbose "Target: ${url}"
+
+    local prompt
+    prompt=$(build_claude_prompt "check console errors" "$url" "$pages")
+    claude "$prompt"
 }
 
-# Performance trace
 cmd_perf() {
     local url="${1:-}"
+    local pages="${2:-}"
 
     print_info "Running performance trace..."
-
-    # Ensure dev server is running
     ensure_dev_server "$url" || exit 1
 
-    if [[ -n "$url" ]]; then
-        claude "measure Core Web Vitals for ${url}"
-    else
-        claude "measure Core Web Vitals for homepage"
+    if [[ -z "$url" ]]; then
+        url=$(get_auto_url) || {
+            print_error "Could not auto-detect URL. Specify with --url"
+            exit 1
+        }
     fi
+
+    print_verbose "Target: ${url}"
+
+    local prompt
+    prompt=$(build_claude_prompt "measure Core Web Vitals" "$url" "$pages")
+    claude "$prompt"
 }
 
-# Accessibility audit
 cmd_a11y() {
     local url="${1:-}"
+    local pages="${2:-}"
 
     print_info "Running accessibility audit..."
-
-    # Ensure dev server is running
     ensure_dev_server "$url" || exit 1
 
-    if [[ -n "$url" ]]; then
-        claude "check accessibility on ${url}"
-    else
-        claude "check accessibility on homepage"
-    fi
-}
-
-# Helper: Ensure dev server is running (auto-start if needed)
-ensure_dev_server() {
-    local url="$1"
-
-    # If URL provided and it's not localhost, no server needed
-    if [[ -n "$url" ]] && [[ ! "$url" =~ ^https?://localhost ]] && [[ ! "$url" =~ ^https?://127\.0\.0\.1 ]]; then
-        return 0
-    fi
-
-    # Detect project config
-    local config=$(node --input-type=module -e "
-        import { detectDevConfig } from '${SKILL_DIR}/lib/auto-detect.mjs';
-        try {
-            const config = await detectDevConfig();
-            if (!config.detected) {
-                process.exit(1);
-            }
-            console.log(JSON.stringify(config));
-        } catch (e) {
-            process.exit(1);
+    if [[ -z "$url" ]]; then
+        url=$(get_auto_url) || {
+            print_error "Could not auto-detect URL. Specify with --url"
+            exit 1
         }
-    " 2>/dev/null)
-
-    if [[ $? -ne 0 ]]; then
-        print_warning "Could not detect dev server config"
-        return 1
     fi
 
-    local port=$(echo "$config" | jq -r '.port')
-    local server_url=$(echo "$config" | jq -r '.url')
+    print_verbose "Target: ${url}"
 
-    # Check if server is already running
-    if curl -s -o /dev/null -w "%{http_code}" "${server_url}" 2>/dev/null | grep -q "200\|404"; then
-        print_info "Dev server already running at ${server_url}"
-        return 0
-    fi
-
-    # Server not running, start it
-    print_info "Dev server not running, starting automatically..."
-
-    local start_cmd=$(echo "$config" | jq -r '.startCommand')
-    local log_file=".dev-server.log"
-
-    nohup bash -c "${start_cmd}" > "${log_file}" 2>&1 &
-    local pid=$!
-    echo $pid > .dev-server.pid
-
-    print_success "Dev server started (PID: ${pid})"
-    print_info "Waiting for server to be ready..."
-
-    local max_wait=60
-    local count=0
-
-    while [[ $count -lt $max_wait ]]; do
-        if curl -s -o /dev/null -w "%{http_code}" "${server_url}" 2>/dev/null | grep -q "200\|404"; then
-            print_success "Server ready at ${server_url}"
-            return 0
-        fi
-        sleep 1
-        count=$((count + 1))
-
-        if [[ $((count % 10)) -eq 0 ]]; then
-            print_info "Still waiting... (${count}s)"
-        fi
-    done
-
-    print_error "Server failed to start within ${max_wait} seconds"
-    return 1
+    local prompt
+    prompt=$(build_claude_prompt "check accessibility" "$url" "$pages")
+    claude "$prompt"
 }
 
-# Start/restart dev server
 cmd_dev() {
     print_info "Starting dev server..."
 
-    # Detect project config
-    local config=$(node --input-type=module -e "
-        import { detectDevConfig } from '${SKILL_DIR}/lib/auto-detect.mjs';
-        try {
-            const config = await detectDevConfig();
-            if (!config.detected) {
-                console.error('Could not detect dev server config');
-                process.exit(1);
-            }
-            console.log(JSON.stringify(config));
-        } catch (e) {
-            console.error('Error:', e.message);
-            process.exit(1);
-        }
-    " 2>&1)
-
-    if [[ $? -ne 0 ]]; then
+    # Detect project config (stderr suppressed — exit code for errors)
+    local config
+    if ! config=$(get_dev_config); then
         print_error "Failed to detect project config"
-        echo "$config"
+        print_info "Ensure package.json exists with a dev script"
         exit 1
     fi
 
-    local framework=$(echo "$config" | jq -r '.framework')
-    local port=$(echo "$config" | jq -r '.port')
-    local url=$(echo "$config" | jq -r '.url')
-    local start_cmd=$(echo "$config" | jq -r '.startCommand')
+    local framework port url start_cmd
+    framework=$(echo "$config" | jq -r '.framework')
+    port=$(echo "$config" | jq -r '.port')
+    url=$(echo "$config" | jq -r '.url')
+    start_cmd=$(echo "$config" | jq -r '.startCommand')
 
     print_info "Detected: ${framework} on port ${port}"
+    print_verbose "Start command: ${start_cmd}"
 
     # Check if server is already running
     if lsof -ti:${port} > /dev/null 2>&1; then
@@ -365,12 +408,10 @@ cmd_dev() {
     # Start dev server
     print_info "Starting server with: ${start_cmd}"
 
-    # Run in background, redirect output to log file
     local log_file=".dev-server.log"
     nohup bash -c "${start_cmd}" > "${log_file}" 2>&1 &
     local pid=$!
 
-    # Save PID
     echo $pid > .dev-server.pid
 
     print_success "Dev server started (PID: ${pid})"
@@ -378,8 +419,7 @@ cmd_dev() {
 
     # Wait for server to be ready
     print_info "Waiting for server to be ready..."
-    local max_wait=60
-    local count=0
+    local max_wait=60 count=0
 
     while [[ $count -lt $max_wait ]]; do
         if curl -s -o /dev/null -w "%{http_code}" "${url}" | grep -q "200\|404"; then
@@ -392,8 +432,6 @@ cmd_dev() {
         fi
         sleep 1
         count=$((count + 1))
-
-        # Show progress every 5 seconds
         if [[ $((count % 5)) -eq 0 ]]; then
             print_info "Still waiting... (${count}s)"
         fi
@@ -404,19 +442,16 @@ cmd_dev() {
     exit 1
 }
 
-# Interactive mode
 cmd_interactive() {
     print_info "Launching Claude in interactive mode..."
     print_info "MCP DevTools integration active"
     echo ""
 
-    # Check MCP is ready first
     if ! node "${SKILL_DIR}/lib/mcp-verify.mjs" > /dev/null 2>&1; then
         print_warning "MCP verification failed. Some features may not work."
         echo ""
     fi
 
-    # Show detected config if in a project
     if [[ -f "package.json" ]]; then
         print_info "Detected project config:"
         node "${SKILL_DIR}/lib/auto-detect.mjs" 2>/dev/null || true
@@ -425,11 +460,11 @@ cmd_interactive() {
 
     print_info "Starting Claude CLI..."
     echo ""
-
     claude
 }
 
-# Parse arguments
+# ─── Argument Parsing ───────────────────────────────────────────────────────
+
 COMMAND="${1:-help}"
 shift || true
 
@@ -468,7 +503,8 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Execute command
+# ─── Dispatch ───────────────────────────────────────────────────────────────
+
 case $COMMAND in
     verify)
         cmd_verify
@@ -486,19 +522,19 @@ case $COMMAND in
         cmd_dev
         ;;
     smoke)
-        cmd_smoke "$URL"
+        cmd_smoke "$URL" "$PAGES"
         ;;
     visual)
-        cmd_visual "$URL"
+        cmd_visual "$URL" "$PAGES"
         ;;
     debug)
-        cmd_debug "$URL"
+        cmd_debug "$URL" "$PAGES"
         ;;
     perf)
-        cmd_perf "$URL"
+        cmd_perf "$URL" "$PAGES"
         ;;
     a11y)
-        cmd_a11y "$URL"
+        cmd_a11y "$URL" "$PAGES"
         ;;
     interactive)
         cmd_interactive
