@@ -331,7 +331,8 @@ export function formatVerificationResults(results) {
 const __filename = fileURLToPath(import.meta.url);
 if (process.argv[1] && resolve(process.argv[1]) === resolve(__filename)) {
   try {
-    const results = await verifyMcpSetup();
+    const isReact = process.argv.includes('--react');
+    const results = await verifyMcpSetup({ isReact });
     console.log(formatVerificationResults(results));
 
     if (!results.ready) {

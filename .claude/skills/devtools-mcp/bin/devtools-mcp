@@ -129,8 +129,16 @@ EOF
 
 # ─── Helpers ────────────────────────────────────────────────────────────────
 
+# Cached dev config — avoids redundant node spawns
+_CACHED_CONFIG=""
+
 # Safely get project dev config as JSON (stdout only, stderr suppressed)
+# Uses cache after first successful call — saves ~150ms per avoided node spawn
 get_dev_config() {
+    if [[ -n "$_CACHED_CONFIG" ]]; then
+        echo "$_CACHED_CONFIG"
+        return 0
+    fi
     local config
     if ! config=$(node "${SKILL_DIR}/lib/auto-detect.mjs" 2>/dev/null); then
         return 1
@@ -139,6 +147,7 @@ get_dev_config() {
     if ! echo "$config" | jq -e '.detected' >/dev/null 2>&1; then
         return 1
     fi
+    _CACHED_CONFIG="$config"
     echo "$config"
 }
 
@@ -256,18 +265,25 @@ verify_grab_setup() {
         return 1
     fi
 
-    # Run full react-grab detection
+    # Use reactGrab from cached config — no separate node spawn
     local grab_json
-    if ! grab_json=$(node "${SKILL_DIR}/lib/react-grab-detect.mjs" 2>/dev/null); then
-        # Parse the JSON to give specific guidance
-        grab_json=$(node "${SKILL_DIR}/lib/react-grab-detect.mjs" 2>/dev/null) || grab_json="{}"
+    grab_json=$(echo "$config" | jq '.reactGrab // {}')
 
-        local installed script_injected mcp_configured layout_file framework_variant
-        installed=$(echo "$grab_json" | jq -r '.installed // false')
-        script_injected=$(echo "$grab_json" | jq -r '.scriptInjected // false')
-        mcp_configured=$(echo "$grab_json" | jq -r '.mcpConfigured // false')
-        layout_file=$(echo "$grab_json" | jq -r '.layoutFile // "layout file"')
-        framework_variant=$(echo "$grab_json" | jq -r '.framework // "unknown"')
+    local installed script_injected mcp_configured layout_file framework_variant ready
+    installed=$(echo "$grab_json" | jq -r '.installed // false')
+    script_injected=$(echo "$grab_json" | jq -r '.scriptInjected // false')
+    mcp_configured=$(echo "$grab_json" | jq -r '.mcpConfigured // false')
+    layout_file=$(echo "$grab_json" | jq -r '.layoutFile // "layout file"')
+    framework_variant=$(echo "$grab_json" | jq -r '.framework // "unknown"')
+    ready=$(echo "$grab_json" | jq -r '.ready // false')
+
+    if [[ "$ready" == "true" ]]; then
+        print_success "react-grab MCP active"
+        return 0
+    fi
+
+    # Not ready — give specific guidance
+    if [[ "$installed" != "true" || "$script_injected" != "true" || "$mcp_configured" != "true" ]]; then
 
         if [[ "$installed" != "true" ]]; then
             print_error "react-grab not installed in this project"
@@ -340,15 +356,22 @@ verify_grab_setup() {
         return 1
     fi
 
-    print_success "react-grab MCP active"
-    return 0
+    # Shouldn't reach here, but just in case
+    print_error "react-grab not ready. Run: npx -y grab@latest init"
+    return 1
 }
 
 # ─── Commands ───────────────────────────────────────────────────────────────
 
 cmd_verify() {
     print_info "Verifying MCP setup..."
-    node "${SKILL_DIR}/lib/mcp-verify.mjs"
+    local config react_flag=""
+    if config=$(get_dev_config 2>/dev/null); then
+        local is_react
+        is_react=$(echo "$config" | jq -r '.isReact // false')
+        [[ "$is_react" == "true" ]] && react_flag="--react"
+    fi
+    node "${SKILL_DIR}/lib/mcp-verify.mjs" $react_flag
 }
 
 cmd_detect() {

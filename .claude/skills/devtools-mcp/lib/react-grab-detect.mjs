@@ -118,10 +118,10 @@ export async function checkGrabScriptInjected(projectPath, frameworkVariant) {
 /**
  * Check if react-grab MCP server is configured in Claude config
  */
-export async function checkGrabMcpConfigured() {
+export async function checkGrabMcpConfigured(projectPath = process.cwd()) {
   const configPaths = [
     resolve(homedir(), '.config/claude-desktop/claude_desktop_config.json'),
-    resolve(process.cwd(), '.mcp.json'),
+    resolve(projectPath, '.mcp.json'),
   ];
 
   for (const configPath of configPaths) {
@@ -185,7 +185,7 @@ export async function detectReactGrab(projectPath = process.cwd()) {
 
   const installed = isGrabInstalled(pkg);
   const scriptCheck = await checkGrabScriptInjected(projectPath, frameworkVariant);
-  const mcpCheck = await checkGrabMcpConfigured();
+  const mcpCheck = await checkGrabMcpConfigured(projectPath);
 
   return {
     isReact: true,

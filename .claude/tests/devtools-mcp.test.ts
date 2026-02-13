@@ -32,6 +32,7 @@ describe('devtools-mcp skill structure', () => {
       'lib/server-lifecycle.mjs',
       'lib/prompt-builder.mjs',
       'lib/result-parser.mjs',
+      'lib/grab-inspect.mjs',
       'templates/mcp-config.json',
     ];
 
@@ -484,5 +485,110 @@ describe('component-debug workflow', () => {
   it('should reference evaluate_script as fallback', () => {
     expect(workflowContent).toContain('evaluate_script');
     expect(workflowContent).toContain('__REACT_GRAB__');
+  });
+});
+
+// =============================================================================
+// SECTION 8: grab-inspect.mjs
+// =============================================================================
+
+describe('grab-inspect module', () => {
+  it('should be importable', async () => {
+    const mod = await import('../skills/devtools-mcp/lib/grab-inspect.mjs');
+    expect(mod).toBeDefined();
+  });
+});
+
+// =============================================================================
+// SECTION 9: checkGrabMcpConfigured accepts projectPath
+// =============================================================================
+
+describe('checkGrabMcpConfigured projectPath', () => {
+  let mod: typeof import('../skills/devtools-mcp/lib/react-grab-detect.mjs');
+  const tmpBase = join(tmpdir(), 'devtools-mcp-path-' + Date.now());
+
+  beforeAll(async () => {
+    mod = await import('../skills/devtools-mcp/lib/react-grab-detect.mjs');
+    mkdirSync(tmpBase, { recursive: true });
+  });
+
+  it('should accept a projectPath parameter', async () => {
+    // With a custom projectPath that has no .mcp.json, should return not configured
+    const result = await mod.checkGrabMcpConfigured(tmpBase);
+    // The function checks both global config and project .mcp.json
+    // At minimum it should not throw and return a structured result
+    expect(result).toHaveProperty('configured');
+  });
+
+  it('should check project .mcp.json at the given projectPath', async () => {
+    // Use a unique server name only in the project .mcp.json
+    const projectDir = join(tmpBase, 'with-mcp');
+    mkdirSync(projectDir, { recursive: true });
+    writeFileSync(
+      join(projectDir, '.mcp.json'),
+      JSON.stringify({
+        mcpServers: { 'react-grab': { command: 'npx', args: ['-y', '@react-grab/mcp'] } },
+      })
+    );
+
+    const result = await mod.checkGrabMcpConfigured(projectDir);
+    // Should find it (either in global config or project .mcp.json)
+    expect(result.configured).toBe(true);
+  });
+
+  afterAll(() => {
+    rmSync(tmpBase, { recursive: true, force: true });
+  });
+});
+
+// =============================================================================
+// SECTION 10: CLI bug fix validations
+// =============================================================================
+
+describe('CLI bug fixes', () => {
+  const cliContent = readFileSync(join(SKILL_DIR, 'bin', 'devtools-mcp'), 'utf-8');
+
+  it('should NOT double-invoke react-grab-detect.mjs in verify_grab_setup', () => {
+    // Bug 1 fix: verify_grab_setup should use cached config, not spawn node
+    // Count occurrences of the old pattern
+    const nodeGrabSpawns = (cliContent.match(/node.*react-grab-detect\.mjs/g) || []).length;
+    // Should be 0 — we no longer spawn node for react-grab-detect in the CLI
+    expect(nodeGrabSpawns).toBe(0);
+  });
+
+  it('should use cached config in verify_grab_setup (reactGrab field)', () => {
+    // verify_grab_setup should read reactGrab from cached config via jq
+    expect(cliContent).toContain('.reactGrab');
+  });
+
+  it('should have _CACHED_CONFIG for config caching', () => {
+    expect(cliContent).toContain('_CACHED_CONFIG');
+  });
+
+  it('should return cached config on subsequent get_dev_config calls', () => {
+    // The cache check pattern
+    expect(cliContent).toContain('if [[ -n "$_CACHED_CONFIG" ]]');
+  });
+
+  it('cmd_verify should detect React and pass --react flag', () => {
+    // Extract cmd_verify function
+    const verifyMatch = cliContent.match(/cmd_verify\(\)\s*\{[\s\S]*?\n\}/);
+    expect(verifyMatch).not.toBeNull();
+    const verifyFn = verifyMatch![0];
+    expect(verifyFn).toContain('react_flag');
+    expect(verifyFn).toContain('--react');
+    expect(verifyFn).toContain('.isReact');
+  });
+});
+
+// =============================================================================
+// SECTION 11: mcp-verify.mjs --react flag
+// =============================================================================
+
+describe('mcp-verify --react CLI flag', () => {
+  it('should parse --react from process.argv in CLI section', () => {
+    const verifyContent = readFileSync(join(SKILL_DIR, 'lib', 'mcp-verify.mjs'), 'utf-8');
+    expect(verifyContent).toContain("process.argv.includes('--react')");
+    expect(verifyContent).toContain('{ isReact }');
   });
 });

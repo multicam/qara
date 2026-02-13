@@ -197,13 +197,15 @@ export async function detectDevConfig(projectPath = process.cwd()) {
     // Build URL
     const url = `http://localhost:${port}`;
 
-    // Build start command using package manager + script name
-    const pm = await detectPackageManager(projectPath);
-    const startCommand = devScriptName ? `${pm} ${devScriptName}` : `${pm} run dev`;
-
-    // React and react-grab detection
+    // React and react-grab detection (parallel with package manager)
     const isReact = isReactProject(pkg);
-    const reactGrab = isReact ? await detectReactGrab(projectPath) : null;
+    const [pm, reactGrab] = await Promise.all([
+      detectPackageManager(projectPath),
+      isReact ? detectReactGrab(projectPath) : Promise.resolve(null),
+    ]);
+
+    // Build start command using package manager + script name
+    const startCommand = devScriptName ? `${pm} ${devScriptName}` : `${pm} run dev`;
 
     return {
       framework,
