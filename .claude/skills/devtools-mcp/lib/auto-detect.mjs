@@ -11,6 +11,7 @@
 
 import { readFile } from 'fs/promises';
 import { resolve } from 'path';
+import { isReactProject, detectReactGrab } from './react-grab-detect.mjs';
 
 /**
  * Framework detection from package.json dependencies
@@ -200,12 +201,18 @@ export async function detectDevConfig(projectPath = process.cwd()) {
     const pm = await detectPackageManager(projectPath);
     const startCommand = devScriptName ? `${pm} ${devScriptName}` : `${pm} run dev`;
 
+    // React and react-grab detection
+    const isReact = isReactProject(pkg);
+    const reactGrab = isReact ? await detectReactGrab(projectPath) : null;
+
     return {
       framework,
       port,
       url,
       startCommand,
       devScript,
+      isReact,
+      reactGrab,
       detected: true,
       projectPath,
     };

@@ -19,6 +19,10 @@
         "DEBUG": "",
         "CHROME_DEVTOOLS_MCP_NO_USAGE_STATISTICS": "1"
       }
+    },
+    "react-grab-mcp": {
+      "command": "npx",
+      "args": ["-y", "@react-grab/mcp", "--stdio"]
     }
   }
 }

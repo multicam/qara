@@ -18,6 +18,7 @@ import { homedir } from 'os';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { detectBrowser } from './browser-detect.mjs';
+import { detectReactGrab, isReactProject } from './react-grab-detect.mjs';
 
 /**
  * MCP config file path
@@ -192,9 +193,48 @@ function checkConnection() {
 }
 
 /**
- * Main verification function
+ * Check react-grab setup (only run for React projects)
  */
-export async function verifyMcpSetup() {
+async function checkReactGrabSetup(options = {}) {
+  if (!options.isReact) {
+    return { passed: true, skipped: true, reason: 'Not a React project' };
+  }
+
+  const grabStatus = options.reactGrab || await detectReactGrab(process.cwd());
+
+  const issues = [];
+
+  if (!grabStatus.installed) {
+    issues.push('react-grab not installed');
+  }
+  if (!grabStatus.scriptInjected) {
+    const file = grabStatus.layoutFile || 'layout file';
+    issues.push(`grab script not found in ${file}`);
+  }
+  if (!grabStatus.mcpConfigured) {
+    issues.push('react-grab MCP server not configured');
+  }
+
+  if (issues.length === 0) {
+    return {
+      passed: true,
+      framework: grabStatus.framework,
+    };
+  }
+
+  return {
+    passed: false,
+    error: issues.join('; '),
+    fix: 'Run: npx -y grab@latest init\nSee: devtools-mcp start --grab for detailed setup guidance',
+    details: grabStatus,
+  };
+}
+
+/**
+ * Main verification function
+ * @param {Object} options - Optional: { isReact, reactGrab } from auto-detect
+ */
+export async function verifyMcpSetup(options = {}) {
   const checks = {
     configExists: await checkConfigExists(),
     serverConfigured: await checkServerConfigured(),
@@ -203,11 +243,16 @@ export async function verifyMcpSetup() {
     connection: checkConnection(),
   };
 
+  // Conditionally add react-grab checks for React projects
+  if (options.isReact) {
+    checks.reactGrabSetup = await checkReactGrabSetup(options);
+  }
+
   const errors = [];
 
   // Collect errors
   for (const [name, result] of Object.entries(checks)) {
-    if (!result.passed) {
+    if (!result.passed && !result.skipped) {
       errors.push({
         check: name,
         error: result.error,
@@ -258,6 +303,12 @@ export function formatVerificationResults(results) {
     }
     if (result.passed && result.browser) {
       lines.push(`   → Browser: ${result.browser}`);
+    }
+    if (result.skipped) {
+      lines.push(`   → Skipped: ${result.reason}`);
+    }
+    if (result.passed && result.framework) {
+      lines.push(`   → Framework: ${result.framework}`);
     }
   }
 

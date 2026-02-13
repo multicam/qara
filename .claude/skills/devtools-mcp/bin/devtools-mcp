@@ -57,7 +57,8 @@ Commands:
   url                 Build target URL from config
   browser             Detect available browsers
 
-  dev                 Start/restart dev server
+  start               Start dev server (alias: dev)
+  restart [grab]      Restart server, optionally with react-grab
   smoke               Run smoke test (auto-starts server if needed)
   visual              Visual test - screenshots (auto-starts server)
   debug               Debug console errors (auto-starts server)
@@ -72,6 +73,7 @@ Commands:
 Options:
   --url <url>         Override URL (default: auto-detect)
   --pages <pages>     Comma-separated page paths
+  --grab              Enable react-grab MCP (React projects only)
   --no-server         Don't start dev server (for live URLs)
   --verbose           Show detailed output
 
@@ -80,10 +82,19 @@ Examples:
   devtools-mcp verify
 
   # Start dev server
-  devtools-mcp dev
+  devtools-mcp start
+
+  # Start with react-grab enabled
+  devtools-mcp start --grab
+
+  # Restart with react-grab addon
+  devtools-mcp restart grab
 
   # Test local dev server (auto-detected)
   devtools-mcp smoke
+
+  # Debug with react-grab component context
+  devtools-mcp debug --grab
 
   # Test live URL
   devtools-mcp smoke --url https://example.com
@@ -223,6 +234,114 @@ ensure_dev_server() {
 
     print_error "Server failed to start within ${max_wait} seconds"
     return 1
+}
+
+# Verify react-grab setup (exits with guidance on failure)
+verify_grab_setup() {
+    local config
+    config=$(get_dev_config) || {
+        print_error "Failed to detect project config"
+        return 1
+    }
+
+    local is_react
+    is_react=$(echo "$config" | jq -r '.isReact // false')
+
+    if [[ "$is_react" != "true" ]]; then
+        local framework
+        framework=$(echo "$config" | jq -r '.framework // "unknown"')
+        print_error "react-grab requires a React project"
+        echo "  Detected framework: ${framework} (no React dependency found)"
+        echo "  react-grab only works with React-based projects."
+        return 1
+    fi
+
+    # Run full react-grab detection
+    local grab_json
+    if ! grab_json=$(node "${SKILL_DIR}/lib/react-grab-detect.mjs" 2>/dev/null); then
+        # Parse the JSON to give specific guidance
+        grab_json=$(node "${SKILL_DIR}/lib/react-grab-detect.mjs" 2>/dev/null) || grab_json="{}"
+
+        local installed script_injected mcp_configured layout_file framework_variant
+        installed=$(echo "$grab_json" | jq -r '.installed // false')
+        script_injected=$(echo "$grab_json" | jq -r '.scriptInjected // false')
+        mcp_configured=$(echo "$grab_json" | jq -r '.mcpConfigured // false')
+        layout_file=$(echo "$grab_json" | jq -r '.layoutFile // "layout file"')
+        framework_variant=$(echo "$grab_json" | jq -r '.framework // "unknown"')
+
+        if [[ "$installed" != "true" ]]; then
+            print_error "react-grab not installed in this project"
+            echo ""
+            echo "  Setup (one-time):"
+            echo "    npx -y grab@latest init"
+            echo ""
+            echo "  This will:"
+            echo "    1. Add react-grab to devDependencies"
+            echo "    2. Inject the grab <Script> into your layout file"
+            echo "    3. Configure the MCP server"
+            echo ""
+            echo "  Then retry: devtools-mcp start --grab"
+            return 1
+        fi
+
+        if [[ "$script_injected" != "true" ]]; then
+            print_error "react-grab script not found in ${layout_file}"
+            echo ""
+            case "$framework_variant" in
+                next-app)
+                    echo "  Add to ${layout_file}:"
+                    echo "    import Script from 'next/script'"
+                    echo ""
+                    echo "    // Inside <body>, add:"
+                    echo "    <Script src=\"https://unpkg.com/react-grab\" strategy=\"afterInteractive\" />"
+                    ;;
+                next-pages)
+                    echo "  Add to ${layout_file} <Head>:"
+                    echo "    <script src=\"https://unpkg.com/react-grab\" />"
+                    ;;
+                vite|cra)
+                    echo "  Add to ${layout_file} <head>:"
+                    echo "    <script src=\"https://unpkg.com/react-grab\"></script>"
+                    ;;
+                gatsby)
+                    echo "  Add to ${layout_file}:"
+                    echo "    export const onClientEntry = () => {"
+                    echo "      const script = document.createElement('script')"
+                    echo "      script.src = 'https://unpkg.com/react-grab'"
+                    echo "      document.head.appendChild(script)"
+                    echo "    }"
+                    ;;
+                *)
+                    echo "  Add react-grab script to your app's HTML head:"
+                    echo "    <script src=\"https://unpkg.com/react-grab\"></script>"
+                    ;;
+            esac
+            echo ""
+            echo "  Or run: npx -y grab@latest init"
+            return 1
+        fi
+
+        if [[ "$mcp_configured" != "true" ]]; then
+            print_error "react-grab MCP server not found in Claude config"
+            echo ""
+            echo "  Add to MCP config:"
+            echo "    npx -y grab@latest add mcp"
+            echo ""
+            echo "  Or manually add to ~/.config/claude-desktop/claude_desktop_config.json:"
+            echo "    \"react-grab-mcp\": {"
+            echo "      \"command\": \"npx\","
+            echo "      \"args\": [\"-y\", \"@react-grab/mcp\", \"--stdio\"]"
+            echo "    }"
+            return 1
+        fi
+
+        # Generic fallback
+        print_error "react-grab not ready. Run: npx -y grab@latest init"
+        return 1
+    fi
+
+    print_success "react-grab MCP active"
+    return 0
 }
 
 # ─── Commands ───────────────────────────────────────────────────────────────
@@ -370,7 +489,9 @@ cmd_a11y() {
     claude "$prompt"
 }
 
-cmd_dev() {
+cmd_start() {
+    local grab="${1:-false}"
+
     print_info "Starting dev server..."
 
     # Detect project config (stderr suppressed — exit code for errors)
@@ -389,6 +510,11 @@ cmd_dev() {
 
     print_info "Detected: ${framework} on port ${port}"
     print_verbose "Start command: ${start_cmd}"
+
+    # Verify react-grab setup if requested
+    if [[ "$grab" == true ]]; then
+        verify_grab_setup || exit 1
+    fi
 
     # Check if server is already running
     if lsof -ti:${port} > /dev/null 2>&1; then
@@ -442,6 +568,25 @@ cmd_dev() {
     exit 1
 }
 
+cmd_restart() {
+    local addon="${1:-}"
+
+    # Kill existing server
+    if [[ -f .dev-server.pid ]]; then
+        kill "$(cat .dev-server.pid)" 2>/dev/null || true
+        rm -f .dev-server.pid
+        print_info "Stopped existing server"
+    fi
+
+    # Enable grab mode if specified as addon
+    local grab=false
+    if [[ "$addon" == "grab" ]]; then
+        grab=true
+    fi
+
+    cmd_start "$grab"
+}
+
 cmd_interactive() {
     print_info "Launching Claude in interactive mode..."
     print_info "MCP DevTools integration active"
@@ -472,6 +617,14 @@ URL=""
 PAGES=""
 NO_SERVER=false
 VERBOSE=false
+GRAB_MODE=false
+RESTART_ADDON=""
+
+# For restart command, capture the addon arg before flag parsing
+if [[ "$COMMAND" == "restart" ]] && [[ $# -gt 0 ]] && [[ "${1:-}" != --* ]]; then
+    RESTART_ADDON="$1"
+    shift
+fi
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -482,6 +635,10 @@ while [[ $# -gt 0 ]]; do
         --pages)
             PAGES="$2"
             shift 2
+            ;;
+        --grab)
+            GRAB_MODE=true
+            shift
             ;;
         --no-server)
             NO_SERVER=true
@@ -505,6 +662,11 @@ done
 
 # ─── Dispatch ───────────────────────────────────────────────────────────────
 
+# Verify grab readiness for test commands when --grab is set
+if [[ "$GRAB_MODE" == true ]] && [[ "$COMMAND" =~ ^(smoke|visual|debug|perf|a11y)$ ]]; then
+    verify_grab_setup || exit 1
+fi
+
 case $COMMAND in
     verify)
         cmd_verify
@@ -518,8 +680,11 @@ case $COMMAND in
     browser)
         cmd_browser
         ;;
-    dev)
-        cmd_dev
+    start|dev)
+        cmd_start "$GRAB_MODE"
+        ;;
+    restart)
+        cmd_restart "$RESTART_ADDON"
         ;;
     smoke)
         cmd_smoke "$URL" "$PAGES"
