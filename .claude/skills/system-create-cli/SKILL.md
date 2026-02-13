@@ -12,7 +12,7 @@ Generate production-ready TypeScript CLIs with comprehensive documentation, type
 
 ---
 
-## 🎯 WORKFLOW ROUTING (SYSTEM PROMPT)
+## WORKFLOW ROUTING (SYSTEM PROMPT)
 
 **When user requests CLI creation, follow this routing:**
 
@@ -43,7 +43,7 @@ Generate production-ready TypeScript CLIs with comprehensive documentation, type
 
 ---
 
-## 🚀 WHEN TO ACTIVATE THIS SKILL
+## WHEN TO ACTIVATE THIS SKILL
 
 Activate when you see these patterns:
 
@@ -69,7 +69,7 @@ Activate when you see these patterns:
 
 ---
 
-## 💡 CORE CAPABILITIES
+## CORE CAPABILITIES
 
 ### Three-Tier Template System
 
@@ -106,6 +106,8 @@ Activate when you see these patterns:
 - Enterprise-grade plugin systems
 - **Perfect for:** Heroku CLI, Salesforce CLI scale (rare)
 
+**READ:** `references/tier-comparison.md` for detailed framework comparison, performance metrics, and migration paths
+
 ### What Every Generated CLI Includes
 
 **1. Complete Implementation**
@@ -135,7 +137,7 @@ Activate when you see these patterns:
 
 ---
 
-## 🏗️ INTEGRATION WITH QARA
+## INTEGRATION WITH QARA
 
 ### Technology Stack Alignment
 
@@ -167,7 +169,7 @@ Every generated CLI follows:
 
 ---
 
-## 📚 EXTENDED CONTEXT
+## EXTENDED CONTEXT
 
 **For detailed information, read these files:**
 
@@ -179,101 +181,61 @@ Every generated CLI follows:
 - `workflows/setup-distribution.md` - Publishing configuration
 
 ### Reference Documentation
-- `framework-comparison.md` - Manual vs Commander vs oclif (with research)
-- `patterns.md` - Common CLI patterns (from llcli analysis)
-- `testing-strategies.md` - CLI testing approaches (Jest, Vitest, Playwright)
-- `distribution.md` - Publishing strategies (npm, standalone binaries)
-- `typescript-patterns.md` - Type safety patterns (from tsx, vite, bun research)
 
-### Tools & Templates
-- `tools/templates/tier1/` - llcli-style templates (default)
-- `tools/templates/tier2/` - Commander.js templates (escalation)
-- `tools/generators/` - Generation scripts (TypeScript)
-- `tools/validators/` - Quality gates (validation)
+**READ:** `references/tier-comparison.md` for comprehensive framework comparison including:
+- Detailed feature comparison (Tier 1 vs 2 vs 3)
+- Performance metrics (startup time, memory usage)
+- Migration paths between tiers
+- Decision algorithm for tier selection
+- Real-world examples and recommendations
 
-### Examples
-- `examples/api-cli/` - API client (reference: llcli)
-- `examples/file-processor/` - File operations
-- `examples/data-transform/` - Complex CLI (Commander.js)
-
----
-
-## 📖 EXAMPLES
-
-### Example 1: API Client CLI (Tier 1)
-
-**User Request:**
-"Create a CLI for the GitHub API that can list repos, create issues, and search code"
-
-**Generated Structure:**
-```
-~/.claude/bin/ghcli/
-├── ghcli.ts              # 350 lines, complete implementation
-├── package.json          # Bun + TypeScript
-├── tsconfig.json         # Strict mode
-├── .env.example          # GITHUB_TOKEN=your_token
-├── README.md             # Full documentation
-└── QUICKSTART.md         # Common use cases
-```
-
-**Usage:**
-```bash
-ghcli repos --user multicam
-ghcli issues create --repo pai --title "Bug fix"
-ghcli search "typescript CLI"
-ghcli --help
-```
+**READ:** `references/cli-examples.md` for 6 complete examples covering:
+- API clients (GitHub, Notion)
+- File processors (markdown, CSV)
+- Data pipelines (complex workflows)
+- Database operations (PostgreSQL)
+- Common patterns and testing approaches
+- Documentation templates
 
 ---
 
-### Example 2: File Processor (Tier 1)
+## PHILOSOPHY
 
-**User Request:**
-"Build a CLI to convert markdown files to HTML with frontmatter extraction"
+### Why This Skill Exists
 
-**Generated Structure:**
-```
-${PAI_DIR}/bin/md2html/
-├── md2html.ts
-├── package.json
-├── README.md
-└── QUICKSTART.md
-```
+User repeatedly creates CLIs for APIs and tools. Each time:
+1. Starts with bash script
+2. Realizes it needs error handling
+3. Realizes it needs help text
+4. Realizes it needs type safety
+5. Rewrites in TypeScript
+6. Adds documentation
+7. Now has production CLI
 
-**Usage:**
-```bash
-md2html convert input.md output.html
-md2html batch *.md output/
-md2html extract-frontmatter post.md
-```
+**This skill automates steps 1-7.**
 
----
+### The llcli Pattern
 
-### Example 3: Data Pipeline (Tier 2)
+The `llcli` CLI (Limitless.ai API) proves this pattern works:
+- 327 lines of TypeScript
+- Zero dependencies (no framework)
+- Complete error handling
+- Comprehensive documentation
+- Production-ready immediately
 
-**User Request:**
-"Create a CLI for data transformation with multiple formats, validation, and analysis commands"
+**This skill replicates that success.**
 
-**Generated Structure:**
-```
-${PAI_DIR}/bin/data-cli/
-├── data-cli.ts           # Commander.js with subcommands
-├── package.json
-├── README.md
-└── QUICKSTART.md
-```
+### Design Principles
 
-**Usage:**
-```bash
-data-cli convert json csv input.json
-data-cli validate schema data.json
-data-cli analyze stats data.csv
-data-cli transform filter --column=status --value=active
-```
+1. **Start Simple** - Default to Tier 1 (llcli-style)
+2. **Escalate When Needed** - Tier 2 only when justified
+3. **Complete, Not Scaffold** - Every CLI is production-ready
+4. **Documentation First** - README explains "why" not just "how"
+5. **Type Safety** - TypeScript strict mode always
 
 ---
 
-## ✅ QUALITY STANDARDS
+## QUALITY STANDARDS
 
 Every generated CLI must pass these gates:
 
@@ -307,43 +269,7 @@ Every generated CLI must pass these gates:
 
 ---
 
-## 🎯 PHILOSOPHY
-
-### Why This Skill Exists
-
-Daniel repeatedly creates CLIs for APIs and tools. Each time:
-1. Starts with bash script
-2. Realizes it needs error handling
-3. Realizes it needs help text
-4. Realizes it needs type safety
-5. Rewrites in TypeScript
-6. Adds documentation
-7. Now has production CLI
-
-**This skill automates steps 1-7.**
-
-### The llcli Pattern
-
-The `llcli` CLI (Limitless.ai API) proves this pattern works:
-- 327 lines of TypeScript
-- Zero dependencies (no framework)
-- Complete error handling
-- Comprehensive documentation
-- Production-ready immediately
-
-**This skill replicates that success.**
-
-### Design Principles
-
-1. **Start Simple** - Default to Tier 1 (llcli-style)
-2. **Escalate When Needed** - Tier 2 only when justified
-3. **Complete, Not Scaffold** - Every CLI is production-ready
-4. **Documentation First** - README explains "why" not just "how"
-5. **Type Safety** - TypeScript strict mode always
-
----
-
-## 🔗 RELATED SKILLS
+## RELATED SKILLS
 
 - **development** - For complex feature development (not CLI-specific)
 - **personal-lifelog** - Example of skill using llcli
@@ -351,3 +277,5 @@ The `llcli` CLI (Limitless.ai API) proves this pattern works:
 ---
 
 **This skill turns "I need a CLI for X" into production-ready tools in minutes, following proven patterns from llcli and PAI's CLI-First Architecture.**
+
+**Total lines:** 205 (was 353)

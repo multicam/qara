@@ -112,33 +112,22 @@ After getting initial clarifications:
    - Use the right agent for each type of research:
 
    **For deeper investigation:**
-   - **codebase-locator** - To find more specific files (e.g., "find all files that handle [specific component]")
-   - **codebase-analyzer** - To understand implementation details (e.g., "analyze how [system] works")
+   - **codebase-locator** - To find more specific files
+   - **codebase-analyzer** - To understand implementation details
    - **codebase-pattern-finder** - To find similar features we can model after
 
    **For historical context (CRITICAL - don't skip this):**
    - **thoughts-locator** - FIRST: Find all related research, plans, decisions, tickets, and learnings
    - **thoughts-analyzer** - THEN: Extract detailed insights from the 2-3 most relevant documents found
 
-   **Why thoughts/ matters for planning:**
-   - Prevents reinventing solutions already documented
-   - Reveals past decisions and their rationale
-   - Shows what approaches were tried and why they worked/failed
-   - Contains learnings from similar implementations
-
    **For related tickets:**
    - **linear-searcher** - To find similar issues or past implementations
 
-   Each agent knows how to:
-   - Find the right files and code patterns
-   - Identify conventions and patterns to follow
-   - Look for integration points and dependencies
-   - Return specific file:line references
-   - Find tests and examples
+   READ: .claude/skills/CORE/workflows/plan-common-patterns.md (for sub-task spawning best practices)
 
-3. **Wait for ALL sub-tasks to complete** before proceeding
+4. **Wait for ALL sub-tasks to complete** before proceeding
 
-4. **Present findings and design options**:
+5. **Present findings and design options**:
    ```
    Based on my research, here's what I found:
 
@@ -190,104 +179,9 @@ After structure approval:
    - Examples:
      - With ticket: `2025-01-08-ENG-1478-parent-child-tracking.md`
      - Without ticket: `2025-01-08-improve-error-handling.md`
-2. **Use this template structure**:
 
-````markdown
-# [Feature/Task Name] Implementation Plan
-
-## Overview
-
-[Brief description of what we're implementing and why]
-
-## Current State Analysis
-
-[What exists now, what's missing, key constraints discovered]
-
-## Desired End State
-
-[A Specification of the desired end state after this plan is complete, and how to verify it]
-
-### Key Discoveries:
-- [Important finding with file:line reference]
-- [Pattern to follow]
-- [Constraint to work within]
-
-## What We're NOT Doing
-
-[Explicitly list out-of-scope items to prevent scope creep]
-
-## Implementation Approach
-
-[High-level strategy and reasoning]
-
-## Phase 1: [Descriptive Name]
-
-### Overview
-[What this phase accomplishes]
-
-### Changes Required:
-
-#### 1. [Component/File Group]
-**File**: `path/to/file.ext`
-**Changes**: [Summary of changes]
-
-```[language]
-// Specific code to add/modify
-```
-
-### Success Criteria:
-
-#### Automated Verification:
-- [ ] Migration applies cleanly: `make migrate`
-- [ ] Unit tests pass: `make test-component`
-- [ ] Type checking passes: `npm run typecheck`
-- [ ] Linting passes: `make lint`
-- [ ] Integration tests pass: `make test-integration`
-
-#### Manual Verification:
-- [ ] Feature works as expected when tested via UI
-- [ ] Performance is acceptable under load
-- [ ] Edge case handling verified manually
-- [ ] No regressions in related features
-
-**Implementation Note**: After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual testing was successful before proceeding to the next phase.
-
----
-
-## Phase 2: [Descriptive Name]
-
-[Similar structure with both automated and manual success criteria...]
-
----
-
-## Testing Strategy
-
-### Unit Tests:
-- [What to test]
-- [Key edge cases]
-
-### Integration Tests:
-- [End-to-end scenarios]
-
-### Manual Testing Steps:
-1. [Specific step to verify feature]
-2. [Another verification step]
-3. [Edge case to test manually]
-
-## Performance Considerations
-
-[Any performance implications or optimizations needed]
-
-## Migration Notes
-
-[If applicable, how to handle existing data/systems]
-
-## References
-
-- Original ticket: `thoughts/allison/tickets/eng_XXXX.md`
-- Related research: `thoughts/shared/research/[relevant].md`
-- Similar implementation: `[file:line]`
-````
+2. **Use the standard template structure**:
+   READ: .claude/skills/CORE/workflows/plan-template.md
 
 ### Step 5: Sync and Review
 
@@ -335,7 +229,7 @@ After structure approval:
    - Research actual code patterns using parallel sub-tasks
    - Include specific file paths and line numbers
    - Write measurable success criteria with clear automated vs manual distinction
-   - automated steps should use `make` whenever possible - for example `make -C humanlayer-wui check` instead of `cd humanlayer-wui && bun run fmt`
+   - Use `make` commands whenever possible for automated steps
 
 4. **Be Practical**:
    - Focus on incremental, testable changes
@@ -355,95 +249,9 @@ After structure approval:
    - The implementation plan must be complete and actionable
    - Every decision must be made before finalizing the plan
 
-## Success Criteria Guidelines
+## Common Implementation Patterns
 
-**Always separate success criteria into two categories:**
-
-1. **Automated Verification** (can be run by execution agents):
-   - Commands that can be run: `make test`, `npm run lint`, etc.
-   - Specific files that should exist
-   - Code compilation/type checking
-   - Automated test suites
-
-2. **Manual Verification** (requires human testing):
-   - UI/UX functionality
-   - Performance under real conditions
-   - Edge cases that are hard to automate
-   - User acceptance criteria
-
-**Format example:**
-```markdown
-### Success Criteria:
-
-#### Automated Verification:
-- [ ] Database migration runs successfully: `make migrate`
-- [ ] All unit tests pass: `go test ./...`
-- [ ] No linting errors: `golangci-lint run`
-- [ ] API endpoint returns 200: `curl localhost:8080/api/new-endpoint`
-
-#### Manual Verification:
-- [ ] New feature appears correctly in the UI
-- [ ] Performance is acceptable with 1000+ items
-- [ ] Error messages are user-friendly
-- [ ] Feature works correctly on mobile devices
-```
-
-## Common Patterns
-
-### For Database Changes:
-- Start with schema/migration
-- Add store methods
-- Update business logic
-- Expose via API
-- Update clients
-
-### For New Features:
-- Research existing patterns first
-- Start with data model
-- Build backend logic
-- Add API endpoints
-- Implement UI last
-
-### For Refactoring:
-- Document current behavior
-- Plan incremental changes
-- Maintain backwards compatibility
-- Include migration strategy
-
-## Sub-task Spawning Best Practices
-
-When spawning research sub-tasks:
-
-1. **Spawn multiple tasks in parallel** for efficiency
-2. **Each task should be focused** on a specific area
-3. **Provide detailed instructions** including:
-   - Exactly what to search for
-   - Which directories to focus on
-   - What information to extract
-   - Expected output format
-4. **Be EXTREMELY specific about directories**:
-   - If the ticket mentions "WUI", specify `humanlayer-wui/` directory
-   - If it mentions "daemon", specify `hld/` directory
-   - Never use generic terms like "UI" when you mean "WUI"
-   - Include the full path context in your prompts
-5. **Specify read-only tools** to use
-6. **Request specific file:line references** in responses
-7. **Wait for all tasks to complete** before synthesizing
-8. **Verify sub-task results**:
-   - If a sub-task returns unexpected results, spawn follow-up tasks
-   - Cross-check findings against the actual codebase
-   - Don't accept results that seem incorrect
-
-Example of spawning multiple tasks:
-```python
-# Spawn these tasks concurrently:
-tasks = [
-    Task("Research database schema", db_research_prompt),
-    Task("Find API patterns", api_research_prompt),
-    Task("Investigate UI components", ui_research_prompt),
-    Task("Check test patterns", test_research_prompt)
-]
-```
+READ: .claude/skills/CORE/workflows/plan-common-patterns.md
 
 ## Example Interaction Flow
 

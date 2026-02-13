@@ -145,37 +145,11 @@ Ask user to clarify:
 
 ### Step 2: Choose Archetype
 
-Based on workflow count and complexity:
+Based on workflow count and complexity - see `references/archetype-templates.md` for details:
 
-**Minimal Skill (1-3 workflows)**
-```
-skill-name/
-├── SKILL.md
-└── workflows/ OR assets/
-    └── *.md
-```
-
-**Standard Skill (3-15 workflows)**
-```
-skill-name/
-├── SKILL.md
-├── workflows/
-│   └── *.md (flat or nested)
-└── [optional: documentation/, tools/, references/]
-```
-
-**Complex Skill (15+ workflows)**
-```
-skill-name/
-├── SKILL.md
-├── CONSTITUTION.md (optional)
-├── METHODOLOGY.md (optional)
-├── documentation/
-├── workflows/ (nested)
-├── references/
-├── state/
-└── tools/
-```
+**Minimal Skill (1-3 workflows)** - Zero framework dependencies
+**Standard Skill (3-15 workflows)** - Optional documentation/references
+**Complex Skill (15+ workflows)** - Full documentation hierarchy
 
 ### Step 3: Read Architecture Document
 
@@ -192,38 +166,7 @@ This ensures:
 
 ### Step 4: Create Skill Structure
 
-Use the canonical template from skill-structure.md:
-
-```markdown
----
-name: skill-name
-description: |
-  What this skill does and when to use it.
-
-  USE WHEN: user says "trigger phrase", "another trigger", or any related request.
----
-
-## Workflow Routing (SYSTEM PROMPT)
-
-**When user requests [action 1]:**
-Examples: "actual user phrases", "variations", "synonyms"
-→ **READ:** ${PAI_DIR}/skills/skill-name/workflows/workflow1.md
-→ **EXECUTE:** What to do with this workflow
-
-[Route EVERY workflow file]
-
----
-
-## When to Activate This Skill
-
-[Comprehensive activation triggers using 8-category pattern]
-
----
-
-## Extended Context / Main Body
-
-[Detailed information, file links, examples]
-```
+Use the canonical template from skill-structure.md - follow exact structure for chosen archetype.
 
 ### Step 5: Validate Compliance
 
@@ -238,14 +181,6 @@ Run through quality gates:
 ### Step 6: Test Activation
 
 Verify skill activates with natural language triggers from description.
-
----
-
-## Reference Documentation
-
-**Detailed pattern and quality references:**
-- `references/skill-patterns-reference.md` - 8-category routing pattern, routing patterns, anti-patterns
-- `references/quality-checklist.md` - Complete quality checklist and validation gates
 
 ---
 
@@ -283,72 +218,11 @@ Verify skill activates with natural language triggers from description.
 - Reorganizing skill structure
 - Migration patterns
 
----
+### Reference Documentation
 
-## Examples
+**READ:** `references/archetype-templates.md` for complete structure templates and archetype selection guide
 
-### Example 1: Creating a Minimal Skill
-
-**User:** "Create a skill for generating API documentation"
-
-**System-create-skill Response:**
-1. Read skill-structure.md
-2. Determine archetype: Minimal (single workflow)
-3. Create structure:
-   ```
-   api-docs/
-   ├── SKILL.md
-   └── workflows/
-       └── generate-docs.md
-   ```
-4. Write SKILL.md with:
-   - YAML: name, description with USE WHEN triggers
-   - Workflow Routing section (FIRST)
-   - When to Activate section (8-category pattern)
-   - Main body with workflow description
-5. Validate against quality checklist
-6. Test activation: "generate API docs for my service"
-
-### Example 2: Creating a Standard Skill
-
-**User:** "Create a skill for database operations - migrations, backups, queries, optimization"
-
-**System-create-skill Response:**
-1. Read skill-structure.md
-2. Determine archetype: Standard (4 workflows)
-3. Create structure:
-   ```
-   database/
-   ├── SKILL.md
-   └── workflows/
-       ├── run-migration.md
-       ├── backup-database.md
-       ├── optimize-queries.md
-       └── execute-query.md
-   ```
-4. Write SKILL.md with semantic routing:
-   - Route "run migration" → run-migration.md
-   - Route "backup database" → backup-database.md
-   - Route "optimize" → optimize-queries.md
-   - Route "query" → execute-query.md
-5. Comprehensive activation triggers covering all 4 workflows
-6. Validate and register
-7. Test each workflow activation
-
-### Example 3: Validating Existing Skill
-
-**User:** "Validate the research skill for compliance"
-
-**System-create-skill Response:**
-1. Read skill-structure.md
-2. Read ${PAI_DIR}/skills/research/SKILL.md
-3. Run validation:
-   - ✅ Workflow Routing section present and FIRST
-   - ✅ All 12 workflows explicitly routed
-   - ✅ Activation triggers comprehensive
-   - ✅ All files referenced
-   - ✅ Standard archetype structure correct
-4. Report: "research skill is COMPLIANT - no issues found"
+**READ:** `references/skill-examples.md` for 6 detailed examples covering all common scenarios
 
 ---
 
@@ -381,4 +255,4 @@ Verify skill activates with natural language triggers from description.
 - `${PAI_DIR}/skills/CORE/skill-structure.md` - Canonical architecture guide (PRIMARY)
 - `${PAI_DIR}/skills/CORE/CONSTITUTION.md` - Overall PAI philosophy
 
-**Last Updated:** 2025-11-17
+**Total lines:** 209 (was 384)
