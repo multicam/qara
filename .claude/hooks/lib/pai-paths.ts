@@ -38,36 +38,32 @@ export const THOUGHTS_DIR = join(QARA_DIR, 'thoughts');
 export const MEMORY_DIR = join(THOUGHTS_DIR, 'memory');
 
 /**
- * Validate PAI directory structure on first import
- * This fails fast with a clear error if PAI is misconfigured
+ * Validate PAI directory structure on first import.
+ * Logs warnings but does NOT exit — let the importing hook handle errors gracefully.
  */
 function validatePAIStructure(): void {
     if (!existsSync(PAI_DIR)) {
-        console.error(`❌ PAI_DIR does not exist: ${PAI_DIR}`);
-        console.error(`   Expected ~/.claude or set PAI_DIR environment variable`);
-        process.exit(1);
-    }
-
-    if (!existsSync(HOOKS_DIR)) {
-        console.error(`❌ PAI hooks directory not found: ${HOOKS_DIR}`);
-        console.error(`   Your PAI_DIR may be misconfigured`);
-        console.error(`   Current PAI_DIR: ${PAI_DIR}`);
-        process.exit(1);
+        console.error(`Warning: PAI_DIR does not exist: ${PAI_DIR}`);
+    } else if (!existsSync(HOOKS_DIR)) {
+        console.error(`Warning: PAI hooks directory not found: ${HOOKS_DIR}`);
     }
 }
 
-// Run validation on module import
-// This ensures any hook that imports this module will fail fast if paths are wrong
+// Run validation on module import (warns only, never crashes)
 validatePAIStructure();
 
 /**
  * Helper to get history file path with date-based organization
  */
 export function getHistoryFilePath(subdir: string, filename: string): string {
-    const now = new Date();
-    const localDate = new Date(now.toLocaleString('en-US', { timeZone: 'Australia/Sydney' }));
-    const year = localDate.getFullYear();
-    const month = String(localDate.getMonth() + 1).padStart(2, '0');
+    const formatter = new Intl.DateTimeFormat('en-AU', {
+        timeZone: 'Australia/Sydney',
+        year: 'numeric',
+        month: '2-digit',
+    });
+    const parts = formatter.formatToParts(new Date());
+    const year = parts.find(p => p.type === 'year')!.value;
+    const month = parts.find(p => p.type === 'month')!.value;
 
     return join(HISTORY_DIR, subdir, `${year}-${month}`, filename);
 }
@@ -104,8 +100,9 @@ export function loadEnv(): void {
                 const [, key, value] = match;
                 // Only set if not already in environment
                 if (!process.env[key]) {
-                    // Handle $HOME and other variable expansion
-                    const expandedValue = value.replace(/\$HOME/g, homedir());
+                    // Strip surrounding quotes and handle $HOME expansion
+                    const unquoted = value.replace(/^["'](.*)["']$/, '$1');
+                    const expandedValue = unquoted.replace(/\$HOME/g, homedir());
                     process.env[key] = expandedValue;
                 }
             }

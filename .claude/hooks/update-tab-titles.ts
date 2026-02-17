@@ -9,8 +9,8 @@
  * Runs on UserPromptSubmit event.
  */
 
+import { readFileSync } from 'fs';
 import { setTerminalTabTitle, generateTabTitle } from './lib/tab-titles';
-import { readStdinWithTimeout } from './lib/stdin-utils';
 
 interface HookInput {
   session_id: string;
@@ -22,9 +22,9 @@ interface HookInput {
 async function main() {
   try {
     // Read hook input from stdin
-    const input = await readStdinWithTimeout(500);
-    
-    if (!input) {
+    const input = readFileSync(0, 'utf-8');
+
+    if (!input.trim()) {
       process.exit(0);
     }
 

@@ -139,8 +139,9 @@ describe('Settings Loading', () => {
         if (config.hooks) {
           for (const hook of config.hooks) {
             if (hook.command) {
-              // Extract the .ts file path from the command
-              const match = hook.command.match(/(\/[^\s]+\.ts)/);
+              // Resolve ${PAI_DIR} and extract the .ts file path
+              const resolvedCommand = hook.command.replace(/\$\{PAI_DIR\}/g, settings.env?.PAI_DIR || process.env.PAI_DIR || '');
+              const match = resolvedCommand.match(/(\/[^\s]+\.ts)/);
               if (match) {
                 expect(existsSync(match[1])).toBe(true);
               }

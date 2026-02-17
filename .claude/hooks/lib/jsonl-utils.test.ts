@@ -6,7 +6,8 @@ import { describe, it, expect, afterAll } from 'bun:test';
 import { existsSync, readFileSync, unlinkSync, mkdirSync, rmdirSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
-import { appendJsonl, ensureDir, truncate } from './jsonl-utils';
+import { appendJsonl, truncate } from './jsonl-utils';
+import { ensureDir } from './pai-paths';
 
 const TEST_DIR = join(tmpdir(), 'jsonl-utils-test-' + Date.now());
 

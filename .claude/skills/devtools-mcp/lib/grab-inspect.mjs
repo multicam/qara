@@ -125,11 +125,24 @@ export async function inspect(port = DEFAULT_PORT) {
 
 /**
  * Hard-refresh the browser page (bypass cache)
+ * Uses CDP Page.reload with ignoreCache instead of deprecated location.reload(true)
  */
 export async function hardRefresh(port = DEFAULT_PORT) {
     const wsUrl = await getPageWs(port)
     if (!wsUrl) throw new Error('No app tab found')
-    return cdpEval(wsUrl, 'location.reload(true); "refreshed"')
+    return new Promise((resolve, reject) => {
+        const ws = new WebSocket(wsUrl)
+        const timer = setTimeout(() => { ws.close(); reject(new Error('CDP timeout')) }, 5000)
+        ws.onopen = () => ws.send(JSON.stringify({
+            id: 1, method: 'Page.reload', params: { ignoreCache: true }
+        }))
+        ws.onmessage = () => {
+            clearTimeout(timer)
+            ws.close()
+            resolve({ refreshed: true })
+        }
+        ws.onerror = (e) => { clearTimeout(timer); ws.close(); reject(e) }
+    })
 }
 
 /**

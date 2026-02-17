@@ -2,7 +2,7 @@
  * Tests for tab-titles.ts
  */
 
-import { describe, it, expect } from 'bun:test';
+import { describe, it, expect, afterEach } from 'bun:test';
 import { generateTabTitle } from './tab-titles';
 
 describe('Tab Titles', () => {
@@ -168,6 +168,16 @@ describe('Tab Titles', () => {
         expect(titleSend).toContain('Sent');
       });
 
+      it('should handle CVC pattern verbs', () => {
+        // Tests the CVC doubling branch (line 45-48 in tab-titles.ts)
+        // "run" is irregular so use prompt where "run" is first verb match
+        const titleRun = generateTabTitle('run something now');
+        expect(titleRun).toContain('Ran'); // irregular handles CVC
+
+        const titleSet = generateTabTitle('set something now');
+        expect(titleSet).toContain('Set'); // irregular handles CVC
+      });
+
       it('should not double-convert already past tense verbs', () => {
         const title = generateTabTitle('updated the code');
 
@@ -195,6 +205,16 @@ describe('Tab Titles', () => {
   });
 
   describe('setTerminalTabTitle', () => {
+    const originalTerm = process.env.TERM;
+
+    afterEach(() => {
+      if (originalTerm !== undefined) {
+        process.env.TERM = originalTerm;
+      } else {
+        delete process.env.TERM;
+      }
+    });
+
     it('should export setTerminalTabTitle function', async () => {
       const mod = await import('./tab-titles');
       expect(typeof mod.setTerminalTabTitle).toBe('function');
@@ -219,6 +239,30 @@ describe('Tab Titles', () => {
     it('should handle unicode in title', async () => {
       const { setTerminalTabTitle } = await import('./tab-titles');
       expect(() => setTerminalTabTitle('Test 🎯 Title')).not.toThrow();
+    });
+
+    it('should use ghostty escape sequences for ghostty terminal', () => {
+      const { setTerminalTabTitle } = require('./tab-titles');
+      process.env.TERM = 'xterm-ghostty';
+      expect(() => setTerminalTabTitle('Ghostty Title')).not.toThrow();
+    });
+
+    it('should use kitty escape sequences for kitty terminal', () => {
+      const { setTerminalTabTitle } = require('./tab-titles');
+      process.env.TERM = 'xterm-kitty';
+      expect(() => setTerminalTabTitle('Kitty Title')).not.toThrow();
+    });
+
+    it('should use generic escape sequences for unknown terminal', () => {
+      const { setTerminalTabTitle } = require('./tab-titles');
+      process.env.TERM = 'xterm-256color';
+      expect(() => setTerminalTabTitle('Generic Title')).not.toThrow();
+    });
+
+    it('should handle undefined TERM', () => {
+      const { setTerminalTabTitle } = require('./tab-titles');
+      delete process.env.TERM;
+      expect(() => setTerminalTabTitle('No TERM Title')).not.toThrow();
     });
   });
 

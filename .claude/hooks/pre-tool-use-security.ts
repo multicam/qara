@@ -38,7 +38,7 @@ const DANGEROUS_PATTERNS: Array<{ pattern: RegExp; risk: string; severity: "bloc
   // Remote code execution
   { pattern: /curl.*\|\s*(ba)?sh/, risk: "pipe curl to shell", severity: "block" },
   { pattern: /wget.*\|\s*(ba)?sh/, risk: "pipe wget to shell", severity: "block" },
-  { pattern: /\beval\s/, risk: "eval execution", severity: "approve" },
+  { pattern: /\beval\b/, risk: "eval execution", severity: "approve" },
 
   // Credential exposure
   { pattern: /echo.*API_KEY.*>/, risk: "writing API key to file", severity: "approve" },
@@ -53,8 +53,8 @@ const DANGEROUS_PATTERNS: Array<{ pattern: RegExp; risk: string; severity: "bloc
 
 // Patterns that are always blocked
 const ALWAYS_BLOCKED: RegExp[] = [
-  /rm\s+-rf\s+\/\s*$/,
-  /rm\s+-rf\s+\/\*\s*$/,
+  /rm\s+-rf\s+\/\s*(;|&&|\|\||$)/,
+  /rm\s+-rf\s+\/\*\s*(;|&&|\|\||$)/,
   /dd\s+if=.*of=\/dev\/sd[a-z]/,
   /mkfs\.\w+\s+\/dev\/sd[a-z]/,
   />\s*\/dev\/sd[a-z]/,

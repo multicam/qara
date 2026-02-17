@@ -14,7 +14,7 @@ Complete installation and configuration guide for Chrome DevTools MCP integratio
 ### 1. Install Chrome DevTools MCP Server
 
 ```bash
-npm install -g chrome-devtools-mcp
+bun install -g chrome-devtools-mcp
 ```
 
 Verify installation:
@@ -352,7 +352,7 @@ cp ${PAI_DIR}/skills/devtools-mcp/templates/mcp-config.json \
 
 **Fix:**
 ```bash
-npm install -g chrome-devtools-mcp
+bun install -g chrome-devtools-mcp
 ```
 
 ### Browser not found

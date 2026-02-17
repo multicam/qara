@@ -123,7 +123,7 @@ function checkBinaryInstalled() {
     return {
       passed: false,
       error: 'chrome-devtools-mcp binary not found in PATH',
-      fix: 'Install with: npm install -g chrome-devtools-mcp',
+      fix: 'Install with: bun install -g chrome-devtools-mcp',
     };
   }
 }
@@ -225,7 +225,7 @@ async function checkReactGrabSetup(options = {}) {
   return {
     passed: false,
     error: issues.join('; '),
-    fix: 'Run: npx -y grab@latest init\nSee: devtools-mcp start --grab for detailed setup guidance',
+    fix: 'Run: bunx -y grab@latest init\nSee: devtools-mcp start --grab for detailed setup guidance',
     details: grabStatus,
   };
 }

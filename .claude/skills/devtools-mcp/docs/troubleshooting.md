@@ -45,7 +45,7 @@ nano ~/.config/claude-desktop/claude_desktop_config.json
 **Solution:**
 ```bash
 # Install globally
-npm install -g chrome-devtools-mcp
+bun install -g chrome-devtools-mcp
 
 # Verify installation
 which chrome-devtools-mcp
@@ -53,11 +53,11 @@ which chrome-devtools-mcp
 
 **If still not found:**
 ```bash
-# Check npm global path
-npm config get prefix
+# Check bun global path
+bun pm bin -g
 
 # Add to PATH if needed (add to ~/.bashrc or ~/.zshrc)
-export PATH="$PATH:$(npm config get prefix)/bin"
+export PATH="$PATH:$HOME/.bun/bin"
 ```
 
 ### Invalid JSON in Config
@@ -753,7 +753,7 @@ Enable debug logging in MCP config:
 
 ### Common Issues Checklist
 
-- [ ] MCP server installed (`npm install -g chrome-devtools-mcp`)
+- [ ] MCP server installed (`bun install -g chrome-devtools-mcp`)
 - [ ] Browser installed (Brave, Chrome, or Chromium)
 - [ ] Config file exists (`~/.config/claude-desktop/claude_desktop_config.json`)
 - [ ] Browser path correct in config

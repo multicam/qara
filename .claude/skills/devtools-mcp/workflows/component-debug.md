@@ -1,3 +1,9 @@
+---
+workflow: component-debug
+description: Debug React components using DevTools MCP + react-grab
+tools: [navigate_page, list_console_messages, take_screenshot, evaluate_script, get_element_context]
+---
+
 # Component Debug Workflow
 
 Combined Chrome DevTools + react-grab workflow for debugging React components.

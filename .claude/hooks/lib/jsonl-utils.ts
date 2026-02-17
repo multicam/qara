@@ -5,18 +5,9 @@
  * Handles directory creation and atomic writes.
  */
 
-import { appendFileSync, existsSync, mkdirSync } from 'fs';
+import { appendFileSync } from 'fs';
 import { dirname } from 'path';
-
-/**
- * Ensure a directory exists, creating it recursively if needed
- * @param dir Directory path to ensure exists
- */
-export function ensureDir(dir: string): void {
-    if (!existsSync(dir)) {
-        mkdirSync(dir, { recursive: true });
-    }
-}
+import { ensureDir } from './pai-paths';
 
 /**
  * Append a JSON object as a line to a JSONL file

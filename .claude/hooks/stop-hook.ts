@@ -7,9 +7,8 @@
  * Sets terminal tab title based on the last user query.
  */
 
-import { openSync, readSync, fstatSync, closeSync } from 'fs';
+import { openSync, readSync, readFileSync, fstatSync, closeSync } from 'fs';
 import { generateTabTitle, setTerminalTabTitle } from './lib/tab-titles';
-import { readStdinWithTimeout } from './lib/stdin-utils';
 
 const TAIL_BYTES = 32_768; // Read last 32KB -- enough for recent user messages
 
@@ -34,8 +33,8 @@ async function main() {
   // Read input from stdin
   let transcriptPath: string;
   try {
-    const input = await readStdinWithTimeout(500);
-    if (!input) {
+    const input = readFileSync(0, 'utf-8');
+    if (!input.trim()) {
       process.exit(0);
     }
 

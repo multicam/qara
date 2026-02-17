@@ -52,9 +52,10 @@ export async function readStdinWithTimeout(timeoutMs: number = 5000): Promise<st
   const reader = Bun.stdin.stream().getReader();
   const chunks: Uint8Array[] = [];
   const decoder = new TextDecoder();
-  
+
+  let timer: ReturnType<typeof setTimeout>;
   const timeoutPromise = new Promise<never>((_, reject) => {
-    setTimeout(() => reject(new Error('Stdin read timeout')), timeoutMs);
+    timer = setTimeout(() => reject(new Error('Stdin read timeout')), timeoutMs);
   });
 
   try {
@@ -63,11 +64,12 @@ export async function readStdinWithTimeout(timeoutMs: number = 5000): Promise<st
         reader.read(),
         timeoutPromise
       ]);
-      
+
       if (result.done) break;
       if (result.value) chunks.push(result.value);
     }
   } finally {
+    clearTimeout(timer!);
     reader.releaseLock();
   }
 

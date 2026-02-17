@@ -15,8 +15,7 @@ describe('PAI Paths Integration Tests', () => {
   const testHelperPath = resolve(__dirname, 'pai-paths-test-helper.ts');
 
   describe('validatePAIStructure error handling', () => {
-    it('should exit with error when PAI_DIR does not exist', async () => {
-      // This tests lines 46-48
+    it('should warn but not crash when PAI_DIR does not exist', async () => {
       const nonExistentDir = '/tmp/nonexistent-pai-dir-test-' + Date.now();
 
       const result = await new Promise<{ code: number; stderr: string }>((resolve) => {
@@ -37,14 +36,13 @@ describe('PAI Paths Integration Tests', () => {
         });
       });
 
-      expect(result.code).toBe(1);
+      // Should exit 0 (not crash) but log a warning
+      expect(result.code).toBe(0);
       expect(result.stderr).toContain('PAI_DIR does not exist');
       expect(result.stderr).toContain(nonExistentDir);
     });
 
-    it('should exit with error when HOOKS_DIR does not exist', async () => {
-      // This tests lines 52-55
-      // Create a temporary PAI_DIR without hooks subdirectory
+    it('should warn but not crash when HOOKS_DIR does not exist', async () => {
       const tempPaiDir = '/tmp/pai-test-no-hooks-' + Date.now();
       const { mkdirSync, rmdirSync, existsSync } = await import('fs');
 
@@ -69,11 +67,11 @@ describe('PAI Paths Integration Tests', () => {
           });
         });
 
-        expect(result.code).toBe(1);
+        // Should exit 0 (not crash) but log a warning
+        expect(result.code).toBe(0);
         expect(result.stderr).toContain('hooks directory not found');
         expect(result.stderr).toContain(tempPaiDir);
       } finally {
-        // Clean up
         if (existsSync(tempPaiDir)) {
           rmdirSync(tempPaiDir);
         }

@@ -37,10 +37,13 @@ Use any of these phrases to invoke the skill:
 | "run smoke test" | `claude "run smoke test on http://localhost:8000"` |
 | "debug this component" | React: identify component via react-grab |
 | "which component renders this" | React: get component name + file:line |
+| "test staging" | `devtools-mcp live --url https://staging.example.com` |
+| "test production" | `devtools-mcp live --url https://www.example.com` |
+| "audit this website" | Full live site audit |
 
 ## Requirements
 
-1. **Chrome DevTools MCP server** - `npm install -g chrome-devtools-mcp`
+1. **Chrome DevTools MCP server** - `bun install -g chrome-devtools-mcp`
 2. **Browser** - Brave, Chrome, or Chromium installed
 3. **Claude CLI** - Claude Desktop with MCP configured
 4. **MCP config** - `~/.config/claude-desktop/claude_desktop_config.json`
@@ -84,6 +87,7 @@ The skill detects target URLs in priority order:
 | `interactive.md` | Launch Claude with MCP for exploration |
 | `performance.md` | Performance traces, Core Web Vitals |
 | `accessibility.md` | A11y tree audit, keyboard navigation |
+| `live-test.md` | Test live staging/production URLs |
 
 ## Quick Start
 
@@ -248,6 +252,6 @@ The skill was extracted from tgds-website's mature MCP integration (v1.1, Feb 20
 
 ---
 
-**Status:** Implementation in progress (Priority 1: Foundation)
-**Version:** 0.2.0
-**Last updated:** February 13, 2026
+**Status:** Active
+**Version:** 0.3.0
+**Last updated:** February 16, 2026

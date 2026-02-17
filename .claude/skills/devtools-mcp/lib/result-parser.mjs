@@ -27,12 +27,30 @@ function extractJsonBlocks(text) {
     blocks.push(match[1].trim());
   }
 
-  // Also try to find bare JSON objects/arrays
+  // Also try to find bare JSON objects/arrays using brace-depth matching
   if (blocks.length === 0) {
-    const bareJsonRegex = /(\{[\s\S]*?\}|\[[\s\S]*?\])/;
-    const bareMatch = text.match(bareJsonRegex);
-    if (bareMatch) {
-      blocks.push(bareMatch[1].trim());
+    const startIdx = text.search(/[\{\[]/);
+    if (startIdx !== -1) {
+      const opener = text[startIdx];
+      const closer = opener === '{' ? '}' : ']';
+      let depth = 0;
+      let inString = false;
+      let escaped = false;
+      for (let i = startIdx; i < text.length; i++) {
+        const ch = text[i];
+        if (escaped) { escaped = false; continue; }
+        if (ch === '\\' && inString) { escaped = true; continue; }
+        if (ch === '"') { inString = !inString; continue; }
+        if (inString) continue;
+        if (ch === opener) depth++;
+        else if (ch === closer) {
+          depth--;
+          if (depth === 0) {
+            blocks.push(text.substring(startIdx, i + 1).trim());
+            break;
+          }
+        }
+      }
     }
   }
 
@@ -162,12 +180,13 @@ export function extractSummary(result) {
 
   const data = result.result;
 
+  const summary = data.summary || {};
   return {
-    passed: data.passed ?? false,
-    total: data.totalTests ?? data.total ?? 0,
-    failed: data.failedTests ?? data.failed ?? 0,
-    errors: data.errors ?? [],
-    timestamp: data.timestamp ?? new Date().toISOString(),
+    passed: data.passed ?? summary.passed ?? false,
+    total: data.totalTests ?? summary.totalTests ?? summary.total ?? data.total ?? 0,
+    failed: data.failedTests ?? summary.failedTests ?? summary.failed ?? data.failed ?? 0,
+    errors: data.errors ?? summary.errors ?? [],
+    timestamp: data.timestamp ?? summary.timestamp ?? new Date().toISOString(),
   };
 }
 

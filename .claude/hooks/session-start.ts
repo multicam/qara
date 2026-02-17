@@ -19,7 +19,8 @@ import { SKILLS_DIR } from './lib/pai-paths';
 import { setTerminalTabTitle } from './lib/tab-titles';
 
 const DEBOUNCE_MS = 2000;
-const LOCKFILE = join(tmpdir(), 'pai-session-start.lock');
+const sessionId = process.env.CLAUDE_SESSION_ID || process.env.SESSION_ID || 'default';
+const LOCKFILE = join(tmpdir(), `pai-session-start-${sessionId}.lock`);
 
 /**
  * Check if this is a subagent session

@@ -100,6 +100,29 @@
         ]
       }
     ],
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/post-tool-use.ts",
+            "timeout": 2000
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/notification-hook.ts",
+            "timeout": 1000
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "hooks": [
@@ -119,7 +142,8 @@
   "enabledPlugins": {},
   "alwaysThinkingEnabled": true,
   "plansDirectory": "thoughts/shared/plans",
+  "skipDangerousModePermissionPrompt": true,
   "showTurnDuration": true,
   "max_tokens": 8192,
-  "skipDangerousModePermissionPrompt": true
+  "effortLevel": "medium"
 }

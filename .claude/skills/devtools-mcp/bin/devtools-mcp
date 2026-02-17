@@ -64,6 +64,7 @@ Commands:
   debug               Debug console errors (auto-starts server)
   perf                Performance trace (auto-starts server)
   a11y                Accessibility audit (auto-starts server)
+  live                Test live staging/production URL (no server)
 
   interactive         Launch Claude in interactive mode
 
@@ -102,8 +103,11 @@ Examples:
   # Debug console errors on specific pages
   devtools-mcp debug --pages /,/about/,/contact/
 
-  # Smoke test without auto-starting server
-  devtools-mcp smoke --url https://staging.example.com --no-server
+  # Test live staging/production site (full audit)
+  devtools-mcp live --url https://staging.example.com
+
+  # Test specific pages on production
+  devtools-mcp live --url https://www.example.com --pages /,/about,/pricing
 
   # Interactive mode
   devtools-mcp interactive
@@ -289,7 +293,7 @@ verify_grab_setup() {
             print_error "react-grab not installed in this project"
             echo ""
             echo "  Setup (one-time):"
-            echo "    npx -y grab@latest init"
+            echo "    bunx -y grab@latest init"
             echo ""
             echo "  This will:"
             echo "    1. Add react-grab to devDependencies"
@@ -333,7 +337,7 @@ verify_grab_setup() {
                     ;;
             esac
             echo ""
-            echo "  Or run: npx -y grab@latest init"
+            echo "  Or run: bunx -y grab@latest init"
             return 1
         fi
 
@@ -341,7 +345,7 @@ verify_grab_setup() {
             print_error "react-grab MCP server not found in Claude config"
             echo ""
             echo "  Add to MCP config:"
-            echo "    npx -y grab@latest add mcp"
+            echo "    bunx -y grab@latest add mcp"
             echo ""
             echo "  Or manually add to ~/.config/claude-desktop/claude_desktop_config.json:"
             echo "    \"react-grab-mcp\": {"
@@ -352,12 +356,12 @@ verify_grab_setup() {
         fi
 
         # Generic fallback
-        print_error "react-grab not ready. Run: npx -y grab@latest init"
+        print_error "react-grab not ready. Run: bunx -y grab@latest init"
         return 1
     fi
 
     # Shouldn't reach here, but just in case
-    print_error "react-grab not ready. Run: npx -y grab@latest init"
+    print_error "react-grab not ready. Run: bunx -y grab@latest init"
     return 1
 }
 
@@ -509,6 +513,25 @@ cmd_a11y() {
 
     local prompt
     prompt=$(build_claude_prompt "check accessibility" "$url" "$pages")
+    claude "$prompt"
+}
+
+cmd_live() {
+    local url="${1:-}"
+    local pages="${2:-}"
+
+    if [[ -z "$url" ]]; then
+        print_error "Live testing requires --url"
+        echo "  Usage: devtools-mcp live --url https://staging.example.com"
+        echo "  Options: --pages /,/about,/contact"
+        exit 1
+    fi
+
+    print_info "Testing live site: ${url}"
+    [[ -n "$pages" ]] && print_verbose "Pages: ${pages}"
+
+    local prompt
+    prompt=$(build_claude_prompt "run full site audit: check console errors, network failures, take screenshots at mobile/tablet/desktop, check accessibility landmarks" "$url" "$pages")
     claude "$prompt"
 }
 
@@ -723,6 +746,9 @@ case $COMMAND in
         ;;
     a11y)
         cmd_a11y "$URL" "$PAGES"
+        ;;
+    live)
+        cmd_live "$URL" "$PAGES"
         ;;
     interactive)
         cmd_interactive

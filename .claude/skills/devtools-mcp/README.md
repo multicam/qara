@@ -26,6 +26,7 @@ devtools-mcp <command>
 - `debug` - Debug console errors
 - `perf` - Performance trace
 - `a11y` - Accessibility audit
+- `live` - Test live staging/production URL
 - `interactive` - Launch Claude with MCP
 
 **Documentation:** See `docs/cli-reference.md` for complete CLI reference.
@@ -36,7 +37,7 @@ devtools-mcp <command>
 
 ```bash
 # Install Chrome DevTools MCP server
-npm install -g chrome-devtools-mcp
+bun install -g chrome-devtools-mcp
 
 # Install browser (if not already installed)
 # Linux
@@ -104,9 +105,11 @@ Auto-detection works with:
 | `smoke-test` | Quick health check | Console, network, a11y validation |
 | `visual-test` | Multi-viewport screenshots | Responsive design, dark mode |
 | `debug-console` | Debug errors | Console errors, network failures |
+| `component-debug` | React component debug | Identify components via react-grab |
 | `interactive` | Launch Claude with MCP | Exploratory testing, debugging |
 | `performance` | Performance traces | Core Web Vitals, load time |
 | `accessibility` | A11y tree audit | WCAG compliance, keyboard nav |
+| `live-test` | Live site audit | Staging/production testing |
 
 ## Natural Language Triggers
 
@@ -165,10 +168,17 @@ pnpm dev  # Start dev server
 claude "run smoke test"
 ```
 
-### Test Live Production
+### Test Live Staging / Production
 
 ```bash
-claude "smoke test https://www.example.com"
+# Full audit of a staging URL
+devtools-mcp live --url https://staging.example.com
+
+# Test specific pages on production
+devtools-mcp live --url https://www.example.com --pages /,/about,/pricing
+
+# Quick smoke test only
+devtools-mcp smoke --url https://www.example.com --no-server
 ```
 
 ### Debug Console Errors
@@ -198,7 +208,7 @@ claude "/devtools interactive"
 
 **26+ tools organized by category:**
 
-- **Input Automation** (8): click, fill, fill_form, press_key, hover, drag, upload_file
+- **Input Automation** (8): click, dblClick, fill, fill_form, press_key, hover, drag, upload_file
 - **Navigation** (6): navigate_page, new_page, select_page, list_pages, close_page, wait_for
 - **Emulation** (2): emulate, resize_page
 - **Performance** (3): performance_start_trace, performance_stop_trace, performance_analyze_insight
@@ -236,6 +246,8 @@ Core functionality in `lib/`:
 - `prompt-builder.mjs` - Prompt template system
 - `result-parser.mjs` - JSON extraction from output
 - `browser-detect.mjs` - Cross-platform browser paths
+- `react-grab-detect.mjs` - React project + react-grab setup detection
+- `grab-inspect.mjs` - React component inspection via CDP
 
 ## Extracted from tgds-website
 
@@ -301,9 +313,9 @@ This skill is part of Qara (Personal AI Infrastructure).
 
 ## Version
 
-- **Version:** 0.1.0
-- **Status:** Implementation in progress
-- **Last updated:** February 12, 2026
+- **Version:** 0.3.0
+- **Status:** Active
+- **Last updated:** February 16, 2026
 
 ## License
 

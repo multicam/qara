@@ -49,7 +49,7 @@ export function isReactProject(pkg) {
 /**
  * Detect the React framework variant (next-app, next-pages, vite, cra, gatsby)
  */
-export function detectReactFramework(pkg, projectPath) {
+export function detectReactFramework(pkg) {
   if (!pkg) return null;
   const allDeps = { ...pkg.dependencies, ...pkg.devDependencies };
 

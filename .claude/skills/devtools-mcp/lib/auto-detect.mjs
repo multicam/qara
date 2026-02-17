@@ -153,14 +153,15 @@ export async function readPackageJson(projectPath = process.cwd()) {
 
 /**
  * Detect package manager from lockfiles
- * Priority: pnpm > yarn > bun > npm
+ * Priority: bun > pnpm > yarn > npm
  */
 async function detectPackageManager(projectPath) {
   const { access } = await import('fs/promises');
   const checks = [
+    ['bun.lockb', 'bun'],
+    ['bun.lock', 'bun'],
     ['pnpm-lock.yaml', 'pnpm'],
     ['yarn.lock', 'yarn'],
-    ['bun.lockb', 'bun'],
     ['package-lock.json', 'npm'],
   ];
   for (const [lockfile, pm] of checks) {
@@ -169,7 +170,7 @@ async function detectPackageManager(projectPath) {
       return pm;
     } catch {}
   }
-  return 'npm';
+  return 'bun';
 }
 
 /**
