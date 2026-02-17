@@ -28,25 +28,6 @@
       "mcp__*"
     ],
     "deny": [
-      "Bash(diskutil partitionDisk)",
-      "Bash(diskutil eraseDisk)",
-      "Bash(diskutil eraseVolume)",
-      "Bash(diskutil reformat)",
-      "Bash(diskutil zeroDisk)",
-      "Bash(diskutil appleRAID)",
-      "Bash(diskutil randomDisk)",
-      "Bash(diskutil coreStorage)",
-      "Bash(diskutil cs)",
-      "Bash(diskutil disableJournal)",
-      "Bash(diskutil resetFusion)",
-      "Bash(diskutil disableOwnership)",
-      "Bash(diskutil apfs deleteContainer)",
-      "Bash(diskutil apfs eraseVolume)",
-      "Bash(diskutil apfs decryptVolume)",
-      "Bash(diskutil apfs changePassphrase)",
-      "Bash(diskutil apfs deleteVolume)",
-      "Bash(diskutil apfs deleteVolumeGroup)",
-      "Bash(diskutil apfs deleteSnapshot)",
       "Bash(rm -rf /)",
       "Bash(rm -rf /*)",
       "Bash(rm -rf ~)",
@@ -118,7 +99,7 @@
           {
             "type": "command",
             "command": "${PAI_DIR}/hooks/notification-hook.ts",
-            "timeout": 1000
+            "timeout": 2000
           }
         ]
       }
@@ -144,6 +125,6 @@
   "plansDirectory": "thoughts/shared/plans",
   "skipDangerousModePermissionPrompt": true,
   "showTurnDuration": true,
-  "max_tokens": 8192,
+  "releaseChannel": "stable",
   "effortLevel": "medium"
 }

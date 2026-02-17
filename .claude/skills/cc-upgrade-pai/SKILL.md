@@ -162,3 +162,12 @@ cd $PAI_DIR/.claude/hooks && bun test --coverage
    ```
 
 4. **Generate combined report** using the format above
+
+5. **Apply fixes** from the report recommendations
+
+6. **Post-fix validation (MANDATORY after any changes):**
+   - Run hook health check: load `hook-test` skill workflow (`${PAI_DIR}/skills/hook-test/workflows/test-and-fix.md`) and execute all 8 steps
+   - Run full test suite: `bun run test`
+   - Verify settings sync: `diff ${PAI_DIR}/settings.json ${PAI_DIR}/settings-minimal.json`
+   - **Do NOT report success until all validations pass**
+   - If validation fails, fix the issue and re-run validation

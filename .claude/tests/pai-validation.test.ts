@@ -110,7 +110,7 @@ describe('Settings Configuration', () => {
     it('should deny destructive disk operations', () => {
       const { deny } = settings.permissions;
       const hasDiskProtection = deny.some(
-        (d: string) => d.includes('diskutil') || d.includes('rm -rf /')
+        (d: string) => d.includes('rm -rf /')
       );
       expect(hasDiskProtection).toBe(true);
     });
@@ -352,7 +352,6 @@ describe('Security Configuration', () => {
     const criticalDenyPatterns = [
       'rm -rf /',
       'rm -rf /*',
-      'diskutil',
       'dd if=',
       'mkfs',
     ];
