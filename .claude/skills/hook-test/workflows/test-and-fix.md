@@ -36,8 +36,7 @@ const input = readFileSync(0, 'utf-8');
 **BROKEN patterns (will cause timeouts/errors):**
 ```typescript
 // BAD: Bun.stdin streaming — hangs in hook context
-import { readStdinWithTimeout } from './lib/stdin-utils';
-const input = await readStdinWithTimeout(500);
+const reader = Bun.stdin.stream().getReader();
 
 // BAD: Bun.stdin.text() — can hang waiting for EOF
 const input = await Bun.stdin.text();
@@ -93,9 +92,8 @@ For each hook, verify its imports resolve:
 2. `./lib/jsonl-utils` — must exist
 3. `./lib/datetime-utils` — must exist
 4. `./lib/tab-titles` — must exist (if imported)
-5. `./lib/stdin-utils` — should NOT be imported by production hooks (dead code)
 
-**Auto-fix:** Remove unused `stdin-utils` imports.
+**Auto-fix:** Remove unresolvable imports.
 
 ## Step 8: Report
 

@@ -52,33 +52,7 @@ describe('pai-paths Module', () => {
 });
 
 // =============================================================================
-// SECTION 2: stdin-utils Module
-// =============================================================================
-
-describe('stdin-utils Module', () => {
-  it('should export readStdin function', async () => {
-    const mod = await import('../hooks/lib/stdin-utils');
-    expect(typeof mod.readStdin).toBe('function');
-  });
-
-  it('should export readHookInput function', async () => {
-    const mod = await import('../hooks/lib/stdin-utils');
-    expect(typeof mod.readHookInput).toBe('function');
-  });
-
-  it('should export readStdinWithTimeout function', async () => {
-    const mod = await import('../hooks/lib/stdin-utils');
-    expect(typeof mod.readStdinWithTimeout).toBe('function');
-  });
-
-  it('should export delay function', async () => {
-    const mod = await import('../hooks/lib/stdin-utils');
-    expect(typeof mod.delay).toBe('function');
-  });
-});
-
-// =============================================================================
-// SECTION 3: Skill Loading
+// SECTION 2: Skill Loading
 // =============================================================================
 
 describe('Skill Loading', () => {

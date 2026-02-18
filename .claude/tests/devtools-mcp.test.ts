@@ -424,25 +424,23 @@ describe('SKILL.md react-grab content', () => {
 
   it('should have component debug triggers', () => {
     expect(skillContent).toContain('debug this component');
-    expect(skillContent).toContain('which component renders this');
+    expect(skillContent).toContain('which component');
   });
 
   it('should list component-debug workflow', () => {
     expect(skillContent).toContain('component-debug.md');
   });
 
-  it('should list get_element_context tool', () => {
-    expect(skillContent).toContain('get_element_context');
+  it('should reference tools-reference.md for MCP tools', () => {
+    expect(skillContent).toContain('docs/tools-reference.md');
   });
 
-  it('should have --grab examples in Quick Start', () => {
-    expect(skillContent).toContain('devtools-mcp start --grab');
-    expect(skillContent).toContain('devtools-mcp restart grab');
-    expect(skillContent).toContain('devtools-mcp debug --grab');
+  it('should reference examples.md for usage examples', () => {
+    expect(skillContent).toContain('docs/examples.md');
   });
 
-  it('should list react-grab-detect.mjs in library functions', () => {
-    expect(skillContent).toContain('react-grab-detect.mjs');
+  it('should reference grab-inspect.mjs for API docs', () => {
+    expect(skillContent).toContain('grab-inspect.mjs');
   });
 });
 

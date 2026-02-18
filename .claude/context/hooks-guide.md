@@ -18,7 +18,6 @@ Located in `.claude/hooks/lib/`:
 | Utility | Purpose |
 |---------|---------|
 | `pai-paths.ts` | PAI_DIR, SKILLS_DIR path resolution |
-| `stdin-utils.ts` | readStdinWithTimeout, HookInput interface |
 | `tab-titles.ts` | generateTabTitle, setTerminalTabTitle |
 | `jsonl-utils.ts` | appendJsonl for structured logging |
 | `datetime-utils.ts` | getISOTimestamp, getDateString |

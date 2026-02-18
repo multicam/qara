@@ -1,21 +1,8 @@
 /**
  * Tests for pai-paths.ts
  *
- * Note: pai-paths.ts validates directory structure on import,
- * so we test after the module is successfully loaded.
- *
- * Coverage Note: Lines 46-48 and 52-55 (validatePAIStructure error paths)
- * cannot be covered by standard coverage tools because:
- * 1. They only execute when PAI_DIR or HOOKS_DIR don't exist
- * 2. They call process.exit(1), terminating the process
- * 3. Coverage tracking can't capture across process boundaries
- *
- * These error paths ARE tested in pai-paths.integration.test.ts using
- * separate child processes, but that coverage isn't captured by the
- * coverage tool. This is a known limitation of testing code that calls
- * process.exit().
- *
- * Current coverage: 86.67% (effectively 100% of testable code)
+ * Includes subprocess tests for validatePAIStructure error paths
+ * (lines 46, 48) which only fire when PAI_DIR/HOOKS_DIR don't exist.
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
@@ -308,6 +295,42 @@ TEST_VAR_2=value2`;
 
       // Should not throw on malformed lines
       expect(() => loadEnv()).not.toThrow();
+    });
+  });
+
+  describe('validatePAIStructure error paths', () => {
+    it('should warn when PAI_DIR does not exist', async () => {
+      const proc = Bun.spawn(['bun', '-e', `
+        process.env.PAI_DIR = '/tmp/nonexistent-pai-dir-test';
+        await import('./pai-paths');
+      `], {
+        cwd: import.meta.dir,
+        stdout: 'pipe',
+        stderr: 'pipe',
+      });
+      const stderr = await new Response(proc.stderr).text();
+      await proc.exited;
+      expect(stderr).toContain('Warning: PAI_DIR does not exist');
+    });
+
+    it('should warn when HOOKS_DIR does not exist', async () => {
+      const tmpDir = '/tmp/pai-paths-test-no-hooks-' + Date.now();
+      mkdirSync(tmpDir, { recursive: true });
+      try {
+        const proc = Bun.spawn(['bun', '-e', `
+          process.env.PAI_DIR = '${tmpDir}';
+          await import('./pai-paths');
+        `], {
+          cwd: import.meta.dir,
+          stdout: 'pipe',
+          stderr: 'pipe',
+        });
+        const stderr = await new Response(proc.stderr).text();
+        await proc.exited;
+        expect(stderr).toContain('Warning: PAI hooks directory not found');
+      } finally {
+        rmdirSync(tmpDir);
+      }
     });
   });
 });

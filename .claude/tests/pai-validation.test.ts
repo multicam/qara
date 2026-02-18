@@ -279,10 +279,6 @@ describe('Hooks System', () => {
       expect(existsSync(join(libPath, 'pai-paths.ts'))).toBe(true);
     });
 
-    it('should have stdin-utils.ts', () => {
-      expect(existsSync(join(libPath, 'stdin-utils.ts'))).toBe(true);
-    });
-
     it('should have tab-titles.ts', () => {
       expect(existsSync(join(libPath, 'tab-titles.ts'))).toBe(true);
     });

@@ -164,7 +164,6 @@ describe('Hook Library', () => {
   describe('Core Utilities', () => {
     const coreLibs = [
       'pai-paths.ts',
-      'stdin-utils.ts',
       'tab-titles.ts',
       'jsonl-utils.ts',
       'datetime-utils.ts',
@@ -178,7 +177,7 @@ describe('Hook Library', () => {
   });
 
   describe('Test Coverage', () => {
-    const coreLibs = ['pai-paths', 'stdin-utils', 'tab-titles', 'jsonl-utils', 'datetime-utils'];
+    const coreLibs = ['pai-paths', 'tab-titles', 'jsonl-utils', 'datetime-utils'];
 
     for (const lib of coreLibs) {
       it(`should have tests for ${lib}`, () => {
