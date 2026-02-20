@@ -157,16 +157,13 @@ Always respect robots.txt and website terms of service.
 
 ## Related Resources
 
-- **Blog Post**: [Progressive Web Scraping: Four-Tier System](https://danielmiessler.com/blog/progressive-web-scraping-four-tier-system)
-- **PAI Repository**: [github.com/danielmiessler/PAI](https://github.com/danielmiessler/PAI)
+- **Reference**: Progressive Web Scraping: Four-Tier System
 - **Bright Data Documentation**: [docs.brightdata.com](https://docs.brightdata.com)
 
 ## Support
 
 Questions or improvements?
-- Email: daniel@danielmiessler.com
-- X/Twitter: @danielmiessler
 
 ---
 
-**AIL Tier Level 5** (Highest AI Involvement) - Daniel's idea completely implemented by Kai.
+**AIL Tier Level 5** (Highest AI Involvement)

@@ -1,6 +1,6 @@
 # Voice and Style Guidelines
 
-## Daniel Miessler Voice
+## Conversational Voice
 
 - First person perspective ("In this post, I argue...")
 - Casual, direct, genuinely curious and excited
@@ -29,7 +29,7 @@
 - Closing delivers "wow" factor without hyperbole
 - Reads naturally when spoken aloud
 - Sticks to facts from the content
-- Feels like Daniel sharing something interesting
+- Feels like someone sharing something interesting
 
 ## Bad Signals (Avoid)
 
@@ -98,6 +98,6 @@
 - Opening hooks with plain, direct language
 - Body flows conversationally with varied sentence length
 - Closing delivers "wow" factor without hyperbole
-- Voice feels like Daniel sharing something interesting
+- Voice feels like someone sharing something interesting
 - Sticks to facts without extrapolating
 - No cliches or journalistic language

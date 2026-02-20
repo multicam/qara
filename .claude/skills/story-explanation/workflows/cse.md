@@ -139,7 +139,7 @@ N. [Final sentence - 8-16 words]
 
 ## Voice and style
 
-Write as Daniel Miessler sharing something interesting with his audience:
+Write as someone sharing something interesting with their audience:
 - First person perspective
 - Casual, direct, genuinely curious and excited
 - Natural conversational tone (like telling a friend after you really got it)

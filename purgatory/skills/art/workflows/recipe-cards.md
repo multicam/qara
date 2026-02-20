@@ -335,7 +335,7 @@ open /path/to/recipe-card.png
 - **Layout:** Vertical 9:16
 - **Use:** Consulting deliverable
 
-### Example 2: "The Daniel Miessler Security Assessment Method"
+### Example 2: "The Security Assessment Method"
 - **Steps:** Assets → Threats → Vulnerabilities → Mitigations → Validation
 - **Icons:** Treasure, storm, crack, shield, checkmark
 - **Color:** Purple on "Mitigations" (critical) and "Validation" (outcome)

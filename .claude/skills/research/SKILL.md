@@ -4,7 +4,7 @@ context: fork
 model: sonnet
 description: |
   Web research, content extraction, and deep analysis. Multi-source parallel search
-  with extended thinking. Supports Fabric pattern selection (242+ prompts).
+  with extended thinking.
   USE WHEN: "research X", "extract wisdom from", "analyze this content", "find info about".
 ---
 

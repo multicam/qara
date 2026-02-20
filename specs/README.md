@@ -2,17 +2,15 @@
 
 Specifications for the Qara Personal AI Infrastructure (PAI).
 
-**Generated:** 2026-02-06 | **Repo state:** post agent reintegration + MCP setup
+**Updated:** 2026-02-21
 
 ## Document Index
 
 | Spec | Description |
 |------|-------------|
 | [architecture.md](architecture.md) | System architecture, primitives, directory layout, data flow |
-| [skills-system.md](skills-system.md) | Skills-as-Containers pattern, all 13 skills, routing hierarchy |
-| [hooks-system.md](hooks-system.md) | Event-driven hook lifecycle, 3 active hooks, 3 shared libs |
-| [commands-and-agents.md](commands-and-agents.md) | Slash commands, 5 custom agents, context files |
-| [configuration.md](configuration.md) | Settings layering, permissions, env vars, MCP servers, status line |
-| [security.md](security.md) | Dual-repo model, pre-tool security, protected files, checkpoints |
-| [delegation.md](delegation.md) | Parallel agent patterns, custom agent roster, model routing |
-| [research-system.md](research-system.md) | Multi-source research, 3 modes, agent orchestration |
+| [skills-system.md](skills-system.md) | Skills-as-Containers pattern, all 18 skills, research system |
+| [hooks-system.md](hooks-system.md) | Event-driven hook lifecycle, 6 hooks, 4 shared libs |
+| [commands-and-agents.md](commands-and-agents.md) | Slash commands, 7 custom agents, delegation patterns |
+| [configuration.md](configuration.md) | Settings, permissions, env vars, MCP, status line |
+| [security.md](security.md) | Dual-repo model, permission system, pre-commit gates |

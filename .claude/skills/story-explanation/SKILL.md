@@ -26,7 +26,7 @@ description: |
 Based on:
 - **UltraThink**: Deep content understanding across multiple perspectives and narrative angles
 - **Best framing selection**: Choose the most compelling narrative angle from multiple options
-- **Daniel Miessler voice**: First person, casual, direct, genuinely curious
+- **Conversational voice**: First person, casual, direct, genuinely curious
 
 **The Problem This Solves:**
 - Generic summaries use obvious framing without exploring alternatives
@@ -42,7 +42,7 @@ Based on:
 - User wants content explained in conversational, engaging format
 - Need to find the most compelling narrative hook for content
 - User explicitly requests this skill
-- Want to present content in Daniel's voice
+- Want to present content in conversational voice
 - Format-specific requests: "story with links", "abridged story", "5-line summary", "CSE", "CSE5"
 - Slash commands: `/create-story-explanation`, `/cse`, `/cse5`
 
@@ -160,7 +160,7 @@ Think deeply and extensively about this content:
 5. EMPHASIS OPTIONS - Which elements could be emphasized or de-emphasized?
 6. STRUCTURAL APPROACHES - Chronological? Problem-solution? Comparison?
 7. IMPACT FOCUS - What's the "wow" factor that makes this significant?
-8. CONVERSATIONAL FLOW - How would Daniel explain this to a friend?
+8. CONVERSATIONAL FLOW - How would you explain this to a friend?
 9. KEY INSIGHTS - What makes readers think "I get it now!"?
 10. BEST FRAMING - Which narrative angle is most compelling?
 
@@ -193,8 +193,8 @@ STEP 2 - SELECT BEST FRAMING:
 Choose the single most compelling narrative framing that:
 - Has the strongest hook
 - Best captures the "wow" factor
-- Would make Daniel most excited to share
-- Feels most natural in his voice
+- Would make someone most excited to share
+- Feels most natural in conversational voice
 - Makes complex ideas accessible
 
 STEP 3 - OUTPUT IN SELECTED FORMAT:
@@ -208,7 +208,7 @@ Use the selected framing to create the story explanation in the appropriate form
 **Key points:**
 - **3-Part Narrative:** Opening (15-25 words) → Body (5-15 sentences) → Closing (15-25 words)
 - **N-Length with Links:** User-specified sentences with inline source attribution
-- **Daniel's Voice:** First person, casual, direct, genuinely curious
+- **Conversational voice:** First person, casual, direct, genuinely curious
 - **Avoid:** Cliches ("game-changer", "paradigm shift"), journalistic tone, extrapolation
 
 ## Comparison to Other Approaches
@@ -227,7 +227,7 @@ Use the selected framing to create the story explanation in the appropriate form
 - Single BEST story explanation in chosen format
 - Uses be-creative skill (UltraThink)
 - Deep reasoning to explore and find best framing
-- Daniel Miessler voice (first person, casual, direct)
+- Conversational voice (first person, casual, direct)
 - Explores multiple narrative angles, selects most compelling
 - Specifically designed for engaging storytelling
 - Prioritizes conversational flow and "wow" factor
@@ -248,7 +248,7 @@ When this skill activates, Qara should:
 10. **Select best framing** - Choose the most compelling narrative angle
 11. **Output in selected format** - 3-part, n-length with links, abridged, or Foundry format
 12. **Save final output to scratchpad** - Store completed story explanation
-13. **Use Daniel's voice** - First person, casual, direct, genuinely curious
+13. **Use conversational voice** - First person, casual, direct, genuinely curious
 14. **Optionally archive to history** - Only if analysis methodology is exceptionally valuable for future reference
 
 **Critical:** The be-creative skill provides UltraThink framework ensuring we explore creative narrative framings that would otherwise be missed due to mode collapse, then select the single BEST one.
@@ -265,7 +265,7 @@ When this skill activates, Qara should:
 3. **Explore diverse framings** - Generate multiple creative narrative framings through deep analysis
 4. **Select best framing** - Choose the most compelling narrative angle
 5. **Format flexibility** - Multiple output formats for different use cases
-6. **Daniel's voice** - First person, casual, direct, genuinely curious
+6. **Conversational voice** - First person, casual, direct, genuinely curious
 7. **Conversational flow** - Vary sentence length (8-16 words), natural rhythm
 8. **Avoid cliches** - No "game-changer", "paradigm shift", "revolutionary", etc.
 9. **Stick to facts** - Don't extrapolate beyond the input
@@ -275,7 +275,7 @@ When this skill activates, Qara should:
 
 **See:** `references/voice-style-guide.md` for failure modes and success criteria.
 
-**Quick check:** Does it read naturally spoken aloud? Does it feel like Daniel sharing something interesting with a friend?
+**Quick check:** Does it read naturally spoken aloud? Does it feel like someone sharing something interesting with a friend?
 
 ## Quick Reference
 
@@ -292,7 +292,7 @@ When this skill activates, Qara should:
 - CSE/CSE5: comprehensive formats
 
 **Voice:**
-- First person (Daniel's perspective)
+- First person perspective
 - Casual, direct, genuinely curious
 - Natural conversational tone (like telling a friend)
 - NO cliches, journalistic language, or flowery tone
@@ -320,4 +320,4 @@ When this skill activates, Qara should:
 
 ---
 
-**This skill provides compelling narrative explanations in Daniel's voice using research-backed creativity techniques to find the BEST framing from multiple possibilities.**
+**This skill provides compelling narrative explanations in conversational voice using research-backed creativity techniques to find the BEST framing from multiple possibilities.**

@@ -272,7 +272,6 @@ cargo install fd-find ripgrep ast-grep bat
 
 | Tool | Purpose | Linux | macOS |
 |------|---------|-------|-------|
-| Fabric | AI pattern system (242+ prompts) | `go install github.com/danielmiessler/fabric@latest` | `brew install fabric` |
 | Gemini CLI | Google's terminal AI agent | `npm install -g @google/gemini-cli` | `npm install -g @google/gemini-cli` |
 | Grok CLI | xAI's terminal agent | [github.com/xai-org/grok](https://github.com/xai-org/grok) | [github.com/xai-org/grok](https://github.com/xai-org/grok) |
 | Ollama | Local LLM server | `curl -fsSL https://ollama.com/install.sh \| sh` | `brew install ollama` |

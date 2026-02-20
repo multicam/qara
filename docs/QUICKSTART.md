@@ -1,223 +1,54 @@
-# PAI Quick Start Guide
+# PAI Quick Start
 
-**Get PAI running in 5 minutes**
-
----
-
-## Prerequisites (1 minute)
-
-### Install Bun
+## Prerequisites
 
 ```bash
-# Install Bun (PAI's package manager)
-curl -fsSL https://bun.sh/install | bash
-
-# Restart your terminal or source your profile
-source ~/.bashrc  # or ~/.zshrc
+curl -fsSL https://bun.sh/install | bash    # Install Bun
+source ~/.bashrc
 ```
 
-### Install Claude Code
+Install Claude Code from [code.claude.com](https://code.claude.com).
 
-Follow the installation instructions at [code.claude.com](https://code.claude.com)
-
----
-
-## Installation (2 minutes)
-
-### 1. Clone PAI
+## Install
 
 ```bash
-git clone https://github.com/multicam/qara.git
-cd qara
+git clone https://github.com/multicam/qara.git && cd qara
+cp .claude/.env.example .claude/.env         # Add your ANTHROPIC_API_KEY
+ln -s $(pwd)/.claude ~/.claude               # Symlink (or cp -r for copy)
 ```
 
-### 2. Configure Environment
+## First Run
 
 ```bash
-# Copy environment template
-cp .claude/.env.example .claude/.env
-
-# Edit with your API keys
-nano .claude/.env  # or use your preferred editor
-
-# Required: ANTHROPIC_API_KEY
-# Optional: Add other API keys for specific skills
+claude    # CORE skill loads automatically via SessionStart hook
 ```
 
-### 3. Install to Your System
+Try: `"What skills are available?"`, `"Show stack preferences"`, `"Read the CONSTITUTION"`
 
-**Option A: Copy (recommended for beginners)**
-```bash
-# Copy .claude directory to home
-cp -r .claude ~/.claude
-```
-
-**Option B: Symlink (for development)**
-```bash
-# Symlink for live updates
-ln -s $(pwd)/.claude ~/.claude
-```
-
----
-
-## First Run (1 minute)
-
-### Start Claude Code
-
-```bash
-# PAI loads automatically
-claude
-```
-
-The CORE skill loads at session start via the `SessionStart` hook.
-
-### Try These Commands
-
-```
-"What skills are available?"
-"Show me my stack preferences"
-"What agents do I have access to?"
-"Read the CONSTITUTION"
-```
-
----
-
-## Understanding PAI (1 minute)
-
-### The Three Primitives
-
-**1. Skills** (`.claude/skills/`)
-- Self-contained AI capabilities
-- Auto-activate based on your request
-- Package routing, workflows, and documentation
-
-**2. Agents** (`.claude/agents/`)
-- Specialized AI personalities
-- Engineer, researcher, designer, pentester, etc.
-- Each has unique capabilities
-
-**3. Hooks** (`.claude/hooks/`)
-- Event-driven automation
-- Capture work, manage state
-- Run automatically on session start/stop, tool use, etc.
-
-### Where Everything Lives
+## Structure
 
 ```
 ~/.claude/
-├── skills/
-│   └── CORE/              # Main PAI documentation
-│       ├── CONSTITUTION.md    # System philosophy & architecture
-│       ├── SKILL.md           # Main skill file (loaded at startup)
-│       └── *.md               # Reference documentation
-├── agents/                # Agent configurations
-├── hooks/                 # Event automation scripts
-└── .env                   # Your API keys (never commit!)
+├── skills/           # Domain capabilities (auto-activate on triggers)
+│   └── CORE/         # Main PAI docs: CONSTITUTION.md, SKILL.md, etc.
+├── agents/           # Specialized AI workers
+├── hooks/            # Event-driven automation
+└── .env              # API keys (never commit!)
 ```
 
----
+**Three primitives:** Skills (domain containers) → Workflows (task steps) → Agents (parallel orchestrators)
 
-## Next Steps
-
-### Learn the System
-
-1. **Read CONSTITUTION.md** - Understand PAI philosophy
-   ```
-   read ~/.claude/skills/CORE/CONSTITUTION.md
-   ```
-
-2. **Explore Skills** - See what's available
-   ```
-   ls ~/.claude/skills/
-   ```
-
-### Create Your First Skill
-
-```bash
-# Use the create-skill skill
-cd ~/.claude/skills/
-mkdir my-first-skill
-# See create-skill/ for templates
-```
-
-Follow the guide in `.claude/skills/CORE/SKILL-STRUCTURE-AND-ROUTING.md`
-
-### Customize Your Setup
-
-**Stack Preferences** - Edit what you prefer:
-- `.claude/skills/CORE/TOOLS.md` - TypeScript vs Python, etc.
-
-**Hooks** - Add custom automation:
-- `.claude/hooks/` - Event-driven scripts
-
----
-
-## Troubleshooting
-
-### PAI Not Loading
-
-**Check hook configuration:**
-```bash
-# Verify SessionStart hook exists
-cat ~/.claude/settings.json | grep SessionStart
-```
-
-**Manually load CORE skill:**
-```
-read ~/.claude/skills/CORE/SKILL.md
-```
-
-
-### API Keys Not Working
-
-```bash
-# Verify .env file exists
-ls -la ~/.claude/.env
-
-# Check format (no spaces around =)
-# Correct: ANTHROPIC_API_KEY=sk-ant-...
-# Wrong:   ANTHROPIC_API_KEY = sk-ant-...
-```
-
----
+**Three principles:** CLI-First, Deterministic Code First, Prompts Wrap Code
 
 ## Common Tasks
 
-### Update PAI
-
 ```bash
-cd ~/qara
-git pull && bun install
+cd ~/qara && git pull && bun install    # Update PAI
+ls ~/.claude/skills/                     # Browse skills
 ```
 
-### Add New Skills
+## Troubleshooting
 
-```bash
-# Clone or create in skills directory
-cd ~/.claude/skills/
-# Add your skill folder
-```
-
-Skills auto-activate based on their description triggers.
-
----
-
-## Resources
-
-- **Full Documentation:** `.claude/skills/CORE/`
-
----
-
-## Philosophy
-
-PAI follows three principles:
-
-1. **Command Line First** - Build CLI tools, wrap with AI
-2. **Deterministic Code First** - Same input → Same output
-3. **Prompts Wrap Code** - AI orchestrates, doesn't replace
-
-**Start clean. Start small. Build out from there.**
-
----
-
-**You're ready! Start exploring and building your personal AI infrastructure.**
+- **PAI not loading?** Check `cat ~/.claude/settings.json | grep SessionStart`
+- **Manual load:** `read ~/.claude/skills/CORE/SKILL.md`
+- **API keys:** Verify `.env` exists with `KEY=value` format (no spaces around `=`)

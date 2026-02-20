@@ -220,7 +220,7 @@ claude
 
 ### Skills with 1-2 Commands
 
-**Skills like:** `prompting`, `fabric`, `ffuf`
+**Skills like:** `prompting`, `ffuf`
 
 **Migration:**
 ```bash

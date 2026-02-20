@@ -55,7 +55,6 @@ done
 
 ## What's NOT Guaranteed
 
-- Voice server (optional)
 - MCP servers (user-configured)
 - External API keys (user-provided)
 

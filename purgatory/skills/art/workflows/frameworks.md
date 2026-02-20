@@ -2,19 +2,19 @@
 
 **Hand-drawn frameworks, mental models, and conceptual diagrams using UL aesthetic.**
 
-Creates **VISUAL FRAMEWORKS** — Daniel's signature mental models illustrated as memorable diagrams with editorial hand-drawn style.
+Creates **VISUAL FRAMEWORKS** — mental models illustrated as memorable diagrams with editorial hand-drawn style.
 
 ---
 
 ## Purpose
 
-Visual frameworks illustrate mental models, thinking frameworks, and conceptual relationships. These are **Daniel's signature frameworks** made visual — 2x2 matrices, Venn diagrams, conceptual maps with personality and editorial style.
+Visual frameworks illustrate mental models, thinking frameworks, and conceptual relationships — 2x2 matrices, Venn diagrams, conceptual maps with personality and editorial style.
 
 **Use this workflow for:**
 - 2x2 matrices and quadrant models
 - Venn diagrams with editorial flair
 - Conceptual relationship maps
-- "The Daniel Miessler Framework for X"
+- "The [Author] Framework for X"
 - Mental models and thinking tools
 - Decision frameworks
 

@@ -1,12 +1,12 @@
 ---
 type: documentation
 category: methodology
-description: Prompt engineering standards and context engineering principles based on Anthropic best practices and Daniel Miessler's Fabric system (2024). Universal principles for semantic clarity and structure that transcend specific model implementations. Validated by empirical research showing 10-90% performance impact from structure choices.
+description: Prompt engineering standards and context engineering principles based on Anthropic best practices. Universal principles for semantic clarity and structure that transcend specific model implementations. Validated by empirical research showing 10-90% performance impact from structure choices.
 ---
 
 # Prompt Engineering Standards
 
-**Foundation:** Based on Anthropic's context engineering principles and Daniel Miessler's Fabric system (January 2024), validated by empirical research across 1,500+ academic papers and production systems.
+**Foundation:** Based on Anthropic's context engineering principles, validated by empirical research across 1,500+ academic papers and production systems.
 
 **Philosophy:** Universal principles of semantic clarity and structure that work regardless of model implementation.
 
@@ -380,50 +380,6 @@ Context engineering is an ongoing process:
 5. **Prune Regularly:** Remove unused or low-value context
 6. **Iterate:** Continuously refine based on outcomes
 
-## The Fabric System (January 2024)
-
-**Created by Daniel Miessler** as an open-source framework for augmenting humans using AI.
-
-### Core Architecture
-
-**Philosophy:** UNIX principles applied to prompting
-- Solve each problem exactly once
-- Turn solutions into reusable modules (Patterns)
-- Make modules chainable
-
-**Components:**
-- **Patterns:** Granular AI use cases (242+ prompts) - the core building blocks
-- **Stitches:** Chained patterns creating advanced functionality
-- **Looms:** Client-side apps calling specific Patterns
-- **Mills:** Hosting infrastructure for patterns
-
-### Key Principles
-
-**Markdown-First Design:**
-- Maximum readability for creators and users
-- Clear structure emphasizes what AI should do and in what order
-- Enables community contribution and improvement
-
-**Clarity in Instructions:**
-- Extremely clear, specific directives
-- Markdown structure for order and priority
-- System section usage (validated through extensive testing)
-- Implements Chain of Thought and Chain of Draft strategies
-
-**Modular Execution:**
-- Each pattern solves one specific problem perfectly
-- Patterns are chainable for complex workflows
-- Community-driven pattern library (10,000+ GitHub stars)
-
-### Pattern Structure
-
-- **Format:** Markdown files
-- **Purpose:** Detailed descriptions of pattern function
-- **Accessibility:** Usable in any AI application
-- **Location:** github.com/danielmiessler/Fabric
-
-**Key Insight:** "We are extremely clear in our instructions, and we use the Markdown structure to emphasize what we want the AI to do, and in what order."
-
 ## Universal Principles for Future-Proof Prompting
 
 **Core Insight:** Focus on semantic clarity and universal structure principles that transcend specific models.
@@ -498,8 +454,6 @@ Context engineering is an ongoing process:
 **Primary Sources:**
 - Anthropic: "Effective Context Engineering for AI Agents"
   https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents
-- Daniel Miessler's Fabric System (January 2024)
-  https://github.com/danielmiessler/Fabric
 - "The Prompt Report" - arXiv:2406.06608 (systematic survey, 58 techniques)
 - "The Prompt Canvas" - arXiv:2412.05127 (100+ papers reviewed)
 - Microsoft PromptBench - Comprehensive benchmarking framework

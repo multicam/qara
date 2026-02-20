@@ -2,124 +2,84 @@
 
 ## Pattern: Skills-as-Containers
 
-Skills are self-contained knowledge containers with progressive disclosure. Each skill has:
+Skills are self-contained knowledge containers with progressive disclosure:
 
-- **SKILL.md** -- Core definition with YAML frontmatter and routing logic
-- **workflows/** -- Discrete task workflows (optional)
-- **references/** / **assets/** -- Supporting documentation and templates (optional)
+- **SKILL.md** — Core definition with YAML frontmatter and routing logic
+- **workflows/** — Discrete task workflows (optional)
+- **references/** / **assets/** — Supporting docs and templates (optional)
 
 ## Skill Context Types
 
 | Type | Behavior | Used By |
 |------|----------|---------|
 | `context: same` | Loads in main conversation | CORE, humaniser |
-| `context: fork` | Isolated subagent execution | All other 12 skills |
+| `context: fork` | Isolated subagent execution | All other skills |
 
-## All 14 Active Skills
+## All 18 Active Skills
 
-### CORE (Foundation)
-- **Context:** same (loaded every session)
-- **Files:** 19 (including workflows directory, reference docs)
-- **Purpose:** Identity, routing hub, stack preferences, security, agent roster, response tiers
-- **Key files:** CONSTITUTION.md (8 principles), security-protocols.md, contacts.md
-- **SKILL.md sections:** Session tracking, identity, operating principles, workflow routing, documentation index, stack preferences, security protocols, response style (4-tier), custom agents roster (6 agents)
+### Foundation
 
-### research
-- **Context:** fork | **Model:** sonnet
-- **Workflows:** 9+ (conduct, claude-research, perplexity-research, interview, retrieve, youtube, web-scraping, enhance, extract-knowledge)
-- **Purpose:** Multi-source parallel research with 3 modes (quick/standard/extensive)
-- **Triggers:** "do research", "find information about", "extract wisdom"
+**CORE** — `same` context, loaded every session. Identity, routing hub, stack preferences, security, agent roster, response tiers. Key files: CONSTITUTION.md, security-protocols.md, contacts.md.
 
-### story-explanation
-- **Context:** fork | **Model:** sonnet
-- **Workflows:** 5 (create, create-with-links, create-abridged, cse, cse5)
-- **Purpose:** Narrative summaries using UltraThink for best framing selection
-- **Triggers:** "create story explanation", "narrative summary", /cse, /cse5
+### Research & Content
 
-### system-create-skill
-- **Context:** fork | **Model:** sonnet
-- **Workflows:** 4 (create-skill, validate-skill, update-skill, canonicalize-skill)
-- **Purpose:** Skill creation with architectural compliance enforcement
-- **Triggers:** "create skill", "new skill", "validate skill"
+**research** — `fork`, sonnet. Multi-source parallel research with 3 modes (quick/standard/extensive). Auto-selects agent by API key: Perplexity > Claude WebSearch > Gemini. 9+ workflows including conduct, claude-research, perplexity-research, interview, youtube, web-scraping.
 
-### system-create-cli
-- **Context:** fork
-- **Workflows:** 5 (create-cli, add-command, upgrade-tier, add-testing, setup-distribution)
-- **Purpose:** Generate TypeScript CLIs with 3-tier template system
-- **Triggers:** "create a CLI", "build a command-line tool"
+**story-explanation** — `fork`, sonnet. Narrative summaries using UltraThink. 5 workflows (create, create-with-links, create-abridged, cse, cse5).
 
-### design-implementation
-- **Context:** fork
-- **Workflows:** 5 (implement-feature, verify-visual, fix-errors, manage-server, test-interactions)
-- **Purpose:** Automated UI dev workflow: server + browser + verify + fix loop
-- **Triggers:** "implement next feature", "verify this implementation"
+**thoughts-consolidate** — `fork`, sonnet. Consolidate and clean up thoughts/ files with codebase verification.
 
-### frontend-design
-- **Context:** fork | **Model:** sonnet
-- **Workflows:** 0 (philosophy-driven, no discrete workflows)
-- **Purpose:** Production-grade UI creation avoiding generic AI aesthetics
-- **Triggers:** "build web components", "create pages", styling requests
+### Development Tools
 
-### hook-authoring
-- **Context:** fork
-- **Workflows:** 2 (create-hook, debug-hooks)
-- **Purpose:** Claude Code hook creation and configuration
-- **Triggers:** "create hook", "hook not working", "debug hooks"
+**system-create-skill** — `fork`, sonnet. Skill creation with architectural compliance. 4 workflows.
 
-### prompting
-- **Context:** fork
-- **Workflows:** 2 (create-prompt, optimize-prompt)
-- **Purpose:** Prompt engineering standards based on Anthropic best practices
-- **Triggers:** "prompt engineering", "context engineering guidance"
+**system-create-cli** — `fork`. TypeScript CLI generation with 3-tier template system. 5 workflows.
 
-### humaniser
-- **Context:** same | **Model:** haiku
-- **Workflows:** 0 (inline editing)
-- **Purpose:** Remove 24 categories of AI-generated writing patterns
-- **Triggers:** Text editing/reviewing to sound more natural
+**design-implementation** — `fork`. Automated UI dev loop: server + browser + verify + fix. 5 workflows.
 
-### cc-upgrade
-- **Context:** fork
-- **Workflows:** 0 (analysis pipeline)
-- **Scripts:** `shared.ts` (common types/utilities), `analyse-claude-folder.ts` (exports 5 analyzers), `cc-version-check.ts` (feature compatibility), 3 test files
-- **Purpose:** Generic Claude Code folder analysis, feature compatibility, 12-factor compliance
-- **Composition:** Exports `analyzeStructure`, `analyzeSkills`, `analyzeHooks`, `analyzeContext`, `analyzeAgents` for extension skills to import
-- **Triggers:** Analyzing .claude/ folders, checking CC version compatibility
+**frontend-design** — `fork`, sonnet. Production-grade UI avoiding generic AI aesthetics. Philosophy-driven, no discrete workflows.
 
-### cc-upgrade-pai
-- **Context:** fork
-- **Workflows:** 0 (imports from cc-upgrade)
-- **Scripts:** `analyse-pai.ts` imports 3 base analyzers (structure, context, agents) from cc-upgrade + adds 5 PAI-specific analyzers
-- **Purpose:** PAI-specific CC analysis (CORE audit, delegation patterns, tool integration)
-- **Triggers:** Optimizing PAI codebases
+**hook-authoring** — `fork`. Hook creation and configuration. 2 workflows.
 
-### thoughts-consolidate
-- **Context:** fork | **Model:** sonnet
-- **Workflows:** 1 (consolidate)
-- **Purpose:** Consolidate and clean up thoughts/ files with codebase verification
-- **Triggers:** "consolidate thoughts", "clean up thoughts", "merge thoughts files"
+**prompting** — `fork`. Prompt engineering standards per Anthropic best practices. 2 workflows.
 
-### example-skill
-- **Context:** fork
-- **Workflows:** 3 (simple-task, complex-task, parallel-task)
-- **Purpose:** Template demonstrating Skills-as-Containers pattern
-- **Triggers:** "show me an example", "how do skills work"
+**devtools-mcp** — `fork`. Browser automation via Chrome DevTools MCP.
+
+**live-testing** — `fork`. Live testing workflows.
+
+### Text & Content
+
+**humaniser** — `same`, haiku. Removes 24 categories of AI writing patterns. Inline editing.
+
+**visual-explainer** — `fork`. Visual explanation generation.
+
+### Analysis & Upgrade
+
+**cc-upgrade** — `fork`. Generic Claude Code folder analysis, feature compatibility, 12-factor compliance. Exports 5 analyzers for extension skills.
+
+**cc-upgrade-pai** — `fork`. PAI-specific analysis, imports 3 base analyzers from cc-upgrade + 5 PAI-specific.
+
+**hook-test** — `fork`. End-to-end hook health checking and auto-correction.
+
+### Template
+
+**example-skill** — `fork`. Template demonstrating Skills-as-Containers pattern. 3 workflows.
 
 ## Skill Dependencies
 
 ```
-CORE (foundation -- all skills depend on it)
-├── cc-upgrade
-│   └── cc-upgrade-pai (imports base analyzers via shared.ts)
-├── research
-│   └── story-explanation (complementary)
-├── design-implementation
-│   └── frontend-design (design philosophy)
+CORE (foundation)
+├── cc-upgrade → cc-upgrade-pai (imports base analyzers)
+├── research → story-explanation (complementary)
+├── design-implementation → frontend-design (design philosophy)
 ├── system-create-skill
 ├── system-create-cli
-├── hook-authoring
+├── hook-authoring → hook-test
 ├── prompting
 ├── humaniser
+├── devtools-mcp
+├── live-testing
+├── visual-explainer
 ├── thoughts-consolidate
 └── example-skill
 ```

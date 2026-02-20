@@ -23,7 +23,7 @@ Scoring: Relevance to Qara (1-5), where 5 = high value, should adopt. Already im
 | 15 | Slim system prompt | SKILL.md just-in-time loading | Docs load on-demand, not upfront. Response tiers enforce brevity |
 | 25 | CLAUDE.md vs Skills vs Commands | CORE skill architecture | Skills-as-Containers pattern, 14 skills, clear separation |
 | 26 | Interactive PR reviews | `reviewer` agent (Opus) | Agent-based, invoked via Task tool |
-| 27 | Research tool | `research` skill + Fabric patterns | 242+ prompt patterns, multi-source parallel search |
+| 27 | Research tool | `research` skill | Multi-source parallel search |
 | 30 | Keep CLAUDE.md simple | Minimal CLAUDE.md + SKILL.md | CLAUDE.md is 7 lines. Context loads just-in-time |
 | 31 | Universal interface | Qara as orchestrator | 7 agents, 14 skills, 4 hooks = unified interface |
 | 34 | Write tests / TDD | `testing-guide.md` | Bun test, Playwright, coverage targets documented |

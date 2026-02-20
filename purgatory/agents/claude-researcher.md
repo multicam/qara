@@ -26,7 +26,7 @@ Skill("research")
 The research skill provides:
 - Multi-source parallel research with multiple researcher agents
 - Content extraction and analysis workflows
-- YouTube extraction via Fabric CLI
+- YouTube extraction via yt-dlp
 - Web scraping via WebFetch
 
 For simple queries, use Claude's built-in tools directly:
