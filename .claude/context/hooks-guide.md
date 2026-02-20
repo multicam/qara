@@ -10,6 +10,8 @@ Claude Code hooks in `.claude/hooks/`. All hooks are Bun TypeScript.
 | `stop-hook.ts` | Stop | Extracts COMPLETED line, updates tab title |
 | `update-tab-titles.ts` | UserPromptSubmit | Sets processing indicator |
 | `pre-tool-use-security.ts` | PreToolUse:Bash | Detects dangerous patterns, blocks/approves |
+| `post-tool-use.ts` | PostToolUse | Logs tool execution results for audit trail |
+| `notification-hook.ts` | Notification | Desktop notification on task completion |
 
 ## Shared Utilities
 

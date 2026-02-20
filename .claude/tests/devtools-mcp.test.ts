@@ -43,17 +43,17 @@ describe('devtools-mcp skill structure', () => {
 
   it('should have all workflow files', () => {
     const workflows = [
-      'smoke-test.md',
-      'visual-test.md',
-      'debug-console.md',
-      'component-debug.md',
-      'interactive.md',
-      'performance.md',
-      'accessibility.md',
+      'workflow-smoke-test.md',
+      'workflow-visual-test.md',
+      'workflow-debug-console.md',
+      'workflow-component-debug.md',
+      'workflow-interactive.md',
+      'workflow-performance.md',
+      'workflow-accessibility.md',
     ];
 
     for (const wf of workflows) {
-      expect(existsSync(join(SKILL_DIR, 'workflows', wf))).toBe(true);
+      expect(existsSync(join(SKILL_DIR, 'docs', wf))).toBe(true);
     }
   });
 
@@ -415,32 +415,40 @@ describe('CLI script validation', () => {
 // SECTION 6: SKILL.md validation
 // =============================================================================
 
-describe('SKILL.md react-grab content', () => {
+describe('SKILL.md content', () => {
   const skillContent = readFileSync(join(SKILL_DIR, 'SKILL.md'), 'utf-8');
 
-  it('should mention react-grab in description', () => {
+  it('should mention react-grab in component debug recipe', () => {
     expect(skillContent).toContain('react-grab');
   });
 
-  it('should have component debug triggers', () => {
-    expect(skillContent).toContain('debug this component');
-    expect(skillContent).toContain('which component');
+  it('should have component debug recipe', () => {
+    expect(skillContent).toContain('Component Debug');
+    expect(skillContent).toContain('get_element_context');
   });
 
-  it('should list component-debug workflow', () => {
-    expect(skillContent).toContain('component-debug.md');
+  it('should list all MCP tool categories', () => {
+    expect(skillContent).toContain('Navigate:');
+    expect(skillContent).toContain('Input:');
+    expect(skillContent).toContain('Inspect:');
   });
 
-  it('should reference tools-reference.md for MCP tools', () => {
-    expect(skillContent).toContain('docs/tools-reference.md');
+  it('should have recipe sections', () => {
+    expect(skillContent).toContain('Smoke Test');
+    expect(skillContent).toContain('Debug Console');
+    expect(skillContent).toContain('Visual Test');
+    expect(skillContent).toContain('Performance');
+    expect(skillContent).toContain('Accessibility');
   });
 
-  it('should reference examples.md for usage examples', () => {
-    expect(skillContent).toContain('docs/examples.md');
+  it('should have critical rules section', () => {
+    expect(skillContent).toContain('NO exploration');
+    expect(skillContent).toContain('NO verification');
   });
 
-  it('should reference grab-inspect.mjs for API docs', () => {
-    expect(skillContent).toContain('grab-inspect.mjs');
+  it('should have URL priority section', () => {
+    expect(skillContent).toContain('URL');
+    expect(skillContent).toContain('CLAUDE.md');
   });
 });
 
@@ -450,26 +458,19 @@ describe('SKILL.md react-grab content', () => {
 
 describe('component-debug workflow', () => {
   const workflowContent = readFileSync(
-    join(SKILL_DIR, 'workflows', 'component-debug.md'),
+    join(SKILL_DIR, 'docs', 'workflow-component-debug.md'),
     'utf-8'
   );
 
-  it('should reference both MCP servers', () => {
-    expect(workflowContent).toContain('DevTools MCP');
-    expect(workflowContent).toContain('react-grab MCP');
+  it('should reference react-grab requirement', () => {
+    expect(workflowContent).toContain('react-grab');
   });
 
   it('should include all workflow steps', () => {
-    expect(workflowContent).toContain('Navigate to the Page');
-    expect(workflowContent).toContain('Collect Console Errors');
-    expect(workflowContent).toContain('User Selects the Element');
-    expect(workflowContent).toContain('Get Component Context');
-    expect(workflowContent).toContain('Read Source and Propose Fix');
-    expect(workflowContent).toContain('Verify the Fix');
-  });
-
-  it('should document context staleness', () => {
-    expect(workflowContent).toContain('5 minute TTL');
+    expect(workflowContent).toContain('navigate_page');
+    expect(workflowContent).toContain('list_console_messages');
+    expect(workflowContent).toContain('get_element_context');
+    expect(workflowContent).toContain('source file:line');
   });
 
   it('should have fallback for non-grab mode', () => {
