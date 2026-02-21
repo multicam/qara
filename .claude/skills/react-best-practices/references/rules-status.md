@@ -1,7 +1,7 @@
 # React Best Practices — Rules Status Tracker
 
 **Codebase**: TGDS Office — Next.js 15, React 18, JavaScript (no TypeScript, no React 19, no RSC)
-**Last Updated**: Round 15 (Feb 2026)
+**Last Updated**: Round 16 (Feb 2026)
 
 **Status Legend**:
 - `APPLIED` — Has been applied to the codebase in a previous round
@@ -41,6 +41,8 @@ Source: https://skills.sh/vercel-labs/agent-skills/vercel-react-best-practices
 | `js-tosorted-immutable` | Use `.toSorted()` / `.toReversed()` instead of mutating `.sort()` | Round 11 |
 | `rerender-transitions` | `startTransition` for non-urgent filter/search state updates | Round 15 |
 | `js-cache-function-results` | Module-level Map cache for dayjs format/fromNow calls in per-row renderers | Round 15 |
+| `bundle-conditional` | Dynamic import for draft-js (TextEdit + TQuill): ~2.8 MB only loaded when editor mounts | Round 16 |
+| Data fetching ignore flag | preview.js async fetch in effect missing ignore flag | Round 16 |
 
 ---
 

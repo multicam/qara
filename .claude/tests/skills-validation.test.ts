@@ -11,7 +11,7 @@
  */
 
 import { describe, it, expect, beforeAll } from 'bun:test';
-import { existsSync, readFileSync, readdirSync, statSync } from 'fs';
+import { existsSync, readFileSync, readdirSync, statSync, lstatSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
 
@@ -54,7 +54,17 @@ function parseSkillMd(content: string): SkillFrontmatter | null {
 function getSkillDirs(): string[] {
   return readdirSync(SKILLS_DIR).filter((f) => {
     const fullPath = join(SKILLS_DIR, f);
-    return statSync(fullPath).isDirectory() && !f.startsWith('.');
+    if (f.startsWith('.')) return false;
+    try {
+      const stat = lstatSync(fullPath);
+      if (stat.isSymbolicLink()) {
+        // Follow symlink — skip if broken
+        try { return statSync(fullPath).isDirectory(); } catch { return false; }
+      }
+      return stat.isDirectory();
+    } catch {
+      return false;
+    }
   });
 }
 

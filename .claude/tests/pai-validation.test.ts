@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect, beforeAll } from 'bun:test';
-import { existsSync, readFileSync, readdirSync, statSync } from 'fs';
+import { existsSync, readFileSync, readdirSync, statSync, lstatSync } from 'fs';
 import { join, resolve } from 'path';
 import { homedir } from 'os';
 
@@ -179,9 +179,18 @@ describe('Skills System', () => {
 
   beforeAll(() => {
     const skillsPath = join(PAI_DIR, 'skills');
-    skillDirs = readdirSync(skillsPath).filter((f) =>
-      statSync(join(skillsPath, f)).isDirectory()
-    );
+    skillDirs = readdirSync(skillsPath).filter((f) => {
+      const fullPath = join(skillsPath, f);
+      try {
+        const stat = lstatSync(fullPath);
+        if (stat.isSymbolicLink()) {
+          try { return statSync(fullPath).isDirectory(); } catch { return false; }
+        }
+        return stat.isDirectory();
+      } catch {
+        return false;
+      }
+    });
   });
 
   it('should have at least 10 skills', () => {
