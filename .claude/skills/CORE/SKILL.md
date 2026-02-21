@@ -119,6 +119,7 @@ Use via `Task` tool with `subagent_type`:
 | `reviewer` | opus | Code review for correctness, security, performance, maintainability |
 | `thoughts-analyzer` | sonnet | Extracting decisions and insights from thoughts/ documents |
 | `thoughts-locator` | haiku | Finding relevant docs in thoughts/ directory |
+| `gemini-researcher` | haiku | Fallback when WebSearch fails — uses Gemini CLI for independent web access |
 
 Parallelize when possible — launch multiple agents in a single message.
 

@@ -39,6 +39,11 @@ Examples: "use claude for research", "claude research on X", "use websearch to r
 → **READ:** `${PAI_DIR}/skills/research/workflows/claude-research.ts`
 → **EXECUTE:** Intelligent query decomposition with Claude's WebSearch
 
+**When Claude WebSearch fails or returns poor results (fallback):**
+Examples: WebSearch returned nothing, stale results, rate-limited, user says "use gemini"
+→ **EXECUTE:** Launch `gemini-researcher` agent via Task tool with the failed query
+→ **NOTE:** Also use as parallel second opinion when confidence is low
+
 **When user requests Perplexity research (requires PERPLEXITY_API_KEY):**
 Examples: "use perplexity to research X", "perplexity research on Y"
 → **READ:** `${PAI_DIR}/skills/research/workflows/perplexity-research.ts`

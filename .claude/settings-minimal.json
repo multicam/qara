@@ -129,6 +129,5 @@
   "skipDangerousModePermissionPrompt": true,
   "showTurnDuration": true,
   "releaseChannel": "stable",
-  "effortLevel": "medium",
-  "model": "sonnet"
+  "effortLevel": "medium"
 }

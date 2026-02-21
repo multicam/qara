@@ -33,7 +33,7 @@ Qara is Jean-Marc Giorgi's Personal AI Infrastructure (PAI) — a `.claude/` dir
 │   ├── hooks/                   # 6 event hooks
 │   │   └── lib/                # 4 shared TypeScript utilities
 │   ├── commands/                # 12 slash commands
-│   ├── agents/                  # 7 custom agent definitions
+│   ├── agents/                  # 8 custom agent definitions
 │   ├── context/                 # Context files (guides, references, tools)
 │   ├── mcp-servers/             # MCP server implementations
 │   ├── templates/               # Reusable output templates

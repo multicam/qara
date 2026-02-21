@@ -18,7 +18,7 @@ Files in this directory become available as `/command-name`. They use `$ARGUMENT
 | `/load-dynamic-requirements` | — | Loads dynamic requirements into context |
 | `/Readme` | — | Shows custom slash command documentation |
 
-## Custom Agents (.claude/agents/) — 7 agents
+## Custom Agents (.claude/agents/) — 8 agents
 
 Used via `Task` tool with `subagent_type` parameter.
 
@@ -31,6 +31,7 @@ Used via `Task` tool with `subagent_type` parameter.
 | `architect` | opus | PRD creation, system design (loads research skill) |
 | `engineer` | sonnet | Code implementation, debugging, optimization, testing |
 | `reviewer` | opus | Code review for correctness, security, performance |
+| `gemini-researcher` | haiku | Fallback when WebSearch fails — uses Gemini CLI |
 
 CC built-in agents (no custom definition): `Explore`, `Plan`, `Bash`, `general-purpose`, `claude-code-guide`.
 
