@@ -70,6 +70,19 @@ src/auto-reply/
 
 ---
 
+## Module Growth Note (Feb 2026)
+
+The directory listing above (~69 files) represents approximately **40% of the current module's actual file count**. The core data flow and named entry points documented here remain unchanged. Notable decompositions since the initial doc:
+
+- `agent-runner.ts` split into: `agent-runner-memory.ts` (memory flush logic), `agent-runner-helpers.ts` (shared helpers), `agent-runner-utils.ts` (utility functions)
+- New `followup-runner.ts` — creates the followup callback for draining queued runs after a turn completes
+- New `provider-dispatcher.ts` — thin wrappers around `dispatch.ts` for per-channel-adapter dispatch entry points
+- New `dispatcher-registry.ts` — global registry of active `ReplyDispatcher` instances used for gateway restart/reconnect coordination
+- `reply/queue/` grew from 5 to 8 files: added `cleanup.ts` (queue cleanup helpers), `directive.ts` (queue directive extraction), `normalize.ts` (queue normalization)
+- `directive-handling` decomposed into approximately 10 sub-files alongside the existing `directive-handling.ts` and `directive-handling.parse.ts`: `.auth.ts`, `.fast-lane.ts`, `.impl.ts`, `.levels.ts`, `.model-picker.ts`, `.model.ts`, `.params.ts`, `.persist.ts`, `.queue-validation.ts`, `.shared.ts`
+
+---
+
 ## Entry Points
 
 - `src/auto-reply/dispatch.ts:35` — `dispatchInboundMessage()` — primary entry from channel adapters

@@ -160,7 +160,9 @@ Discovery (Bonjour/mDNS or manual config)
 | Gateway management | `GatewayProcessManager.swift` | Starts/stops gateway as launchd job |
 | LaunchAgent install | `GatewayLaunchAgentManager.swift` | Plist write to `~/Library/LaunchAgents/` |
 | Canvas panel | `CanvasWindowController.swift` | Floating WKWebView with A2UI commands |
-| Exec approvals | `ExecApprovals.swift` | User prompt for shell command execution |
+| Exec approvals | `ExecApprovals.swift` + `ExecApprovalsSocket.swift` + `ExecApprovalsGatewayPrompter.swift` | User prompt for shell command execution (split into 3 files: core types + allowlist, socket-based approval protocol, gateway event subscription) |
+| Exec env unwrapper | `ExecEnvInvocationUnwrapper.swift` | Strips env wrapper invocations (maxWrapperDepth=4) |
+| Shell wrapper parser | `ExecShellWrapperParser.swift` | Parses shell wrapper commands like bash -c |
 | Cron editor | `CronSettings.swift` | Full scheduled job management UI |
 | Remote/SSH tunnel | `RemoteTunnelManager.swift` | SSH tunnel to remote gateway |
 | Config file watch | `ConfigFileWatcher.swift` | Live `openclaw.json` change detection |
@@ -290,7 +292,7 @@ Settings in `EncryptedSharedPreferences` via `SecurePrefs.kt`. Device identity i
 
 | Type | File | Purpose |
 |------|------|---------|
-| `GatewayChannelActor` | `GatewayChannel.swift:130` | Swift actor wrapping WebSocket |
+| `GatewayChannelActor` | `GatewayChannel.swift:138` | Swift actor wrapping WebSocket |
 | `GatewayConnectOptions` | `GatewayChannel.swift:79` | Role, scopes, caps, commands |
 | `GatewayAuthSource` | `GatewayChannel.swift:116` | `.deviceToken`, `.sharedToken`, `.password` |
 
@@ -299,5 +301,7 @@ Settings in `EncryptedSharedPreferences` via `SecurePrefs.kt`. Device identity i
 | Type | File | Purpose |
 |------|------|---------|
 | `GatewaySession` | `GatewaySession.kt:55` | OkHttp WebSocket lifecycle |
+| `GatewayClientInfo` | `GatewaySession.kt:34` | Data class: device identity + client metadata sent during connect |
+| `GatewayConnectOptions` | `GatewaySession.kt:45` | Data class: connection parameters (URL, auth, caps, role) |
 | `GatewayDiscovery` | `GatewayDiscovery.kt` | NsdManager + dnsjava DNS-SD |
 | `DeviceIdentityStore` | `DeviceIdentityStore.kt` | Persistent ECDSA key pair |

@@ -108,10 +108,11 @@ Gateway methods called by ACP:
 
 1. Load config, resolve auth credentials
 2. Create `GatewayClient` WebSocket connection to gateway
-3. Wrap `process.stdout`/`process.stdin` into NDJSON stream
-4. Create `AgentSideConnection` (ACP SDK) with `AcpGatewayAgent` as handler
-5. Start gateway connection (auto-reconnect: 1s → 30s backoff)
-6. Return promise that resolves on SIGINT/SIGTERM
+3. **Gateway connects and completes handshake** — a `gatewayReady` Promise (lines 46-63) gates ACP startup. If the gateway fails to connect, the server throws instead of accepting ACP requests.
+4. Wrap `process.stdout`/`process.stdin` into NDJSON stream
+5. Create `AgentSideConnection` (ACP SDK) with `AcpGatewayAgent` as handler
+6. Start gateway connection (auto-reconnect: 1s → 30s backoff)
+7. Return promise that resolves on SIGINT/SIGTERM
 
 ### Client (`client.ts`)
 
@@ -137,6 +138,7 @@ Gateway event: "agent" { stream: "tool", phase: "result" }
 
 Maps tool names to kinds by string matching:
 - `read` → read, `write`/`edit` → edit, `delete`/`remove` → delete
+- `move`/`rename` → move (added Feb 2026)
 - `search`/`find` → search, `exec`/`run`/`bash` → execute
 - `fetch`/`http` → fetch, else → other
 
@@ -320,5 +322,16 @@ RequestPermissionResponse → ACP SDK → Agent
 | `PendingPrompt` | `translator.ts:46` | In-flight prompt: resolve/reject, tool tracking |
 | `AcpGatewayAgent` | `translator.ts:64` | Core bridge class (implements ACP `Agent`) |
 | `GatewayAttachment` | `event-mapper.ts:3` | Image attachment format |
+
+### event-mapper.ts — Current Exports (Feb 2026)
+
+`event-mapper.ts` now has **4 exports** (was 2 at initial doc):
+
+| Export | Purpose |
+|--------|---------|
+| `extractTextFromPrompt()` | Extracts text from ACP ContentBlock[]; now handles `"resource"` and `"resource_link"` block types in addition to `"text"` |
+| `extractAttachmentsFromPrompt()` | Extracts image attachments from prompt blocks |
+| `formatToolTitle(name, args)` | Formats a human-readable tool title for IDE display (new) |
+| `inferToolKind()` | Infers tool kind from tool name; now also handles `"move"`/`"rename"` → `"move"` kind (updated) |
 | `AcpClientHandle` | `client.ts:245` | `{ client, agent, sessionId }` |
 | `DANGEROUS_ACP_TOOL_NAMES` | `security/dangerous-tools.ts:24` | Tool deny-list |

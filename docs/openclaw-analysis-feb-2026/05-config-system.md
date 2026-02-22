@@ -34,7 +34,7 @@ src/config/
 ├── legacy.ts                 — findLegacyConfigIssues + applyLegacyMigrations
 ├── legacy.rules.ts           — Rules that detect fatal legacy keys
 ├── legacy.migrations.ts      — Combines all 3 migration part files
-├── legacy.migrations.part-{1,2,3}.ts — 20 named migration transforms (~1026 lines)
+├── legacy.migrations.part-{1,2,3}.ts — 20 named migration transforms (~1137 lines)
 ├── legacy-migrate.ts         — Public migrateLegacyConfig() entry point
 ├── legacy.shared.ts          — Shared types/utilities for migration authoring
 ├── cache-utils.ts            — TTL helpers for config and session caches
@@ -483,6 +483,15 @@ The following fields were not previously documented. They extend the sections no
 | `maxBodyBytes` | Maximum request body size for the hooks endpoint |
 | `presets` | Named preset payloads that hook requests may reference |
 | `transformsDir` | Directory containing hook transform scripts |
+
+### Agents Defaults — Compaction Section Additions (`zod-schema.agent-defaults.ts:94-96`)
+
+Two new optional fields under `agents.defaults.compaction`:
+
+| Field | Type | Description |
+|---|---|---|
+| `reserveTokens` | `number` (optional) | Number of tokens to reserve from the model's context window before triggering compaction. Allows callers to set aside headroom for reply generation. |
+| `reserveTokensFloor` | `number` (optional) | Minimum floor applied to `reserveTokens` after any dynamic adjustments, preventing the reserved amount from shrinking below a safe lower bound. |
 
 ### Plugins Section Addition
 

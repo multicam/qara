@@ -253,13 +253,19 @@ ensureFunnel(port)
 
 ### SSRF Protection (`net/ssrf.ts`, `net/fetch-guard.ts`)
 
+**Note — IP classification refactoring:** `isPrivateIpAddress()` in `net/ssrf.ts` has been refactored to delegate range classification to a new shared module `src/shared/net/ip.ts`, which uses the `ipaddr.js` library. The previous inline IPv4/IPv6 block comparisons have been replaced by `ipaddr.js`'s `address.range()` method evaluated against two named range sets: `BLOCKED_IPV4_SPECIAL_USE_RANGES` and `PRIVATE_OR_LOOPBACK_IPV6_RANGES`. A companion file `src/shared/net/ipv4.ts` provides IPv4-specific helpers. The externally observable behavior (which addresses are blocked) is unchanged; only the implementation mechanism differs.
+
 ```
 isPrivateIpAddress(address)                       <- net/ssrf.ts:308-377
 |
-+- IPv4 blocks: 0.0.0.0/8, 10/8, 127/8, 169.254/16,
++- Delegates to src/shared/net/ip.ts (ipaddr.js-based range classification)
+|
++- IPv4 blocks (BLOCKED_IPV4_SPECIAL_USE_RANGES):
+|   0.0.0.0/8, 10/8, 127/8, 169.254/16,
 |   172.16-31/12, 192.168/16, 100.64-127/10 (CGNAT)
 |
-+- IPv6 blocks: loopback, unspecified, link-local fe80::/10,
++- IPv6 blocks (PRIVATE_OR_LOOPBACK_IPV6_RANGES):
+|   loopback, unspecified, link-local fe80::/10,
 |   site-local fec0::/10, ULA fc00::/7
 |
 +- Embedded IPv4 in IPv6:
@@ -751,7 +757,7 @@ Aggregates and formats API usage/cost data from all supported providers.
 
 **Three-way respawn decision** — Process restart detects supervisor environments (launchd/systemd) and defers to them, spawns detached children for standalone mode, or returns "disabled" for in-process restart.
 
-**DNS-pinned fetch** — SSRF protection resolves hostnames upfront, creates a pinned `undici.Agent` that only connects to pre-resolved IPs, strips auth headers on cross-origin redirects, and blocks all private IP ranges including embedded IPv4-in-IPv6.
+**DNS-pinned fetch** — SSRF protection resolves hostnames upfront, creates a pinned `undici.Agent` that only connects to pre-resolved IPs, strips auth headers on cross-origin redirects, and blocks all private IP ranges including embedded IPv4-in-IPv6. Range classification is handled by `ipaddr.js` via the shared `src/shared/net/ip.ts` module.
 
 **Preflight worktree builds** — Updates create an isolated git worktree, iterate up to 10 upstream commits testing install/build/lint, and only rebase to the first passing commit. Production is never broken by a bad upstream commit.
 

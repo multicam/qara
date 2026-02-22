@@ -33,6 +33,12 @@ src/memory/                          — Core builtin memory engine
 ├── embeddings-openai.ts             — OpenAI embeddings client
 ├── embeddings-gemini.ts             — Gemini embeddings client
 ├── embeddings-voyage.ts             — Voyage embeddings client
+├── embeddings-remote-client.ts      — Remote embedding client: bearer auth config
+├── embeddings-remote-fetch.ts       — Remote embedding fetch wrapper
+├── embeddings-debug.ts              — Embedding debug helpers
+├── embedding-input-limits.ts        — Per-provider input length limits
+├── embedding-model-limits.ts        — Per-model dimension/limit metadata
+├── node-llama.ts                    — Lazy dynamic import wrapper for node-llama-cpp (extracted from embeddings.ts)
 ├── hybrid.ts                        — mergeHybridResults(), buildFtsQuery(), bm25RankToScore()
 ├── mmr.ts                           — Maximal Marginal Relevance re-ranking
 ├── temporal-decay.ts                — Score decay for dated memory files
@@ -40,8 +46,18 @@ src/memory/                          — Core builtin memory engine
 ├── internal.ts                      — chunkMarkdown(), hashText(), cosineSimilarity(), file listing
 ├── session-files.ts                 — Session JSONL transcript processing
 ├── qmd-manager.ts                   — QmdMemoryManager (external process backend)
+├── qmd-scope.ts                     — QMD scope gating: isQmdScopeAllowed(), deriveQmdScopeChannel()
+├── qmd-query-parser.ts              — Structured JSON query result parsing for qmd CLI
+├── fs-utils.ts                      — File stat helpers
+├── status-format.ts                 — Memory status display formatting
 ├── sqlite-vec.ts                    — sqlite-vec extension loader
 └── sqlite.ts                        — Node.js sqlite module loader
+
+Note on batch infrastructure: the batch embedding layer has been decomposed. In addition to the existing
+provider-specific files (batch-openai.ts, batch-gemini.ts, batch-voyage.ts), shared infrastructure is
+now split across: batch-http.ts (HTTP transport), batch-runner.ts (retry/batch orchestration),
+batch-output.ts (result normalization), batch-utils.ts (shared utilities), batch-error-utils.ts
+(error classification), and batch-upload.ts (upload helpers).
 
 extensions/memory-core/             — Plugin: registers memory tools + CLI
 ├── index.ts                         — memoryCorePlugin: registerTool + registerCli

@@ -14,7 +14,7 @@ src/agents/
 │   ├── run.ts                       <- runEmbeddedPiAgent() — THE entry point
 │   ├── run/
 │   │   ├── attempt.ts               <- Single execution attempt
-│   │   ├── payloads.ts              <- Build result payloads from assistant text
+│   │   ├── payloads.ts              <- Build result payloads from assistant text; also contains centralized tool error warning policy (resolveToolErrorWarningPolicy at lines 55-81)
 │   │   ├── images.ts                <- Detect/load images for vision models
 │   │   ├── compaction-timeout.ts    <- Snapshot recovery on compaction timeout
 │   │   ├── params.ts                <- ClientToolDefinition for OpenResponses
@@ -90,11 +90,21 @@ src/agents/
 │   └── env-overrides.ts            <- Skill env var injection
 │
 ├── auth-profiles/                   <- Auth profile management
-│   ├── profiles.ts                  <- Profile CRUD
-│   ├── store.ts                     <- Profile store init
+│   ├── constants.ts                 <- Shared constants
+│   ├── display.ts                   <- Profile display helpers
+│   ├── doctor.ts                    <- Diagnostic / doctor checks
+│   ├── external-cli-sync.ts         <- External CLI auth sync
 │   ├── oauth.ts                     <- OAuth flow
+│   ├── order.ts                     <- Profile ordering / priority
+│   ├── paths.ts                     <- File path resolution
+│   ├── profiles.ts                  <- Profile CRUD
+│   ├── repair.ts                    <- Profile repair utilities
+│   ├── session-override.ts          <- Per-session auth overrides
+│   ├── store.ts                     <- Profile store init
+│   ├── types.ts                     <- Type definitions
 │   └── usage.ts                     <- Cooldown tracking
 │
+├── owner-display.ts                 <- resolveOwnerDisplaySetting() — resolves owner display hashing for system prompt
 ├── system-prompt.ts                 <- buildAgentSystemPrompt() — full prompt
 ├── system-prompt-params.ts          <- Runtime info for prompt
 ├── model-catalog.ts                 <- Discover all available models

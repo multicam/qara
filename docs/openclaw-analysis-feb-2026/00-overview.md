@@ -105,9 +105,10 @@ openclaw/
 │   ├── google-gemini-cli-auth/    ← Google Gemini CLI auth
 │   ├── minimax-portal-auth/       ← MiniMax portal auth
 │   ├── qwen-portal-auth/          ← Qwen portal auth
+│   ├── synology-chat/             ← Synology Chat webhook-based channel extension
 │   └── [other channels, auth...]  ← Additional channel & auth plugins
 │
-├── skills/                  ← 53 bundled AI skills
+├── skills/                  ← 52 bundled AI skills
 │   ├── coding-agent/        ← Code generation
 │   ├── github/              ← GitHub ops
 │   ├── spotify-player/      ← Spotify control
@@ -182,4 +183,4 @@ openclaw/
 
 ---
 
-**TL;DR** — OpenClaw is a locally-hosted AI gateway. Messages arrive from any channel (WhatsApp, Telegram, Slack, etc.), get routed through the gateway to an AI agent backed by your choice of model, with 53 skills and a growing extension library (channel adapters, auth providers, and utility plugins) for tools, memory, and platform integrations. Everything runs on your machine.
+**TL;DR** — OpenClaw is a locally-hosted AI gateway. Messages arrive from any channel (WhatsApp, Telegram, Slack, etc.), get routed through the gateway to an AI agent backed by your choice of model, with 52 skills and a growing extension library (channel adapters, auth providers, and utility plugins) for tools, memory, and platform integrations. Everything runs on your machine.

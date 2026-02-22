@@ -69,12 +69,18 @@ ui/
 │       │   ├── channels.ts             — renderChannels()
 │       │   ├── sessions.ts             — renderSessions()
 │       │   ├── usage.ts                — renderUsage()
-│       │   ├── overview.ts             — renderOverview()
+│       │   ├── overview.ts             — renderOverview() compositor (decomposed into 5 files)
+│       │   ├── overview-cards.ts       — Stat cards panel
+│       │   ├── overview-attention.ts   — Warnings/attention panel
+│       │   ├── overview-event-log.ts   — Real-time event log panel
+│       │   ├── overview-log-tail.ts    — Live log tail panel
+│       │   ├── overview-quick-actions.ts — Quick actions panel (exists, currently unused)
 │       │   ├── nodes.ts                — renderNodes()
 │       │   ├── logs.ts                 — renderLogs()
 │       │   ├── debug.ts                — renderDebug()
 │       │   ├── cron.ts                 — renderCron()
 │       │   ├── skills.ts               — renderSkills()
+│       │   ├── login-gate.ts           — renderLoginGate() — centered login card shown when disconnected, replaces prior inline connection settings
 │       │   ├── config-form.ts          — Re-exports config form renderer
 │       │   └── channels.*.ts           — Per-channel views (discord, slack, etc.)
 │       ├── chat/                       — Chat message processing pipeline
@@ -230,7 +236,7 @@ Browser                                   Gateway
 
 All state lives on the `OpenClawApp` LitElement instance as ~120+ `@state()` decorated properties. When any property mutates, Lit schedules a re-render.
 
-`AppViewState` at `app-view-state.ts:38` defines the full shape (290 lines) passed to view render functions.
+`AppViewState` at `app-view-state.ts:38` defines the full shape (307 lines as of Feb 2026, grown from the original 290) passed to view render functions. New fields added: `attentionItems` (warnings/attention panel data), `streamMode`, `overviewLogLines`, `overviewLogCursor`, `eventLog`.
 
 Mutations via:
 - Direct property assignment: `state.chatMessages = [...]`
@@ -349,7 +355,7 @@ Gateway pushes events:
 
 | Type | File:Line | Purpose |
 |---|---|---|
-| `AppViewState` | `app-view-state.ts:38` | Complete state + methods (290 lines) |
+| `AppViewState` | `app-view-state.ts:38` | Complete state + methods (307 lines, up from 290) |
 | `UiSettings` | `storage.ts:6` | Persisted user preferences |
 | `GatewayBrowserClient` | `gateway.ts:65` | WebSocket client |
 | `GatewayHelloOk` | `gateway.ts:28` | Handshake response |

@@ -60,6 +60,60 @@ src/agents/tools/
 
 ---
 
+## Module Growth Note (Feb 2026)
+
+The browser module has grown significantly since the initial doc. The directory listing above (~47 files) reflects the original state; the module now contains approximately **80 source files**. Key additions:
+
+### New Client Action Layer
+
+| File | Purpose |
+|------|---------|
+| `client-actions.ts` | Barrel re-export for all client action modules |
+| `client-actions-core.ts` | Core client action implementations |
+| `client-actions-observe.ts` | Observation/monitoring client actions |
+| `client-actions-state.ts` | State-reading client actions |
+| `client-actions-types.ts` | Shared type definitions for client actions |
+| `client-actions-url.ts` | URL-related client actions |
+| `client-fetch.ts` | Fetch-based client utilities |
+
+### Extracted Auth and Security
+
+| File | Purpose |
+|------|---------|
+| `control-auth.ts` | Control server authentication helpers |
+| `csrf.ts` | CSRF token generation and validation |
+| `http-auth.ts` | HTTP auth middleware utilities |
+| `bridge-auth-registry.ts` | Auth token registry for sandbox bridge connections |
+
+### Extracted State Modules
+
+| File | Purpose |
+|------|---------|
+| `pw-ai-state.ts` | Playwright AI module state (extracted from pw-ai.ts) |
+| `pw-tools-core.state.ts` | Per-profile tool state (extracted from pw-tools-core) |
+| `pw-tools-core.shared.ts` | Shared helpers across pw-tools-core modules |
+
+### New Utilities
+
+`control-service.ts`, `dispatcher.ts`, `proxy-files.ts`, `resolved-config-refresh.ts`, `target-id.ts`, `trash.ts`, `path-output.ts`, `types.ts`, `utils.ts`, `index.ts`
+
+### Routes Growth
+
+`routes/` grew from 7 to 15 files. New route files added:
+
+| File | Purpose |
+|------|---------|
+| `agent.act.shared.ts` | Shared helpers for act routes |
+| `agent.debug.ts` | Debug/inspection routes |
+| `agent.storage.ts` | Storage inspection routes |
+| `dispatcher.ts` | Route-level dispatcher utilities |
+| `path-output.ts` | Path resolution for route outputs |
+| `types.ts` | Route-shared type definitions |
+| `utils.ts` | Route utility helpers |
+| `index.ts` | Route registration entry (was already listed) |
+
+---
+
 ## Browser Engine
 
 Playwright-core (`pw-session.ts:9`) connects to **Chromium-based browsers** (Chrome, Brave, Edge, Chromium) over CDP. Does not use Playwright's bundled browsers.

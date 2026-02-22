@@ -203,6 +203,7 @@ The following channel adapters have been added as bundled extensions since the i
 | `zalo` | Zalo (Vietnam) — bot account |
 | `zalouser` | Zalo — user account variant |
 | `bluebubbles` | BlueBubbles server (iMessage relay for non-Apple hosts) |
+| `synology-chat` | Synology Chat (webhook-based channel, follows LINE pattern) |
 
 ### Organized Subdirectories in `channels/plugins/`
 
@@ -566,7 +567,7 @@ Per-channel behavior:
 | `src/channels/plugins/types.plugin.ts` | `ChannelPlugin<>` type — the contract | :48 |
 | `src/channels/plugins/types.core.ts` | Core data types (capabilities, threading, etc.) | :1 |
 | `src/channels/plugins/types.adapters.ts` | All adapter types | :1 |
-| `src/channels/plugins/index.ts` | `listChannelPlugins()`, `getChannelPlugin()` | :31 |
+| `src/channels/plugins/index.ts` | `listChannelPlugins()`, `getChannelPlugin()`, `dedupeChannels()` (line 17 — when multiple plugin origins register the same channel ID, the higher-priority entry wins) | :31 |
 | `src/channels/dock.ts` | `listChannelDocks()`, `getChannelDock()` | :585 |
 | `src/channels/registry.ts` | `CHAT_CHANNEL_ORDER`, `CHAT_CHANNEL_META` | :7 |
 | `src/gateway/server-channels.ts` | `createChannelManager()` | :80 |

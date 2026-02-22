@@ -18,8 +18,9 @@ src/gateway/
 ├── server/
 │   ├── ws-connection.ts       — Per-connection lifecycle handler
 │   ├── ws-connection/
-│   │   ├── message-handler.ts — Handshake + post-handshake message routing
-│   │   └── auth-messages.ts   — Auth failure message formatting
+│   │   ├── message-handler.ts  — Handshake + post-handshake message routing
+│   │   ├── auth-messages.ts    — Auth failure message formatting
+│   │   └── connect-policy.ts   — Extracted Control UI auth policy logic (resolveControlUiAuthPolicy)
 │   ├── health-state.ts        — Presence/health versioning + snapshot cache
 │   ├── hooks.ts               — HTTP hook endpoint dispatch
 │   ├── plugins-http.ts        — HTTP plugin endpoint dispatch
@@ -33,6 +34,8 @@ src/gateway/
 ├── server-methods/            — One file per method domain (chat, config, nodes, ...)
 │   │                            Domains include: push, voicewake, web, wizard, usage, browser
 │   │                            (in addition to existing chat, config, nodes, sessions, ...)
+│   │                          — chat-transcript-inject.ts: exports appendInjectedAssistantMessageToTranscript()
+│   │                            — writes injected assistant messages into session transcript
 ├── method-scopes.ts           — RBAC scope definitions + authorization logic
 ├── auth.ts                    — authorizeGatewayConnect() — multi-mode auth
 ├── auth-rate-limit.ts         — IP-based rate limiter
@@ -46,6 +49,10 @@ src/gateway/
 ├── server-broadcast.ts        — createGatewayBroadcaster() — fan-out to WS clients
 ├── server-maintenance.ts      — Tick/health/dedupe maintenance timers
 ├── server-constants.ts        — Protocol limits and intervals
+├── server-http.ts             — HTTP server creation + route attachment
+├── server-startup-log.ts      — Startup banner
+├── server-startup-memory.ts   — Memory backend init
+├── server-node-events.ts      — Node event handlers
 ├── config-reload.ts           — chokidar watcher + reload plan engine
 ├── server-reload-handlers.ts  — Hot-reload action execution
 ├── server-runtime-config.ts   — Resolve bind/auth/TLS/hooks config at start

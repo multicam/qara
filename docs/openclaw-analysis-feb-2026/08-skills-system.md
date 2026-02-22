@@ -6,7 +6,7 @@ Skills are Markdown files (`SKILL.md`) with YAML frontmatter that provide specia
 
 ---
 
-## Bundled Skills (53 total)
+## Bundled Skills (52 total)
 
 ```
 skills/
@@ -23,7 +23,6 @@ skills/
 ├── coding-agent/       # Delegate tasks to Codex/Claude/Pi sub-agents
 ├── discord/            # Discord messaging
 ├── eightctl/           # Eight Sleep bed controller
-├── food-order/         # Food ordering workflows
 ├── gemini/             # Google Gemini API
 ├── gh-issues/          # GitHub issue auto-fix with sub-agents
 ├── gifgrep/            # GIF search
