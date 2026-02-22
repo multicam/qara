@@ -103,6 +103,12 @@ ChannelPlugin<ResolvedAccount>                    <- types.plugin.ts:48-84
 +- heartbeat?: ChannelHeartbeatAdapter            heartbeat behavior
 +- agentTools?: ChannelAgentToolFactory           channel-specific tools
 +- elevated?: ChannelElevatedAdapter              host-mode escalation
++- onboarding?: ChannelOnboardingAdapter          guided first-run onboarding flow
++- configSchema?: JSONSchema                      JSON schema for channel config validation
++- auth?: ChannelAuthAdapter                      auth flow for user-facing OAuth/token entry
++- commands?: ChannelCommandAdapter               native bot command registration and dispatch
++- resolver?: ChannelResolverAdapter              custom peer/identity resolution
++- reload?: ChannelReloadAdapter                  hot-reload hook for account config changes
 ```
 
 ### Channel Capabilities (`types.core.ts:171-184`)
@@ -180,6 +186,37 @@ export function getXxxRuntime(): PluginRuntime {
 ```
 
 All channel implementation calls go through `getXxxRuntime().channel.xxx.*` — the plugin SDK contract stays stable while the host can swap implementations.
+
+### New Channel Extensions
+
+The following channel adapters have been added as bundled extensions since the initial inventory:
+
+| Extension | Platform |
+|---|---|
+| `feishu` | Feishu / Lark (ByteDance enterprise messaging) |
+| `matrix` | Matrix protocol (Element, etc.) |
+| `msteams` | Microsoft Teams |
+| `nextcloud-talk` | Nextcloud Talk |
+| `nostr` | Nostr decentralized protocol |
+| `tlon` | Tlon / Urbit groups |
+| `twitch` | Twitch chat |
+| `zalo` | Zalo (Vietnam) — bot account |
+| `zalouser` | Zalo — user account variant |
+| `bluebubbles` | BlueBubbles server (iMessage relay for non-Apple hosts) |
+
+### Organized Subdirectories in `channels/plugins/`
+
+The `channels/plugins/` directory has been refactored into named subdirectories for better organization:
+
+```
+src/channels/plugins/
+├── actions/          <- Message action implementations (send, react, edit, etc.)
+├── agent-tools/      <- ChannelAgentToolFactory implementations per channel
+├── outbound/         <- Outbound delivery helpers (chunkers, media, text)
+├── normalize/        <- Inbound message normalization (text, media, metadata)
+├── onboarding/       <- First-run and setup wizard flows
+└── status-issues/    <- Status probe and audit issue collectors
+```
 
 ### Catalog Discovery (`channels/plugins/catalog.ts:259-296`)
 

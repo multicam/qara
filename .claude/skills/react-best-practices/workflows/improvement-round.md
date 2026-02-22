@@ -85,11 +85,76 @@ Summarize what was done:
 
 ## Key Rules for Application
 
+### Currently PENDING — Priority Order
+
+After 23 rounds, Guide 1 (Vercel 57 rules) is fully exhausted. Remaining candidates come from Guide 4 (sergiodxa) and Guide 3 (0xbigboss).
+
+---
+
+**`hooks-limit-useeffect`** (Guide 4) — Verify no useEffect is used for data derivation or navigation. All such uses should derive during render or use useMemo.
+```javascript
+// VIOLATION — useEffect for state derivation:
+useEffect(() => {
+  setFiltered(items.filter(i => i.active))
+}, [items])
+
+// FIX — compute during render:
+const filtered = useMemo(() => items.filter(i => i.active), [items])
+// or directly:
+const filtered = items.filter(i => i.active)
+```
+Scan: `packages/next/src/` and `packages/common/data/hooks/` for useEffect that calls setState with transformed data.
+
+---
+
+**`composition-avoid-boolean-props`** (Guide 4) — Components with multiple boolean props encoding mutually exclusive states should use explicit variant props instead.
+```javascript
+// VIOLATION:
+<Button primary loading />
+<Panel isOpen isCollapsed />
+
+// FIX:
+<Button variant="primary" state="loading" />
+<Panel mode="open" />
+```
+Scan: Look for component JSX with 3+ boolean props. Only refactor where the booleans encode mutually exclusive visual states (not independent feature flags).
+
+---
+
+**`fault-tolerant-error-boundaries`** (Guide 4) — Wrap feature sections in React error boundaries to contain failures. No error boundaries currently exist in codebase.
+```javascript
+import { ErrorBoundary } from 'react-error-boundary'
+
+// Wrap feature sections:
+<ErrorBoundary fallback={<div className="p-4 text-red-600">Failed to load.</div>}>
+  <StudentDetailsPanel />
+</ErrorBoundary>
+```
+Priority targets: TABS template (data fetch failures), student detail pages, CRM person page. Requires installing `react-error-boundary` or writing a class-based fallback.
+
+---
+
+**`hooks-useeffect-named-functions`** (Guide 4) — Use named function declarations in useEffect for better DevTools stack traces.
+```javascript
+// BEFORE (anonymous arrow):
+useEffect(() => {
+  fetchStudentData(id)
+}, [id])
+
+// AFTER (named function):
+useEffect(function fetchStudentOnIdChange() {
+  fetchStudentData(id)
+}, [id])
+```
+Note: 85 files have anonymous arrow effects. Zero runtime impact — only debugging value. Low priority. Apply selectively to complex effects only.
+
+---
+
 ### Safe to Apply Mechanically (Low Risk)
 
 These rules have clear patterns that can be applied without business logic risk:
 
-**rerender-defer-reads** — Move state reads inside callbacks when not needed for render
+**`rerender-defer-reads`** — Move state reads inside callbacks when not needed for render
 ```javascript
 // BEFORE: subscribes to state only used in event handler
 const [count, setCount] = useState(0)
@@ -101,7 +166,7 @@ const [, forceUpdate] = useState(0)
 // or: use useCallback with ref pattern
 ```
 
-**js-cache-property-access** — Cache repeated object property access in hot loops
+**`js-cache-property-access`** — Cache repeated object property access in hot loops
 ```javascript
 // BEFORE:
 items.forEach(item => process(item.data.nested.value))
@@ -113,7 +178,7 @@ items.forEach(item => {
 })
 ```
 
-**rerender-move-effect-to-event** — Move interaction logic from effects to event handlers
+**`rerender-move-effect-to-event`** — Move interaction logic from effects to event handlers
 ```javascript
 // BEFORE:
 const [submitted, setSubmitted] = useState(false)
@@ -125,7 +190,7 @@ useEffect(() => {
 const handleSubmit = () => sendData()
 ```
 
-**advanced-event-handler-refs** — Store event handlers in refs to avoid stale closure issues
+**`advanced-event-handler-refs`** — Store event handlers in refs to avoid stale closure issues
 ```javascript
 // BEFORE:
 useEffect(() => {
@@ -158,3 +223,16 @@ useEffect(() => {
 - **Pages Router**: No `'use client'` directives needed or wanted
 - **Blueprint.js**: Component props follow Blueprint API, not HTML5
 - **`useCallback` audit**: Zero `React.memo` in codebase — most `useCallback` wrappers are currently useless (see MEMORY.md note from Feb 2026)
+- **Guide 1 exhausted**: All 57 Vercel rules have been evaluated. 32 applied, 18 N/A, 7 remaining low-priority pending
+- **Guide 4 active**: sergiodxa 33-rule guide added Feb 2026 — 4 PENDING rules, 6 NOT_APPLICABLE
+
+---
+
+## Rule Source Reference
+
+| Guide | Source | Rules | Status |
+|-------|--------|-------|--------|
+| Guide 1 | https://skills.sh/vercel-labs/agent-skills/vercel-react-best-practices | 57 rules | Fully evaluated (Round 1-23) |
+| Guide 2 | https://skills.sh/softaworks/agent-toolkit/react-dev | TypeScript+React 19 | ALL NOT_APPLICABLE |
+| Guide 3 | https://skills.sh/0xbigboss/claude-code/react-best-practices | Effect patterns | Mostly applied |
+| Guide 4 | https://skills.sh/sergiodxa/agent-skills/frontend-react-best-practices | 33 rules | 4 PENDING, 6 N/A (added Feb 2026) |

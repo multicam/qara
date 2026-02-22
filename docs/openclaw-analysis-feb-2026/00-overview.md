@@ -33,7 +33,7 @@
                   ▼                 ▼                  ▼
           ┌──────────────┐  ┌─────────────┐  ┌──────────────┐
           │ AGENT RUNTIME│  │   PLUGINS   │  │    MEMORY    │
-          │ Pi Agent Core│  │  38 exts    │  │ SQLite + Vec │
+          │ Pi Agent Core│  │  50+ exts   │  │ SQLite + Vec │
           │ Tool/Skill   │  │  Hook sys   │  │  LanceDB    │
           │ Sandbox      │  │  Routes     │  │  Embeddings  │
           └──────┬───────┘  └─────────────┘  └──────────────┘
@@ -66,15 +66,48 @@ openclaw/
 │   ├── infra/               ← Process mgmt, networking, security
 │   ├── telegram/            ← Telegram-specific integration
 │   ├── slack/               ← Slack-specific integration
+│   ├── acp/                 ← Agent Communication Protocol support
+│   ├── auto-reply/          ← Automated reply logic
+│   ├── browser/             ← Browser control integration
+│   ├── canvas-host/         ← Canvas host service
+│   ├── link-understanding/  ← Link preview & parsing
+│   ├── media-understanding/ ← Media analysis pipeline
+│   ├── node-host/           ← Node host management
+│   ├── pairing/             ← Device pairing flows
+│   ├── providers/           ← Model provider abstractions
+│   ├── shared/              ← Cross-module shared utilities
+│   ├── terminal/            ← Terminal integration
+│   ├── tui/                 ← Terminal UI components
+│   ├── web/                 ← Web-facing endpoints
+│   ├── wizard/              ← Setup wizard flows
 │   └── ...                  ← Discord, Signal, WhatsApp, etc.
 │
-├── extensions/              ← 38 plugin packages
+├── extensions/              ← Plugin packages (channel + utility)
 │   ├── voice-call/          ← Voice calling
 │   ├── memory-core/         ← Memory engine
 │   ├── memory-lancedb/      ← Vector storage
-│   └── [channels, auth...]  ← Channel & auth plugins
+│   ├── feishu/              ← Feishu/Lark channel
+│   ├── matrix/              ← Matrix channel
+│   ├── msteams/             ← Microsoft Teams channel
+│   ├── nextcloud-talk/      ← Nextcloud Talk channel
+│   ├── nostr/               ← Nostr protocol channel
+│   ├── tlon/                ← Tlon/Urbit channel
+│   ├── twitch/              ← Twitch channel
+│   ├── zalo/                ← Zalo channel
+│   ├── zalouser/            ← Zalo user channel
+│   ├── bluebubbles/         ← BlueBubbles (iMessage) channel
+│   ├── llm-task/            ← LLM task utility extension
+│   ├── lobster/             ← Lobster utility extension
+│   ├── thread-ownership/    ← Thread ownership tracking
+│   ├── diagnostics-otel/    ← OpenTelemetry diagnostics
+│   ├── copilot-proxy/       ← GitHub Copilot proxy auth
+│   ├── google-antigravity-auth/   ← Google Antigravity auth
+│   ├── google-gemini-cli-auth/    ← Google Gemini CLI auth
+│   ├── minimax-portal-auth/       ← MiniMax portal auth
+│   ├── qwen-portal-auth/          ← Qwen portal auth
+│   └── [other channels, auth...]  ← Additional channel & auth plugins
 │
-├── skills/                  ← 50+ bundled AI skills
+├── skills/                  ← 53 bundled AI skills
 │   ├── coding-agent/        ← Code generation
 │   ├── github/              ← GitHub ops
 │   ├── spotify-player/      ← Spotify control
@@ -82,9 +115,13 @@ openclaw/
 │
 ├── apps/                    ← Native apps
 │   ├── macos/ + ios/        ← Swift/SwiftUI
+│   ├── shared/OpenClawKit/  ← Shared Swift package (macOS + iOS)
 │   └── android/             ← Kotlin
 │
+├── Swabble/                 ← Swift voice-wake package
+├── packages/                ← Bot packages (clawdbot, moltbot)
 ├── ui/                      ← Web control panel (React)
+├── docs.acp.md              ← Agent Communication Protocol docs
 └── openclaw.mjs             ← Entry point
 ```
 
@@ -145,4 +182,4 @@ openclaw/
 
 ---
 
-**TL;DR** — OpenClaw is a locally-hosted AI gateway. Messages arrive from any channel (WhatsApp, Telegram, Slack, etc.), get routed through the gateway to an AI agent backed by your choice of model, with 50+ skills and 38 extensions for tools, memory, and platform integrations. Everything runs on your machine.
+**TL;DR** — OpenClaw is a locally-hosted AI gateway. Messages arrive from any channel (WhatsApp, Telegram, Slack, etc.), get routed through the gateway to an AI agent backed by your choice of model, with 53 skills and a growing extension library (channel adapters, auth providers, and utility plugins) for tools, memory, and platform integrations. Everything runs on your machine.

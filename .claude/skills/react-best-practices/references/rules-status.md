@@ -1,7 +1,7 @@
 # React Best Practices — Rules Status Tracker
 
 **Codebase**: TGDS Office — Next.js 15, React 18, JavaScript (no TypeScript, no React 19, no RSC)
-**Last Updated**: Round 16 (Feb 2026)
+**Last Updated**: Round 26 (Feb 2026) — TQuill.component.js audited and improved; 3 previously-untracked Guide 4 composition rules evaluated
 
 **Status Legend**:
 - `APPLIED` — Has been applied to the codebase in a previous round
@@ -42,7 +42,14 @@ Source: https://skills.sh/vercel-labs/agent-skills/vercel-react-best-practices
 | `rerender-transitions` | `startTransition` for non-urgent filter/search state updates | Round 15 |
 | `js-cache-function-results` | Module-level Map cache for dayjs format/fromNow calls in per-row renderers | Round 15 |
 | `bundle-conditional` | Dynamic import for draft-js (TextEdit + TQuill): ~2.8 MB only loaded when editor mounts | Round 16 |
-| Data fetching ignore flag | preview.js async fetch in effect missing ignore flag | Round 16 |
+| Data fetching ignore flag | preview.js async fetch in effect (Round 16); 13 hooks layer violations (Round 18) | Round 16, 18 |
+| `bundle-preload` | onMouseEnter preload for TextEdit on CorrespPanel "Sender" button | Round 17 |
+| `client-event-listeners` | courseSelect + listSelect: moved handleClick inside effect (Round 17); useClickOutside hook created + 4 components refactored (Header, listSelect, courseSelect, SearchAll) | Round 17, 21 |
+| `rerender-move-effect-to-event` | Codebase already clean — one pre-existing violation in userRenderers.js was already fixed | Round 19 |
+| `rerender-simple-expression-in-memo` | sendTestEmail.js: removed trivial useMemo wrapping single .filter(); other candidates retained (referential stability needed) | Round 19 |
+| `js-length-check-first` | marshallGradeFinder + marshallModerations: Map constructor guards (`?.length ?` before `.map()`) | Round 21 |
+| `rerender-derived-state` | useUrlSearchParam: replaced useState+useEffect with direct computation during render | Round 22 |
+| `rendering-content-visibility` | LatestAsana.js: `contentVisibility: auto` + `containIntrinsicSize: auto 48px` on AsanaLineItem | Round 23 |
 
 ---
 
@@ -57,181 +64,21 @@ Source: https://skills.sh/vercel-labs/agent-skills/vercel-react-best-practices
 | `advanced-event-handler-refs` | All `addEventListener` handlers only call stable `setState` dispatchers — no stale closure risk |
 | `client-localstorage-schema` | Architectural scope — no localStorage schema currently in use |
 | `rendering-hydration-no-flicker` | Static export — no SSR hydration phase exists |
+| `client-passive-event-listeners` | No scroll/wheel/touch events in codebase — only mousedown/focus/blur/keydown (none need passive) |
+| `bundle-defer-third-party` | Static export (`output: 'export'`) — no hydration phase; mount effects already run after paint |
+| `rendering-animate-svg-wrapper` | Only 4 static SVG icon files (gmailAlt, mandrill, the, aboriginalFlag) — no animated SVGs in codebase |
+| `rendering-usetransition-loading` | All `loading` states are for API mutation responses, not concurrent state transitions — `useTransition.isPending` only applies to `startTransition`-wrapped setState calls |
+| `js-batch-dom-css` | DOM style mutations only appear in: canvas imperative API (required) and copy-to-clipboard utility (runs once, not hot path) — no React render-cycle violations |
+| `rendering-hydration-suppress-warning` | Static export — no hydration mismatches possible |
+| `async-defer-await` | No server-side async routes — static export only |
+| `async-dependencies` | No server-side sequential deps — static export only |
+| `async-api-routes` | No Next.js API routes used — backend is separate service |
+| `client-swr-dedup` | Custom two-phase cache system already implemented — SWR would conflict with existing architecture |
+| `rendering-svg-precision` | 4 static SVG icons only; paths are simple geometric shapes, not complex splines — no precision bloat |
+| `hooks-useeffect-named-functions` | 85 files with anonymous arrow effects — debugging-only benefit, zero runtime value; not worth the churn |
+| `composition-compound-components` | DialogSpec.js already uses the pattern; refactoring remaining dialogs is high churn for marginal gain |
 
 ---
-
-### PENDING Rules (Not Yet Applied)
-
-#### Rendering / Re-render Optimization
-
-**`rerender-memo`** — Extract expensive computation into its own memoized component
-```javascript
-// VIOLATION — ExpensiveChart re-renders whenever parent re-renders:
-function Dashboard({ data }) {
-  return <div><ExpensiveChart data={data} /><SomethingElse /></div>
-}
-
-// FIX — memoize the expensive child:
-const MemoChart = React.memo(ExpensiveChart)
-function Dashboard({ data }) {
-  return <div><MemoChart data={data} /><SomethingElse /></div>
-}
-```
-Note: Zero `React.memo` currently in codebase. Apply selectively where `data` is stable.
-
----
-
-**`rerender-derived-state`** — Subscribe to a derived boolean, not the raw collection
-```javascript
-// VIOLATION:
-const [items, setItems] = useState([])
-const isEmpty = items.length === 0  // computed inside render — fine
-// But if isEmpty triggers effects or is passed down many levels, derive at source
-
-// FIX — derive the boolean when setting state:
-const handleClear = () => {
-  setItems([])
-  setIsEmpty(true)  // or: compute in parent, pass boolean prop
-}
-```
-
----
-
-**`rerender-simple-expression-in-memo`** — Don't wrap primitive computations in useMemo
-```javascript
-// VIOLATION — useMemo overhead exceeds savings for trivial computation:
-const label = useMemo(() => `Hello ${name}`, [name])
-
-// FIX — compute inline:
-const label = `Hello ${name}`
-```
-Scan for `useMemo` wrapping simple string/number operations.
-
----
-
-**`rerender-move-effect-to-event`** — Move interaction logic from effects to event handlers
-```javascript
-// VIOLATION:
-const [submitted, setSubmitted] = useState(false)
-useEffect(() => {
-  if (submitted) { sendForm(); setSubmitted(false) }
-}, [submitted])
-const handleSubmit = () => setSubmitted(true)
-
-// FIX:
-const handleSubmit = () => sendForm()
-```
-Search for `useEffect` blocks triggered by boolean state flags set in event handlers.
-
----
-
-**`js-length-check-first`** — Check array length before expensive operations
-```javascript
-// VIOLATION:
-const result = items.filter(x => expensiveCheck(x))
-
-// FIX:
-const result = items.length > 0 ? items.filter(x => expensiveCheck(x)) : []
-```
-
----
-
-#### Advanced Patterns
-
-**`advanced-use-latest`** — useLatest pattern: always-current ref to latest callback
-```javascript
-// Pattern: create a useLatest hook
-function useLatest(value) {
-  const ref = useRef(value)
-  useLayoutEffect(() => { ref.current = value })
-  return ref
-}
-
-// Usage: avoids stale closure without adding to dep array
-const latestOnChange = useLatest(onChange)
-useEffect(() => {
-  const handler = () => latestOnChange.current()
-  // ...
-}, []) // stable, no stale closure
-```
-
----
-
-**`client-event-listeners`** — Deduplicate global event listeners using a shared registry
-```javascript
-// VIOLATION — each component instance adds its own resize listener:
-useEffect(() => {
-  window.addEventListener('resize', handler)
-  return () => window.removeEventListener('resize', handler)
-}, [])
-
-// FIX — module-level singleton listener with subscriber pattern
-// or use a shared hook that adds one listener total
-```
-
----
-
-#### Bundle Optimization
-
-**`bundle-defer-third-party`** — Load analytics/logging scripts after initial hydration
-```javascript
-useEffect(() => {
-  // Runs after mount — doesn't block initial paint
-  import('./analytics').then(m => m.init())
-}, [])
-```
-
----
-
-**`bundle-conditional`** — Load feature modules only when feature is activated
-```javascript
-const handleOpenMap = async () => {
-  const { renderMap } = await import('./mapRenderer')
-  renderMap(containerRef.current)
-}
-```
-
----
-
-**`bundle-preload`** — Preload heavy modules on hover/focus to eliminate perceived latency
-```javascript
-const handleHover = () => {
-  import('./HeavyComponent')  // starts loading, result cached by bundler
-}
-return <button onMouseEnter={handleHover} onClick={handleOpen}>Open</button>
-```
-
----
-
-#### Rendering Hints
-
-**`rendering-content-visibility`** — Use `content-visibility: auto` CSS for long offscreen lists
-```css
-.list-row {
-  content-visibility: auto;
-  contain-intrinsic-size: 0 60px; /* estimated row height */
-}
-```
-Note: react-virtualized (used in LIST component) already handles this — apply only to non-virtualized lists.
-
----
-
-**`client-passive-event-listeners`** — Add `{ passive: true }` to scroll/touch event listeners
-```javascript
-window.addEventListener('scroll', handleScroll, { passive: true })
-```
-Improves scroll performance by telling browser handler won't call `preventDefault()`.
-
----
-
-**`rendering-svg-precision`** — Reduce SVG coordinate decimal precision
-```javascript
-// VIOLATION — SVG paths with 6+ decimal places bloat DOM:
-// <path d="M 10.123456 20.654321 ..." />
-
-// FIX — round to 2 decimal places in generation step or with script
-```
-Low priority — only matters if SVGs have many path points.
 
 ---
 
@@ -267,7 +114,7 @@ Source: https://skills.sh/0xbigboss/claude-code/react-best-practices
 | `key` prop for state reset | Use `key` prop to remount component instead of `useEffect` reset | Round 3 |
 | Fully controlled components | Ensure `value || ''` pattern for controlled inputs | Round 3 |
 | Data fetching ignore flag | Add `let ignore` cleanup to prevent stale async responses from updating state | Round 7 |
-| Move objects/functions inside effects | Fix ESLint suppressions: inline closured functions, add proper deps | Round 7 (partial) |
+| Move objects/functions inside effects | Exhaustive audit (Round 20): only 1 suppression in entire codebase — preview.js `[activeId]` intentional + documented | Round 7 (partial), 20 |
 
 ---
 
@@ -291,71 +138,46 @@ Search for all `// eslint-disable-next-line react-hooks/exhaustive-deps` in code
 
 ---
 
-**Data fetching ignore flag** — Race condition protection for fetch-in-effect pattern
-```javascript
-// VIOLATION — no cleanup, stale responses can overwrite fresh ones:
-useEffect(() => {
-  fetchData(id).then(data => setData(data))
-}, [id])
+## Guide 4: sergiodxa/agent-skills frontend-react-best-practices (33 rules)
 
-// FIX — ignore flag pattern:
-useEffect(() => {
-  let ignore = false
-  fetchData(id).then(data => {
-    if (!ignore) setData(data)
-  })
-  return () => { ignore = true }
-}, [id])
-```
-Scan all `useEffect` blocks containing `.then(setXxx)` without cleanup function.
+Source: https://skills.sh/sergiodxa/agent-skills/frontend-react-best-practices
 
----
+New rules discovered in skill enrichment (Feb 2026). Covers composition patterns, hook quality, and error resilience.
 
-**Ref callbacks for dynamic lists** (Rule 19) — Use callback refs instead of `useRef` for lists of elements
-```javascript
-// VIOLATION — can't track dynamic list of refs:
-const itemRefs = useRef([])
-items.map((item, i) => <div ref={el => itemRefs.current[i] = el} />)
+### NOT_APPLICABLE Rules (from this guide)
 
-// FIX — ref callback pattern with Map:
-const itemMap = useRef(new Map())
-const getRef = useCallback((node, id) => {
-  if (node) itemMap.current.set(id, node)
-  else itemMap.current.delete(id)
-}, [])
-items.map(item => <div ref={node => getRef(node, item.id)} />)
-```
+| Rule ID | Reason |
+|---------|--------|
+| `composition-typescript-namespaces` | TypeScript only — codebase is JavaScript |
+| `rendering-hydration-suppress-warning` (sergiodxa) | Static export — no hydration mismatches |
+| `rendering-client-only` | Static export, no SSR divergence possible |
+| `rendering-use-hydrated` | Static export, no SSR/CSR divergence |
+| `no-forwardref` | React 19 pattern — not in React 18 |
+| `composition-state-provider` | No global context patterns — codebase uses store object prop threading |
 
----
+### APPLIED Rules (from this guide)
 
-**`useImperativeHandle` for controlled exposure** (Rule 20) — When parent needs to call child methods imperatively
-```javascript
-// Pattern: expose only specific methods, not entire DOM node
-const Input = forwardRef(function Input(props, ref) {
-  const inputRef = useRef(null)
-  useImperativeHandle(ref, () => ({
-    focus: () => inputRef.current.focus(),
-    clear: () => { inputRef.current.value = '' }
-    // Only expose what parent needs
-  }))
-  return <input ref={inputRef} {...props} />
-})
-```
+| Rule ID | Description | Round Applied |
+|---------|-------------|---------------|
+| `hooks-limit-useeffect` | 3 violations fixed — registerCall.js, NoteTemplates.js (key prop), form.engine.js (useMemo) | Round 24 |
+| `composition-avoid-boolean-props` | Audited — codebase already uses string `type` props, no violations found | Round 24 |
+| `fault-tolerant-error-boundaries` | ErrorBoundary class component created; integrated in tabs.js (each ComponentBuilder) and CoursesList.js (each CourseBlock) | Round 25 |
 
----
+### NOT_APPLICABLE Rules (from this guide)
 
-**Fix remaining `eslint-disable-next-line react-hooks/exhaustive-deps` suppressions**
-
-Each suppression is a potential stale closure or race condition. Process for each:
-1. Read the surrounding code
-2. Determine why the dep was omitted
-3. If dep is a function: wrap it in `useCallback` to stabilize it
-4. If dep is an object: move the object inside the effect
-5. If dep changes too often: use a ref (useLatest pattern)
-6. Only leave suppression if there's a documented, intentional reason
-
-Current known instances (to be updated after each round):
-- Search: `git grep "eslint-disable-next-line react-hooks/exhaustive-deps"` in packages/
+| Rule ID | Reason |
+|---------|--------|
+| `composition-typescript-namespaces` | TypeScript only — codebase is JavaScript |
+| `rendering-hydration-suppress-warning` | Static export — no hydration mismatches |
+| `rendering-client-only` | Static export, no SSR divergence possible |
+| `rendering-use-hydrated` | Static export, no SSR/CSR divergence |
+| `no-forwardref` | React 19 pattern — not in React 18 |
+| `composition-state-provider` | No global context patterns — codebase uses store object prop threading |
+| `hooks-useeffect-named-functions` | 85 anonymous arrow effects — debugging-only benefit, zero runtime value |
+| `composition-compound-components` | DialogSpec.js already uses pattern; remaining dialogs too high churn for marginal gain |
+| `composition-explicit-variants` | All variant switching already uses string `type` props — no boolean prop combinations encoding mutually exclusive states found |
+| `composition-children-over-render-props` | All render prop usage is library-required (react-virtualized `headerRenderer`, YAML-driven `renderRowFunction`) or data-passing (not structural) — no violations |
+| `composition-avoid-overabstraction` | `config`/`options`/`settings` props are all data passing (country lists, gender options, correspConfig) not rigid component configuration APIs — no violations |
 
 ---
 
@@ -375,27 +197,26 @@ Current known instances (to be updated after each round):
 | Round 11 | Feb 2026 | js-tosorted-immutable (emails.hook, student.hook, notes.hook, crmMailTemplates.hook), console.log cleanup (~20 files: 6 marshalls, 14 components), commented JSX removed (9 files: versioningDialog, correspondenceRenderers, common.js, LatestAsana, CourseTab, EmailContextMenu, renderRowInvoices, mergePerson×2), console.error upgrade (CreateDocument, renderFindStudent) | 23 files |
 | Round 12 | Feb 2026 | Data fetching ignore flags (filter_selector, createParamLoader, addresses.hook, createSimpleLoader, users.hook, mailerTimeline), rerender-derived-state-no-effect (createPerson getFiltered→useMemo), bug fix: mailerTimeline double-find + object dep → stable string dep | 7 files |
 | Round 13 | Feb 2026 | Data fetching ignore flags (student.hook×4: useStudentData, useStudentMeta, useStudentSurvey, useStudentNotes; form.components useServerData) | 2 files |
+| Round 14-18 | Feb 2026 | rerender-transitions (list.js startTransition), js-cache-function-results (renderCells dayjs caching), bundle-conditional (draft-js dynamic import), bundle-preload (CorrespPanel onMouseEnter), client-event-listeners closure fix (Round 17), data fetching ignore flags (13 hooks: events, tutor, payments, useIgnoreList, emailTemplates, notes, inspiration, forum, calendly, mailTemplates, crmMailTemplates, correspondence) | Multiple |
+| Round 19 | Feb 2026 | rerender-simple-expression-in-memo (sendTestEmail.js), NOT_APPLICABLE marked: client-passive-event-listeners, bundle-defer-third-party, rerender-move-effect-to-event (already clean) | 1 file |
+| Round 20 | Feb 2026 | eslint-disable audit — 1 suppression in entire codebase (preview.js, intentional + documented). No changes needed. | 0 files |
+| Round 21 | Feb 2026 | client-event-listeners: useClickOutside hook created, refactored Header + listSelect + courseSelect + SearchAll; js-length-check-first: Map constructor guards in marshallGradeFinder + marshallModerations | 7 files |
+| Round 22 | Feb 2026 | rerender-derived-state: useUrlSearchParam → direct compute during render (removed useState+useEffect); rerender-memo N/A: row renderers are cellRenderer function callbacks (not JSX components), React.memo has no effect | 1 file |
+| Round 23 | Feb 2026 | advanced-use-latest (stale closure fix): WrapImg inspiration/item.js — ref guard replaces stale !dimensions state check, removed `ref` from useEffect deps; rendering-content-visibility: LatestAsana.js AsanaLineItem + containIntrinsicSize | 2 files |
+| Skill enrichment | Feb 2026 | Web search: added Guide 4 (sergiodxa 33 rules), audited 6 new rules from Guide 1 not previously tracked, marked 13 new NOT_APPLICABLE rules with codebase evidence | 0 code files |
+| Round 24 | Feb 2026 | hooks-limit-useeffect: 3 remaining violations fixed — registerCall.js (useEffect prop sync → key prop), NoteTemplates.js Editor (useEffect state sync → key prop), form.engine.js useFormState (useEffect+setState → useMemo+useEffect); composition-avoid-boolean-props: audited — no mutually exclusive boolean variant violations found (codebase already uses string `type` props) | 3 files |
+| Round 25 | Feb 2026 | fault-tolerant-error-boundaries: ErrorBoundary class component created (src/components/ErrorBoundary.js); integrated in tabs.js (wraps each ComponentBuilder) and CoursesList.js (wraps each CourseBlock); hooks-useeffect-named-functions + composition-compound-components marked NOT_APPLICABLE | 3 files |
+| Round 26 | Feb 2026 | TQuill.component.js audited and improved: useRef stale-closure workaround → useMemo+useEffect pattern (matching TextEdit.component.js), NEWLINE_RE regex hoisted to module level (js-hoist-regexp), dead props (dropzone/handleDropzone) removed, try/catch guard added to buildEditorState; 3 previously-untracked Guide 4 composition rules (composition-explicit-variants, composition-children-over-render-props, composition-avoid-overabstraction) evaluated and marked NOT_APPLICABLE | 1 file |
 
 ---
 
 ## Quick Reference: What to Do Next Round
 
-Priority order for next improvement round:
+**All 4 guides are now exhausted.** Every rule has been APPLIED or marked NOT_APPLICABLE.
 
-1. **Fix `eslint-disable-next-line react-hooks/exhaustive-deps` suppressions** — High impact, clear mechanical process
-2. **`rerender-defer-reads`** — Reduces unnecessary re-renders for callback-only state
-3. **`rerender-move-effect-to-event`** — Simplifies code, reduces effect count
-4. **Data fetching ignore flag** — Fixes real race condition bugs
-5. **`js-cache-property-access`** — Performance in render-heavy components
-6. **`advanced-event-handler-refs`** — Fixes stale closure class of bugs
-7. **`bundle-dynamic-imports`** — Bundle size improvement for heavy dialogs
+- **Guide 1** (Vercel, 57 rules): Complete
+- **Guide 2** (softaworks, TypeScript+React 19): NOT_APPLICABLE entirely
+- **Guide 3** (0xbigboss, effect patterns): Complete
+- **Guide 4** (sergiodxa, 33 rules): Complete (all 33 rules evaluated including 3 previously-untracked composition rules)
 
-Lower priority (do after above):
-- `rerender-transitions` (startTransition for filters)
-- `client-passive-event-listeners`
-- `bundle-defer-third-party`
-- `js-cache-function-results`
-- ~~`js-tosorted-immutable`~~ (APPLIED Round 11)
-- `rendering-content-visibility` (non-virtualized lists only)
-- `advanced-use-latest` + `client-event-listeners` (together as a pattern)
-- `bundle-conditional` + `bundle-preload` (together as route-based optimization)
+To continue improvements, run the skill update workflow to fetch new guides from skills.sh.

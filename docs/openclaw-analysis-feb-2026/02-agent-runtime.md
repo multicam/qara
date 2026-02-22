@@ -17,6 +17,7 @@ src/agents/
 │   │   ├── payloads.ts              <- Build result payloads from assistant text
 │   │   ├── images.ts                <- Detect/load images for vision models
 │   │   ├── compaction-timeout.ts    <- Snapshot recovery on compaction timeout
+│   │   ├── params.ts                <- ClientToolDefinition for OpenResponses
 │   │   └── types.ts                 <- EmbeddedRunAttemptParams/Result
 │   ├── runs.ts                      <- ACTIVE_EMBEDDED_RUNS registry + waiters
 │   ├── model.ts                     <- resolveModel() — find model in registry
@@ -30,7 +31,15 @@ src/agents/
 │   ├── extra-params.ts              <- Stream param injection
 │   ├── tool-split.ts                <- Built-in vs custom tool separation
 │   ├── tool-result-context-guard.ts <- Overflow detection per tool result
-│   └── tool-result-truncation.ts    <- Truncate oversized results
+│   ├── tool-result-truncation.ts    <- Truncate oversized results
+│   ├── abort.ts                     <- Abort signal coordination for runs
+│   ├── cache-ttl.ts                 <- Cache TTL annotation helpers
+│   ├── compaction-safety-timeout.ts <- Safety timeout wrapping compaction waits
+│   ├── extensions.ts                <- Pi SDK extension path builder
+│   ├── logger.ts                    <- Run-scoped logger factory
+│   ├── sandbox-info.ts              <- Sandbox metadata extraction
+│   ├── thinking.ts                  <- Thinking-level resolution & fallback
+│   └── wait-for-idle-before-flush.ts <- Idle detection before final flush
 │
 ├── pi-embedded-subscribe.ts                    <- Event handler factory
 ├── pi-embedded-subscribe.handlers.ts           <- Event dispatch switch
@@ -53,7 +62,16 @@ src/agents/
 │   ├── tts-tool.ts                  <- Text-to-speech
 │   ├── web-fetch.ts                 <- URL fetching
 │   ├── web-search.ts                <- Web search
-│   └── whatsapp-actions.ts          <- WhatsApp messaging
+│   ├── whatsapp-actions.ts          <- WhatsApp messaging
+│   ├── agents-list-tool.ts          <- List available agents
+│   ├── agent-step.ts                <- Single-step agent invocation
+│   ├── gateway-tool.ts              <- Direct gateway RPC from within agent
+│   ├── nodes-tool.ts                <- Node registry queries
+│   ├── subagents-tool.ts            <- Subagent management interface
+│   ├── sessions-history-tool.ts     <- Session history retrieval
+│   ├── sessions-list-tool.ts        <- Session enumeration
+│   ├── session-status-tool.ts       <- Session status probe
+│   └── sessions-send-tool.a2a.ts    <- Agent-to-agent session delivery
 │
 ├── sandbox/                         <- Docker execution sandbox
 │   ├── config.ts                    <- resolveSandboxConfigForAgent()
@@ -669,6 +687,69 @@ type SandboxContext = {
 ### Bash Tool Execution (`bash-tools.exec.ts`)
 
 The `exec` tool routes through `runExecProcess()`. For sandboxed runs, commands are executed inside the Docker container. For elevated (host) mode, they go through `executeNodeHostCommand()`.
+
+---
+
+## Subagent System
+
+OpenClaw supports a first-class subagent model where a parent agent can spawn, track, and receive results from child agents across sessions.
+
+### Registry (`subagent-registry.ts` family)
+
+```
+src/agents/subagents/
+├── subagent-registry.ts           <- Core registry: register, resolve, update state
+├── subagent-registry.persistence.ts  <- SQLite-backed persistence of subagent records
+├── subagent-registry.cleanup.ts   <- TTL-based cleanup of completed/abandoned entries
+├── subagent-registry.queries.ts   <- Query helpers (by parent, by status, by session)
+└── subagent-registry.completion.ts <- Completion tracking + parent notification
+```
+
+### Lifecycle Files
+
+| File | Purpose |
+|---|---|
+| `subagent-announce.ts` | Broadcasts subagent creation/completion events to gateway clients |
+| `subagent-depth.ts` | Enforces a maximum nesting depth to prevent unbounded recursion |
+| `subagent-spawn.ts` | Entry point for spawning a new subagent: validates depth, registers, enqueues run |
+
+### Flow
+
+```
+Parent agent calls sessions-spawn-tool or subagents-tool
+         |
+         v
+subagent-spawn.ts
+  +- Check nesting depth via subagent-depth.ts
+  +- Register in subagent-registry.ts
+  +- Enqueue runEmbeddedPiAgent() for child session
+  +- subagent-announce.ts -> broadcast "subagent.spawned" event
+         |
+  Child agent runs (same runtime, separate session lane)
+         |
+  On completion:
+  +- subagent-registry.completion.ts records result
+  +- subagent-announce.ts -> broadcast "subagent.ended" event
+  +- Parent session is notified (can steer or continue)
+```
+
+---
+
+## Additional Model Providers
+
+The following model providers have been added to the Pi SDK model registry or supported via inline config:
+
+| Provider | Notes |
+|---|---|
+| **Chutes** | Distributed inference provider |
+| **MiniMax VLM** | Chinese multimodal LLM provider (vision + language) |
+| **BytePlus / Doubao** | ByteDance's model API (Doubao series) |
+| **Venice** | Privacy-focused inference API |
+| **Together** | Together AI inference platform |
+| **AWS Bedrock (discovery)** | Auto-discovers available Bedrock models from the caller's AWS account |
+| **Opencode Zen** | Opencode's Zen model variant |
+
+These providers are configured under `cfg.models.providers[]` or registered via `resolveModel()` inline config path (see Model Resolution in the Model Selection section above).
 
 ---
 

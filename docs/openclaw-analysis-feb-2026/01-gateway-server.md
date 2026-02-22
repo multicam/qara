@@ -31,9 +31,15 @@ src/gateway/
 ├── server-methods.ts          — handleGatewayRequest() + coreGatewayHandlers registry
 ├── server-methods-list.ts     — Method + event name lists
 ├── server-methods/            — One file per method domain (chat, config, nodes, ...)
+│   │                            Domains include: push, voicewake, web, wizard, usage, browser
+│   │                            (in addition to existing chat, config, nodes, sessions, ...)
 ├── method-scopes.ts           — RBAC scope definitions + authorization logic
 ├── auth.ts                    — authorizeGatewayConnect() — multi-mode auth
 ├── auth-rate-limit.ts         — IP-based rate limiter
+├── control-plane-rate-limit.ts — Extracted control-plane write-method rate limiter
+├── exec-approval-manager.ts   — Centralized exec approval lifecycle manager
+├── server-lanes.ts            — Session/global lane management (extracted)
+├── server-mobile-nodes.ts     — Mobile node connection handling
 ├── hooks.ts                   — Hook config resolution + payload normalization
 ├── server-channels.ts         — createChannelManager() — channel lifecycle
 ├── server-chat.ts             — createAgentEventHandler() — chat event pipeline
@@ -46,6 +52,19 @@ src/gateway/
 ├── protocol/                  — Schema, validators, error codes, frame types
 └── (other: cron, discovery, tailscale, node-registry, plugins, ...)
 ```
+
+---
+
+## Additional HTTP Endpoints
+
+Beyond the WebSocket upgrade handler and plugin HTTP routes, the gateway exposes two compatibility HTTP endpoints:
+
+| File | Path | Description |
+|---|---|---|
+| `server-methods/openai-http.ts` | `POST /v1/chat/completions` | OpenAI-compatible chat completions with SSE streaming. Allows any OpenAI client to talk to OpenClaw directly. |
+| `server-methods/openresponses-http.ts` | `POST /v1/responses` | OpenResponses-compatible endpoint, enabling tools that speak the newer `/v1/responses` API format. |
+
+Both endpoints authenticate via the standard gateway token and stream responses using Server-Sent Events (SSE).
 
 ---
 
@@ -252,6 +271,20 @@ export const coreGatewayHandlers: GatewayRequestHandlers = {
 ```
 
 Each handler file exports `{ methodName: async (opts) => void }`. The handler receives `{ req, params, client, isWebchatConnect, respond, context }` (`server-methods/types.ts:97-104`).
+
+### Additional RPC Methods (delta additions)
+
+The following method names have been added to `server-methods-list.ts` and their respective domain handler files:
+
+| Domain | New Methods |
+|---|---|
+| `sessions` | `sessions.preview`, `sessions.patch`, `sessions.compact` |
+| `agents` | `agents.create`, `agents.update`, `agents.delete`, `agents.files.*` |
+| `tts` | `tts.*` (text-to-speech control) |
+| `voicewake` | `voicewake.*` (wake-word configuration and status) |
+| `usage` | `usage.*` (usage statistics and quotas) |
+| `browser` | `browser.request` |
+| `chat` | `chat.history` (previously noted; now formally in domain split) |
 
 ### Dispatch (`server-methods.ts:98-150`)
 
