@@ -194,77 +194,27 @@ Should show: "Your branch is up to date with 'origin/main'"
 
 ## 🔄 COMMON SCENARIOS
 
-### Scenario 1: Committing Multiple Files
+### Amending Last Commit (before push)
 ```bash
-# 1. Check what changed
-git status
-
-# 2. Review all changes
-git diff
-
-# 3. Stage specific files
-git add file1.md file2.ts file3.json
-
-# 4. Verify staged changes
-git diff --cached
-
-# 5. Commit
-git commit -m "feat: add multiple documentation files"
-
-# 6. Verify and push
-git log -1 --stat
-git push origin main
-```
-
-### Scenario 2: Amending Last Commit
-```bash
-# If you forgot something in last commit (before pushing)
 git add forgotten-file.md
 git commit --amend --no-edit
-
-# Or to change the commit message
-git commit --amend -m "fix: corrected commit message"
-
-# Then push (may need force if already pushed)
-git push origin main --force-with-lease
+# If already pushed: git push origin main --force-with-lease
 ```
 
-### Scenario 3: Committing from Wrong Directory
+### Wrong Directory
 ```bash
-# Oh no, I'm in the wrong repo!
-
-# 1. Check where you are
-pwd
-git remote -v
-
-# 2. Stash changes if needed
-git stash
-
-# 3. Navigate to correct repo
-cd /correct/repo/path
-
-# 4. Apply stashed changes (if stashing)
-git stash pop
-
-# 5. Proceed with normal workflow
+pwd && git remote -v  # Verify location
+git stash             # Stash changes
+cd /correct/repo      # Navigate
+git stash pop         # Apply changes
 ```
 
-### Scenario 4: Unstaging Files
+### Unstaging / Discarding
 ```bash
-# Unstage specific file
-git reset HEAD file-to-unstage.md
-
-# Unstage all files
-git reset HEAD
-```
-
-### Scenario 5: Discarding Changes
-```bash
-# Discard changes in specific file (DANGEROUS - cannot undo)
-git checkout -- file-to-discard.md
-
-# Discard all uncommitted changes (VERY DANGEROUS)
-git reset --hard HEAD
+git reset HEAD <file>           # Unstage specific file
+git reset HEAD                  # Unstage all
+git checkout -- <file>          # Discard changes (DANGEROUS)
+git reset --hard HEAD           # Discard ALL changes (VERY DANGEROUS)
 ```
 
 ---
@@ -306,41 +256,12 @@ git revert <commit-hash>
 
 ## 📊 STATUS INDICATORS
 
-### Clean Working Directory
-```bash
-$ git status
-On branch main
-Your branch is up to date with 'origin/main'.
-
-nothing to commit, working tree clean
-```
-✅ All changes committed and pushed
-
-### Changes Not Staged
-```bash
-$ git status
-On branch main
-Changes not staged for commit:
-  modified:   file.md
-```
-⚠️ Files modified but not staged (need `git add`)
-
-### Changes Staged
-```bash
-$ git status
-On branch main
-Changes to be committed:
-  modified:   file.md
-```
-⚠️ Files staged but not committed (need `git commit`)
-
-### Commits Not Pushed
-```bash
-$ git status
-On branch main
-Your branch is ahead of 'origin/main' by 1 commit.
-```
-⚠️ Commits made but not pushed (need `git push`)
+| Status output | Meaning | Next action |
+|---|---|---|
+| "nothing to commit, working tree clean" | All done | ✅ |
+| "Changes not staged for commit" | Modified, not staged | `git add` |
+| "Changes to be committed" | Staged, not committed | `git commit` |
+| "Your branch is ahead by N commits" | Committed, not pushed | `git push` |
 
 ---
 

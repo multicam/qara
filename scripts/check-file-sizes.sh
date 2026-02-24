@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # check-file-sizes.sh - Monitor file sizes and flag oversized files
 # Usage: ./scripts/check-file-sizes.sh [--warn-at=400]
 

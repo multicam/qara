@@ -485,9 +485,10 @@ CLI will respect these overrides.
 ### Command not found
 
 ```bash
-# Ensure ~/.local/bin is in PATH
-echo $PATH | grep -q "$HOME/.local/bin" || echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
-source ~/.bashrc
+# Ensure ~/.local/bin is in PATH (add to ~/.zshrc on macOS, ~/.bashrc on Linux)
+SHELL_RC="${ZDOTDIR:-$HOME}/.$(basename "$SHELL")rc"
+echo $PATH | grep -q "$HOME/.local/bin" || echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$SHELL_RC"
+source "$SHELL_RC"
 ```
 
 ### MCP not ready

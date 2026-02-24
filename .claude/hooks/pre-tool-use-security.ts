@@ -49,6 +49,7 @@ const DANGEROUS_PATTERNS: Array<{ pattern: RegExp; risk: string; severity: "bloc
   { pattern: /kubectl.*-n\s*prod/, risk: "kubectl in production namespace", severity: "approve" },
   { pattern: /docker\s+rm\s+-f/, risk: "force remove docker container", severity: "approve" },
   { pattern: /systemctl\s+(stop|restart|disable)/, risk: "system service control", severity: "approve" },
+  { pattern: /launchctl\s+(unload|bootout|disable|remove)/, risk: "macOS service control", severity: "approve" },
 ];
 
 // Patterns that are always blocked

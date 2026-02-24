@@ -165,9 +165,19 @@ cd $PAI_DIR/.claude/hooks && bun test --coverage
 
 5. **Apply fixes** from the report recommendations
 
-6. **Post-fix validation (MANDATORY after any changes):**
+6. **Update all affected documentation (MANDATORY after any changes):**
+   - Update docs that reference changed files, patterns, or architecture
+   - Key docs to check: `macos-fixes.md`, `INSTALL.md`, `TOOLS.md`, `hooks-guide.md`, `delegation-guide.md`, `MEMORY.md`
+   - Update devtools-mcp docs if MCP config changed
+   - Update `settings-mac.json` if `settings.json` changed
+   - If hooks changed: update `hooks-guide.md` and hook test expectations
+   - If agents changed: update CORE skill agent table and `delegation-guide.md`
+   - If skills added/removed: update CORE documentation index
+   - **Do NOT skip this step** — stale docs cause cascading confusion in future sessions
+
+7. **Post-fix validation (MANDATORY after any changes):**
    - Run hook health check: load `hook-test` skill workflow (`${PAI_DIR}/skills/hook-test/workflows/test-and-fix.md`) and execute all 8 steps
    - Run full test suite: `bun run test`
-   - Verify settings sync: `diff ${PAI_DIR}/settings.json ${PAI_DIR}/settings-minimal.json`
+   - Run shell scripts: `scripts/validate-skills.sh`, `scripts/check-references.sh`
    - **Do NOT report success until all validations pass**
    - If validation fails, fix the issue and re-run validation

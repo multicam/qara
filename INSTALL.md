@@ -92,6 +92,10 @@ source ~/.zshrc
 # Create ~/.claude directory
 mkdir -p ~/.claude
 
+# Platform-specific settings:
+# Linux: settings.json is the canonical file
+# macOS: copy settings-mac.json → settings.json, update username in PAI_DIR and PATH
+
 # Link settings
 ln -sf $PAI_DIR/settings.json ~/.claude/settings.json
 
@@ -273,8 +277,6 @@ cargo install fd-find ripgrep ast-grep bat
 | Tool | Purpose | Linux | macOS |
 |------|---------|-------|-------|
 | Gemini CLI | Google's terminal AI agent | `npm install -g @google/gemini-cli` | `npm install -g @google/gemini-cli` |
-| Grok CLI | xAI's terminal agent | [github.com/xai-org/grok](https://github.com/xai-org/grok) | [github.com/xai-org/grok](https://github.com/xai-org/grok) |
-| Ollama | Local LLM server | `curl -fsSL https://ollama.com/install.sh \| sh` | `brew install ollama` |
 
 ### Language Runtimes
 

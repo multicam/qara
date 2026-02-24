@@ -4,159 +4,103 @@
 
 **Platform Note**: This system appears to be running on Linux. This file documents macOS-specific fixes if Qara is used on macOS in the future.
 
-**Last Updated**: 2025-11-19
+**Last Updated**: 2026-02-25
 
 ---
 
-## Current Platform
+## macOS Setup
 
-**Detected OS**: Linux
+Qara runs on both Linux and macOS. The repo is cloned to `~/qara` on both platforms.
 
-If you're running Qara on Linux, you likely don't need this file. Platform-specific Linux issues should be documented here as they arise.
+### Machine-Specific Settings
+
+`settings.json` contains hardcoded paths (`PAI_DIR`, `PATH`). Each machine needs its own copy:
+
+1. **Copy the template** for your platform:
+   - Linux: `settings.json` is the canonical file
+   - macOS: copy `settings-mac.json` to `settings.json` and update username
+
+2. **Create `settings.local.json`** for machine-specific permission overrides (WebFetch domains, etc.)
+
+3. **Symlink**: `~/.claude/settings.json` → `~/qara/.claude/settings.json`
+
+The `settings-mac.json` template includes:
+- macOS-specific `PAI_DIR` (`/Users/<username>/.claude`)
+- Homebrew paths (`/opt/homebrew/bin`, `/opt/homebrew/sbin`)
+- `~/.bun/bin` for bun shebang resolution
+- `diskutil` deny rules instead of Linux `dd`/`mkfs` rules
 
 ---
 
-## macOS-Specific Issues (If Applicable)
+## Platform Differences Handled
 
-### Issue 1: File System Case Sensitivity
+### Shebangs (fixed)
+All shell scripts use `#!/usr/bin/env bash` (portable). On macOS this picks up Homebrew bash 5.x instead of the system bash 3.2.
 
-**Problem**: macOS file system is case-insensitive by default, which can cause git issues.
+### Shell Output (fixed)
+All colored output uses `printf '%b'` instead of `echo -e` (macOS `/bin/echo` doesn't interpret `-e`).
 
-**Solution**:
+### Notifications (handled in code)
+`notification-hook.ts` detects platform:
+- Linux: `notify-send`
+- macOS: `osascript` (display notification)
+
+### Service Control (handled in security hook)
+`pre-tool-use-security.ts` covers both:
+- Linux: `systemctl stop|restart|disable`
+- macOS: `launchctl unload|bootout|disable|remove`
+
+### Browser Paths (handled)
+`browser-detect.mjs` probes platform-specific paths:
+- Linux: `/snap/bin/brave`, `/usr/bin/brave-browser`, etc.
+- macOS: `/Applications/Brave Browser.app/Contents/MacOS/Brave Browser`
+
+The `mcp-config.json` template uses `${BRAVE_PATH}` — replace with your detected path.
+
+---
+
+## macOS-Specific Setup Steps
+
+### 1. Xcode Command Line Tools
 ```bash
-# Check if using case-sensitive filesystem
-diskutil info / | grep "File System"
-
-# If needed, create case-sensitive volume for development
-# (Requires APFS or HFS+)
-```
-
-### Issue 2: Command Line Tools
-
-**Problem**: Some commands require Xcode Command Line Tools.
-
-**Solution**:
-```bash
-# Install Xcode Command Line Tools
 xcode-select --install
-
-# Verify installation
-xcode-select -p
 ```
 
-### Issue 3: Homebrew Path Issues
-
-**Problem**: Homebrew installs to different locations on Intel vs Apple Silicon.
-
-**Solution**:
+### 2. Homebrew
 ```bash
-# Intel Macs
-export PATH="/usr/local/bin:$PATH"
-
-# Apple Silicon Macs (M1/M2/M3)
-export PATH="/opt/homebrew/bin:$PATH"
-
-# Add to ~/.zshrc or ~/.bashrc
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
 
-### Issue 4: File Permissions
-
-**Problem**: macOS may restrict access to certain directories.
-
-**Solution**:
+### 3. Homebrew PATH (Apple Silicon)
+Add to `~/.zshrc`:
 ```bash
-# Grant Full Disk Access to Terminal/IDE
-# System Preferences → Security & Privacy → Full Disk Access
-# Add Terminal.app or VS Code
+eval "$(/opt/homebrew/bin/brew shellenv)"
 ```
+
+### 4. CLI Tools
+```bash
+brew install oven-sh/bun/bun fd ripgrep ast-grep bat gh
+```
+
+### 5. Full Disk Access
+System Settings → Privacy & Security → Full Disk Access → add Terminal/IDE
 
 ---
 
-## Linux-Specific Issues
+## Cross-Platform Rules
 
-### Issue 1: Missing Dependencies
-
-**Problem**: Some packages may not be installed by default.
-
-**Solution**:
-```bash
-# Ubuntu/Debian
-sudo apt-get update
-sudo apt-get install git curl build-essential
-
-# Fedora/RHEL
-sudo dnf install git curl gcc make
-
-# Arch
-sudo pacman -S git curl base-devel
-```
-
-### Issue 2: Permissions
-
-**Problem**: Need permissions for ~/.claude directory.
-
-**Solution**:
-```bash
-# Ensure proper ownership
-chown -R $USER:$USER ~/.claude
-
-# Ensure executability for scripts
-chmod +x ~/.claude/bin/**/*.ts
-```
-
----
-
-## Cross-Platform Considerations
-
-### Path Separators
-```typescript
-// ✅ Good: Use path module
-import { join } from 'path';
-const filePath = join(dir, file);
-
-// ❌ Bad: Hardcoded separators
-const filePath = dir + '/' + file;  // Breaks on Windows
-```
-
-### Line Endings
-```bash
-# Configure git to handle line endings
-git config --global core.autocrlf input  # Linux/macOS
-git config --global core.autocrlf true   # Windows
-```
-
-### Shell Scripts
-```bash
-#!/usr/bin/env bash
-# ✅ Portable shebang
-
-#!/bin/bash
-# ❌ May not work if bash is elsewhere
-```
-
----
-
-## Future Additions
-
-**As issues arise, document them here with:**
-1. Problem description
-2. Platform affected
-3. Solution/workaround
-4. Related commands or configuration
+| Do | Don't |
+|---|---|
+| `#!/usr/bin/env bash` | `#!/bin/bash` |
+| `printf '%b\n'` for colored output | `echo -e` |
+| `import { join } from 'path'` | Hardcoded `/` separators |
+| `process.platform` checks for OS-specific code | Assume Linux |
+| `~/.zshrc` in docs (default on macOS) | `~/.bashrc` only |
 
 ---
 
 ## Related Documentation
 
-- **stack-preferences.md** - Development tools and preferences
-- **cli-first-guide.md** - CLI tool best practices and implementation
-- **testing-guide.md** - Cross-platform testing considerations
-
----
-
-**Key Takeaways:**
-1. This system is currently on Linux
-2. Document platform-specific issues as they arise
-3. Prefer cross-platform solutions when possible
-4. Use path modules and portable shebangs
-5. Test on target platforms before deploying
+- **stack-preferences.md** - Tool choices
+- **INSTALL.md** - Full installation guide with platform matrix
+- **TOOLS.md** - CLI tool preference matrix

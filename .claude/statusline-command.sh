@@ -1,5 +1,5 @@
 
-#!/bin/bash
+#!/usr/bin/env bash
 # Claude Code statusline with two-line design and semantic color theory
 #
 # Line 1: Repo/code context (cool blues/cyans)

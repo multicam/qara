@@ -1,12 +1,8 @@
 {
   "mcpServers": {
-    "ollama": {
-      "command": "bun",
-      "args": ["run", "${PAI_DIR}/mcp-servers/ollama/index.ts"],
-      "env": {
-        "OLLAMA_URL": "http://localhost:11434",
-        "OLLAMA_DEFAULT_MODEL": "qwen3-vl:latest"
-      }
+    "brave-devtools": {
+      "command": "npx",
+      "args": ["chrome-devtools-mcp-for-brave@latest"]
     }
   }
 }

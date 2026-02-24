@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # common.sh - Shared variables and functions for Qara scripts
 #
 # Usage: source "$(dirname "${BASH_SOURCE[0]}")/lib/common.sh"
@@ -17,17 +17,17 @@ NC='\033[0m' # No Color
 
 # Print success message
 success() {
-    echo -e "${GREEN}✓${NC} $1"
+    printf '%b✓%b %s\n' "$GREEN" "$NC" "$1"
 }
 
 # Print error message
 error() {
-    echo -e "${RED}✗${NC} $1"
+    printf '%b✗%b %s\n' "$RED" "$NC" "$1"
 }
 
 # Print warning message
 warn() {
-    echo -e "${YELLOW}⚠${NC} $1"
+    printf '%b⚠%b %s\n' "$YELLOW" "$NC" "$1"
 }
 
 # Ensure a directory exists

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Pre-commit hook for Qara repository
 # Runs quality checks before allowing commits
 #
@@ -24,7 +24,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-echo -e "${YELLOW}Running Qara pre-commit checks...${NC}"
+printf '%b\n' "${YELLOW}Running Qara pre-commit checks...${NC}"
 echo ""
 
 ERRORS=0
@@ -32,9 +32,9 @@ ERRORS=0
 # Check 1: Validate skill structure
 echo -n "Checking skill structure... "
 if PAI_DIR="$PAI_DIR" "$REPO_ROOT/scripts/validate-skills.sh" > /dev/null 2>&1; then
-    echo -e "${GREEN}✓${NC}"
+    printf '%b\n' "${GREEN}✓${NC}"
 else
-    echo -e "${RED}✗${NC}"
+    printf '%b\n' "${RED}✗${NC}"
     echo "  Run: ./scripts/validate-skills.sh for details"
     ERRORS=$((ERRORS + 1))
 fi
@@ -42,40 +42,40 @@ fi
 # Check 2: Check for broken references (warning only, don't block)
 echo -n "Checking references... "
 if PAI_DIR="$PAI_DIR" "$REPO_ROOT/scripts/check-references.sh" > /dev/null 2>&1; then
-    echo -e "${GREEN}✓${NC}"
+    printf '%b\n' "${GREEN}✓${NC}"
 else
-    echo -e "${YELLOW}⚠ (warnings)${NC}"
+    printf '%b\n' "${YELLOW}⚠ (warnings)${NC}"
     # Don't increment ERRORS - just warn
 fi
 
 # Check 3: Ensure no .env files are being committed
 echo -n "Checking for .env files... "
 if git diff --cached --name-only | grep -q "\.env$"; then
-    echo -e "${RED}✗${NC}"
+    printf '%b\n' "${RED}✗${NC}"
     echo "  ERROR: Attempting to commit .env file!"
     ERRORS=$((ERRORS + 1))
 else
-    echo -e "${GREEN}✓${NC}"
+    printf '%b\n' "${GREEN}✓${NC}"
 fi
 
 # Check 4: Ensure settings.json is not being committed
 echo -n "Checking for settings.json... "
 if git diff --cached --name-only | grep -q "settings\.json$"; then
-    echo -e "${RED}✗${NC}"
+    printf '%b\n' "${RED}✗${NC}"
     echo "  ERROR: Attempting to commit settings.json!"
     echo "  Use settings.json.example instead"
     ERRORS=$((ERRORS + 1))
 else
-    echo -e "${GREEN}✓${NC}"
+    printf '%b\n' "${GREEN}✓${NC}"
 fi
 
 echo ""
 
 if [ $ERRORS -gt 0 ]; then
-    echo -e "${RED}Pre-commit checks failed with $ERRORS error(s)${NC}"
+    printf '%b\n' "${RED}Pre-commit checks failed with $ERRORS error(s)${NC}"
     echo "Fix the issues above or use --no-verify to skip"
     exit 1
 else
-    echo -e "${GREEN}All pre-commit checks passed${NC}"
+    printf '%b\n' "${GREEN}All pre-commit checks passed${NC}"
     exit 0
 fi

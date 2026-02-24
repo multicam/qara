@@ -183,5 +183,4 @@ await agent.task({ instructions: spotcheckPackage });
 
 ## Related Documentation
 
-- **delegation-guide.md** - Complete delegation patterns (includes parallelization)
-- **agent-guide.md** - Agent hierarchy and capabilities
+- **`.claude/context/delegation-guide.md`** - Agent selection, parallel execution, escalation paths

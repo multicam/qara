@@ -4,14 +4,14 @@
       "command": "chrome-devtools-mcp",
       "args": [
         "--executablePath",
-        "/snap/bin/brave",
+        "${BRAVE_PATH}",
         "--isolated",
         "--viewport",
         "1920x1080",
         "--acceptInsecureCerts",
         "--no-usage-statistics",
         "--logFile",
-        "/tmp/chrome-devtools-mcp.log",
+        "${TMPDIR:-/tmp}/chrome-devtools-mcp.log",
         "--channel",
         "stable"
       ],

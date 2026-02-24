@@ -58,6 +58,7 @@ env:
 | Definitions | `MY_DEFINITIONS.md` | "JM's definition of X", "what does JM mean by" |
 | Security | `security-protocols.md` | "API keys", "repo safety", "secrets management" |
 | Tool preferences | `TOOLS.md` | "which CLI tool for", "fd vs find", "bat vs cat" |
+| Delegation | `.claude/context/delegation-guide.md` | "which agent", "delegate", "parallel agents", "escalation" |
 
 **Skills (on-demand):**
 - `hook-authoring` skill → hook creation

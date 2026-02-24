@@ -18,7 +18,8 @@
 | JS packages | `bun` | `npm/yarn/pnpm` | 15x install |
 | Python packages | `uv` | `pip` | 10-100x |
 | Benchmarking | `hyperfine` | `time` | Statistical |
-| Semantic code | `ast-grep` | `grep` | AST-aware |
+| Semantic code | `ast-grep` (`sg`) | `grep` | AST-aware |
+| GitHub ops | `gh` | browser | Native CLI, scriptable |
 | Fuzzy finder | `fzf` | - | Interactive |
 
 ---
@@ -56,14 +57,14 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 - gh (GitHub CLI), ast-grep, markdownlint-cli2
 
 **AI Agents:**
-- Claude Code (primary), Gemini CLI, Grok CLI, Ollama (local)
+- Claude Code (primary), Gemini CLI
 
 ---
 
 ## Quick Verification
 
 ```bash
-fd --version && rg --version && sd --version && bat --version && eza --version && delta --version && hyperfine --version
+fd --version && rg --version && sd --version && bat --version && eza --version && delta --version && hyperfine --version && sg --version && gh --version
 ```
 
 ---

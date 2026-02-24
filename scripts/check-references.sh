@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # check-references.sh - Verify all .md references in skills resolve correctly
 # Usage: ./scripts/check-references.sh [--verbose]
 
