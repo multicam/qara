@@ -245,6 +245,5 @@ if (process.argv[1] && resolve(process.argv[1]) === resolve(__filename)) {
     console.log(formatUrlConfig(config));
   } catch (error) {
     console.error('Error:', error.message);
-    process.exit(1);
   }
 }

@@ -87,7 +87,7 @@ Summarize what was done:
 
 ### Currently PENDING — Priority Order
 
-After 23 rounds, Guide 1 (Vercel 57 rules) is fully exhausted. Remaining candidates come from Guide 4 (sergiodxa) and Guide 3 (0xbigboss).
+After 26 rounds, Guides 1-4 are fully exhausted. Remaining candidates come from Guide 5 (Shu Ding — bulletproof React components).
 
 ---
 
@@ -223,8 +223,8 @@ useEffect(() => {
 - **Pages Router**: No `'use client'` directives needed or wanted
 - **Blueprint.js**: Component props follow Blueprint API, not HTML5
 - **`useCallback` audit**: Zero `React.memo` in codebase — most `useCallback` wrappers are currently useless (see MEMORY.md note from Feb 2026)
-- **Guide 1 exhausted**: All 57 Vercel rules have been evaluated. 32 applied, 18 N/A, 7 remaining low-priority pending
-- **Guide 4 active**: sergiodxa 33-rule guide added Feb 2026 — 4 PENDING rules, 6 NOT_APPLICABLE
+- **Guides 1-4 exhausted**: All rules evaluated across 26 rounds
+- **Guide 5 active**: Shu Ding bulletproof components (10 rules) — 4 PENDING: instance-proof (useId), composition-proof (no cloneElement), portal-proof (ownerDocument), future-proof (useMemo semantics)
 
 ---
 
@@ -235,4 +235,5 @@ useEffect(() => {
 | Guide 1 | https://skills.sh/vercel-labs/agent-skills/vercel-react-best-practices | 57 rules | Fully evaluated (Round 1-23) |
 | Guide 2 | https://skills.sh/softaworks/agent-toolkit/react-dev | TypeScript+React 19 | ALL NOT_APPLICABLE |
 | Guide 3 | https://skills.sh/0xbigboss/claude-code/react-best-practices | Effect patterns | Mostly applied |
-| Guide 4 | https://skills.sh/sergiodxa/agent-skills/frontend-react-best-practices | 33 rules | 4 PENDING, 6 N/A (added Feb 2026) |
+| Guide 4 | https://skills.sh/sergiodxa/agent-skills/frontend-react-best-practices | 33 rules | Complete (Round 24-26) |
+| Guide 5 | https://shud.in/thoughts/build-bulletproof-react-components | 10 rules | 4 PENDING, 6 N/A (added Feb 2026) |

@@ -199,7 +199,7 @@ export async function detectReactGrab(projectPath = process.cwd()) {
 }
 
 /**
- * CLI usage — outputs JSON, exits non-zero if not ready
+ * CLI usage — outputs JSON, always exits 0 (check result.ready for status)
  */
 const __filename = fileURLToPath(import.meta.url);
 if (process.argv[1] && resolve(process.argv[1]) === resolve(__filename)) {
@@ -208,12 +208,7 @@ if (process.argv[1] && resolve(process.argv[1]) === resolve(__filename)) {
   try {
     const result = await detectReactGrab(projectPath);
     console.log(JSON.stringify(result, null, 2));
-
-    if (!result.ready) {
-      process.exit(1);
-    }
   } catch (error) {
-    console.error('Error:', error.message);
-    process.exit(1);
+    console.log(JSON.stringify({ ready: false, error: error.message }));
   }
 }

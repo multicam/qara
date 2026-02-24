@@ -301,16 +301,14 @@ if (process.argv[1] && resolve(process.argv[1]) === resolve(__filename)) {
     } else if (command === 'health') {
       const url = process.argv[3] || 'http://localhost:8000';
       const healthy = await checkServerHealth(url);
-      process.exit(healthy ? 0 : 1);
+      console.log(healthy ? 'healthy' : 'unhealthy');
     } else {
       console.log('Usage:');
       console.log('  node server-lifecycle.mjs start [project-path]');
       console.log('  node server-lifecycle.mjs stop [project-path]');
       console.log('  node server-lifecycle.mjs health [url]');
-      process.exit(1);
     }
   } catch (error) {
     console.error('Error:', error.message);
-    process.exit(1);
   }
 }

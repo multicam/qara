@@ -29,13 +29,18 @@ const MCP_CONFIG_PATH = resolve(
 );
 
 /**
- * Known MCP server names for DevTools
+ * Known MCP server names for DevTools (checked first, then pattern fallback)
  */
 const DEVTOOLS_SERVER_NAMES = [
   'brave-devtools',
   'chrome-devtools',
   'devtools',
 ];
+
+/**
+ * Pattern to match custom DevTools server names (e.g. "my-devtools", "chromium-devtools")
+ */
+const DEVTOOLS_NAME_PATTERN = /devtools|chrome-devtools-mcp/i;
 
 /**
  * Resolve SKILL_DIR from this file's location
@@ -78,14 +83,24 @@ async function checkServerConfigured() {
       };
     }
 
-    const serverName = DEVTOOLS_SERVER_NAMES.find(
+    // Check exact names first, then fall back to pattern match
+    let serverName = DEVTOOLS_SERVER_NAMES.find(
       name => config.mcpServers[name]
     );
 
     if (!serverName) {
+      // Pattern fallback: match any server name containing "devtools" or using chrome-devtools-mcp command
+      serverName = Object.keys(config.mcpServers).find(name => {
+        if (DEVTOOLS_NAME_PATTERN.test(name)) return true;
+        const server = config.mcpServers[name];
+        return server?.command === 'chrome-devtools-mcp';
+      });
+    }
+
+    if (!serverName) {
       return {
         passed: false,
-        error: `No DevTools server configured. Looking for: ${DEVTOOLS_SERVER_NAMES.join(', ')}`,
+        error: `No DevTools server configured. Looking for: ${DEVTOOLS_SERVER_NAMES.join(', ')} (or any name matching /devtools/i)`,
         fix: 'Add a DevTools MCP server to config (see docs/setup.md)',
       };
     }
@@ -165,10 +180,10 @@ function checkConnection() {
       stdio: ['pipe', 'pipe', 'ignore'],
     });
 
-    // Look for devtools server in connected state
+    // Look for devtools server in connected state (exact names + pattern)
     const hasDevTools = DEVTOOLS_SERVER_NAMES.some(name =>
       result.includes(name)
-    );
+    ) || DEVTOOLS_NAME_PATTERN.test(result);
 
     const isConnected =
       hasDevTools &&
@@ -334,12 +349,7 @@ if (process.argv[1] && resolve(process.argv[1]) === resolve(__filename)) {
     const isReact = process.argv.includes('--react');
     const results = await verifyMcpSetup({ isReact });
     console.log(formatVerificationResults(results));
-
-    if (!results.ready) {
-      process.exit(1);
-    }
   } catch (error) {
     console.error('Verification failed:', error.message);
-    process.exit(1);
   }
 }

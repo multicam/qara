@@ -210,13 +210,102 @@ New rules discovered in skill enrichment (Feb 2026). Covers composition patterns
 
 ---
 
+## Guide 5: Shu Ding — Build Bulletproof React Components (10 rules)
+
+Source: https://shud.in/thoughts/build-bulletproof-react-components
+
+Covers defensive component patterns: SSR safety, hydration, instance isolation, concurrent rendering, composition, portals, view transitions, activity preservation, data leaks, and useMemo semantics.
+
+### NOT_APPLICABLE Rules (from this guide)
+
+| Rule ID | Reason |
+|---------|--------|
+| `bulletproof-server-proof` | Static export — no SSR, browser APIs safe during render |
+| `bulletproof-hydration-proof` | Static export — no hydration phase, no flash possible |
+| `bulletproof-concurrent-proof` | `React.cache()` is React 19 server feature |
+| `bulletproof-transition-proof` | `<ViewTransition>` is React 19 feature |
+| `bulletproof-activity-proof` | `<Activity>` is React 19 feature |
+| `bulletproof-leak-proof` | `experimental_taintUniqueValue` is React 19 server experimental API |
+
+### PENDING Rules (from this guide)
+
+**`bulletproof-instance-proof`** — Use `useId()` for unique DOM IDs instead of hardcoded strings. Hardcoded IDs break when the same component renders multiple times on a page.
+```javascript
+// VIOLATION — hardcoded ID:
+<label htmlFor="theme-toggle">Theme</label>
+<input id="theme-toggle" type="checkbox" />
+
+// FIX — useId for stable, unique IDs per instance:
+const id = useId()
+<label htmlFor={id}>Theme</label>
+<input id={id} type="checkbox" />
+```
+Scan: `packages/next/src/` for hardcoded `id=` props on form elements (`<input>`, `<select>`, `<textarea>`, `<label>`). Only flag IDs used for `htmlFor`/`aria-*` associations, not CSS-only IDs.
+
+---
+
+**`bulletproof-composition-proof`** — Use React Context instead of `React.cloneElement()` for sharing values down a subtree. `cloneElement` breaks with Server Components, `React.lazy()`, and `"use cache"`.
+```javascript
+// VIOLATION:
+function Provider({ theme, children }) {
+  return React.cloneElement(children, { theme })
+}
+
+// FIX — Context:
+const ThemeContext = createContext(null)
+function Provider({ theme, children }) {
+  return <ThemeContext.Provider value={theme}>{children}</ThemeContext.Provider>
+}
+```
+Scan: `packages/next/src/` for `cloneElement` or `React.cloneElement` usage.
+
+---
+
+**`bulletproof-portal-proof`** — Use `ref.current.ownerDocument.defaultView` instead of bare `window` for event listeners in components that may render inside portals, pop-out windows, or iframes.
+```javascript
+// VIOLATION:
+useEffect(() => {
+  window.addEventListener('keydown', handler)
+  return () => window.removeEventListener('keydown', handler)
+}, [])
+
+// FIX:
+useEffect(() => {
+  const win = ref.current?.ownerDocument.defaultView || window
+  win.addEventListener('keydown', handler)
+  return () => win.removeEventListener('keydown', handler)
+}, [])
+```
+Scan: `packages/next/src/` for `window.addEventListener` inside useEffect. Only flag components that could plausibly render in portals (dialogs, tooltips, popovers).
+
+---
+
+**`bulletproof-future-proof`** — Do not rely on `useMemo` for correctness. `useMemo` is a performance hint — React may discard cached values. If correctness depends on a value persisting, use `useState` with explicit update logic.
+```javascript
+// VIOLATION — correctness depends on stable memo:
+const colors = useMemo(() => generatePalette(seed), [seed])
+// React can discard this — colors may regenerate unexpectedly
+
+// FIX — state for correctness:
+const [colors, setColors] = useState(() => generatePalette(seed))
+const [prevSeed, setPrevSeed] = useState(seed)
+if (seed !== prevSeed) {
+  setPrevSeed(seed)
+  setColors(generatePalette(seed))
+}
+```
+Scan: `packages/next/src/` for `useMemo` calls where the memoized value has side effects if regenerated (e.g., random IDs, crypto keys, one-time computations). Most `useMemo` for derived data is fine — only flag cases where cache invalidation would cause a bug.
+
+---
+
 ## Quick Reference: What to Do Next Round
 
-**All 4 guides are now exhausted.** Every rule has been APPLIED or marked NOT_APPLICABLE.
+**Guide 5 added** with 4 PENDING rules from Shu Ding's bulletproof components article.
 
 - **Guide 1** (Vercel, 57 rules): Complete
 - **Guide 2** (softaworks, TypeScript+React 19): NOT_APPLICABLE entirely
 - **Guide 3** (0xbigboss, effect patterns): Complete
-- **Guide 4** (sergiodxa, 33 rules): Complete (all 33 rules evaluated including 3 previously-untracked composition rules)
+- **Guide 4** (sergiodxa, 33 rules): Complete
+- **Guide 5** (Shu Ding, 10 rules): 4 PENDING, 6 NOT_APPLICABLE
 
-To continue improvements, run the skill update workflow to fetch new guides from skills.sh.
+Next round should scan for: hardcoded DOM IDs (`bulletproof-instance-proof`), `cloneElement` usage (`bulletproof-composition-proof`), bare `window` listeners in portal-capable components (`bulletproof-portal-proof`), and correctness-dependent `useMemo` (`bulletproof-future-proof`).

@@ -244,12 +244,7 @@ if (process.argv[1] && resolve(process.argv[1]) === resolve(__filename)) {
   try {
     const config = await detectDevConfig(projectPath);
     console.log(JSON.stringify(config, null, 2));
-
-    if (!config.detected) {
-      process.exit(1);
-    }
   } catch (error) {
-    console.error('Error:', error.message);
-    process.exit(1);
+    console.log(JSON.stringify({ detected: false, error: error.message }));
   }
 }

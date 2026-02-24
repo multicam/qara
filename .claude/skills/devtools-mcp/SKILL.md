@@ -58,5 +58,15 @@ Follow user instructions using the tools above. No predefined sequence.
 ### Component Debug (requires --grab / react-grab MCP)
 1. navigate_page → 2. list_console_messages → 3. User selects element → 4. get_element_context → 5. Read source file:line → 6. Propose fix
 
+### Restart (Browser)
+When user says "restart":
+1. Read `.mcp.json` in the project root to find the `--executablePath` arg (e.g., `/snap/bin/brave`)
+2. Kill any existing browser with `--remote-debugging-port=9222`: `pkill -f 'remote-debugging-port=9222'`
+3. Launch the browser from step 1: `<executablePath> --remote-debugging-port=9222 --user-data-dir=/tmp/chrome-debug <target-url> &`
+4. Wait 2s, then verify the DevTools WebSocket: `curl -s http://localhost:9222/json/version`
+5. Report browser name, PID, and WebSocket URL
+
+**CRITICAL:** NEVER hardcode `google-chrome`. ALWAYS read the executable from `.mcp.json`.
+
 ### Live Test
 Same as any recipe above, but with a live URL (staging/production) instead of localhost. No special handling needed — just use the URL the user provides.

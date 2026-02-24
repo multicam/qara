@@ -170,6 +170,5 @@ if (process.argv[1] && resolve(process.argv[1]) === resolve(__filename)) {
         console.log(JSON.stringify(state, null, 2))
     } catch (e) {
         console.error('Error:', e.message)
-        process.exit(1)
     }
 }

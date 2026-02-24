@@ -128,7 +128,7 @@ function getBrowserVersion(path) {
     const result = execSync(`"${path}" --version`, {
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'ignore'],
-      timeout: 5000,
+      timeout: 10000,
     });
     return result.trim();
   } catch {
@@ -252,25 +252,20 @@ if (process.argv[1] && resolve(process.argv[1]) === resolve(__filename)) {
 
     if (browsers.length === 0) {
       console.log('No browsers found');
-      process.exit(1);
+    } else {
+      console.log(`Found ${browsers.length} browser(s):\n`);
+      browsers.forEach((browser, i) => {
+        console.log(`${i + 1}. ${browser.name}`);
+        console.log(`   Path: ${browser.path}`);
+        if (browser.version) {
+          console.log(`   Version: ${browser.version}`);
+        }
+        console.log();
+      });
     }
-
-    console.log(`Found ${browsers.length} browser(s):\n`);
-    browsers.forEach((browser, i) => {
-      console.log(`${i + 1}. ${browser.name}`);
-      console.log(`   Path: ${browser.path}`);
-      if (browser.version) {
-        console.log(`   Version: ${browser.version}`);
-      }
-      console.log();
-    });
   } else {
     // Find first available browser
     const browser = await detectBrowser();
     console.log(formatBrowserInfo(browser));
-
-    if (!browser.detected) {
-      process.exit(1);
-    }
   }
 }
