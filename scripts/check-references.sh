@@ -44,17 +44,28 @@ while IFS= read -r file; do
         
         # Check if reference exists in likely locations
         found=false
-        
+
         if [[ -f "$dir/$ref" ]]; then
             found=true
         elif [[ -f "$dir/workflows/$ref" ]]; then
             found=true
+        elif [[ -f "$dir/references/$ref" ]]; then
+            found=true
         elif [[ -f "$skill_dir/workflows/$ref" ]]; then
+            found=true
+        elif [[ -f "$skill_dir/references/$ref" ]]; then
             found=true
         elif [[ -f "$PAI_DIR/skills/CORE/$ref" ]]; then
             found=true
         elif [[ -f "$PAI_DIR/skills/CORE/workflows/$ref" ]]; then
             found=true
+        fi
+
+        # Search all skill directories as fallback (handles ../skill-name/ refs)
+        if [[ "$found" == "false" ]]; then
+            if fd -t f "$ref" "$PAI_DIR/skills" --max-depth 4 --quiet 2>/dev/null; then
+                found=true
+            fi
         fi
         
         if [[ "$found" == "false" ]]; then

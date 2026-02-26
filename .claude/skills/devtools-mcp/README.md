@@ -29,7 +29,7 @@ devtools-mcp <command>
 - `live` - Test live staging/production URL
 - `interactive` - Launch Claude with MCP
 
-**Documentation:** See `docs/cli-reference.md` for complete CLI reference.
+**Documentation:** See `docs/cli-reference-commands.md` for complete CLI reference.
 
 ## Quick Start
 
@@ -215,7 +215,7 @@ claude "/devtools interactive"
 - **Network** (2): list_network_requests, get_network_request
 - **Debugging** (5): list_console_messages, get_console_message, take_snapshot, take_screenshot, evaluate_script
 
-See `docs/tools-reference.md` for complete documentation.
+See `docs/tools-reference-actions.md` and `docs/tools-reference-analysis.md` for complete documentation.
 
 ## Complementary to Playwright
 
@@ -230,10 +230,10 @@ Both can coexist in the same project.
 
 ## Documentation
 
-- `docs/setup.md` - Installation and configuration
-- `docs/tools-reference.md` - All 26 MCP tools
-- `docs/examples.md` - Usage examples
-- `docs/troubleshooting.md` - Common issues
+- `docs/setup-install.md` / `setup-config.md` - Installation and configuration
+- `docs/tools-reference-actions.md` / `tools-reference-analysis.md` - All 26 MCP tools
+- `docs/examples-testing.md` / `examples-advanced.md` - Usage examples
+- `docs/troubleshooting-setup.md` / `troubleshooting-browser.md` / `troubleshooting-runtime.md` - Common issues
 
 ## Library Functions
 
@@ -303,7 +303,7 @@ kill -9 <PID>
 # Or change port in package.json
 ```
 
-See `docs/troubleshooting.md` for complete guide.
+See `docs/troubleshooting-setup.md` for complete guide.
 
 ## Contributing
 

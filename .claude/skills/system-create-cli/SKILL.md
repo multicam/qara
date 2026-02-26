@@ -189,7 +189,7 @@ Every generated CLI follows:
 - Decision algorithm for tier selection
 - Real-world examples and recommendations
 
-**READ:** `references/cli-examples.md` for 6 complete examples covering:
+**READ:** `references/cli-examples-basic.md` and `references/cli-examples-advanced.md` for 6 complete examples covering:
 - API clients (GitHub, Notion)
 - File processors (markdown, CSV)
 - Data pipelines (complex workflows)
