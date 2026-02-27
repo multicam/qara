@@ -23,6 +23,7 @@
       "TodoWrite",
       "ExitPlanMode",
       "Task",
+      "Skill",
       "mcp__*"
     ],
     "deny": [
@@ -98,6 +99,18 @@
         ]
       }
     ],
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/post-tool-use.ts",
+            "timeout": 2000
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "hooks": [
@@ -117,6 +130,8 @@
   "enabledPlugins": {},
   "alwaysThinkingEnabled": true,
   "plansDirectory": "thoughts/shared/plans",
+  "skipDangerousModePermissionPrompt": true,
   "showTurnDuration": true,
-  "releaseChannel": "stable"
+  "releaseChannel": "stable",
+  "effortLevel": "high"
 }

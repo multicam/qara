@@ -68,6 +68,14 @@ function getSkillDirs(): string[] {
   });
 }
 
+/** Get only PAI-native skills (not external symlinks) for frontmatter validation */
+function getPAISkillDirs(): string[] {
+  return getSkillDirs().filter((f) => {
+    const fullPath = join(SKILLS_DIR, f);
+    return !lstatSync(fullPath).isSymbolicLink();
+  });
+}
+
 // =============================================================================
 // SECTION 1: Skill Discovery
 // =============================================================================
@@ -119,7 +127,7 @@ describe('SKILL.md Frontmatter', () => {
   });
 
   describe('Required Fields', () => {
-    for (const skillName of getSkillDirs().slice(0, 10)) {
+    for (const skillName of getPAISkillDirs().slice(0, 10)) {
       describe(`${skillName}`, () => {
         let frontmatter: SkillFrontmatter | null;
 
@@ -169,7 +177,7 @@ describe('Context Type Distribution', () => {
   beforeAll(() => {
     contextTypes = { same: [], fork: [], unknown: [] };
 
-    for (const skill of getSkillDirs()) {
+    for (const skill of getPAISkillDirs()) {
       const skillMdPath = join(SKILLS_DIR, skill, 'SKILL.md');
       if (existsSync(skillMdPath)) {
         const content = readFileSync(skillMdPath, 'utf-8');

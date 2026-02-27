@@ -14,7 +14,6 @@ Ask the user which event triggers the hook:
 | SubagentStop | Task agent completes | Agent tracking, coordination |
 | PreToolUse | Before tool execution | Security, validation |
 | PostToolUse | After tool execution | Logging, audit trail |
-| Notification | Alert triggered | External notifications |
 
 ## Step 2: Create the Hook File
 
@@ -65,7 +64,7 @@ Add to `${PAI_DIR}/.claude/settings.json`:
 
 **Timeout guidance:**
 - Most hooks: `500` ms
-- PostToolUse/Notification: `2000` ms (bun startup overhead)
+- PostToolUse/Stop: `2000` ms (bun startup overhead)
 
 ## Step 5: Hook Output Schemas
 

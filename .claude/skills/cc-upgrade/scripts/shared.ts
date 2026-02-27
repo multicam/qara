@@ -40,12 +40,15 @@ export function findFiles(dir: string, ext: string, results: string[] = []): str
 
     for (const file of readdirSync(dir)) {
         const fullPath = join(dir, file);
-        const stat = statSync(fullPath);
-
-        if (stat.isDirectory()) {
-            findFiles(fullPath, ext, results);
-        } else if (file.endsWith(ext)) {
-            results.push(fullPath);
+        try {
+            const stat = statSync(fullPath);
+            if (stat.isDirectory()) {
+                findFiles(fullPath, ext, results);
+            } else if (file.endsWith(ext)) {
+                results.push(fullPath);
+            }
+        } catch {
+            // Skip broken symlinks or inaccessible files
         }
     }
 

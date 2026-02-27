@@ -4,15 +4,18 @@
  * Tests tool usage logging, JSONL output, and graceful error handling.
  */
 
-import { describe, it, expect } from 'bun:test';
-import { existsSync, readFileSync } from 'fs';
+import { describe, it, expect, beforeAll, afterAll } from 'bun:test';
+import { existsSync, readFileSync, mkdirSync, unlinkSync } from 'fs';
 import { join } from 'path';
-import { homedir } from 'os';
+import { tmpdir } from 'os';
 import { spawn } from 'child_process';
 
 const HOOK = join(import.meta.dir, 'post-tool-use.ts');
-const STATE_DIR = join(homedir(), '.claude', 'state');
-const LOG_FILE = join(STATE_DIR, 'tool-usage.jsonl');
+const TEST_STATE_DIR = join(tmpdir(), `post-tool-use-test-${Date.now()}`);
+const LOG_FILE = join(TEST_STATE_DIR, 'state', 'tool-usage.jsonl');
+
+beforeAll(() => mkdirSync(join(TEST_STATE_DIR, 'state'), { recursive: true }));
+afterAll(() => { try { unlinkSync(LOG_FILE); } catch {} });
 
 async function runHook(
   input: object | string,
@@ -21,7 +24,7 @@ async function runHook(
   return new Promise((resolve) => {
     const proc = spawn('bun', ['run', HOOK], {
       cwd: import.meta.dir,
-      env: { ...process.env, ...env },
+      env: { ...process.env, PAI_DIR: TEST_STATE_DIR, ...env },
     });
     let stdout = '', stderr = '';
     proc.stdout.on('data', (d) => { stdout += d.toString(); });

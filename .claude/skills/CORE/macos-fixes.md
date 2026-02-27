@@ -40,11 +40,6 @@ All shell scripts use `#!/usr/bin/env bash` (portable). On macOS this picks up H
 ### Shell Output (fixed)
 All colored output uses `printf '%b'` instead of `echo -e` (macOS `/bin/echo` doesn't interpret `-e`).
 
-### Notifications (handled in code)
-`notification-hook.ts` detects platform:
-- Linux: `notify-send`
-- macOS: `osascript` (display notification)
-
 ### Service Control (handled in security hook)
 `pre-tool-use-security.ts` covers both:
 - Linux: `systemctl stop|restart|disable`

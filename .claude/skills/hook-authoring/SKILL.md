@@ -39,10 +39,6 @@ Examples: "hook not working", "debug hooks", "hook troubleshooting"
 **When:** A subagent (Task) completes
 **Use Cases:** Agent tracking, result capture, coordination
 
-### Notification
-**When:** Notifications are triggered
-**Use Cases:** Alerts, external integrations
-
 ---
 
 ## Hook Configuration

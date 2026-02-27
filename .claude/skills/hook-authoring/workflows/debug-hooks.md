@@ -72,7 +72,7 @@ console.error("debugging...");  // OK - goes to stderr
 
 Default timeout in settings.json:
 - `500` ms for most hooks
-- `2000` ms for PostToolUse/Notification
+- `2000` ms for PostToolUse/Stop
 
 If hook needs more time, increase timeout in settings.json.
 

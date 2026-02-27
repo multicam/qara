@@ -41,7 +41,6 @@ describe('Hook Script Discovery', () => {
     'update-tab-titles.ts',
     'pre-tool-use-security.ts',
     'post-tool-use.ts',
-    'notification-hook.ts',
   ];
 
   for (const hook of requiredHooks) {
@@ -62,7 +61,6 @@ describe('Hook Script Structure', () => {
     'update-tab-titles.ts',
     'pre-tool-use-security.ts',
     'post-tool-use.ts',
-    'notification-hook.ts',
   ];
 
   for (const hookFile of activeHooks) {
@@ -116,7 +114,6 @@ describe('Settings Hook Configuration', () => {
       'UserPromptSubmit',
       'Stop',
       'PostToolUse',
-      'Notification',
     ];
 
     for (const event of requiredEvents) {

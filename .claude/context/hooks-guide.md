@@ -11,7 +11,6 @@ Claude Code hooks in `.claude/hooks/`. All hooks are Bun TypeScript.
 | `update-tab-titles.ts` | UserPromptSubmit | Sets processing indicator |
 | `pre-tool-use-security.ts` | PreToolUse:Bash | Detects dangerous patterns, blocks/approves |
 | `post-tool-use.ts` | PostToolUse | Logs tool execution results for audit trail |
-| `notification-hook.ts` | Notification | Desktop notification on task completion |
 
 ## Shared Utilities
 
@@ -32,4 +31,3 @@ Located in `.claude/hooks/lib/`:
 - `UserPromptSubmit` - When user submits a prompt
 - `PreToolUse` - Before a tool is executed
 - `PostToolUse` - After a tool completes
-- `Notification` - System notifications

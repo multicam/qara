@@ -10,7 +10,7 @@ Run this workflow to validate all PAI hooks and fix common issues.
 ## Step 1: Discover Hooks
 
 Read `${PAI_DIR}/settings.json` and extract all hook configurations.
-For each hook event type (SessionStart, PreToolUse, PostToolUse, UserPromptSubmit, Stop, Notification), find the hook command paths.
+For each hook event type (SessionStart, PreToolUse, PostToolUse, UserPromptSubmit, Stop), find the hook command paths.
 
 ## Step 2: Validate Hook Files
 
@@ -65,7 +65,6 @@ For each hook, spawn it with appropriate mock stdin and check:
 | PostToolUse | `{"tool_name":"Read","tool_input":{},"was_error":false}` | 0 | empty |
 | UserPromptSubmit | `{"session_id":"test","prompt":"hello"}` | 0 | empty (tab title goes to stderr) |
 | Stop | `{"transcript_path":"/tmp/fake","stop_reason":"end_turn"}` | 0 | empty |
-| Notification | `{"stop_reason":"end_turn"}` | 0 | empty |
 
 **Critical:** ANY non-zero exit code is a bug. Report and suggest fix.
 
@@ -110,10 +109,9 @@ Hook Health Report
 | PostToolUse | OK | FIXED | OK | exit 0 | FIXED |
 | UserPromptSubmit | OK | OK | OK | exit 0 | PASS |
 | Stop | OK | OK | OK | exit 0 | PASS |
-| Notification | OK | FIXED | OK | exit 0 | FIXED |
 
 Settings sync: OK
-Total: 6 hooks, 4 pass, 2 fixed, 0 fail
+Total: 5 hooks, 4 pass, 1 fixed, 0 fail
 ```
 
 ## Common Issues Reference

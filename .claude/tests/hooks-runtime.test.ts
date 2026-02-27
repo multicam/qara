@@ -121,41 +121,6 @@ describe('post-tool-use.ts', () => {
 });
 
 // =============================================================================
-// NOTIFICATION HOOK
-// =============================================================================
-
-describe('notification-hook.ts', () => {
-  it('should exit 0 with end_turn stop reason', async () => {
-    const result = await runHook('notification-hook.ts', {
-      stop_reason: 'end_turn',
-    });
-    expect(result.exitCode).toBe(0);
-  });
-
-  it('should exit 0 with tool_use stop reason (no notification)', async () => {
-    const result = await runHook('notification-hook.ts', {
-      stop_reason: 'tool_use',
-    });
-    expect(result.exitCode).toBe(0);
-  });
-
-  it('should exit 0 with empty stdin', async () => {
-    const result = await runHook('notification-hook.ts', '');
-    expect(result.exitCode).toBe(0);
-  });
-
-  it('should exit 0 with malformed JSON', async () => {
-    const result = await runHook('notification-hook.ts', '{broken');
-    expect(result.exitCode).toBe(0);
-  });
-
-  it('should exit 0 with missing stop_reason', async () => {
-    const result = await runHook('notification-hook.ts', {});
-    expect(result.exitCode).toBe(0);
-  });
-});
-
-// =============================================================================
 // STOP HOOK
 // =============================================================================
 
@@ -409,7 +374,6 @@ describe('pre-tool-use-security.ts (regressions)', () => {
 describe('All hooks survive bad PAI_DIR', () => {
   const hookFiles = [
     'post-tool-use.ts',
-    'notification-hook.ts',
     'pre-tool-use-security.ts',
   ];
 
