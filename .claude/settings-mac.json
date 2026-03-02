@@ -5,7 +5,9 @@
     "DA": "Qara",
     "PAI_DIR": "/Users/jmbook/.claude",
     "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "64000",
-    "PATH": "/Users/jmbook/go/bin:/Users/jmbook/.local/bin:/Users/jmbook/.cargo/bin:/Users/jmbook/.bun/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/Users/jmbook/.local/share/mise/shims"
+    "PATH": "/Users/jmbook/go/bin:/Users/jmbook/.local/bin:/Users/jmbook/.cargo/bin:/Users/jmbook/.bun/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/Users/jmbook/.local/share/mise/shims",
+    "API_TIMEOUT_MS": "3000000",
+    "ENABLE_TOOL_SEARCH": "true"
   },
   "permissions": {
     "allow": [
@@ -129,7 +131,7 @@
   },
   "enabledPlugins": {},
   "alwaysThinkingEnabled": true,
-  "plansDirectory": "thoughts/shared/plans",
+  "plansDirectory": "thoughts/repos/qara/shared/plans",
   "skipDangerousModePermissionPrompt": true,
   "showTurnDuration": true,
   "releaseChannel": "stable",

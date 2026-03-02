@@ -186,7 +186,7 @@ After structure approval:
 ### Step 5: Sync and Review
 
 1. **Sync the thoughts directory**:
-   - Run `npx humanlayer thoughts sync` to sync the newly created plan
+   - Run `npx humanlayer thoughts sync` to sync the newly created plan from the repository root
    - This ensures the plan is properly indexed and available
 
 2. **Present the draft plan location**:

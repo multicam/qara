@@ -1,6 +1,6 @@
 # Qara Project Configuration
 
-PATH includes: ~/.local/bin:~/.cargo/bin:/opt/homebrew/bin:/opt/homebrew/sbin:~/.local/share/mise/shims:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:~/qara/node_modules/.bin
+PATH includes: ~/.local/bin:~/.cargo/bin:~/.bun/bin:~/.local/share/mise/shims:/usr/local/bin:/usr/bin:/bin
 
 ## Guides
 

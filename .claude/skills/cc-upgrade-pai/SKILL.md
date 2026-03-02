@@ -96,6 +96,46 @@ PAI uses Universal File-based Context:
 | Size limits | <500 lines per file |
 | Enforcement | MANDATORY/MUST directives |
 
+### 6. External Skills Update
+
+PAI uses symlinked external skills from `~/.agents/skills/`. These need version checking against upstream.
+
+**Managed external skills:**
+
+| Skill | Source | Local Path |
+|-------|--------|------------|
+| visual-explainer | `nicobailon/visual-explainer` | `~/.agents/skills/visual-explainer` |
+
+**Update check:**
+```bash
+# Get local version
+grep 'version:' ~/.agents/skills/visual-explainer/SKILL.md
+
+# Get latest release
+gh api repos/nicobailon/visual-explainer/releases/latest --jq '.tag_name'
+```
+
+**Update procedure (when outdated):**
+```bash
+# Clone latest to temp
+git clone --depth 1 https://github.com/nicobailon/visual-explainer.git /tmp/visual-explainer-update
+
+# Sync files (preserves local .gitignore, removes deleted upstream files)
+rsync -av --delete --exclude='.git' /tmp/visual-explainer-update/ ~/.agents/skills/visual-explainer/
+
+# Cleanup
+rm -rf /tmp/visual-explainer-update
+
+# Verify symlink still works
+ls -la $(readlink -f ~/.claude/skills/visual-explainer)/SKILL.md
+```
+
+**Post-update:** Copy any new prompt templates to commands:
+```bash
+# Check for new prompts not yet in commands/
+diff <(ls ~/.agents/skills/visual-explainer/prompts/) <(ls ~/.claude/commands/ | grep -f <(ls ~/.agents/skills/visual-explainer/prompts/))
+```
+
 ## PAI Compliance Report Format
 
 ```markdown
@@ -163,9 +203,17 @@ cd $PAI_DIR/.claude/hooks && bun test --coverage
 
 4. **Generate combined report** using the format above
 
-5. **Apply fixes** from the report recommendations
+5. **Update external skills** (visual-explainer):
+   ```bash
+   # Check if update available
+   gh api repos/nicobailon/visual-explainer/releases/latest --jq '.tag_name'
+   grep 'version:' ~/.agents/skills/visual-explainer/SKILL.md
+   ```
+   If outdated, run the update procedure from section 6 above.
 
-6. **Update all affected documentation (MANDATORY after any changes):**
+6. **Apply fixes** from the report recommendations
+
+7. **Update all affected documentation (MANDATORY after any changes):**
    - Update docs that reference changed files, patterns, or architecture
    - Key docs to check: `macos-fixes.md`, `INSTALL.md`, `TOOLS.md`, `hooks-guide.md`, `delegation-guide.md`, `MEMORY.md`
    - Update devtools-mcp docs if MCP config changed
