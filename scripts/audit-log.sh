@@ -18,6 +18,7 @@
 #   -t           Show only today's entries
 #   --errors     Show only errors/blocks
 #   --raw        Output raw JSONL without formatting
+#   --summary    Error compaction: frequency table of errors/blocks
 
 set -euo pipefail
 
@@ -32,6 +33,7 @@ SESSION=""
 TODAY_ONLY=false
 ERRORS_ONLY=false
 RAW=false
+SUMMARY=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -40,6 +42,7 @@ while [[ $# -gt 0 ]]; do
     -t) TODAY_ONLY=true; shift ;;
     --errors) ERRORS_ONLY=true; shift ;;
     --raw) RAW=true; shift ;;
+    --summary) SUMMARY=true; shift ;;
     -h|--help)
       head -17 "$0" | tail -15
       exit 0 ;;
@@ -91,7 +94,58 @@ process_log() {
   fi
 }
 
-if [[ "$LOG_TYPE" == "all" ]]; then
+# Error compaction: aggregate errors by type and frequency (Factor 9)
+summarize_log() {
+  local file="$1"
+  local label="$2"
+  if [[ ! -f "$file" ]]; then
+    return 0
+  fi
+
+  local time_filter="."
+  if [[ "$TODAY_ONLY" == true ]]; then
+    local today
+    today=$(date +%Y-%m-%d)
+    time_filter="select(.timestamp | startswith(\"$today\"))"
+  fi
+
+  local total errors
+  total=$(jq -c "$time_filter" "$file" 2>/dev/null | wc -l)
+  errors=$(jq -c "$time_filter | select(.error == true or .decision == \"block\" or .was_error == true)" "$file" 2>/dev/null | wc -l)
+
+  if [[ "$errors" -eq 0 && "$total" -eq 0 ]]; then
+    return 0
+  fi
+
+  echo "$label: $total total, $errors errors"
+
+  if [[ "$errors" -gt 0 ]]; then
+    case "$label" in
+      tools)
+        jq -c "$time_filter | select(.error == true)" "$file" 2>/dev/null \
+          | jq -r '.tool' | sort | uniq -c | sort -rn | head -10 \
+          | while read -r count tool; do
+              printf "  %4d× %s (error)\n" "$count" "$tool"
+            done
+        ;;
+      security)
+        jq -c "$time_filter | select(.decision == \"block\")" "$file" 2>/dev/null \
+          | jq -r '.pattern_matched // .risk // "unknown"' | sort | uniq -c | sort -rn | head -10 \
+          | while read -r count pattern; do
+              printf "  %4d× %s (blocked)\n" "$count" "$pattern"
+            done
+        ;;
+    esac
+  fi
+}
+
+if [[ "$SUMMARY" == true ]]; then
+  echo "=== Error Summary ==="
+  for type in tools security config checkpoints; do
+    file=$(get_log_file "$type") || continue
+    summarize_log "$file" "$type"
+  done
+elif [[ "$LOG_TYPE" == "all" ]]; then
   for type in tools security config checkpoints; do
     file=$(get_log_file "$type") || continue
     if [[ -f "$file" ]]; then
