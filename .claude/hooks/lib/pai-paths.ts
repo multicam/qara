@@ -40,12 +40,13 @@ export const MEMORY_DIR = join(THOUGHTS_DIR, 'memory');
 /**
  * Validate PAI directory structure on first import.
  * Logs warnings but does NOT exit — let the importing hook handle errors gracefully.
+ * Accepts optional params so tests can cover error paths in-process.
  */
-function validatePAIStructure(): void {
-    if (!existsSync(PAI_DIR)) {
-        console.error(`Warning: PAI_DIR does not exist: ${PAI_DIR}`);
-    } else if (!existsSync(HOOKS_DIR)) {
-        console.error(`Warning: PAI hooks directory not found: ${HOOKS_DIR}`);
+export function validatePAIStructure(paiDir: string = PAI_DIR, hooksDir: string = HOOKS_DIR): void {
+    if (!existsSync(paiDir)) {
+        console.error(`Warning: PAI_DIR does not exist: ${paiDir}`);
+    } else if (!existsSync(hooksDir)) {
+        console.error(`Warning: PAI hooks directory not found: ${hooksDir}`);
     }
 }
 
