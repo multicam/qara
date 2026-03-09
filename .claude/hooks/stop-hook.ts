@@ -4,88 +4,39 @@
  * stop-hook.ts
  *
  * Stop event hook - triggered when Qara completes a response.
- * Sets terminal tab title based on the last user query.
+ * Sets terminal tab title based on the assistant's last message.
+ * Uses CC 2.1.x `last_assistant_message` field (no transcript parsing needed).
  */
 
-import { openSync, readSync, readFileSync, fstatSync, closeSync } from 'fs';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { generateTabTitle, setTerminalTabTitle } from './lib/tab-titles';
-
-const TAIL_BYTES = 32_768; // Read last 32KB -- enough for recent user messages
-
-/**
- * Read the last N bytes of a file without loading the whole thing.
- */
-function readTail(filePath: string, bytes: number): string {
-  const fd = openSync(filePath, 'r');
-  try {
-    const { size } = fstatSync(fd);
-    const start = Math.max(0, size - bytes);
-    const len = size - start;
-    const buf = Buffer.alloc(len);
-    readSync(fd, buf, 0, len, start);
-    return buf.toString('utf-8');
-  } finally {
-    closeSync(fd);
-  }
-}
+import { STATE_DIR } from './lib/pai-paths';
+import { appendJsonl } from './lib/jsonl-utils';
+import { getISOTimestamp } from './lib/datetime-utils';
 
 async function main() {
-  // Read input from stdin
-  let transcriptPath: string;
   try {
     const input = readFileSync(0, 'utf-8');
-    if (!input.trim()) {
-      process.exit(0);
-    }
+    if (!input.trim()) process.exit(0);
 
     const parsed = JSON.parse(input);
-    transcriptPath = parsed.transcript_path;
+    const lastMessage = parsed.last_assistant_message;
 
-    if (!transcriptPath) {
-      process.exit(0);
-    }
-  } catch {
-    process.exit(0);
-  }
+    if (!lastMessage) process.exit(0);
 
-  // Read only the tail of the transcript
-  let tail: string;
-  try {
-    tail = readTail(transcriptPath, TAIL_BYTES);
-  } catch {
-    process.exit(0);
-  }
-
-  // Find last user query for tab title
-  const lines = tail.trim().split('\n');
-  let lastUserQuery = '';
-
-  for (let i = lines.length - 1; i >= 0; i--) {
-    try {
-      const entry = JSON.parse(lines[i]);
-      if (entry.type === 'user' && entry.message?.content) {
-        const content = entry.message.content;
-        if (typeof content === 'string') {
-          lastUserQuery = content;
-        } else if (Array.isArray(content)) {
-          for (const item of content) {
-            if (item.type === 'text' && item.text) {
-              lastUserQuery = item.text;
-              break;
-            }
-          }
-        }
-        if (lastUserQuery) break;
-      }
-    } catch {
-      // Skip invalid/partial JSON (first line may be truncated)
-    }
-  }
-
-  // Set tab title
-  if (lastUserQuery) {
-    const title = generateTabTitle(lastUserQuery);
+    const title = generateTabTitle('', lastMessage);
     setTerminalTabTitle(title);
+
+    // Persist session checkpoint for resume capability (Factor 6)
+    appendJsonl(join(STATE_DIR, 'session-checkpoints.jsonl'), {
+      timestamp: getISOTimestamp(),
+      session_id: process.env.CLAUDE_SESSION_ID || 'unknown',
+      stop_reason: parsed.stop_reason || 'unknown',
+      summary: title || lastMessage.substring(0, 200),
+    });
+  } catch {
+    process.exit(0);
   }
 }
 

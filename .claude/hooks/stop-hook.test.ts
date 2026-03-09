@@ -1,16 +1,21 @@
 /**
  * stop-hook.ts tests
  *
- * Tests transcript tail reading, user query extraction, and tab title setting.
+ * Tests last_assistant_message extraction and tab title setting.
  */
 
-import { describe, it, expect, afterEach } from 'bun:test';
-import { writeFileSync, unlinkSync, existsSync } from 'fs';
+import { describe, it, expect, beforeAll, afterAll } from 'bun:test';
+import { existsSync, readFileSync, mkdirSync, unlinkSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { spawn } from 'child_process';
 
 const HOOK = join(import.meta.dir, 'stop-hook.ts');
+const TEST_STATE_DIR = join(tmpdir(), `stop-hook-test-${Date.now()}`);
+const CHECKPOINT_FILE = join(TEST_STATE_DIR, 'state', 'session-checkpoints.jsonl');
+
+beforeAll(() => mkdirSync(join(TEST_STATE_DIR, 'state'), { recursive: true }));
+afterAll(() => { try { unlinkSync(CHECKPOINT_FILE); } catch {} });
 
 async function runHook(
   input: object | string,
@@ -19,7 +24,7 @@ async function runHook(
   return new Promise((resolve) => {
     const proc = spawn('bun', ['run', HOOK], {
       cwd: import.meta.dir,
-      env: { ...process.env, ...env },
+      env: { ...process.env, PAI_DIR: TEST_STATE_DIR, ...env },
     });
     let stdout = '', stderr = '';
     proc.stdout.on('data', (d) => { stdout += d.toString(); });
@@ -30,21 +35,6 @@ async function runHook(
     const timer = setTimeout(() => { proc.kill('SIGTERM'); resolve({ stdout, stderr, exitCode: 124 }); }, 10000);
     proc.on('close', (code) => { clearTimeout(timer); resolve({ stdout, stderr, exitCode: code ?? 1 }); });
   });
-}
-
-const tmpFiles: string[] = [];
-afterEach(() => {
-  for (const f of tmpFiles) {
-    try { if (existsSync(f)) unlinkSync(f); } catch {}
-  }
-  tmpFiles.length = 0;
-});
-
-function writeTmpTranscript(lines: object[]): string {
-  const path = join(tmpdir(), `stop-hook-test-${Date.now()}.jsonl`);
-  writeFileSync(path, lines.map(l => JSON.stringify(l)).join('\n') + '\n');
-  tmpFiles.push(path);
-  return path;
 }
 
 describe('stop-hook.ts', () => {
@@ -59,95 +49,100 @@ describe('stop-hook.ts', () => {
       expect(result.exitCode).toBe(0);
     });
 
-    it('should exit 0 with missing transcript_path', async () => {
-      const result = await runHook({ stop_reason: 'end_turn' });
+    it('should exit 0 with missing last_assistant_message', async () => {
+      const result = await runHook({ stop_reason: 'end_turn', transcript_path: '/tmp/foo.jsonl' });
       expect(result.exitCode).toBe(0);
     });
 
-    it('should exit 0 with nonexistent transcript', async () => {
+    it('should exit 0 with empty last_assistant_message', async () => {
+      const result = await runHook({ last_assistant_message: '' });
+      expect(result.exitCode).toBe(0);
+    });
+  });
+
+  describe('tab title from last_assistant_message', () => {
+    it('should set tab title from assistant message', async () => {
       const result = await runHook({
-        transcript_path: '/tmp/nonexistent-' + Date.now() + '.jsonl',
+        last_assistant_message: 'I fixed the login bug in auth.ts',
       });
       expect(result.exitCode).toBe(0);
+      expect(result.stderr).toContain('\x1b]');
+    });
+
+    it('should handle long assistant messages', async () => {
+      const result = await runHook({
+        last_assistant_message: 'I have completed the refactoring of the authentication module. Here is a summary of all changes made across 12 files including tests and documentation updates.',
+      });
+      expect(result.exitCode).toBe(0);
+      expect(result.stderr).toContain('\x1b]');
+    });
+
+    it('should handle short assistant messages', async () => {
+      const result = await runHook({
+        last_assistant_message: 'Done.',
+      });
+      expect(result.exitCode).toBe(0);
+      // Short messages may not produce meaningful titles but should not crash
+    });
+
+    it('should handle message with markdown formatting', async () => {
+      const result = await runHook({
+        last_assistant_message: '**Fixed** the `authentication` bug in [auth.ts](file)',
+      });
+      expect(result.exitCode).toBe(0);
+      expect(result.stderr).toContain('\x1b]');
+    });
+
+    it('should include stop_hook_active field without issues', async () => {
+      const result = await runHook({
+        last_assistant_message: 'Deployed the new feature to staging',
+        stop_hook_active: false,
+        session_id: 'abc123',
+      });
+      expect(result.exitCode).toBe(0);
+      expect(result.stderr).toContain('\x1b]');
     });
   });
 
-  describe('user query extraction', () => {
-    it('should extract string content from user message', async () => {
-      const path = writeTmpTranscript([
-        { type: 'user', message: { content: 'fix the login bug' } },
-        { type: 'assistant', message: { content: 'Done.' } },
-      ]);
-      const result = await runHook({ transcript_path: path });
-      expect(result.exitCode).toBe(0);
-      // Should set tab title from user query (escape sequences in stderr)
-      expect(result.stderr).toContain('\x1b]');
+  describe('session checkpoint persistence', () => {
+    it('should write checkpoint to JSONL on valid message', async () => {
+      await runHook({
+        last_assistant_message: 'Refactored the auth module',
+        stop_reason: 'end_turn',
+      });
+      await new Promise(r => setTimeout(r, 300));
+
+      expect(existsSync(CHECKPOINT_FILE)).toBe(true);
+      const lines = readFileSync(CHECKPOINT_FILE, 'utf-8').trim().split('\n');
+      const last = JSON.parse(lines[lines.length - 1]);
+      expect(last.timestamp).toBeDefined();
+      expect(last.stop_reason).toBe('end_turn');
+      expect(last.summary).toBeDefined();
     });
 
-    it('should extract text from array content (multimodal format)', async () => {
-      const path = writeTmpTranscript([
-        {
-          type: 'user',
-          message: {
-            content: [
-              { type: 'text', text: 'refactor the auth module' },
-            ],
-          },
-        },
-      ]);
-      const result = await runHook({ transcript_path: path });
-      expect(result.exitCode).toBe(0);
-      expect(result.stderr).toContain('\x1b]');
-    });
-
-    it('should use the LAST user message, not the first', async () => {
-      const path = writeTmpTranscript([
-        { type: 'user', message: { content: 'first message' } },
-        { type: 'assistant', message: { content: 'reply' } },
-        { type: 'user', message: { content: 'second message about deploy' } },
-        { type: 'assistant', message: { content: 'done' } },
-      ]);
-      const result = await runHook({ transcript_path: path });
-      expect(result.exitCode).toBe(0);
-      // Tab title should reflect the last user message
-      expect(result.stderr).toContain('\x1b]');
-    });
-
-    it('should handle transcript with no user messages', async () => {
-      const path = writeTmpTranscript([
-        { type: 'assistant', message: { content: 'Hello' } },
-      ]);
-      const result = await runHook({ transcript_path: path });
-      expect(result.exitCode).toBe(0);
-    });
-
-    it('should handle transcript with invalid JSON lines', async () => {
-      const path = join(tmpdir(), `stop-hook-mixed-${Date.now()}.jsonl`);
-      writeFileSync(path, [
-        'this is not json',
-        JSON.stringify({ type: 'user', message: { content: 'valid query' } }),
-      ].join('\n') + '\n');
-      tmpFiles.push(path);
-
-      const result = await runHook({ transcript_path: path });
-      expect(result.exitCode).toBe(0);
-    });
-  });
-
-  describe('large transcript handling', () => {
-    it('should handle transcripts larger than 32KB by reading only the tail', async () => {
-      // Create a transcript > 32KB with padding then a final user message
-      const padding = Array(500).fill(
-        JSON.stringify({ type: 'assistant', message: { content: 'x'.repeat(100) } })
+    it('should record session_id from environment', async () => {
+      await runHook(
+        { last_assistant_message: 'Fixed the login bug' },
+        { CLAUDE_SESSION_ID: 'checkpoint-test-session' }
       );
-      padding.push(JSON.stringify({ type: 'user', message: { content: 'deploy to staging' } }));
-      const path = join(tmpdir(), `stop-hook-large-${Date.now()}.jsonl`);
-      writeFileSync(path, padding.join('\n') + '\n');
-      tmpFiles.push(path);
+      await new Promise(r => setTimeout(r, 300));
 
-      const result = await runHook({ transcript_path: path });
-      expect(result.exitCode).toBe(0);
-      expect(result.stderr).toContain('\x1b]');
+      const lines = readFileSync(CHECKPOINT_FILE, 'utf-8').trim().split('\n');
+      const last = JSON.parse(lines[lines.length - 1]);
+      expect(last.session_id).toBe('checkpoint-test-session');
+    });
+
+    it('should not write checkpoint when no last_assistant_message', async () => {
+      const before = existsSync(CHECKPOINT_FILE)
+        ? readFileSync(CHECKPOINT_FILE, 'utf-8').trim().split('\n').length
+        : 0;
+      await runHook({ stop_reason: 'end_turn' });
+      await new Promise(r => setTimeout(r, 300));
+
+      const after = existsSync(CHECKPOINT_FILE)
+        ? readFileSync(CHECKPOINT_FILE, 'utf-8').trim().split('\n').length
+        : 0;
+      expect(after).toBe(before);
     });
   });
 });

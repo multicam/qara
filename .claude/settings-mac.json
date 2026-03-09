@@ -64,7 +64,9 @@
     ]
   },
   "enableAllProjectMcpServers": false,
-  "enabledMcpjsonServers": [],
+  "enabledMcpjsonServers": [
+    "brave-devtools"
+  ],
   "hooks": {
     "SessionStart": [
       {
@@ -123,15 +125,29 @@
           }
         ]
       }
+    ],
+    "ConfigChange": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/config-change.ts",
+            "timeout": 500
+          }
+        ]
+      }
     ]
   },
   "statusLine": {
     "type": "command",
     "command": "bash ${PAI_DIR}/statusline-command.sh"
   },
-  "enabledPlugins": {},
+  "enabledPlugins": {
+    "pyright-lsp@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true
+  },
   "alwaysThinkingEnabled": true,
-  "plansDirectory": "thoughts/repos/qara/shared/plans",
+  "plansDirectory": "thoughts/shared/plans",
   "skipDangerousModePermissionPrompt": true,
   "showTurnDuration": true,
   "releaseChannel": "stable",

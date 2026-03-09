@@ -174,9 +174,16 @@
 - **Update Frequency**: Check monthly
 - **Reliability**: Medium-High
 
+#### 24. Claude Code Best Practice
+- **URL**: https://github.com/shanraisshan/claude-code-best-practice
+- **Content**: Community-curated Claude Code best practices and patterns
+- **Key Features**: Best practice guides, configuration examples
+- **Update Frequency**: Check monthly
+- **Reliability**: Medium-High
+
 ### Community Platforms
 
-#### 24. Claude Developers Discord
+#### 25. Claude Developers Discord
 - **URL**: https://humanlayer.dev/discord
 - **Content**: Community discussions, early feature previews
 - **Update Frequency**: Real-time
@@ -188,13 +195,13 @@
 
 ### Architecture & Patterns
 
-#### 25. 12-Factor Agents Repository
+#### 26. 12-Factor Agents Repository
 - **URL**: https://github.com/humanlayer/12-factor-agents
 - **Content**: Agent architecture principles
 - **Relevance**: Design patterns for PAI optimization
 - **Reliability**: High
 
-#### 26. Claude Agent SDK Documentation
+#### 27. Claude Agent SDK Documentation
 - **URL**: https://docs.anthropic.com/en/docs/agent-sdk
 - **Content**: SDK for building custom agents
 - **Relevance**: Advanced PAI integration patterns
@@ -391,8 +398,8 @@ Use this checklist when updating the trusted sources document:
 
 ### Total Sources
 - Previous: 10 sources
-- Current: 26 sources
-- Net gain: 16 sources (+160%)
+- Current: 27 sources
+- Net gain: 17 sources (+170%)
 
 ---
 

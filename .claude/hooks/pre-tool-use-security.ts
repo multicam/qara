@@ -15,7 +15,8 @@ import { getISOTimestamp } from './lib/datetime-utils';
 // Dangerous patterns that require human approval
 const DANGEROUS_PATTERNS: Array<{ pattern: RegExp; risk: string; severity: "block" | "approve" }> = [
   // Filesystem destruction
-  { pattern: /rm\s+(-[rfRF]+\s+)*\/(?!tmp\b)/, risk: "recursive delete from root path", severity: "block" },
+  { pattern: /rm\s+(-[rfRF]+\s+)*\/(?!tmp\b|home\b)/, risk: "recursive delete from root path", severity: "block" },
+  { pattern: /rm\s+(-[rfRF]+\s+)*\/home\b/, risk: "recursive delete from home tree", severity: "approve" },
   { pattern: /rm\s+(-[rfRF]+\s+)*~/, risk: "recursive delete from home directory", severity: "block" },
   { pattern: /rm\s+-rf\s+\$/, risk: "recursive delete with variable expansion", severity: "approve" },
   { pattern: /rm\s+-rf\s+\.\./, risk: "recursive delete parent directory", severity: "block" },

@@ -83,6 +83,8 @@ describe('pre-tool-use-security.ts', () => {
       ['kubectl in prod', 'kubectl get pods -n prod'],
       ['docker rm -f', 'docker rm -f mycontainer'],
       ['systemctl stop', 'systemctl stop nginx'],
+      ['rm -r from /home', 'rm -r /home/user/.agents/skills/old-dir'],
+      ['rm -rf from /home', 'rm -rf /home/user/some/path'],
     ];
 
     for (const [name, cmd] of dangerous) {
