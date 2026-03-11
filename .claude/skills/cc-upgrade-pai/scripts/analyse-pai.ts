@@ -161,8 +161,8 @@ function analyzeHooksConfiguration(paiPath: string): AnalysisResult {
                 results.score += 10;
                 results.findings.push(`OK: Hooks configured in settings.json: ${hookEvents.join(', ')}`);
 
-                const coreEvents = ['PreToolUse', 'PostToolUse', 'SessionStart', 'SessionEnd', 'UserPromptSubmit'];
-                const advancedEvents = ['Setup', 'SubagentStart', 'SubagentStop', 'PreCompact', 'Stop'];
+                const coreEvents = ['PreToolUse', 'PostToolUse', 'SessionStart', 'UserPromptSubmit', 'Stop', 'ConfigChange'];
+                const advancedEvents = ['Setup', 'SubagentStart', 'SubagentStop', 'PreCompact'];
 
                 const missingCoreEvents = coreEvents.filter(e => !hookEvents.includes(e));
 

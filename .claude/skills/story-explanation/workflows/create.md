@@ -1,4 +1,4 @@
-You are executing the story-explanation skill to generate a 3-part narrative story explanation in Daniel's voice.
+You are executing the story-explanation skill to generate a 3-part narrative story explanation in JM's voice.
 
 **🎯 PARSE USER REQUEST:**
 
@@ -71,7 +71,7 @@ Think deeply and extensively about this content:
 5. EMPHASIS OPTIONS - Which elements could be emphasized or de-emphasized?
 6. STRUCTURAL APPROACHES - Chronological? Problem-solution? Comparison?
 7. IMPACT FOCUS - What's the "wow" factor that makes this significant?
-8. CONVERSATIONAL FLOW - How would Daniel explain this to a friend?
+8. CONVERSATIONAL FLOW - How would JM explain this to a friend?
 9. KEY INSIGHTS - What makes readers think "I get it now!"?
 10. BEST FRAMING - Which narrative angle is most compelling?
 
@@ -83,7 +83,7 @@ Consider: What would make someone excited to share this?
 SELECT THE SINGLE BEST FRAMING that:
 - Has the strongest hook
 - Best captures the "wow" factor
-- Would make Daniel most excited to share
+- Would make JM most excited to share
 - Feels most natural in his voice (first person, casual, direct)
 - Makes complex ideas accessible
 </instructions>
@@ -101,7 +101,7 @@ Based on the selected framing, generate the story explanation in three parts:
 - Compelling sentence that sets up the content
 - Use plain descriptors: "interview", "paper", "talk", "article", "post", "blog"
 - Avoid journalistic adjectives: "alarming", "groundbreaking", "shocking", "incredible"
-- First person voice (Daniel's perspective)
+- First person voice (JM's perspective)
 
 **Example:**
 ```
@@ -171,7 +171,7 @@ This is one of those rare ideas that feels both simple and profound - if it's co
 - ✅ Closing delivers "wow" factor without hyperbole
 - ✅ Reads naturally when spoken aloud
 - ✅ Sticks to facts from the content
-- ✅ Feels like Daniel sharing something interesting
+- ✅ Feels like JM sharing something interesting
 
 ## STEP 7: Format Complete Output
 
@@ -231,7 +231,7 @@ Include:
 Present the complete story explanation with:
 - Clear structure (opening → body → closing)
 - Natural conversational flow
-- Daniel's casual, first-person voice
+- JM's casual, first-person voice
 - Line breaks between sentences for readability
 - No section headers in final output (just the narrative)
 
@@ -239,7 +239,7 @@ Present the complete story explanation with:
 - Use UltraThink to explore 5-7 different narrative possibilities
 - Select the SINGLE most compelling framing
 - Output in 3-part format (opening/body/closing)
-- Daniel's voice is critical - casual, first person, direct, genuinely curious
+- JM's voice is critical - casual, first person, direct, genuinely curious
 - Story should feel like telling someone about something interesting you read
 - Avoid cliches, journalistic language, hyperbole
 - Stick to facts - don't extrapolate beyond the input

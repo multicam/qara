@@ -36,7 +36,8 @@ $PAI_DIR/
 │   │   └── lib/           # Hook libraries
 │   └── settings.json
 ├── CLAUDE.md              # Root context
-└── CONSTITUTION.md        # Philosophy doc
+├── CONSTITUTION.md        # Philosophy doc
+└── DECISIONS.md           # Decision log (append-only)
 ```
 
 ### 2. CORE Skill Audit
@@ -142,6 +143,85 @@ ls -la $(readlink -f ~/.claude/skills/visual-explainer)/SKILL.md
 diff <(ls ~/.agents/skills/visual-explainer/prompts/) <(ls ~/.claude/commands/ | grep -f <(ls ~/.agents/skills/visual-explainer/prompts/))
 ```
 
+## Interactive PAI Audit
+
+Extends the base cc-upgrade Interactive Audit with PAI-specific interview questions and deeper code review. Run the base audit first, then this.
+
+### PAI Interview (AskUserQuestion)
+
+**Call 1 — PAI-specific context (2 questions):**
+
+| # | Question | Header | Options |
+|---|----------|--------|---------|
+| 1 | "Which PAI subsystem needs the most attention?" | PAI focus | **Hook system (Recommended)** — hook scripts, libs, event coverage; **CORE skill & routing** — identity, workflow routing, response tiers; **Agent delegation** — agent configs, routing, parallel execution; **Context engineering** — UFC compliance, file sizes, progressive disclosure |
+| 2 | "What triggered this audit?" | Trigger | **Post-cleanup validation** — verify recent deletions/refactors didn't break things; **Capability expansion** — planning to add new hooks/skills/agents; **Debugging** — something is broken or behaving unexpectedly; **Routine maintenance** — periodic health check |
+
+**Call 2 — Deeper diagnostics (1-2 questions, based on Call 1 answers):**
+
+If Hook system selected:
+
+| # | Question | Header | Options | multiSelect |
+|---|----------|--------|---------|-------------|
+| 3 | "Which hook issues have you encountered?" | Hook issues | **Timeout errors** — hooks taking too long; **Silent failures** — hooks exit 0 but don't work; **Stdin parsing** — JSON parse errors or empty input; **Settings desync** — settings.json doesn't match actual hook files | true |
+
+If CORE skill selected:
+
+| # | Question | Header | Options |
+|---|----------|--------|---------|
+| 3 | "What's wrong with CORE routing?" | Routing | **Wrong workflow loads** — triggers match too broadly or too narrowly; **Missing routes** — common requests have no routing; **Stale references** — → READ: points to deleted files; **Context bloat** — CORE loads too much at startup |
+
+If Agent delegation selected:
+
+| # | Question | Header | Options |
+|---|----------|--------|---------|
+| 3 | "What's the delegation pain point?" | Delegation | **Wrong agent chosen** — tasks routed to the wrong specialist; **Agent overlap** — multiple agents could handle the same task; **Missing coverage** — no agent for a needed capability; **Performance** — agents too slow or use too many tokens |
+
+### PAI Code Review Extensions
+
+In addition to the base cc-upgrade code review, perform these PAI-specific checks:
+
+#### CLAUDE.md Compliance
+Read the global CLAUDE.md and verify:
+- Severity levels present (MUST / SHOULD / RECOMMENDED structure)
+- Structured escalation format defined (Problem/Tried/Hypothesis/Need)
+- Two-attempt debug rule has concrete trigger
+- Refactoring isolation rule present
+
+#### DECISIONS.md Health
+Check root `DECISIONS.md`:
+- File exists and follows the template (Chosen/Alternatives/Why/Trade-offs/Revisit if)
+- "Revisit if" conditions — flag any that may now be true
+- No stale entries referencing deleted files or patterns
+
+#### Hook Library Integrity
+Read `.claude/hooks/lib/` files and verify:
+- `pai-paths.ts`: warns on bad paths, never exit(1)
+- `jsonl-utils.ts`: imports ensureDir from pai-paths (no duplicate)
+- `datetime-utils.ts`: pure functions, no side effects
+- `context-graph/`: CLI entry point resolves, no broken imports
+
+#### CORE Skill Routing Validation
+Read CORE's workflow routing table and verify:
+- Every `→ READ:` path resolves to an existing file
+- No duplicate trigger patterns across routes
+- Documentation Index entries all resolve
+- Agent table matches actual `.claude/agents/` contents
+
+### PAI Gap Analysis
+
+Extend the base gap analysis matrix with PAI-specific rows:
+
+```markdown
+| PAI Capability | Expected | Actual | Gap | Priority |
+|----------------|----------|--------|-----|----------|
+| CLAUDE.md severity levels | MUST/SHOULD/RECOMMENDED | ? | | |
+| Decision log | DECISIONS.md exists | ? | | |
+| Hook lib coverage | All 4 libs tested | ? | | |
+| CORE routing integrity | All paths resolve | ? | | |
+| Agent specialization | No overlap | ? | | |
+| External skill versions | Up to date | ? | | |
+```
+
 ## PAI Compliance Report Format
 
 ```markdown
@@ -222,7 +302,7 @@ cd $PAI_DIR/.claude/hooks && bun test --coverage
 7. **Update all affected documentation (MANDATORY after any changes):**
    - Update docs that reference changed files, patterns, or architecture
    - Key docs to check: `delegation-guide.md`, `MEMORY.md`
-   - If `settings.json` changed: update `settings-mac.json` too
+   - If `settings.json` changed: verify symlink at `~/.claude/settings.json` still resolves correctly
    - If hooks changed: update hook-authoring skill and hook test expectations
    - If agents changed: update CORE skill agent table and `delegation-guide.md`
    - If skills added/removed: update CORE documentation index

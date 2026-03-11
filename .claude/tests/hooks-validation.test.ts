@@ -114,6 +114,7 @@ describe('Settings Hook Configuration', () => {
       'UserPromptSubmit',
       'Stop',
       'PostToolUse',
+      'ConfigChange',
     ];
 
     for (const event of requiredEvents) {

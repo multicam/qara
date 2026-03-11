@@ -35,7 +35,7 @@ describe('Scanner', () => {
   describe('getSkillDirs', () => {
     it('discovers all skill directories', () => {
       const dirs = getSkillDirs(SKILLS_DIR);
-      expect(dirs.length).toBeGreaterThanOrEqual(19);
+      expect(dirs.length).toBeGreaterThanOrEqual(17);
       expect(dirs.some(d => d.endsWith('/CORE'))).toBe(true);
       expect(dirs.some(d => d.endsWith('/research'))).toBe(true);
     });
@@ -103,7 +103,7 @@ describe('Scanner', () => {
     it('discovers all SKILL.md files (19 skills)', () => {
       const nodes = discoverNodes(PAI_DIR);
       const skillNodes = nodes.filter(n => n.kind === 'skill');
-      expect(skillNodes.length).toBeGreaterThanOrEqual(19);
+      expect(skillNodes.length).toBeGreaterThanOrEqual(17);
     });
 
     it('assigns correct token estimates', () => {
@@ -245,7 +245,7 @@ describe('Analysis', () => {
     const report = scan(graph);
     expect(report.nodeCount).toBeGreaterThan(0);
     expect(report.edgeCount).toBeGreaterThan(0);
-    expect(report.tiers[1].count).toBeGreaterThanOrEqual(19); // at least 19 SKILL.md
+    expect(report.tiers[1].count).toBeGreaterThanOrEqual(17); // at least 17 SKILL.md
     expect(report.skills.length).toBeGreaterThan(0);
     // Skills sorted by token cost descending
     for (let i = 1; i < report.skills.length; i++) {

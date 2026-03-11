@@ -94,7 +94,7 @@ Use this template structure when writing implementation plans:
 
 ## References
 
-- Original ticket: `thoughts/allison/tickets/eng_XXXX.md`
+- Original spec or plan: `thoughts/shared/plans/[relevant].md`
 - Related research: `thoughts/shared/research/[relevant].md`
 - Similar implementation: `[file:line]`
 ````
@@ -131,6 +131,19 @@ Use this template structure when writing implementation plans:
 - [ ] Error messages are user-friendly
 - [ ] Feature works correctly on mobile devices
 ```
+
+## Multi-Session Phase Files
+
+For work spanning multiple sessions, use phase files in `thoughts/shared/plans/`:
+```
+PHASE-01-active.md   → current work
+PHASE-02-pending.md  → queued
+PHASE-01-done.md     → completed (rename when finished)
+```
+
+Each phase file contains: Goal (one sentence), Tasks (checklist), Acceptance Criteria, Decisions Made.
+
+**Key discipline:** Re-read the active phase file at session start instead of relying on conversation history.
 
 ## Automated Steps Guidelines
 

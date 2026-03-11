@@ -48,7 +48,7 @@ Based on Gemini 3's selected framing and verified technical accuracy, generate t
 - Compelling technical hook in first person
 - Use precise descriptors: "paper", "algorithm", "architecture", "system", "implementation"
 - Set up the technical problem or evolution
-- Daniel's voice: curious, precise, engaged
+- JM's voice: curious, precise, engaged
 
 **Example:**
 ```
@@ -63,7 +63,7 @@ In this seminal paper, Leslie Lamport introduces Paxos, a distributed consensus 
 - **Technical depth**: Include specific algorithms, data structures, system properties
 - **Accessible sophistication**: Technical accuracy WITHOUT unnecessary jargon
 - **Varied sentence length**: 8-20 words, natural rhythm
-- **First person voice**: Daniel explaining something technically fascinating
+- **First person voice**: JM explaining something technically fascinating
 - **No bullet points**: Narrative sentences with line breaks
 - **Stick to facts**: Technical claims must be verifiable
 
@@ -107,7 +107,7 @@ This journey from Paxos to Raft demonstrates that the best algorithms aren't jus
 - ✅ First person perspective ("In this paper, Lamport introduces...")
 - ✅ Technically precise (algorithms, complexities, properties correct)
 - ✅ Casual but sophisticated (accessible without dumbing down)
-- ✅ Genuinely curious about HOW and WHY
+- ✅ Genuinely curious about HOW and WHY (JM's voice)
 - ✅ Explains engineering reasoning, not just facts
 - ✅ Natural conversational tone for technical content
 - ✅ No unnecessary jargon, but technical terms when needed
@@ -239,7 +239,7 @@ Present the complete technical narrative with:
 - Clear technical hook (opening)
 - Detailed technical journey (body)
 - Significant technical insight (closing)
-- Daniel's casual but precise voice
+- JM's casual but precise voice
 - Line breaks between sentences for readability
 - Optional: Inline links to technical sources
 - Optional: Technical metadata (paper citations, implementations)
@@ -264,7 +264,7 @@ Present the complete technical narrative with:
    - Accessible without oversimplification
    - Technical depth without unnecessary jargon
 
-4. **Daniel's Technical Voice:**
+4. **JM's Technical Voice:**
    - First person, curious, engaged
    - Casual explanation of complex concepts
    - Genuine fascination with HOW things work

@@ -27,8 +27,8 @@ Please provide:
 
 I'll analyze this information and work with you to create a comprehensive plan.
 
-Tip: You can also invoke this command with a ticket file directly: `/create_plan thoughts/allison/tickets/eng_1234.md`
-For deeper analysis, try: `/create_plan think deeply about thoughts/allison/tickets/eng_1234.md`
+Tip: You can also invoke this command with a ticket file directly: `/create_plan thoughts/shared/plans/some-plan.md`
+For deeper analysis, try: `/create_plan think deeply about thoughts/shared/plans/some-plan.md`
 ```
 
 Then wait for the user's input.
@@ -38,7 +38,7 @@ Then wait for the user's input.
 ### Step 1: Context Gathering & Initial Analysis
 
 1. **Read all mentioned files immediately and FULLY**:
-   - Ticket files (e.g., `thoughts/allison/tickets/eng_1234.md`)
+   - Plan or spec files (e.g., `thoughts/shared/plans/some-plan.md`)
    - Research documents
    - Related implementation plans
    - Any JSON/data files mentioned
@@ -51,9 +51,7 @@ Then wait for the user's input.
 
    **ALWAYS spawn these agents first (historical context is critical):**
    - Use the **thoughts-locator** agent to find existing research, plans, decisions, and historical context
-   - Use the **codebase-locator** agent to find all files related to the ticket/task
-   - Use the **codebase-analyzer** agent to understand how the current implementation works
-   - If a Linear ticket is mentioned, use the **linear-ticket-reader** agent to get full details
+   - Use the **codebase-analyzer** agent to find all files related to the task and understand how the current implementation works
 
    **Historical context from thoughts/ often contains:**
    - Past decisions that explain WHY code is structured a certain way
@@ -112,16 +110,11 @@ After getting initial clarifications:
    - Use the right agent for each type of research:
 
    **For deeper investigation:**
-   - **codebase-locator** - To find more specific files
-   - **codebase-analyzer** - To understand implementation details
-   - **codebase-pattern-finder** - To find similar features we can model after
+   - **codebase-analyzer** - To find specific files, understand implementation details, and find similar features we can model after
 
    **For historical context (CRITICAL - don't skip this):**
-   - **thoughts-locator** - FIRST: Find all related research, plans, decisions, tickets, and learnings
+   - **thoughts-locator** - FIRST: Find all related research, plans, decisions, and learnings
    - **thoughts-analyzer** - THEN: Extract detailed insights from the 2-3 most relevant documents found
-
-   **For related tickets:**
-   - **linear-searcher** - To find similar issues or past implementations
 
    READ: .claude/skills/CORE/workflows/plan-common-patterns.md (for sub-task spawning best practices)
 
@@ -259,8 +252,8 @@ READ: .claude/skills/CORE/workflows/plan-common-patterns.md
 User: /implementation_plan
 Assistant: I'll help you create a detailed implementation plan...
 
-User: We need to add parent-child tracking for Claude sub-tasks. See thoughts/allison/tickets/eng_1478.md
-Assistant: Let me read that ticket file completely first...
+User: We need to add parent-child tracking for Claude sub-tasks. See thoughts/shared/plans/parent-child-tracking.md
+Assistant: Let me read that plan file completely first...
 
 [Reads file fully]
 

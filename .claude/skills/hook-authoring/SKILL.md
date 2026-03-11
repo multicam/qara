@@ -148,7 +148,7 @@ const sessionFile = `${PAI_DIR}/state/sessions/${input.session_id}.json`;
 
 import { readFileSync } from 'fs';
 
-const input = JSON.parse(readFileSync('/dev/stdin', 'utf-8'));
+const input = JSON.parse(readFileSync(0, 'utf-8'));
 
 // Your logic here
 

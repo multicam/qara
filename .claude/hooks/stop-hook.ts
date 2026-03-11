@@ -31,7 +31,7 @@ async function main() {
     // Persist session checkpoint for resume capability (Factor 6)
     appendJsonl(join(STATE_DIR, 'session-checkpoints.jsonl'), {
       timestamp: getISOTimestamp(),
-      session_id: process.env.CLAUDE_SESSION_ID || 'unknown',
+      session_id: process.env.CLAUDE_SESSION_ID || process.env.SESSION_ID || 'unknown',
       stop_reason: parsed.stop_reason || 'unknown',
       summary: title || lastMessage.substring(0, 200),
     });

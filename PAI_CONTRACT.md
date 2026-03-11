@@ -24,8 +24,11 @@ ${PAI_DIR}/
 
 ### 3. Hooks Execute Reliably
 - `session-start.ts` - Loads CORE context at session start
-- `capture-all-events.ts` - Logs all events to JSONL
-- `stop-hook.ts` - Extracts completion status
+- `pre-tool-use-security.ts` - Blocks dangerous Bash commands
+- `post-tool-use.ts` - Logs all tool usage to JSONL
+- `update-tab-titles.ts` - Sets terminal tab titles on prompt submit
+- `stop-hook.ts` - Checkpoint logging, tab update on completion
+- `config-change.ts` - Settings sync validation
 
 ### 4. Settings Configuration
 - `settings.json` defines hooks and permissions

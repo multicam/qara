@@ -92,7 +92,7 @@ read ${PAI_DIR}/commands/get-life-log.md
 - "tell me about X", "what's new with Y"
 - "I need to understand Z"
 
-**Agent to use:** researcher
+**Agent to use:** gemini-researcher
 
 ---
 
@@ -111,7 +111,7 @@ read ${PAI_DIR}/commands/get-life-log.md
 - "is this secure?", "find weaknesses"
 - Port scanning, service detection, network reconnaissance
 
-**Agent to use:** pentester
+**Note:** No pentesting agent available. Handle security questions directly or use gemini-researcher for external documentation.
 
 ---
 
@@ -191,23 +191,22 @@ read ${PAI_DIR}/context/benefits/CLAUDE.md
 
 ---
 
-## Unsupervised Learning Business
+## Qara / Personal Projects
 
 **When user is asking about:**
-- The Unsupervised Learning business
-- Newsletter metrics or performance
-- Company operations or challenges
-- Business metrics (when no specific company mentioned)
-- Podcast, membership, or sponsorship matters
-- "The company" or "my business" (default assumption)
+- Qara system development or configuration
+- PAI (Personal AI Infrastructure) work
+- Personal project work or challenges
+- "The project" or "my setup" (default assumption)
+- Hook development, skill authoring, agent configuration
 
 **Example phrases:**
-- "newsletter subscribers", "company performance"
-- "how's the business", "company challenges"
+- "the qara project", "how's the setup", "PAI configuration"
+- "fix the hooks", "update the skills", "configure agents"
 
 **Context to load:**
 ```bash
-read ${PAI_DIR}/context/unsupervised-learning/CLAUDE.md
+read ${PAI_DIR}/CLAUDE.md
 ```
 
 ---
@@ -274,9 +273,9 @@ read ${PAI_DIR}/context/tools/CLAUDE.md
 ## My Content & Opinions
 
 **When user is asking about:**
-- What Daniel said about something
-- Daniel's opinions on topics
-- Past blog posts or writing
+- What JM said about something
+- JM's opinions on topics
+- Past writing or notes
 - "What did I say about X"
 - "My thoughts on Y"
 - Finding quotes or references from past content

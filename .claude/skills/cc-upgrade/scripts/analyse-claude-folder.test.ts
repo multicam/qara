@@ -108,6 +108,7 @@ describe('analyzeHooks', () => {
                 PostToolUse: [{ command: 'echo test' }],
                 SessionStart: [{ command: 'echo test' }],
                 UserPromptSubmit: [{ command: 'echo test' }],
+                Stop: [{ command: 'echo test' }],
             },
         }));
 

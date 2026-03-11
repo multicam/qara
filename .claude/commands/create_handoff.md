@@ -17,7 +17,7 @@ resume_command: "claude --resume abc123"
 
 **To resume a session:**
 1. Using agent_id: `claude --resume <agent_id>`
-2. Using handoff: `/resume_handoff <path/to/handoff.md>`
+2. Using handoff: Open a new session and paste the handoff document contents as initial context
 3. Using Task tool: `Task(resume: "<agent_id>")`
 
 ---
@@ -85,21 +85,25 @@ Run `npx humanlayer thoughts sync` to save the document from the repository root
 Once this is completed, you should respond to the user with the template between <template_response></template_response> XML tags. do NOT include the tags in your response.
 
 <template_response>
-Handoff created and synced! You can resume from this handoff in a new session with the following command:
+Handoff created and synced! To resume from this handoff in a new session, open a new Claude Code session and reference the handoff document:
 
-```bash
-/resume_handoff path/to/handoff.md
 ```
+thoughts/shared/handoffs/[ticket]/[handoff-filename].md
+```
+
+Or resume directly via agent ID: `claude --resume <agent_id>`
 </template_response>
 
 for example (between <example_response></example_response> XML tags - do NOT include these tags in your actual response to the user)
 
 <example_response>
-Handoff created and synced! You can resume from this handoff in a new session with the following command:
+Handoff created and synced! To resume from this handoff in a new session, open a new Claude Code session and reference:
 
-```bash
-/resume_handoff thoughts/shared/handoffs/ENG-2166/2025-01-08_13-44-55_ENG-2166_create-context-compaction.md
 ```
+thoughts/shared/handoffs/ENG-2166/2025-01-08_13-44-55_ENG-2166_create-context-compaction.md
+```
+
+Or resume directly via agent ID: `claude --resume <agent_id>`
 </example_response>
 
 ---

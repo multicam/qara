@@ -82,7 +82,7 @@ function logSecurityCheck(
       pattern_matched: pattern,
       risk,
       decision,
-      session_id: process.env.SESSION_ID || "unknown",
+      session_id: process.env.CLAUDE_SESSION_ID || process.env.SESSION_ID || 'unknown',
     });
   } catch {
     // Non-critical — don't let logging failure block execution

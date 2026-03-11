@@ -49,9 +49,7 @@ Then wait for the user's research query.
    - Specify thoroughness: "quick" for basic searches, "medium" for moderate exploration, "very thorough" for comprehensive analysis
 
    **For detailed codebase research:**
-   - Use the **codebase-locator** agent to find WHERE files and components live
-   - Use the **codebase-analyzer** agent to understand HOW specific code works (without critiquing it)
-   - Use the **codebase-pattern-finder** agent to find examples of existing patterns (without evaluating them)
+   - Use the **codebase-analyzer** agent to find WHERE files and components live, understand HOW specific code works, and find examples of existing patterns (without critiquing any of it)
 
    **IMPORTANT**: All agents are documentarians, not critics. They will describe what exists without suggesting improvements or identifying issues.
 
@@ -66,12 +64,8 @@ Then wait for the user's research query.
    - Provides context that code alone cannot convey
 
    **For web research (only if user explicitly asks):**
-   - Use the **web-search-researcher** agent for external documentation and resources
+   - Use the **gemini-researcher** agent for external documentation and resources
    - IF you use web-research agents, instruct them to return LINKS with their findings, and please INCLUDE those links in your final report
-
-   **For Linear tickets (if relevant):**
-   - Use the **linear-ticket-reader** agent to get full details of a specific ticket
-   - Use the **linear-searcher** agent to find related tickets or historical context
 
    The key is to use these agents intelligently:
    - Start with locator agents to find what exists
@@ -93,7 +87,7 @@ Then wait for the user's research query.
    - Answer the user's specific questions with concrete evidence
 
 5. **Gather metadata for the research document:**
-   - Run the `hack/spec_metadata.sh` script to generate all relevant metadata
+   - If `hack/spec_metadata.sh` exists in the repo root, run it to generate metadata. Otherwise, gather git metadata manually: `git log -1 --format="%H"` for commit hash, `git branch --show-current` for branch name.
    - Filename: `thoughts/shared/research/YYYY-MM-DD-ENG-XXXX-description.md`
      - Format: `YYYY-MM-DD-ENG-XXXX-description.md` where:
        - YYYY-MM-DD is today's date

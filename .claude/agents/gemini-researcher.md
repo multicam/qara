@@ -2,6 +2,7 @@
 name: gemini-researcher
 description: Fallback web researcher using Gemini CLI. Use when Claude's built-in WebSearch fails, returns stale results, or lacks coverage on a topic. Gemini has independent web access and often finds different sources.
 model: haiku
+tools: [Bash, Read, Grep, Glob]
 ---
 
 # Gemini Researcher — WebSearch Fallback

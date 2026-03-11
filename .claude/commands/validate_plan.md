@@ -25,7 +25,7 @@ When invoked:
    git diff HEAD~N..HEAD  # Where N covers implementation commits
 
    # Run comprehensive checks
-   cd $(git rev-parse --show-toplevel) && make check test
+   cd $(git rev-parse --show-toplevel) && bun run test
    ```
 
 ## Validation Process
@@ -93,9 +93,9 @@ Create comprehensive validation summary:
 ⚠️ Phase 3: [Name] - Partially implemented (see issues)
 
 ### Automated Verification Results
-✓ Build passes: `make build`
-✓ Tests pass: `make test`
-✗ Linting issues: `make lint` (3 warnings)
+✓ Build passes: `bun run build` (if applicable)
+✓ Tests pass: `bun run test`
+✗ Linting issues: linter check (3 warnings)
 
 ### Code Review Findings
 
@@ -158,9 +158,9 @@ Always verify:
 
 Recommended workflow:
 1. `/implement_plan` - Execute the implementation
-2. `/commit` - Create atomic commits for changes
+2. Commit changes using git (e.g., via the built-in commit flow)
 3. `/validate_plan` - Verify implementation correctness
-4. `/describe_pr` - Generate PR description
+4. Create PR via `gh pr create` when ready
 
 The validation works best after commits are made, as it can analyze the git history to understand what was implemented.
 

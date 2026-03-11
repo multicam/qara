@@ -7,7 +7,7 @@
 | Base | `settings.json` | gitignored | Main configuration (symlink chain) |
 | Local | `settings.local.json` | gitignored | Machine-specific overrides |
 
-Symlink chain: `~/.claude/settings.json` → `settings-minimal.json` → `settings.json` (all one file).
+Symlink: `~/.claude/settings.json` → `qara/.claude/settings.json` (one canonical file, direct symlink).
 
 ## Environment Variables (settings.json)
 

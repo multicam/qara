@@ -74,15 +74,13 @@ echo '{"tool_name":"Read","tool_input":{}}' | bun run ${PAI_DIR}/hooks/post-tool
 echo "Exit: $?"
 ```
 
-## Step 6: Check Settings Sync
+## Step 6: Check Settings Validity
 
-Compare `${PAI_DIR}/settings.json` and `${PAI_DIR}/settings-minimal.json`:
-1. Same hook event types configured
-2. Same hook command paths
-3. Same timeout values
-4. Same deny list entries
-
-**Auto-fix:** Sync settings-minimal.json hooks section from settings.json.
+Verify `${PAI_DIR}/settings.json` is well-formed:
+1. Valid JSON (parse without errors)
+2. All hook event types are correctly configured
+3. All hook command paths resolve to existing files
+4. Timeout values are adequate (PostToolUse/Stop need 2000ms minimum)
 
 ## Step 7: Check Import Health
 
@@ -110,7 +108,7 @@ Hook Health Report
 | UserPromptSubmit | OK | OK | OK | exit 0 | PASS |
 | Stop | OK | OK | OK | exit 0 | PASS |
 
-Settings sync: OK
+Settings validity: OK
 Total: 5 hooks, 4 pass, 1 fixed, 0 fail
 ```
 
@@ -122,6 +120,6 @@ Total: 5 hooks, 4 pass, 1 fixed, 0 fail
 | `PostToolUse hook error` in CC | `readStdinWithTimeout` hangs | Use `readFileSync(0, 'utf-8')` |
 | Hook crashes on import | `pai-paths.ts` calls `process.exit(1)` | Change to `console.error` warning |
 | Hook timeout | Settings timeout too low (<500ms) | Set to 2000ms minimum |
-| Settings desync | Edited one file, forgot the other | Sync hooks section between files |
+| Hook timeout | Timeout too low in settings.json | Set PostToolUse/Stop to 2000ms |
 | `ensureDir` not found | Removed from jsonl-utils | Import from pai-paths instead |
 | Tab title not updating | Missing escape sequence for terminal | Check TERM env variable handling |

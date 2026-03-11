@@ -63,7 +63,7 @@ Exactly 5 lines with 5-12 words per line:
 - Single line break between lines
 - No bullet points or numbers
 - No additional commentary
-- Daniel's casual, conversational voice
+- JM's casual, conversational voice
 
 ## Implementation Steps
 
@@ -185,5 +185,5 @@ It means consciousness might not require biological brains after all.
 
 - Detect input type, fetch content, and format output
 - Focus on the 5-12 word limit per line - this is non-negotiable
-- Use Daniel's voice: casual, direct, conversational
+- Use JM's voice: casual, direct, conversational
 - No flowery language or journalistic clichés

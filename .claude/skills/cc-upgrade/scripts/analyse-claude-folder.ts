@@ -136,7 +136,7 @@ export function analyzeHooks(basePath: string): AnalysisResult {
             results.score += 10;
             results.findings.push(`OK: Hooks configured: ${hookEvents.join(', ')}`);
 
-            const coreEvents = ['PreToolUse', 'PostToolUse', 'SessionStart', 'UserPromptSubmit'];
+            const coreEvents = ['PreToolUse', 'PostToolUse', 'SessionStart', 'UserPromptSubmit', 'Stop'];
             const missing = coreEvents.filter(e => !hookEvents.includes(e));
 
             if (missing.length === 0) {

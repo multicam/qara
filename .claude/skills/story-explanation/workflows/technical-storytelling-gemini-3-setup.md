@@ -148,7 +148,7 @@ DEEP REASONING PROTOCOL:
    - Which technical specifics are critical vs nice-to-have?
    - What would make technical readers think "finally, someone explained this properly"?
 
-6. DANIEL'S TECHNICAL VOICE:
+6. JM'S TECHNICAL VOICE:
    - First person, but technically precise
    - Casual explanation of complex concepts
    - Genuine curiosity about HOW and WHY things work
@@ -188,7 +188,7 @@ SELECT THE SINGLE BEST TECHNICAL FRAMING that:
 - Shows how understanding deepened over time
 - Makes technical concepts accessible WITHOUT losing precision
 - Would make technical professionals excited to share
-- Feels natural in Daniel's voice (first person, curious, precise)
+- Feels natural in JM's voice (first person, curious, precise)
 
 TECHNICAL CONTENT TO ANALYZE:
 [PASTE PAPERS, DOCS, CODE, ARCHITECTURE]"

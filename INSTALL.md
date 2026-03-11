@@ -104,7 +104,6 @@ ln -sf $PAI_DIR/hooks ~/.claude/hooks
 ln -sf $PAI_DIR/skills ~/.claude/skills
 ln -sf $PAI_DIR/commands ~/.claude/commands
 ln -sf $PAI_DIR/agents ~/.claude/agents
-ln -sf $PAI_DIR/rules ~/.claude/rules
 ln -sf $PAI_DIR/.env ~/.claude/.env
 
 # Create scratchpad
@@ -176,7 +175,7 @@ echo "Commands: $(ls $PAI_DIR/commands/*.md 2>/dev/null | wc -l | tr -d ' ')"
 
 ```bash
 # Check all symlinks point correctly
-for item in hooks skills commands settings.json; do
+for item in hooks skills commands agents settings.json; do
   if [ -L "$HOME/.claude/$item" ]; then
     target=$(readlink "$HOME/.claude/$item")
     echo "$item -> $target"
@@ -218,12 +217,11 @@ ls -la ~/.claude/hooks
 ### Reset all symlinks
 
 ```bash
-rm -f ~/.claude/{hooks,skills,commands,agents,rules,settings.json,.env}
+rm -f ~/.claude/{hooks,skills,commands,agents,settings.json,.env}
 ln -sf $PAI_DIR/hooks ~/.claude/hooks
 ln -sf $PAI_DIR/skills ~/.claude/skills
 ln -sf $PAI_DIR/commands ~/.claude/commands
 ln -sf $PAI_DIR/agents ~/.claude/agents
-ln -sf $PAI_DIR/rules ~/.claude/rules
 ln -sf $PAI_DIR/settings.json ~/.claude/settings.json
 ln -sf $PAI_DIR/.env ~/.claude/.env
 ```

@@ -13,22 +13,10 @@ Triggers:
 ### Step 1: Launch Exploration Agents
 
 ```typescript
-// File discovery
-task({
-  agent: "codebase-locator",
-  task: "Locate all files related to [TOPIC]. Include: main implementation, tests, config, types."
-});
-
-// Pattern analysis
-task({
-  agent: "codebase-pattern-finder",
-  task: "Identify patterns in [TOPIC]: naming conventions, architectural patterns, common utilities."
-});
-
-// Architecture documentation
+// File discovery + pattern analysis + architecture documentation
 task({
   agent: "codebase-analyzer",
-  task: "Analyze architecture of [TOPIC]: dependencies, data flow, entry points, external interfaces."
+  task: "Locate all files related to [TOPIC]. Include: main implementation, tests, config, types. Identify naming conventions, architectural patterns, common utilities. Analyze dependencies, data flow, entry points, external interfaces."
 });
 ```
 

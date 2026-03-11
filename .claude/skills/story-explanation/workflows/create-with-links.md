@@ -65,7 +65,7 @@ ULTRATHINK: What's the REAL story here?
 NARRATIVE FRAMING ANALYSIS:
 - What inflection point or pattern is emerging?
 - What narrative framing makes this most compelling?
-- How would Daniel explain this to someone who cares about this topic?
+- How would JM explain this to someone who cares about this topic?
 - What's the key angle?
   * "Production Transition" (experimental → operational)
   * "Platform War" (competition and consolidation)
@@ -78,7 +78,7 @@ NARRATIVE FRAMING ANALYSIS:
 - What's the escalating arc? (where does the story build toward?)
 
 VOICE CHECK:
-- This needs Daniel's voice: first person, casual, direct
+- This needs JM's voice: first person, casual, direct
 - No corporate speak - conversational and honest
 - Facts + interpretation, not just facts
 - Connect the dots for the reader
@@ -99,7 +99,7 @@ Based on the chosen narrative framing, generate the story explanation:
    - Body (n-2 sentences): Escalating story flow, varied sentence length (8-20 words)
    - Closing sentence (15-25 words): "Wow" factor without hyperbole
 
-4. **Style (Daniel's Voice):**
+4. **Style (JM's Voice):**
    - First person ("I", "we", "me")
    - Casual and direct ("Here's the thing", "This is huge")
    - No corporate speak or buzzwords
@@ -208,7 +208,7 @@ Present the complete story explanation with:
 - UltraThink determines the most compelling story angle
 - Inline links provide comprehensive source attribution
 - NO LIMIT on links per sentence - include ALL relevant sources
-- Daniel's voice is critical - casual, first person, direct
+- JM's voice is critical - casual, first person, direct
 - Story should be shareable, digestible, and insightful
 
 Execute this workflow now.

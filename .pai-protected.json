@@ -16,7 +16,6 @@
       "description": "PAI-specific infrastructure code",
       "files": [
         ".claude/hooks/lib/pai-paths.ts",
-        ".claude/hooks/self-test.ts",
         ".pai-protected.json"
       ],
       "validation": "Must not contain references to private Qara data"
@@ -42,7 +41,6 @@
       "exception_files": [
         "SECURITY.md",
         ".pai-protected.json",
-        "PAI_SYNC_GUIDE.md",
         ".claude/.env.example"
       ]
     }
@@ -56,10 +54,9 @@
       "4. Copy changes to PAI repo (~/Projects/PAI/.claude/)",
       "5. SKIP protected files (they stay PAI-specific)",
       "6. Sanitize any personal data or API keys",
-      "7. Run: bun ~/Projects/PAI/.claude/hooks/self-test.ts",
-      "8. Run: bun ~/Projects/PAI/.claude/hooks/validate-protected.ts",
-      "9. If validation passes, commit to PAI",
-      "10. If validation fails, check which protected files changed"
+      "7. Run: bun run test (from PAI repo root)",
+      "8. If validation passes, commit to PAI",
+      "9. If validation fails, check which protected files changed"
     ]
   }
 }

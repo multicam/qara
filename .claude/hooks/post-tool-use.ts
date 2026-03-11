@@ -33,7 +33,7 @@ async function main(): Promise<void> {
       timestamp: getISOTimestamp(),
       tool: tool_name,
       error: was_error || false,
-      session_id: process.env.SESSION_ID || process.env.CLAUDE_SESSION_ID || 'unknown',
+      session_id: process.env.CLAUDE_SESSION_ID || process.env.SESSION_ID || 'unknown',
     });
   } catch {
     // Non-critical — don't let logging failure affect execution

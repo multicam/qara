@@ -15,6 +15,7 @@
 
 import { chromium, Browser, Page, ConsoleMessage, Request, Response } from 'playwright';
 import { parseArgs } from 'util';
+import { mkdirSync } from 'fs';
 
 // Types
 interface CaptureResult {
@@ -46,10 +47,10 @@ interface Config {
 }
 
 // Load config
-function loadConfig(): Config {
+async function loadConfig(): Promise<Config> {
   try {
     const configPath = new URL('../config.json', import.meta.url).pathname;
-    const config = JSON.parse(Bun.file(configPath).text());
+    const config = JSON.parse(await Bun.file(configPath).text());
     return {
       headless: config.browser?.headless ?? false,
       viewport: config.browser?.viewport ?? { width: 1280, height: 720 },
@@ -140,7 +141,7 @@ async function captureAll(url: string, outputDir: string, config: Config): Promi
 
     // Take screenshot
     const screenshotPath = `${outputDir}/screenshot.png`;
-    await Bun.write(outputDir, ''); // Ensure dir exists
+    mkdirSync(outputDir, { recursive: true }); // Ensure dir exists
     await page.screenshot({ path: screenshotPath, fullPage: true });
 
     const result: CaptureResult = {
@@ -193,7 +194,7 @@ async function main() {
   });
 
   const command = positionals[0];
-  const config = loadConfig();
+  const config = await loadConfig();
 
   // Override headless from CLI flag
   if (values.headless !== undefined) {
