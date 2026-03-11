@@ -145,7 +145,7 @@ Generated CLIs follow PAI's standards:
 - ✅ **Runtime:** Bun (NOT Node.js)
 - ✅ **Language:** TypeScript (NOT JavaScript or Python)
 - ✅ **Package Manager:** Bun (NOT npm/yarn/pnpm)
-- ✅ **Testing:** Vitest (when tests added)
+- ✅ **Testing:** `bun test` (when tests added)
 - ✅ **Output:** Deterministic JSON (composable)
 - ✅ **Documentation:** README + QUICKSTART (llcli pattern)
 
@@ -269,13 +269,6 @@ Every generated CLI must pass these gates:
 
 ---
 
-## RELATED SKILLS
-
-- **development** - For complex feature development (not CLI-specific)
-- **personal-lifelog** - Example of skill using llcli
-
 ---
 
 **This skill turns "I need a CLI for X" into production-ready tools in minutes, following proven patterns from llcli and PAI's CLI-First Architecture.**
-
-**Total lines:** 205 (was 353)

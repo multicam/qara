@@ -11,51 +11,15 @@ description: |
 
 # Story Explanation - Narrative Summary with Creative Analysis
 
-## 🎯 Load Full PAI Context
-
-**Before starting any task with this skill, load complete PAI context:**
-
-`read ${PAI_DIR}/skills/CORE/SKILL.md`
-
 ## Core Philosophy
 
-**Standard approach:** Generate a generic summary of content.
+Use extended thinking to analyze multiple narrative framings, then select the BEST one and present it in a compelling story format. Generic summaries use obvious framing without exploring alternatives — this skill counters mode collapse by deliberately exploring diverse angles before committing to one. Voice is first person, casual, direct, genuinely curious.
 
-**This skill:** Use UltraThink to analyze multiple narrative framings, then select the BEST one and present it in a compelling story format.
+## Workflow Routing
 
-Based on:
-- **UltraThink**: Deep content understanding across multiple perspectives and narrative angles
-- **Best framing selection**: Choose the most compelling narrative angle from multiple options
-- **Conversational voice**: First person, casual, direct, genuinely curious
+This skill contains multiple workflows for different story explanation formats.
 
-**The Problem This Solves:**
-- Generic summaries use obvious framing without exploring alternatives
-- Mode collapse causes formulaic story explanations
-- Best narrative angles get missed in favor of first-thought approaches
-- Content needs to be explained in conversational, engaging way
-
-## When to Activate This Skill
-
-- User requests story explanations or narrative summaries
-- User says "create a story explanation" or "explain this as a story"
-- User says "narrative summary", "tell as story", or "explain in narrative"
-- User wants content explained in conversational, engaging format
-- Need to find the most compelling narrative hook for content
-- User explicitly requests this skill
-- Want to present content in conversational voice
-- Format-specific requests: "story with links", "abridged story", "5-line summary", "CSE", "CSE5"
-- Slash commands: `/create-story-explanation`, `/cse`, `/cse5`
-
-**DO NOT use this skill when:**
-- User wants comprehensive extraction (use research skill)
-- User wants quick technical summary
-- Speed matters more than narrative quality
-
-## 🔀 Workflow Routing
-
-This skill contains multiple workflows for different story explanation formats:
-
-### Available Workflows:
+### Available Workflows
 
 1. **`workflows/create.md`** - Main 3-part narrative (default)
    - **Use when:** User wants standard story explanation format
@@ -82,7 +46,7 @@ This skill contains multiple workflows for different story explanation formats:
    - **Triggers:** "explain in 5 lines", "CSE5", command: `/cse5`
    - **Output:** 5 numbered lines, one concept per line
 
-### Routing Decision Tree:
+### Routing Decision Tree
 
 ```
 User request → Analyze intent:
@@ -103,221 +67,52 @@ User request → Analyze intent:
    └─> workflows/create.md (3-part narrative)
 ```
 
-### Command Routing:
+### Command Routing
 - `/create-story-explanation` → `workflows/create.md`
 - `/create-story-output-links` → `workflows/create-with-links.md`
 - `/create-abridged-story-explanation` → `workflows/create-abridged.md`
 - `/cse` → `workflows/cse.md`
 - `/cse5` → `workflows/cse5.md`
 
-## 📁 File Organization
+## UltraThink Protocol
 
-**Working Directory:** `${PAI_DIR}/scratchpad/${CLAUDE_SESSION_ID}/story-explanation-[topic]/`
+Before writing, use extended thinking to explore the content across multiple narrative dimensions. This is not optional — it is the mechanism that produces non-obvious, high-quality framings.
 
-**Full details:** `references/file-organization.md`
+1. Generate 5+ distinct narrative framings: vary the hook, emphasis, structure (chronological, problem-solution, comparison), and "wow" factor for each
+2. Evaluate each framing on: hook strength, shareability, conversational naturalness, and how clearly it conveys significance
+3. Select the single most compelling angle — the one a reader would most want to pass on
+4. Proceed to write only after selection is complete
 
-## The Four-Step Process
+This replaces mode collapse with deliberate creative exploration. The goal is to find the framing that would make someone stop and say "I get it now."
 
-### Step 1: Content Extraction
+## The Process
 
-**For YouTube videos:**
-```bash
-yt-dlp --write-auto-sub --sub-lang en --skip-download -o "/tmp/%(title)s" "YOUTUBE_URL"
-# Then read the generated subtitle file
-```
-
-**For URLs/articles:**
-```typescript
-WebFetch(url, "Extract full content of this article")
-```
-
-**For other content:**
-- Paste text directly
-- Read from files
-
-### Step 2: Activate Be Creative Skill
-
-**Load the be-creative skill for deep reasoning enhancement:**
-
-This provides access to:
-- **UltraThink**: Deep reasoning and quality analysis
-- Enhanced techniques for finding the best narrative framing
-
-### Step 3: Deep UltraThink Analysis (via Be Creative)
-
-Before generating story explanation, engage in extended deep thinking:
-
-**UltraThink Protocol:**
-```
-ULTRATHINK DEEP STORY ANALYSIS MODE:
-
-Think deeply and extensively about this content:
-
-1. CORE NARRATIVE - What's the fundamental story being told?
-2. MULTIPLE FRAMINGS - What are 5-7 different ways to frame this story?
-3. AUDIENCE ANGLES - How would different audiences understand this?
-4. HOOK VARIETY - What are compelling but different entry points?
-5. EMPHASIS OPTIONS - Which elements could be emphasized or de-emphasized?
-6. STRUCTURAL APPROACHES - Chronological? Problem-solution? Comparison?
-7. IMPACT FOCUS - What's the "wow" factor that makes this significant?
-8. CONVERSATIONAL FLOW - How would you explain this to a friend?
-9. KEY INSIGHTS - What makes readers think "I get it now!"?
-10. BEST FRAMING - Which narrative angle is most compelling?
-
-Allow thinking to explore multiple narrative approaches.
-Question assumptions about the "obvious" way to tell this story.
-Look for the framing that would make readers stop and engage.
-Consider: What would make someone excited to share this?
-```
-
-### Step 4: Multiple Framings + Best Selection (via UltraThink)
-
-Use UltraThink to explore different framings, then select the BEST one:
-
-**Framing Exploration Protocol:**
-```
-STEP 1 - GENERATE MULTIPLE FRAMINGS:
-Generate 5 different narrative framings from your deep analysis,
-exploring diverse approaches and perspectives.
-
-For each framing option:
-- Different hook/entry point
-- Different emphasis on key elements
-- Different structural approach
-- Different "wow" factor
-
-Explore creative and non-obvious narrative framings.
-Avoid formulaic approaches.
-
-STEP 2 - SELECT BEST FRAMING:
-Choose the single most compelling narrative framing that:
-- Has the strongest hook
-- Best captures the "wow" factor
-- Would make someone most excited to share
-- Feels most natural in conversational voice
-- Makes complex ideas accessible
-
-STEP 3 - OUTPUT IN SELECTED FORMAT:
-Use the selected framing to create the story explanation in the appropriate format.
-```
+1. **Determine format** from user request using the routing decision tree above
+2. **Extract content** via the appropriate method:
+   - YouTube: `yt-dlp --write-auto-sub --sub-lang en --skip-download -o "/tmp/%(title)s" "URL"`, then read subtitle file
+   - URLs/articles: `WebFetch(url, "Extract full content of this article")`
+   - Other: paste text or read from files
+3. **Run UltraThink Protocol** — explore 5+ framings, evaluate, select the best
+4. **Write output** in the selected format using conversational voice
+5. **Save to scratchpad** at `${PAI_DIR}/scratchpad/${CLAUDE_SESSION_ID}/story-explanation-[topic]/`
 
 ## Output Formats & Voice
 
 **Full guide:** `references/voice-style-guide.md`
 
-**Key points:**
 - **3-Part Narrative:** Opening (15-25 words) → Body (5-15 sentences) → Closing (15-25 words)
 - **N-Length with Links:** User-specified sentences with inline source attribution
 - **Conversational voice:** First person, casual, direct, genuinely curious
-- **Avoid:** Cliches ("game-changer", "paradigm shift"), journalistic tone, extrapolation
+- **Avoid:** Cliches ("game-changer", "paradigm shift"), journalistic tone, extrapolation beyond the input
 
-## Comparison to Other Approaches
+## File Organization
 
-**/cse5 (single story explanation):**
-- Fast, single output
-- Quick technical summary
-- No creative analysis
+Working files (content, analysis, drafts, final output) go to scratchpad. Archive to history only when the analytical approach itself is exceptionally valuable for future reference.
 
-**research skill (insight extraction):**
-- Comprehensive analysis and extraction
-- Multiple perspectives and sources
-- Analytical, not narrative format
+**Full details:** `references/file-organization.md`
 
-**story-explanation (this skill):**
-- Single BEST story explanation in chosen format
-- Uses be-creative skill (UltraThink)
-- Deep reasoning to explore and find best framing
-- Conversational voice (first person, casual, direct)
-- Explores multiple narrative angles, selects most compelling
-- Specifically designed for engaging storytelling
-- Prioritizes conversational flow and "wow" factor
+## Related Skills
 
-## Integration with Qara
+**Use `research` instead when:** the goal is comprehensive analysis with multiple sources, or analytical extraction is preferred over narrative storytelling.
 
-When this skill activates, Qara should:
-
-1. **Determine format** - Based on user request, select appropriate workflow
-2. **Create scratchpad directory** - `${PAI_DIR}/scratchpad/${CLAUDE_SESSION_ID}/story-explanation-[topic]/`
-3. **Load be-creative skill** - Activate research-backed creativity framework
-4. **Load content** via appropriate method (yt-dlp, WebFetch, Read, or paste)
-5. **Save raw content to scratchpad** - Store extracted content for reference
-6. **Engage UltraThink mode** - Deep analysis across 10 narrative dimensions
-7. **Save UltraThink notes to scratchpad** - Document narrative analysis process
-8. **Explore multiple framings** - Use UltraThink to generate 5 different narrative framings
-9. **Save framing explorations to scratchpad** - Document all 5+ framings considered
-10. **Select best framing** - Choose the most compelling narrative angle
-11. **Output in selected format** - 3-part, n-length with links, abridged, or Foundry format
-12. **Save final output to scratchpad** - Store completed story explanation
-13. **Use conversational voice** - First person, casual, direct, genuinely curious
-14. **Optionally archive to history** - Only if analysis methodology is exceptionally valuable for future reference
-
-**Critical:** The be-creative skill provides UltraThink framework ensuring we explore creative narrative framings that would otherwise be missed due to mode collapse, then select the single BEST one.
-
-**File Organization:**
-- All working files go to scratchpad (content, analysis, drafts, final output)
-- Only exceptional analytical insights go to history
-- Most story explanations are one-off outputs and remain in scratchpad
-
-## Key Principles
-
-1. **Use be-creative skill** - UltraThink framework for deep reasoning in exploring framings
-2. **Think narratively first** - UltraThink about story possibilities before output
-3. **Explore diverse framings** - Generate multiple creative narrative framings through deep analysis
-4. **Select best framing** - Choose the most compelling narrative angle
-5. **Format flexibility** - Multiple output formats for different use cases
-6. **Conversational voice** - First person, casual, direct, genuinely curious
-7. **Conversational flow** - Vary sentence length (8-16 words), natural rhythm
-8. **Avoid cliches** - No "game-changer", "paradigm shift", "revolutionary", etc.
-9. **Stick to facts** - Don't extrapolate beyond the input
-10. **Deliver "wow" factor** - Make significance clear without hyperbole
-
-## Quality Guidelines
-
-**See:** `references/voice-style-guide.md` for failure modes and success criteria.
-
-**Quick check:** Does it read naturally spoken aloud? Does it feel like someone sharing something interesting with a friend?
-
-## Quick Reference
-
-**Four-step process:**
-1. Activate be-creative skill (UltraThink)
-2. Extract content (WebFetch, Read, yt-dlp, or paste)
-3. Deep UltraThink (10-dimension narrative analysis)
-4. Explore multiple framings (5 different narrative approaches) → Select BEST → Output in selected format
-
-**Format selection:**
-- Default: 3-part narrative (opening/body/closing)
-- With links: N-length with inline source attribution
-- Abridged: Ultra-concise 5-line format
-- CSE/CSE5: comprehensive formats
-
-**Voice:**
-- First person perspective
-- Casual, direct, genuinely curious
-- Natural conversational tone (like telling a friend)
-- NO cliches, journalistic language, or flowery tone
-
-**Remember:**
-- Use be-creative skill for UltraThink deep reasoning
-- Think deeply about narrative possibilities (UltraThink)
-- Explore diverse framings to find the best narrative angle
-- Select the single most compelling narrative angle
-- Stick to facts - don't extrapolate beyond the input
-- Deliver "wow" factor without hyperbole
-
-## Relationship to Other Skills
-
-**Works well with:**
-- `research` - Deep insights extraction from same content (analytical complement)
-- `social` - Turn story explanation into social media posts
-- `writing` - Use story explanation as blog post draft or inspiration
-- `media` - Generate hero image for the story explanation
-
-**Use research skill instead when:**
-- User wants comprehensive analysis with multiple sources
-- Focus is on novel ideas and insights, not narrative storytelling
-- Analytical extraction preferred over conversational explanation
-
----
-
-**This skill provides compelling narrative explanations in conversational voice using research-backed creativity techniques to find the BEST framing from multiple possibilities.**
+**Do not use** `social`, `writing`, or `media` as companion skills — they do not exist in this system.

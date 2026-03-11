@@ -72,12 +72,18 @@ PAI hooks follow TypeScript patterns:
 ```
 .claude/hooks/
 ├── lib/
-│   ├── llm/           # LLM clients (anthropic, openai)
-│   ├── model-router.ts
-│   └── context-utils.ts
-├── pre-tool-use.ts
+│   ├── pai-paths.ts        # PAI directory resolution
+│   ├── tab-titles.ts       # Terminal tab title generation
+│   ├── jsonl-utils.ts      # JSONL append/rotate
+│   ├── datetime-utils.ts   # Timestamp formatting
+│   └── context-graph/      # Static context analyzer
 ├── session-start.ts
-└── *.test.ts          # Tests alongside source
+├── pre-tool-use-security.ts
+├── post-tool-use.ts
+├── update-tab-titles.ts
+├── stop-hook.ts
+├── config-change.ts
+└── *.test.ts               # Tests alongside source
 ```
 
 Check for:
@@ -215,15 +221,14 @@ cd $PAI_DIR/.claude/hooks && bun test --coverage
 
 7. **Update all affected documentation (MANDATORY after any changes):**
    - Update docs that reference changed files, patterns, or architecture
-   - Key docs to check: `macos-fixes.md`, `INSTALL.md`, `TOOLS.md`, `hooks-guide.md`, `delegation-guide.md`, `MEMORY.md`
-   - Update devtools-mcp docs if MCP config changed
-   - Update `settings-mac.json` if `settings.json` changed
-   - If hooks changed: update `hooks-guide.md` and hook test expectations
+   - Key docs to check: `delegation-guide.md`, `MEMORY.md`
+   - If `settings.json` changed: update `settings-mac.json` too
+   - If hooks changed: update hook-authoring skill and hook test expectations
    - If agents changed: update CORE skill agent table and `delegation-guide.md`
    - If skills added/removed: update CORE documentation index
    - **Do NOT skip this step** — stale docs cause cascading confusion in future sessions
 
-7. **Post-fix validation (MANDATORY after any changes):**
+8. **Post-fix validation (MANDATORY after any changes):**
    - Run hook health check: load `hook-test` skill workflow (`${PAI_DIR}/skills/hook-test/workflows/test-and-fix.md`) and execute all 8 steps
    - Run full test suite: `bun run test`
    - Run shell scripts: `scripts/validate-skills.sh`, `scripts/check-references.sh`

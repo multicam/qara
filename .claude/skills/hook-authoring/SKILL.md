@@ -27,17 +27,29 @@ Examples: "hook not working", "debug hooks", "hook troubleshooting"
 **When:** New Claude Code session begins
 **Use Cases:** Load context, initialize state, capture metadata
 
-### Stop
-**When:** Claude completes a response (not user)
-**Use Cases:** Extract completion info, update tab titles, capture work
+### PreToolUse
+**When:** Before a tool executes
+**Use Cases:** Security checks, permission enforcement, input validation
+
+### PostToolUse
+**When:** After a tool executes
+**Use Cases:** Logging, metrics, audit trail
 
 ### UserPromptSubmit
 **When:** User submits a prompt
 **Use Cases:** Pre-processing, context injection, tab updates
 
+### Stop
+**When:** Claude completes a response (not user)
+**Use Cases:** Extract completion info, update tab titles, capture work
+
 ### SubagentStop
 **When:** A subagent (Task) completes
 **Use Cases:** Agent tracking, result capture, coordination
+
+### ConfigChange
+**When:** Settings or config files change
+**Use Cases:** Sync validation, drift detection
 
 ---
 
@@ -109,10 +121,12 @@ const sessionFile = `${PAI_DIR}/state/sessions/${input.session_id}.json`;
 
 | Hook | Event | Purpose |
 |------|-------|---------|
-| `session-start.ts` | SessionStart | Load CORE skill, set tab |
-| `stop-hook.ts` | Stop | Extract COMPLETED, update tab |
-| `subagent-stop-hook.ts` | SubagentStop | Track agent completion |
-| `capture-all-events.ts` | All | JSONL logging |
+| `session-start.ts` | SessionStart | Load CORE skill, initialize session |
+| `pre-tool-use-security.ts` | PreToolUse | Block dangerous Bash commands |
+| `post-tool-use.ts` | PostToolUse | JSONL tool usage logging |
+| `update-tab-titles.ts` | UserPromptSubmit | Set terminal tab titles |
+| `stop-hook.ts` | Stop | Checkpoint logging, tab update |
+| `config-change.ts` | ConfigChange | Settings sync validation |
 
 ---
 
@@ -149,5 +163,5 @@ Make executable: `chmod +x my-hook.ts`
 
 ## Related
 
-- See `agent-observability` skill for event analysis
-- See `capture-all-events.ts` for JSONL logging pattern
+- See `post-tool-use.ts` for JSONL logging pattern
+- See `hook-test` skill for hook health checking

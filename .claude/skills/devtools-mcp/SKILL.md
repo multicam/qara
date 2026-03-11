@@ -12,7 +12,7 @@ You have DIRECT access to MCP tools. Call them immediately. No setup needed.
 
 ## Rules (CRITICAL — violating these wastes minutes)
 
-1. **NO exploration.** Never read project source, configs, package.json, framework files, or files in this skill's lib/ or docs/ directories.
+1. **NO exploration.** Never read project source, configs, package.json, framework files, or files in this skill's lib/ directory.
 2. **NO verification.** Never run `claude mcp list`, `ps aux`, `lsof`, `curl`, or check processes. If an MCP tool fails, report the error and stop.
 3. **NO bash for MCP work.** Never shell out to `claude mcp call`. Call MCP tools directly.
 4. **Snapshot after every action.** DOM refs go stale after any click/type/navigate. Re-snapshot.

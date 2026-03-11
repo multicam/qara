@@ -254,5 +254,3 @@ Verify skill activates with natural language triggers from description.
 **Related Documentation:**
 - `${PAI_DIR}/skills/CORE/skill-structure.md` - Canonical architecture guide (PRIMARY)
 - `${PAI_DIR}/skills/CORE/CONSTITUTION.md` - Overall PAI philosophy
-
-**Total lines:** 209 (was 384)

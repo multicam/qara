@@ -263,11 +263,6 @@ Options:
     process.exit(0);
   }
 
-  // Set PAI_DIR override if provided (before buildGraph imports pai-paths)
-  if (paiDirOverride) {
-    process.env.PAI_DIR = paiDirOverride;
-  }
-
   const graph = buildGraph(paiDirOverride);
 
   switch (command) {

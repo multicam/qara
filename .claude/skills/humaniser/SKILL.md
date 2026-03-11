@@ -120,5 +120,3 @@ This skill is based on [Wikipedia:Signs of AI writing](https://en.wikipedia.org/
 **Key insight:** "LLMs use statistical algorithms to guess what should come next. The result tends toward the most statistically likely result that applies to the widest variety of cases."
 
 ---
-
-**Total lines:** 127 (was 402)

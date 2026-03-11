@@ -87,17 +87,6 @@ export function scan(graph: ContextGraph): ScanReport {
  * Find orphaned files and broken references
  */
 export function findOrphans(graph: ContextGraph): OrphanReport {
-  const skillsDir = (() => {
-    // Derive skillsDir from any skill node
-    for (const node of graph.nodes.values()) {
-      if (node.kind === 'skill') {
-        // node.id is like /path/skills/CORE/SKILL.md
-        return join(node.id, '..', '..');
-      }
-    }
-    return '';
-  })();
-
   // Unreferenced files: nodes with in-degree 0
   const unreferencedFiles = [];
   for (const [id, node] of graph.nodes) {

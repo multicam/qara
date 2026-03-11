@@ -7,8 +7,6 @@ description: |
   (console, TypeScript, network), and iterates up to 5 times.
   USE WHEN: "implement next feature", "implement [description]", "verify the UI".
   NOT for one-off design/code tasks — use frontend-design directly for those.
-  6. Reports completion or escalates with detailed report
-
   **Triggers:**
   - "implement next feature", "implement the hero section"
   - "verify this implementation", "check the UI"
@@ -104,7 +102,6 @@ Edit `config.json` in this skill directory:
 |-------------|-----------|
 | `frontend-design` | Initial implementation |
 | `engineer` agent | Escalate complex bugs |
-| `design-iterator` agent | Multiple visual refinements |
 
 ---
 

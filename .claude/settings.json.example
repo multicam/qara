@@ -1,26 +1,14 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
-  "_comment_1": "=================================================================",
-  "_comment_2": "Qara PAI Settings Configuration Example",
-  "_comment_3": "=================================================================",
-  "_comment_4": "This file shows a complete PAI setup with all hooks configured.",
-  "_comment_5": "Copy this to settings.json and customize for your environment.",
-  "_comment_6": "",
-  "_comment_7": "IMPORTANT: Update these values:",
-  "_comment_8": "  - PAI_DIR: Absolute path to your .claude directory",
-  "_comment_9": "  - PATH: Add your custom binary paths",
-  "_comment_10": "  - DA: Your digital assistant name (default: Qara)",
-  "_comment_11": "=================================================================",
-
   "respectGitignore": true,
-
   "env": {
     "DA": "Qara",
     "PAI_DIR": "${HOME}/.claude",
     "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "64000",
-    "PATH": "${HOME}/.local/bin:${HOME}/.cargo/bin:/opt/homebrew/bin:/opt/homebrew/sbin:${HOME}/.local/share/mise/shims:/usr/local/bin:/usr/bin:/bin"
+    "PATH": "${HOME}/.local/bin:${HOME}/.cargo/bin:${HOME}/.bun/bin:/usr/local/bin:/usr/bin:/bin:${HOME}/.local/share/mise/shims",
+    "API_TIMEOUT_MS": "3000000",
+    "ENABLE_TOOL_SEARCH": "true"
   },
-
   "permissions": {
     "allow": [
       "Bash",
@@ -37,28 +25,10 @@
       "TodoWrite",
       "ExitPlanMode",
       "Task",
+      "Skill",
       "mcp__*"
     ],
     "deny": [
-      "Bash(diskutil partitionDisk)",
-      "Bash(diskutil eraseDisk)",
-      "Bash(diskutil eraseVolume)",
-      "Bash(diskutil reformat)",
-      "Bash(diskutil zeroDisk)",
-      "Bash(diskutil appleRAID)",
-      "Bash(diskutil randomDisk)",
-      "Bash(diskutil coreStorage)",
-      "Bash(diskutil cs)",
-      "Bash(diskutil disableJournal)",
-      "Bash(diskutil resetFusion)",
-      "Bash(diskutil disableOwnership)",
-      "Bash(diskutil apfs deleteContainer)",
-      "Bash(diskutil apfs eraseVolume)",
-      "Bash(diskutil apfs decryptVolume)",
-      "Bash(diskutil apfs changePassphrase)",
-      "Bash(diskutil apfs deleteVolume)",
-      "Bash(diskutil apfs deleteVolumeGroup)",
-      "Bash(diskutil apfs deleteSnapshot)",
       "Bash(rm -rf /)",
       "Bash(rm -rf /*)",
       "Bash(rm -rf ~)",
@@ -74,28 +44,29 @@
       "Bash(> /dev/sda)"
     ]
   },
-
-  "model": "opus",
   "enableAllProjectMcpServers": false,
   "enabledMcpjsonServers": [],
-
-  "_hooks_comment_1": "=================================================================",
-  "_hooks_comment_2": "HOOKS CONFIGURATION - PAI lifecycle hooks",
-  "_hooks_comment_3": "=================================================================",
-  "_hooks_comment_4": "PreToolUse: Security checks BEFORE tool execution",
-  "_hooks_comment_5": "SessionStart: Load CORE context, initialize session state",
-  "_hooks_comment_6": "UserPromptSubmit: Update tab titles",
-  "_hooks_comment_7": "Stop: Extract completion info, update state",
-  "_hooks_comment_8": "=================================================================",
-
   "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/session-start.ts",
+            "timeout": 3000
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Bash",
         "hooks": [
           {
             "type": "command",
-            "command": "${PAI_DIR}/hooks/pre-tool-use-security.ts"
+            "command": "${PAI_DIR}/hooks/pre-tool-use-security.ts",
+            "timeout": 1000
           }
         ]
       }
@@ -105,17 +76,20 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${PAI_DIR}/hooks/update-tab-titles.ts"
+            "command": "${PAI_DIR}/hooks/update-tab-titles.ts",
+            "timeout": 500
           }
         ]
       }
     ],
-    "SessionStart": [
+    "PostToolUse": [
       {
+        "matcher": "*",
         "hooks": [
           {
             "type": "command",
-            "command": "${PAI_DIR}/hooks/session-start.ts"
+            "command": "${PAI_DIR}/hooks/post-tool-use.ts",
+            "timeout": 2000
           }
         ]
       }
@@ -125,23 +99,36 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${PAI_DIR}/hooks/stop-hook.ts"
+            "command": "${PAI_DIR}/hooks/stop-hook.ts",
+            "timeout": 2000
+          }
+        ]
+      }
+    ],
+    "ConfigChange": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/config-change.ts",
+            "timeout": 500
           }
         ]
       }
     ]
   },
-
   "statusLine": {
     "type": "command",
     "command": "bash ${PAI_DIR}/statusline-command.sh"
   },
-
-  "enabledPlugins": {},
+  "enabledPlugins": {
+    "pyright-lsp@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true
+  },
   "alwaysThinkingEnabled": true,
-  "showTurnDuration": true,
+  "effortLevel": "high",
   "plansDirectory": "thoughts/shared/plans",
-
-  "_comment": "IMPORTANT: Change PAI_DIR above to your actual path (e.g., /Users/john/.claude or /home/john/.claude)",
-  "max_tokens": 4096
+  "skipDangerousModePermissionPrompt": true,
+  "showTurnDuration": true,
+  "releaseChannel": "stable"
 }

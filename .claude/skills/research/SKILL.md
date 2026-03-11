@@ -107,9 +107,7 @@ Examples: "extract knowledge from X", "get insights from this"
 ### Available Research Agents
 
 Check `${PAI_DIR}/agents/` for agents with "researcher" in their name:
-- `claude-researcher` - Uses Claude's WebSearch (FREE, no API key needed)
-- `perplexity-researcher` - Uses Perplexity API (requires PERPLEXITY_API_KEY)
-- `gemini-researcher` - Uses Gemini API (requires GOOGLE_API_KEY)
+- `gemini-researcher` - Uses Gemini CLI as fallback when WebSearch fails (requires GOOGLE_API_KEY)
 
 ### Speed Benefits
 

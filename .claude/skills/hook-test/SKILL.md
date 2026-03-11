@@ -26,8 +26,7 @@ description: |
 2. **Runs each hook** with mock stdin, checking exit codes (must be 0)
 3. **Validates output format** (PreToolUse must output hookSpecificOutput JSON)
 4. **Checks stdin pattern** (must use `readFileSync(0, 'utf-8')`, NOT streaming)
-5. **Checks settings sync** between settings.json and settings-minimal.json
-6. **Auto-corrects** common issues when `--fix` is passed
+5. **Auto-corrects** common issues when `--fix` is passed
 
 ## Quick Usage
 
