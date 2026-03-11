@@ -53,6 +53,24 @@ Use `templates/delegation-task.md` for complex delegations. For simple tasks, a 
 - What files to touch
 - How to verify success
 
+## Model Tier Escalation
+
+When a subagent hits limits, escalate rather than retry at the same tier.
+
+| Signal | Action |
+|--------|--------|
+| haiku agent returns incomplete/shallow results | Re-run with sonnet |
+| sonnet agent fails on architectural decisions | Re-run with opus |
+| Any agent loops >3 times on the same error | Escalate one tier |
+| Agent output contradicts known project patterns | Escalate for review |
+| Task requires cross-cutting changes (>5 files) | Start at sonnet minimum |
+
+```
+haiku → sonnet → opus → AskUserQuestion (JM)
+```
+
+Never skip tiers unless the task clearly requires it. Don't send a design review to haiku first. Don't retry the same prompt at the same tier expecting different results.
+
 ## Spotcheck Pattern
 
 After parallel agents finish, launch `reviewer` to verify all work:

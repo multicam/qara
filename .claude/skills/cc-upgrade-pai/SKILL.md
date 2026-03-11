@@ -62,7 +62,7 @@ PAI requires explicit delegation guidance:
 | Pattern | Location | Check |
 |---------|----------|-------|
 | Parallel agents | `delegation-guide.md` | Task tool with multiple calls |
-| Agent hierarchy | `agent-guide.md` | Escalation paths defined |
+| Agent hierarchy | `.claude/context/delegation-guide.md` | Escalation paths defined |
 | Spotcheck pattern | Commands | Post-delegation verification |
 
 ### 4. Hook Library Analysis

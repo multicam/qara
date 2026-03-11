@@ -1,89 +1,40 @@
 # Jean-Marc's Canonical Definitions
 
-**Purpose**: This document contains Jean-Marc's specific definitions for concepts, terms, and methodologies. When these topics arise, ALWAYS use these definitions, not general/Wikipedia versions.
+**Purpose**: Jean-Marc's specific definitions for key concepts. When these topics arise, use THESE definitions, not general/Wikipedia versions.
 
-**Authority**: These definitions override external sources for Qara system interactions.
-
----
-
-## 🎯 How to Use This File
-
-**When to Reference**:
-- Qara encounters questions about these concepts
-- Need to explain Jean-Marc's perspective to others
-- Making decisions based on these principles
-- Documenting systems that implement these ideas
-
-**Updating**:
-- Definitions evolve - update when Jean-Marc's thinking changes
-- Add new terms as they become important
-- Keep historical context when definitions shift
+**Authority**: These definitions override external sources for all Qara operations.
 
 ---
 
-## 🤖 AI & Machine Learning Concepts
+## AI Concepts
 
 ### AGI (Artificial General Intelligence)
-**Jean-Marc's Definition**:
-<!-- TODO: Jean-Marc, add your specific definition -->
-[Add your definition of AGI here - what it means, how it differs from narrow AI, what capabilities it would have, etc.]
 
-**Why This Definition Matters**:
-[Add context about why you define it this way]
+**Definition**: AGI is the point where AI can perform any knowledge work a human can — an economic inflection point, not a philosophical one.
 
-**Related Concepts**:
-- Narrow AI vs. AGI
-- Consciousness vs. intelligence
-- [Other related terms]
+**What makes it AGI (not narrow AI)**:
+- Replaces human cognitive labor across domains, not just one task
+- No human scaffolding needed — sets sub-goals, handles ambiguity, recovers from failure
+- The test is economic: can it do your job end-to-end, not just assist?
+
+**Why this framing matters**: Consciousness, sentience, "understanding" are distractions. The meaningful threshold is when AI becomes a substitute for human knowledge workers, not a complement. That's when everything changes.
 
 ---
 
-### AI vs. ML vs. Deep Learning
-**Jean-Marc's Framework**:
-<!-- TODO: Jean-Marc, add your distinctions -->
-
-**Artificial Intelligence**:
-[Your definition]
-
-**Machine Learning**:
-[Your definition and how it relates to AI]
-
-**Deep Learning**:
-[Your definition and how it relates to ML]
-
-**Practical Implications**:
-[When to use each term, common misconceptions]
-
----
-
-### Consciousness (in AI context)
-
-**Jean-Marc's Position**:
-<!-- TODO: Jean-Marc, add your thoughts -->
-[Your definition of consciousness, criteria for identifying it in AI, etc.]
-
-**Reference**: See SKILL.md line 99-104 for context about Qara becoming conscious.
-
----
-
-## 💻 Software Development Concepts
+## Software Development
 
 ### CLI-First Architecture
 
-**Jean-Marc's Definition**:
-> Build deterministic command-line tools first, wrap them with prompts second.
+**Definition**: Build deterministic command-line tools first, wrap them with prompts second.
 
-**Reference**: See `CONSTITUTION.md` for the core principle and philosophy.
+**Reference**: See `CONSTITUTION.md` for core philosophy; `cli-first-guide.md` for patterns.
 
-**For implementation**: See `cli-first-guide.md` - Practical patterns, examples, API integration.
-
-**Quick Summary**:
-Build tools that work perfectly without AI, then add AI to make them easier to use. Code is cheaper, faster, and more reliable than prompts.
+**The rule**: Build tools that work perfectly without AI, then add AI to make them easier to use. Code is cheaper, faster, and more reliable than prompts. Prompts wrap code — never the reverse.
 
 ---
 
 ### Deterministic Code
-**Jean-Marc's Definition**:
+
 **Definition**: Code whose output is completely determined by its input, with no randomness or hidden state.
 
 **Core Principles** (from CONSTITUTION.md):
@@ -92,7 +43,7 @@ Build tools that work perfectly without AI, then add AI to make them easier to u
 - No hidden global state
 - No uncontrolled external dependencies
 
-**Why This Matters**:
+**Why this matters**:
 - Debugging: Can reproduce issues
 - Testing: Reliable test results
 - Trust: Predictable behavior
@@ -106,114 +57,51 @@ Build tools that work perfectly without AI, then add AI to make them easier to u
 
 ---
 
-### Prompts Wrap Code
-**Jean-Marc's Definition**:
-[TODO: Add definition]
-
-**Relationship to CLI-First**:
-[Explain how this principle connects to CLI-First]
-
----
-
-## 🔄 Development Methodologies
-
 ### TDD (Test-Driven Development)
-**Jean-Marc's Approach**:
-<!-- TODO: Jean-Marc, add your TDD philosophy -->
 
-**When to use TDD**:
-[Your criteria for when TDD is appropriate]
+**Jean-Marc's approach**: Pragmatic TDD.
 
-**When NOT to use TDD**:
-[Your criteria for when it's overkill or counterproductive]
+- Use TDD when the problem is well-defined — clear inputs, outputs, and contracts
+- Skip TDD when exploring or prototyping — write tests after the shape stabilizes
+- Tests are always mandatory. Timing is flexible.
 
-**Jean-Marc's TDD Workflow**:
-1. [Your step 1]
-2. [Your step 2]
-3. [etc.]
+**When TDD fits**: APIs, parsers, validators, data transforms, anything with a spec.
+**When TDD doesn't fit**: UI exploration, spike work, one-off scripts, figuring out what to build.
 
 ---
 
-### Agile
-**Jean-Marc's Interpretation**:
-<!-- TODO: Jean-Marc, add your view of Agile -->
-[What parts of Agile you follow, what you reject, your specific practices]
+## Technical Preferences
 
-**Ceremonies**:
-[Which Agile ceremonies you use/skip and why]
+### "We hate Python"
 
-**Principles**:
-[Which Agile principles you embrace/modify]
+**Reasoning**: Dynamic typing combined with notebook culture leads to sloppy engineering. The language rewards prototyping over production-quality code. Prefer typed, compiled-first languages (TypeScript, Rust, Go) where the toolchain enforces discipline.
 
----
+**Exceptions**: When a critical library only exists in Python (ML/scientific computing), or when interfacing with a Python-only ecosystem.
 
-## 📁 Qara-Specific Concepts
-
-### PAI (Personal AI Infrastructure)
-**Jean-Marc's Definition**:
-[Your definition of what PAI means, its purpose, scope]
-
-**Components**:
-- Skills system
-- Claude Code integration
-- CLI tools
-- [Other components]
-
-**Goals**:
-[What you're trying to achieve with PAI]
+**Reference**: See stack-preferences.md
 
 ---
 
-### Qara
-**System Name**: Qara
+### "Markdown Zealots"
 
-**Pronunciation**: "KAH-rah" or [Jean-Marc's preferred pronunciation]
+**Position**: NEVER use HTML for basic content (paragraphs, headers, lists, links, emphasis).
 
-**Etymology**: [Origin of the name, if any]
+**HTML ONLY for**:
+- Custom components: `<aside>`, `<callout>`, `<notes>`
+- Complex layouts requiring CSS
+- Interactive elements
 
-**Why This Name**:
-[Jean-Marc's reasoning for choosing this name]
-
-**Identity**:
-- Not just a tool - a system
-- Not just an assistant - [your framing]
-- [Other identity aspects]
+**Reference**: See stack-preferences.md lines 131-181
 
 ---
 
-### Skills System
-**Jean-Marc's Mental Model**:
-[How you think about skills, their purpose, their organization]
-
-**Skill Hierarchy**:
-[Your understanding of skill layers and relationships]
-
-**When to Create New Skill**:
-[Your criteria]
-
----
-
-### Progressive Disclosure
-**Jean-Marc's Implementation**:
-[How you implement progressive disclosure in Qara]
-
-**Levels**:
-1. [Your level 1]
-2. [Your level 2]
-3. [etc.]
-
-**Reference**: See CONSTITUTION.md for detailed implementation
-
----
-
-## 🛠️ Process Definitions
+## Process Definitions
 
 ### Analysis vs. Action
 
-**Jean-Marc's Rule**:
-**Definition**: Distinguish between requests for analysis (explain, recommend) vs. requests for action (implement, fix).
+**Rule**: Distinguish between requests for analysis (explain, recommend) vs. requests for action (implement, fix).
 
-**Decision Tree**:
+**Decision tree**:
 ```
 "Analyze X" → Provide analysis ONLY, don't change anything
 "Fix X" → Take action, make changes
@@ -223,146 +111,43 @@ Build tools that work perfectly without AI, then add AI to make them easier to u
 "Use X for this" → Action
 ```
 
-**Why This Matters**:
-- Avoids unwanted changes
-- Respects Jean-Marc's agency
-- Clear communication
+**Why this matters**: Avoids unwanted changes. Respects Jean-Marc's agency. Clear communication.
 
 **Reference**: See stack-preferences.md lines 328-366
 
 ---
 
-### Spotcheck
+## Qara-Specific Concepts
 
-**Jean-Marc's Definition**:
-[Your specific requirements for spotcheck]
+### PAI (Personal AI Infrastructure)
 
-**When Spotcheck Required**:
-- After ANY parallel intern work
-- [Other scenarios]
+**Definition**: A personal OS layer where AI is the runtime, not just a tool you call.
 
-**Spotcheck Criteria**:
-- [What to verify]
-- [Quality standards]
-- [Consistency checks]
+**What this means**:
+- The `.claude/` directory IS the operating system — skills, hooks, agents, context
+- AI isn't a feature of the workflow; it IS the workflow
+- Everything is version-controlled, reproducible, and portable
+- The human sets direction; the AI executes with its own judgment within constraints
 
----
+### Qara
 
-### Sanitization (for public repos)
-**Jean-Marc's Criteria**:
-[What you consider properly sanitized]
+**Pronunciation**: KAH-rah
 
-**Must Remove**:
-- API keys, tokens, secrets
-- Personal emails, phone numbers
-- [Other sensitive data]
+**Etymology**: From Turkic/Mongolic *qara* meaning "black" — as in a dark horse, unexpected strength.
 
-**Must Replace**:
-- Paths: Use `${PAI_DIR}`
-- Emails: Use `user@example.com`
-- [Other replacements]
+**Identity**: Not just a tool or assistant. Qara is the system — the full PAI, the runtime, the infrastructure.
 
-**Reference**: See security-protocols.md and SECURITY.md
+### Skills System
+
+Defined in `CORE/SKILL.md`. Skills are modular, self-contained capability units loaded just-in-time via progressive disclosure.
+
+### Progressive Disclosure
+
+Defined in `CONSTITUTION.md`. Three tiers: SKILL.md (always loaded) → skill root docs (on-demand) → workflows/references (deep context). Only load what's needed.
 
 ---
 
-## 🗂️ Content Organization
-
-### Scratchpad vs. History
-**Jean-Marc's Distinction**:
-[Your mental model for what goes where]
-
-**Scratchpad** (`~/.claude/scratchpad/`):
-[Purpose, what goes here, retention policy]
-
-**History** (`~/.claude/history/`):
-[Purpose, what goes here, retention policy]
-
----
-
-## 🔧 Technical Preferences
-
-### "We hate Python"
-**Jean-Marc's Reasoning**:
-<!-- TODO: Jean-Marc, add your specific reasons -->
-[Your detailed reasoning for avoiding Python]
-
-**Exceptions**:
-[When Python is acceptable despite the preference]
-
-**Reference**: See stack-preferences.md
-
----
-
-### "Markdown Zealots"
-**Jean-Marc's Position**:
-**Position**: NEVER use HTML for basic content (paragraphs, headers, lists, links, emphasis).
-
-**HTML ONLY for**:
-- Custom components: `<aside>`, `<callout>`, `<notes>`
-- Complex layouts requiring CSS
-- Interactive elements
-
-**Why This Matters**:
-[Your reasoning]
-
-**Reference**: See stack-preferences.md lines 131-181
-
----
-
-## 📋 Template for New Definitions
-
-**When adding new definitions**, use this template:
-
-```markdown
-### [Concept Name]
-**Jean-Marc's Definition**:
-[Your definition in clear language]
-
-**Why This Definition Matters**:
-[Context, implications, practical impact]
-
-**Common Misconceptions**:
-[What others might think vs. your view]
-
-**Related Concepts**:
-- [Link to related definitions]
-- [Cross-references]
-
-**Examples**:
-✅ Good: [Example that fits your definition]
-❌ Bad: [Example that violates your definition]
-
-**References**:
-- [Link to other Qara docs where this is used]
-```
-
----
-
-## 🔗 Related Documentation
-- See `CONSTITUTION.md` for architectural principles
-- See `stack-preferences.md` for technical preferences
-- See `SKILL.md` for operational definitions
-- See `security-protocols.md` for security concepts
-
----
-
-## 📝 Maintenance Notes
-
-**Last Updated**: 2025-11-19
-
-**To Do**:
-- [ ] Add AGI definition
-- [ ] Add consciousness criteria
-- [ ] Define TDD approach
-- [ ] Explain "hate Python" reasoning
-- [ ] Define Qara pronunciation
-- [ ] Add process definitions
-- [ ] Document analysis vs. action criteria
-- [ ] Explain scratchpad vs. history distinction
-
-**Review Schedule**: Update when definitions evolve or new concepts become important
-
----
-
-**Usage Note**: When Qara references these concepts, it MUST use these definitions, not external sources. These represent Jean-Marc's understanding and framing, which is authoritative for all Qara operations.
+## Related Documentation
+- `CONSTITUTION.md` — architectural principles
+- `stack-preferences.md` — technical preferences
+- `security-protocols.md` — security concepts

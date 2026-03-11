@@ -182,9 +182,7 @@ example-skill/
 
 ## Documentation
 
-- **Architecture:** See `~/Projects/PAI/docs/ARCHITECTURE.md`
-- **Migration Guide:** See `~/Projects/PAI/docs/MIGRATION.md`
-- **Skill Development:** See `~/.claude/skills/create-skill/`
+- **Skill Development:** See `system-create-skill` skill
 
 ## References
 

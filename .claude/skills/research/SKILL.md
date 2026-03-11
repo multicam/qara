@@ -230,8 +230,8 @@ WebSearch is the foundation of `claude-researcher` agent:
 | Workflow | File | API Keys Needed |
 |----------|------|-----------------|
 | Multi-Source Research | `workflows/conduct.md` | Varies by agent |
-| Claude Research | `workflows/claude-research.md` | None (FREE) |
-| Perplexity Research | `workflows/perplexity-research.md` | PERPLEXITY_API_KEY |
+| Claude Research | `workflows/claude-research.ts` | None (FREE) |
+| Perplexity Research | `workflows/perplexity-research.ts` | PERPLEXITY_API_KEY |
 | Interview Prep | `workflows/interview-research.md` | None |
 | Content Retrieval | `workflows/retrieve.md` | None |
 | YouTube Extraction | `workflows/youtube-extraction.md` | None |

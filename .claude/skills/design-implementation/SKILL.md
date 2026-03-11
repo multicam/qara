@@ -24,7 +24,7 @@ description: |
 | "verify", "check", "screenshot" | `workflows/verify-visual.md` |
 | "fix errors", "fix the issues" | `workflows/fix-errors.md` |
 | "start server", "stop server" | `workflows/manage-server.md` |
-| "test interactions", "click test" | `workflows/test-interactions.md` |
+
 
 ---
 

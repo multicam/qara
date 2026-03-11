@@ -40,6 +40,9 @@ env:
 **When user says "background research", "research while I work", "async research", "look into X for me":**
 → **READ:** `${PAI_DIR}/skills/research/workflows/conduct.md`
 
+**When user says "rewind", "checkpoint", "rollback", "recover", "undo changes":**
+→ **READ:** `${PAI_DIR}/skills/CORE/workflows/checkpoint-protocol.md`
+
 ---
 
 ## 📚 Documentation Index
@@ -59,6 +62,11 @@ env:
 | Security | `security-protocols.md` | "API keys", "repo safety", "secrets management" |
 | Tool preferences | `TOOLS.md` | "which CLI tool for", "fd vs find", "bat vs cat" |
 | Delegation | `.claude/context/delegation-guide.md` | "which agent", "delegate", "parallel agents", "escalation" |
+| Context analysis | `.claude/hooks/lib/context-graph/cli.ts` | "orphan files", "impact analysis", "context graph", "skill dependencies" |
+| PAI visual aesthetic | `aesthetic.md` | "visual design", "PAI aesthetics", "color palette", "diagram style" |
+| Skill architecture | `skill-structure.md` | "skill archetypes", "skill structure", "routing hierarchy" |
+| Terminal tabs | `terminal-tabs.md` | "tab titles", "terminal tabs", "tab naming", "stop hook tabs" |
+| File organization | `workflows/file-organization-detailed.md` | "where to save", "file organization", "history vs scratchpad" |
 
 **Skills (on-demand):**
 - `hook-authoring` skill → hook creation

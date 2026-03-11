@@ -41,20 +41,9 @@ describe('devtools-mcp skill structure', () => {
     }
   });
 
-  it('should have all workflow files', () => {
-    const workflows = [
-      'workflow-smoke-test.md',
-      'workflow-visual-test.md',
-      'workflow-debug-console.md',
-      'workflow-component-debug.md',
-      'workflow-interactive.md',
-      'workflow-performance.md',
-      'workflow-accessibility.md',
-    ];
-
-    for (const wf of workflows) {
-      expect(existsSync(join(SKILL_DIR, 'docs', wf))).toBe(true);
-    }
+  it('should not have docs/ directory (SKILL.md forbids reading it)', () => {
+    // docs/ was purgatoied — SKILL.md rule 1: "Never read files in this skill's lib/ or docs/ directories"
+    expect(existsSync(join(SKILL_DIR, 'docs'))).toBe(false);
   });
 
   it('bin/devtools-mcp should be executable', () => {
@@ -453,39 +442,8 @@ describe('SKILL.md content', () => {
 });
 
 // =============================================================================
-// SECTION 7: Workflow validation
+// SECTION 7: (removed — docs/ purgatoied, workflow validation no longer applicable)
 // =============================================================================
-
-describe('component-debug workflow', () => {
-  const workflowContent = readFileSync(
-    join(SKILL_DIR, 'docs', 'workflow-component-debug.md'),
-    'utf-8'
-  );
-
-  it('should reference react-grab requirement', () => {
-    expect(workflowContent).toContain('react-grab');
-  });
-
-  it('should include all workflow steps', () => {
-    expect(workflowContent).toContain('navigate_page');
-    expect(workflowContent).toContain('list_console_messages');
-    expect(workflowContent).toContain('get_element_context');
-    expect(workflowContent).toContain('source file:line');
-  });
-
-  it('should have fallback for non-grab mode', () => {
-    expect(workflowContent).toContain('Fallback');
-  });
-
-  it('should reference get_element_context tool', () => {
-    expect(workflowContent).toContain('get_element_context');
-  });
-
-  it('should reference evaluate_script as fallback', () => {
-    expect(workflowContent).toContain('evaluate_script');
-    expect(workflowContent).toContain('__REACT_GRAB__');
-  });
-});
 
 // =============================================================================
 // SECTION 8: grab-inspect.mjs
