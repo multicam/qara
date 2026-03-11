@@ -218,6 +218,7 @@ Extend the base gap analysis matrix with PAI-specific rows:
 | Decision log | DECISIONS.md exists | ? | | |
 | Hook lib coverage | All 4 libs tested | ? | | |
 | CORE routing integrity | All paths resolve | ? | | |
+| Context graph health | 0 broken refs, 0 cycles | ? | | |
 | Agent specialization | No overlap | ? | | |
 | External skill versions | Up to date | ? | | |
 ```
@@ -265,6 +266,11 @@ Extend the base gap analysis matrix with PAI-specific rows:
 bun run .claude/skills/cc-upgrade-pai/scripts/analyse-pai.ts $PAI_DIR
 ```
 
+### Context Graph Audit
+```bash
+bun run .claude/hooks/lib/context-graph/cli.ts audit --pai-dir $PAI_DIR/.claude
+```
+
 ### Hook Test Coverage
 ```bash
 cd $PAI_DIR/.claude/hooks && bun test --coverage
@@ -282,14 +288,20 @@ cd $PAI_DIR/.claude/hooks && bun test --coverage
    bun run .claude/skills/cc-upgrade-pai/scripts/analyse-pai.ts .
    ```
 
-3. **Check hook coverage:**
+3. **Run context graph audit:**
+   ```bash
+   bun run .claude/hooks/lib/context-graph/cli.ts audit --pai-dir .claude
+   ```
+   Check for: broken references, orphaned files, circular dependencies, bloated skills.
+
+4. **Check hook coverage:**
    ```bash
    cd .claude/hooks && bun test --coverage
    ```
 
-4. **Generate combined report** using the format above
+5. **Generate combined report** using the format above
 
-5. **Update external skills** (visual-explainer):
+6. **Update external skills** (visual-explainer):
    ```bash
    # Check if update available
    gh api repos/nicobailon/visual-explainer/releases/latest --jq '.tag_name'
@@ -297,9 +309,9 @@ cd $PAI_DIR/.claude/hooks && bun test --coverage
    ```
    If outdated, run the update procedure from section 6 above.
 
-6. **Apply fixes** from the report recommendations
+7. **Apply fixes** from the report recommendations
 
-7. **Update all affected documentation (MANDATORY after any changes):**
+8. **Update all affected documentation (MANDATORY after any changes):**
    - Update docs that reference changed files, patterns, or architecture
    - Key docs to check: `delegation-guide.md`, `MEMORY.md`
    - If `settings.json` changed: verify symlink at `~/.claude/settings.json` still resolves correctly
@@ -308,7 +320,7 @@ cd $PAI_DIR/.claude/hooks && bun test --coverage
    - If skills added/removed: update CORE documentation index
    - **Do NOT skip this step** — stale docs cause cascading confusion in future sessions
 
-8. **Post-fix validation (MANDATORY after any changes):**
+9. **Post-fix validation (MANDATORY after any changes):**
    - Run hook health check: load `hook-test` skill workflow (`${PAI_DIR}/skills/hook-test/workflows/test-and-fix.md`) and execute all 8 steps
    - Run full test suite: `bun run test`
    - Run shell scripts: `scripts/validate-skills.sh`, `scripts/check-references.sh`
