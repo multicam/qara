@@ -12,6 +12,7 @@
 import { readFile } from 'fs/promises';
 import { resolve } from 'path';
 import { isReactProject, detectReactGrab } from './react-grab-detect.mjs';
+import { isSvelteProject, detectSvelteGrab } from './svelte-grab-detect.mjs';
 
 /**
  * Framework detection from package.json dependencies
@@ -198,12 +199,17 @@ export async function detectDevConfig(projectPath = process.cwd()) {
     // Build URL
     const url = `http://localhost:${port}`;
 
-    // React and react-grab detection (parallel with package manager)
+    // React, Svelte, and grab detection (parallel with package manager)
     const isReact = isReactProject(pkg);
-    const [pm, reactGrab] = await Promise.all([
+    const isSvelte = isSvelteProject(pkg);
+    const [pm, reactGrab, svelteGrab] = await Promise.all([
       detectPackageManager(projectPath),
       isReact ? detectReactGrab(projectPath) : Promise.resolve(null),
+      isSvelte ? detectSvelteGrab(projectPath) : Promise.resolve(null),
     ]);
+
+    // Unified grab field — whichever is active
+    const grab = reactGrab || svelteGrab || null;
 
     // Build start command using package manager + script name
     const startCommand = devScriptName ? `${pm} ${devScriptName}` : `${pm} run dev`;
@@ -216,6 +222,9 @@ export async function detectDevConfig(projectPath = process.cwd()) {
       devScript,
       isReact,
       reactGrab,
+      isSvelte,
+      svelteGrab,
+      grab,
       detected: true,
       projectPath,
     };

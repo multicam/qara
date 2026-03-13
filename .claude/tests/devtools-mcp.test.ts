@@ -33,6 +33,7 @@ describe('devtools-mcp skill structure', () => {
       'lib/prompt-builder.mjs',
       'lib/result-parser.mjs',
       'lib/grab-inspect.mjs',
+      'lib/svelte-grab-detect.mjs',
       'templates/mcp-config.json',
     ];
 
@@ -527,14 +528,16 @@ describe('CLI bug fixes', () => {
     expect(cliContent).toContain('if [[ -n "$_CACHED_CONFIG" ]]');
   });
 
-  it('cmd_verify should detect React and pass --react flag', () => {
+  it('cmd_verify should detect React/Svelte and pass flags', () => {
     // Extract cmd_verify function
     const verifyMatch = cliContent.match(/cmd_verify\(\)\s*\{[\s\S]*?\n\}/);
     expect(verifyMatch).not.toBeNull();
     const verifyFn = verifyMatch![0];
-    expect(verifyFn).toContain('react_flag');
+    expect(verifyFn).toContain('grab_flags');
     expect(verifyFn).toContain('--react');
+    expect(verifyFn).toContain('--svelte');
     expect(verifyFn).toContain('.isReact');
+    expect(verifyFn).toContain('.isSvelte');
   });
 });
 
@@ -542,11 +545,12 @@ describe('CLI bug fixes', () => {
 // SECTION 11: mcp-verify.mjs --react flag
 // =============================================================================
 
-describe('mcp-verify --react CLI flag', () => {
-  it('should parse --react from process.argv in CLI section', () => {
+describe('mcp-verify --react and --svelte CLI flags', () => {
+  it('should parse --react and --svelte from process.argv in CLI section', () => {
     const verifyContent = readFileSync(join(SKILL_DIR, 'lib', 'mcp-verify.mjs'), 'utf-8');
     expect(verifyContent).toContain("process.argv.includes('--react')");
-    expect(verifyContent).toContain('{ isReact }');
+    expect(verifyContent).toContain("process.argv.includes('--svelte')");
+    expect(verifyContent).toContain('{ isReact, isSvelte }');
   });
 });
 
@@ -929,5 +933,394 @@ describe('checkGrabMcpConfigured MCP config parsing', () => {
     const result = await mod.checkGrabMcpConfigured(projectDir);
     expect(result).toHaveProperty('configured');
     expect(result).toHaveProperty('configPath');
+  });
+});
+
+// =============================================================================
+// SECTION 15: svelte-grab-detect.mjs
+// =============================================================================
+
+describe('svelte-grab-detect module', () => {
+  let mod: typeof import('../skills/devtools-mcp/lib/svelte-grab-detect.mjs');
+
+  beforeAll(async () => {
+    mod = await import('../skills/devtools-mcp/lib/svelte-grab-detect.mjs');
+  });
+
+  describe('isSvelteProject', () => {
+    it('should return true for Svelte in dependencies', () => {
+      expect(mod.isSvelteProject({ dependencies: { svelte: '^4.0.0' } })).toBe(true);
+    });
+
+    it('should return true for Svelte in devDependencies', () => {
+      expect(mod.isSvelteProject({ devDependencies: { svelte: '^5.0.0' } })).toBe(true);
+    });
+
+    it('should return false for non-Svelte project', () => {
+      expect(mod.isSvelteProject({ dependencies: { react: '^18.0.0' } })).toBe(false);
+    });
+
+    it('should return false for null/undefined', () => {
+      expect(mod.isSvelteProject(null)).toBe(false);
+      expect(mod.isSvelteProject(undefined)).toBe(false);
+    });
+
+    it('should return false for empty dependencies', () => {
+      expect(mod.isSvelteProject({})).toBe(false);
+      expect(mod.isSvelteProject({ dependencies: {} })).toBe(false);
+    });
+  });
+
+  describe('detectSvelteFramework', () => {
+    it('should detect SvelteKit', () => {
+      expect(mod.detectSvelteFramework({ dependencies: { '@sveltejs/kit': '^2.0.0', svelte: '^5.0.0' } })).toBe('sveltekit');
+    });
+
+    it('should detect svelte-vite for Svelte + Vite', () => {
+      expect(mod.detectSvelteFramework({ devDependencies: { svelte: '^5.0.0', vite: '^5.0.0' } })).toBe('svelte-vite');
+    });
+
+    it('should fall back to svelte-vite for bare Svelte', () => {
+      expect(mod.detectSvelteFramework({ dependencies: { svelte: '^4.0.0' } })).toBe('svelte-vite');
+    });
+
+    it('should return null for non-Svelte project', () => {
+      expect(mod.detectSvelteFramework({ dependencies: { react: '^18.0.0' } })).toBeNull();
+    });
+
+    it('should return null for null input', () => {
+      expect(mod.detectSvelteFramework(null)).toBeNull();
+    });
+  });
+
+  describe('isSvelteGrabInstalled', () => {
+    it('should detect svelte-grab in devDependencies', () => {
+      expect(mod.isSvelteGrabInstalled({ devDependencies: { 'svelte-grab': '^1.4.0' } })).toBe(true);
+    });
+
+    it('should detect @ygo/svelte-grab', () => {
+      expect(mod.isSvelteGrabInstalled({ dependencies: { '@ygo/svelte-grab': '^1.0.0' } })).toBe(true);
+    });
+
+    it('should return false when not installed', () => {
+      expect(mod.isSvelteGrabInstalled({ dependencies: { svelte: '^5.0.0' } })).toBe(false);
+    });
+
+    it('should return false for null', () => {
+      expect(mod.isSvelteGrabInstalled(null)).toBe(false);
+    });
+  });
+
+  describe('checkSvelteGrabInjected', () => {
+    const tmpBase = join(tmpdir(), 'svelte-grab-inject-' + Date.now());
+
+    beforeAll(() => {
+      mkdirSync(tmpBase, { recursive: true });
+    });
+
+    it('should detect SvelteDevKit in SvelteKit layout', async () => {
+      const projectDir = join(tmpBase, 'sveltekit-test');
+      mkdirSync(join(projectDir, 'src', 'routes'), { recursive: true });
+      writeFileSync(
+        join(projectDir, 'src', 'routes', '+layout.svelte'),
+        `<script>
+  import { SvelteDevKit } from 'svelte-grab'
+</script>
+
+<SvelteDevKit enableMcp />
+<slot />`
+      );
+
+      const result = await mod.checkSvelteGrabInjected(projectDir, 'sveltekit');
+      expect(result.injected).toBe(true);
+      expect(result.layoutFile).toBe('src/routes/+layout.svelte');
+    });
+
+    it('should return false when component not in layout', async () => {
+      const projectDir = join(tmpBase, 'sveltekit-no-grab');
+      mkdirSync(join(projectDir, 'src', 'routes'), { recursive: true });
+      writeFileSync(
+        join(projectDir, 'src', 'routes', '+layout.svelte'),
+        `<slot />`
+      );
+
+      const result = await mod.checkSvelteGrabInjected(projectDir, 'sveltekit');
+      expect(result.injected).toBe(false);
+      expect(result.layoutFile).toBe('src/routes/+layout.svelte');
+    });
+
+    it('should detect svelte-grab in svelte-vite App.svelte', async () => {
+      const projectDir = join(tmpBase, 'svelte-vite-test');
+      mkdirSync(join(projectDir, 'src'), { recursive: true });
+      writeFileSync(
+        join(projectDir, 'src', 'App.svelte'),
+        `<script>
+  import { SvelteGrab } from 'svelte-grab'
+</script>
+
+<SvelteGrab />
+<main>Hello</main>`
+      );
+
+      const result = await mod.checkSvelteGrabInjected(projectDir, 'svelte-vite');
+      expect(result.injected).toBe(true);
+    });
+
+    it('should return null layoutFile when no files found', async () => {
+      const projectDir = join(tmpBase, 'empty-svelte');
+      mkdirSync(projectDir, { recursive: true });
+
+      const result = await mod.checkSvelteGrabInjected(projectDir, 'sveltekit');
+      expect(result.injected).toBe(false);
+      expect(result.layoutFile).toBeNull();
+    });
+
+    it('should handle unknown framework variant', async () => {
+      const projectDir = join(tmpBase, 'unknown-svelte');
+      mkdirSync(projectDir, { recursive: true });
+
+      const result = await mod.checkSvelteGrabInjected(projectDir, 'unknown-framework');
+      expect(result.injected).toBe(false);
+      expect(result.layoutFile).toBeNull();
+    });
+
+    afterAll(() => {
+      rmSync(tmpBase, { recursive: true, force: true });
+    });
+  });
+
+  describe('detectSvelteGrab (full detection)', () => {
+    const tmpBase = join(tmpdir(), 'svelte-grab-full-' + Date.now());
+
+    beforeAll(() => {
+      mkdirSync(tmpBase, { recursive: true });
+    });
+
+    it('should return isSvelte: false for non-Svelte project', async () => {
+      const projectDir = join(tmpBase, 'react-project');
+      mkdirSync(projectDir, { recursive: true });
+      writeFileSync(
+        join(projectDir, 'package.json'),
+        JSON.stringify({ dependencies: { react: '^18.0.0' } })
+      );
+
+      const result = await mod.detectSvelteGrab(projectDir);
+      expect(result.isSvelte).toBe(false);
+      expect(result.ready).toBe(false);
+    });
+
+    it('should return isSvelte: true, installed: false for bare Svelte project', async () => {
+      const projectDir = join(tmpBase, 'bare-svelte');
+      mkdirSync(projectDir, { recursive: true });
+      writeFileSync(
+        join(projectDir, 'package.json'),
+        JSON.stringify({ dependencies: { svelte: '^5.0.0', '@sveltejs/kit': '^2.0.0' } })
+      );
+
+      const result = await mod.detectSvelteGrab(projectDir);
+      expect(result.isSvelte).toBe(true);
+      expect(result.installed).toBe(false);
+      expect(result.ready).toBe(false);
+    });
+
+    it('should detect installed svelte-grab', async () => {
+      const projectDir = join(tmpBase, 'svelte-with-grab');
+      mkdirSync(projectDir, { recursive: true });
+      writeFileSync(
+        join(projectDir, 'package.json'),
+        JSON.stringify({
+          dependencies: { svelte: '^5.0.0', '@sveltejs/kit': '^2.0.0' },
+          devDependencies: { 'svelte-grab': '^1.4.0' },
+        })
+      );
+
+      const result = await mod.detectSvelteGrab(projectDir);
+      expect(result.isSvelte).toBe(true);
+      expect(result.installed).toBe(true);
+    });
+
+    it('should handle missing package.json gracefully', async () => {
+      const projectDir = join(tmpBase, 'no-package-json');
+      mkdirSync(projectDir, { recursive: true });
+
+      const result = await mod.detectSvelteGrab(projectDir);
+      expect(result.isSvelte).toBe(false);
+      expect(result.ready).toBe(false);
+    });
+
+    afterAll(() => {
+      rmSync(tmpBase, { recursive: true, force: true });
+    });
+  });
+});
+
+// =============================================================================
+// SECTION 16: auto-detect.mjs Svelte fields + unified grab field
+// =============================================================================
+
+describe('auto-detect Svelte fields', () => {
+  let autoDetect: typeof import('../skills/devtools-mcp/lib/auto-detect.mjs');
+  const tmpBase = join(tmpdir(), 'devtools-autodetect-svelte-' + Date.now());
+
+  beforeAll(async () => {
+    autoDetect = await import('../skills/devtools-mcp/lib/auto-detect.mjs');
+    mkdirSync(tmpBase, { recursive: true });
+  });
+
+  it('should include isSvelte: true for Svelte projects', async () => {
+    const projectDir = join(tmpBase, 'svelte-kit');
+    mkdirSync(projectDir, { recursive: true });
+    writeFileSync(
+      join(projectDir, 'package.json'),
+      JSON.stringify({
+        scripts: { dev: 'vite dev' },
+        dependencies: { svelte: '^5.0.0', '@sveltejs/kit': '^2.0.0' },
+      })
+    );
+
+    const config = await autoDetect.detectDevConfig(projectDir);
+    expect(config.detected).toBe(true);
+    expect(config.isSvelte).toBe(true);
+    expect(config.svelteGrab).toBeDefined();
+    expect(config.svelteGrab).not.toBeNull();
+  });
+
+  it('should include isSvelte: false for non-Svelte projects', async () => {
+    const projectDir = join(tmpBase, 'react-only');
+    mkdirSync(projectDir, { recursive: true });
+    writeFileSync(
+      join(projectDir, 'package.json'),
+      JSON.stringify({
+        scripts: { dev: 'next dev' },
+        dependencies: { react: '^18.0.0', next: '^14.0.0' },
+      })
+    );
+
+    const config = await autoDetect.detectDevConfig(projectDir);
+    expect(config.detected).toBe(true);
+    expect(config.isSvelte).toBe(false);
+    expect(config.svelteGrab).toBeNull();
+  });
+
+  it('should have unified grab field from React', async () => {
+    const projectDir = join(tmpBase, 'react-grab-unified');
+    mkdirSync(projectDir, { recursive: true });
+    writeFileSync(
+      join(projectDir, 'package.json'),
+      JSON.stringify({
+        scripts: { dev: 'next dev' },
+        dependencies: { react: '^18.0.0', next: '^14.0.0' },
+      })
+    );
+
+    const config = await autoDetect.detectDevConfig(projectDir);
+    expect(config.grab).toBeDefined();
+    // grab should be the reactGrab result (since it's a React project)
+    expect(config.grab).toEqual(config.reactGrab);
+  });
+
+  it('should have unified grab field from Svelte', async () => {
+    const projectDir = join(tmpBase, 'svelte-grab-unified');
+    mkdirSync(projectDir, { recursive: true });
+    writeFileSync(
+      join(projectDir, 'package.json'),
+      JSON.stringify({
+        scripts: { dev: 'vite dev' },
+        dependencies: { svelte: '^5.0.0', '@sveltejs/kit': '^2.0.0' },
+      })
+    );
+
+    const config = await autoDetect.detectDevConfig(projectDir);
+    expect(config.grab).toBeDefined();
+    // grab should be the svelteGrab result (since it's a Svelte project)
+    expect(config.grab).toEqual(config.svelteGrab);
+  });
+
+  it('should have null grab for non-React/non-Svelte projects', async () => {
+    const projectDir = join(tmpBase, 'astro-only');
+    mkdirSync(projectDir, { recursive: true });
+    writeFileSync(
+      join(projectDir, 'package.json'),
+      JSON.stringify({
+        scripts: { dev: 'astro dev' },
+        dependencies: { astro: '^4.0.0' },
+      })
+    );
+
+    const config = await autoDetect.detectDevConfig(projectDir);
+    expect(config.grab).toBeNull();
+  });
+
+  afterAll(() => {
+    rmSync(tmpBase, { recursive: true, force: true });
+  });
+});
+
+// =============================================================================
+// SECTION 17: CLI svelte-grab support validation
+// =============================================================================
+
+describe('CLI svelte-grab support', () => {
+  const cliContent = readFileSync(join(SKILL_DIR, 'bin', 'devtools-mcp'), 'utf-8');
+
+  it('should have verify_svelte_grab_setup function', () => {
+    expect(cliContent).toContain('verify_svelte_grab_setup()');
+  });
+
+  it('should have verify_react_grab_setup function (renamed from inline)', () => {
+    expect(cliContent).toContain('verify_react_grab_setup()');
+  });
+
+  it('should dispatch verify_grab_setup to React or Svelte', () => {
+    expect(cliContent).toContain('verify_react_grab_setup "$config"');
+    expect(cliContent).toContain('verify_svelte_grab_setup "$config"');
+  });
+
+  it('should check isSvelte in verify_grab_setup', () => {
+    expect(cliContent).toContain('.isSvelte');
+  });
+
+  it('should use svelteGrab from cached config', () => {
+    expect(cliContent).toContain('.svelteGrab');
+  });
+
+  it('should have SvelteKit-specific guidance in verify_svelte_grab_setup', () => {
+    expect(cliContent).toContain('sveltekit)');
+    expect(cliContent).toContain('svelte-vite)');
+    expect(cliContent).toContain('SvelteDevKit');
+  });
+
+  it('should pass --svelte flag in cmd_verify', () => {
+    const verifyMatch = cliContent.match(/cmd_verify\(\)\s*\{[\s\S]*?\n\}/);
+    expect(verifyMatch).not.toBeNull();
+    const verifyFn = verifyMatch![0];
+    expect(verifyFn).toContain('--svelte');
+    expect(verifyFn).toContain('.isSvelte');
+  });
+
+  it('should show --grab works for React or Svelte in help text', () => {
+    expect(cliContent).toContain('React or Svelte');
+  });
+});
+
+// =============================================================================
+// SECTION 18: MCP config template includes svelte-grab-mcp
+// =============================================================================
+
+describe('MCP config template svelte-grab-mcp', () => {
+  it('should include svelte-grab-mcp server', () => {
+    const configPath = join(SKILL_DIR, 'templates', 'mcp-config.json');
+    const config = JSON.parse(readFileSync(configPath, 'utf-8'));
+
+    expect(config.mcpServers['svelte-grab-mcp']).toBeDefined();
+    expect(config.mcpServers['svelte-grab-mcp'].command).toBe('bunx');
+    expect(config.mcpServers['svelte-grab-mcp'].args).toContain('svelte-grab-mcp');
+  });
+
+  it('should still have react-grab-mcp server (backward compat)', () => {
+    const configPath = join(SKILL_DIR, 'templates', 'mcp-config.json');
+    const config = JSON.parse(readFileSync(configPath, 'utf-8'));
+
+    expect(config.mcpServers['react-grab-mcp']).toBeDefined();
   });
 });

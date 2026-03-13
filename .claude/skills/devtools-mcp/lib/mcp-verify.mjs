@@ -18,7 +18,8 @@ import { homedir } from 'os';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { detectBrowser } from './browser-detect.mjs';
-import { detectReactGrab, isReactProject } from './react-grab-detect.mjs';
+import { detectReactGrab } from './react-grab-detect.mjs';
+import { detectSvelteGrab } from './svelte-grab-detect.mjs';
 
 /**
  * MCP config file path
@@ -246,8 +247,46 @@ async function checkReactGrabSetup(options = {}) {
 }
 
 /**
+ * Check svelte-grab setup (only run for Svelte projects)
+ */
+async function checkSvelteGrabSetup(options = {}) {
+  if (!options.isSvelte) {
+    return { passed: true, skipped: true, reason: 'Not a Svelte project' };
+  }
+
+  const grabStatus = options.svelteGrab || await detectSvelteGrab(process.cwd());
+
+  const issues = [];
+
+  if (!grabStatus.installed) {
+    issues.push('svelte-grab not installed');
+  }
+  if (!grabStatus.componentInjected) {
+    const file = grabStatus.layoutFile || 'layout file';
+    issues.push(`SvelteGrab component not found in ${file}`);
+  }
+  if (!grabStatus.mcpConfigured) {
+    issues.push('svelte-grab MCP server not configured');
+  }
+
+  if (issues.length === 0) {
+    return {
+      passed: true,
+      framework: grabStatus.framework,
+    };
+  }
+
+  return {
+    passed: false,
+    error: issues.join('; '),
+    fix: 'Run: npx svelte-grab init\nSee: devtools-mcp start --grab for detailed setup guidance',
+    details: grabStatus,
+  };
+}
+
+/**
  * Main verification function
- * @param {Object} options - Optional: { isReact, reactGrab } from auto-detect
+ * @param {Object} options - Optional: { isReact, reactGrab, isSvelte, svelteGrab } from auto-detect
  */
 export async function verifyMcpSetup(options = {}) {
   const checks = {
@@ -261,6 +300,11 @@ export async function verifyMcpSetup(options = {}) {
   // Conditionally add react-grab checks for React projects
   if (options.isReact) {
     checks.reactGrabSetup = await checkReactGrabSetup(options);
+  }
+
+  // Conditionally add svelte-grab checks for Svelte projects
+  if (options.isSvelte) {
+    checks.svelteGrabSetup = await checkSvelteGrabSetup(options);
   }
 
   const errors = [];
@@ -347,7 +391,8 @@ const __filename = fileURLToPath(import.meta.url);
 if (process.argv[1] && resolve(process.argv[1]) === resolve(__filename)) {
   try {
     const isReact = process.argv.includes('--react');
-    const results = await verifyMcpSetup({ isReact });
+    const isSvelte = process.argv.includes('--svelte');
+    const results = await verifyMcpSetup({ isReact, isSvelte });
     console.log(formatVerificationResults(results));
   } catch (error) {
     console.error('Verification failed:', error.message);

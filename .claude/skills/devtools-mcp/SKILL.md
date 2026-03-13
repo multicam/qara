@@ -55,8 +55,9 @@ Dark mode: emulate colorScheme="dark" → screenshot → emulate colorScheme="li
 ### Interactive
 Follow user instructions using the tools above. No predefined sequence.
 
-### Component Debug (requires --grab / react-grab MCP)
+### Component Debug (requires --grab / react-grab or svelte-grab MCP)
 1. navigate_page → 2. list_console_messages → 3. User selects element → 4. get_element_context → 5. Read source file:line → 6. Propose fix
+**Svelte extra tools (via svelte-grab-mcp):** get_style_context, get_a11y_report, get_error_context, get_profiler_report
 
 ### Restart (Browser)
 When user says "restart":

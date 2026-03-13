@@ -154,6 +154,25 @@ export async function evaluate(expression, port = DEFAULT_PORT) {
     return cdpEval(wsUrl, expression)
 }
 
+/**
+ * Detect whether the page uses react-grab or svelte-grab
+ * Returns 'react' | 'svelte' | null
+ */
+export async function detectGrabType(port = DEFAULT_PORT) {
+    const wsUrl = await getPageWs(port)
+    if (!wsUrl) return null
+
+    // Check for react-grab global
+    const reactResult = await cdpEval(wsUrl, '(function() { return JSON.stringify({ found: !!window.__REACT_GRAB__ }); })()')
+    if (reactResult?.found) return 'react'
+
+    // Check for svelte-grab DOM marker
+    const svelteResult = await cdpEval(wsUrl, '(function() { return JSON.stringify({ found: !!document.querySelector("[data-svelte-grab]") }); })()')
+    if (svelteResult?.found) return 'svelte'
+
+    return null
+}
+
 // --- CLI ---
 const __filename = fileURLToPath(import.meta.url)
 if (process.argv[1] && resolve(process.argv[1]) === resolve(__filename)) {

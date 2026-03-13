@@ -74,7 +74,7 @@ Commands:
 Options:
   --url <url>         Override URL (default: auto-detect)
   --pages <pages>     Comma-separated page paths
-  --grab              Enable react-grab MCP (React projects only)
+  --grab              Enable grab MCP (React or Svelte projects)
   --no-server         Don't start dev server (for live URLs)
   --verbose           Show detailed output
 
@@ -85,16 +85,16 @@ Examples:
   # Start dev server
   devtools-mcp start
 
-  # Start with react-grab enabled
+  # Start with grab enabled (React or Svelte)
   devtools-mcp start --grab
 
-  # Restart with react-grab addon
+  # Restart with grab addon
   devtools-mcp restart grab
 
   # Test local dev server (auto-detected)
   devtools-mcp smoke
 
-  # Debug with react-grab component context
+  # Debug with grab component context (React or Svelte)
   devtools-mcp debug --grab
 
   # Test live URL
@@ -250,24 +250,8 @@ ensure_dev_server() {
 }
 
 # Verify react-grab setup (exits with guidance on failure)
-verify_grab_setup() {
-    local config
-    config=$(get_dev_config) || {
-        print_error "Failed to detect project config"
-        return 1
-    }
-
-    local is_react
-    is_react=$(echo "$config" | jq -r '.isReact // false')
-
-    if [[ "$is_react" != "true" ]]; then
-        local framework
-        framework=$(echo "$config" | jq -r '.framework // "unknown"')
-        print_error "react-grab requires a React project"
-        echo "  Detected framework: ${framework} (no React dependency found)"
-        echo "  react-grab only works with React-based projects."
-        return 1
-    fi
+verify_react_grab_setup() {
+    local config="$1"
 
     # Use reactGrab from cached config — no separate node spawn
     local grab_json
@@ -287,81 +271,187 @@ verify_grab_setup() {
     fi
 
     # Not ready — give specific guidance
-    if [[ "$installed" != "true" || "$script_injected" != "true" || "$mcp_configured" != "true" ]]; then
-
-        if [[ "$installed" != "true" ]]; then
-            print_error "react-grab not installed in this project"
-            echo ""
-            echo "  Setup (one-time):"
-            echo "    bunx -y grab@latest init"
-            echo ""
-            echo "  This will:"
-            echo "    1. Add react-grab to devDependencies"
-            echo "    2. Inject the grab <Script> into your layout file"
-            echo "    3. Configure the MCP server"
-            echo ""
-            echo "  Then retry: devtools-mcp start --grab"
-            return 1
-        fi
-
-        if [[ "$script_injected" != "true" ]]; then
-            print_error "react-grab script not found in ${layout_file}"
-            echo ""
-            case "$framework_variant" in
-                next-app)
-                    echo "  Add to ${layout_file}:"
-                    echo "    import Script from 'next/script'"
-                    echo ""
-                    echo "    // Inside <body>, add:"
-                    echo "    <Script src=\"https://unpkg.com/react-grab\" strategy=\"afterInteractive\" />"
-                    ;;
-                next-pages)
-                    echo "  Add to ${layout_file} <Head>:"
-                    echo "    <script src=\"https://unpkg.com/react-grab\" />"
-                    ;;
-                vite|cra)
-                    echo "  Add to ${layout_file} <head>:"
-                    echo "    <script src=\"https://unpkg.com/react-grab\"></script>"
-                    ;;
-                gatsby)
-                    echo "  Add to ${layout_file}:"
-                    echo "    export const onClientEntry = () => {"
-                    echo "      const script = document.createElement('script')"
-                    echo "      script.src = 'https://unpkg.com/react-grab'"
-                    echo "      document.head.appendChild(script)"
-                    echo "    }"
-                    ;;
-                *)
-                    echo "  Add react-grab script to your app's HTML head:"
-                    echo "    <script src=\"https://unpkg.com/react-grab\"></script>"
-                    ;;
-            esac
-            echo ""
-            echo "  Or run: bunx -y grab@latest init"
-            return 1
-        fi
-
-        if [[ "$mcp_configured" != "true" ]]; then
-            print_error "react-grab MCP server not found in Claude config"
-            echo ""
-            echo "  Add to MCP config:"
-            echo "    bunx -y grab@latest add mcp"
-            echo ""
-            echo "  Or manually add to ~/.config/claude-desktop/claude_desktop_config.json:"
-            echo "    \"react-grab-mcp\": {"
-            echo "      \"command\": \"bunx\","
-            echo "      \"args\": [\"-y\", \"@react-grab/mcp\", \"--stdio\"]"
-            echo "    }"
-            return 1
-        fi
-
-        # Generic fallback
-        print_error "react-grab not ready. Run: bunx -y grab@latest init"
+    if [[ "$installed" != "true" ]]; then
+        print_error "react-grab not installed in this project"
+        echo ""
+        echo "  Setup (one-time):"
+        echo "    bunx -y grab@latest init"
+        echo ""
+        echo "  This will:"
+        echo "    1. Add react-grab to devDependencies"
+        echo "    2. Inject the grab <Script> into your layout file"
+        echo "    3. Configure the MCP server"
+        echo ""
+        echo "  Then retry: devtools-mcp start --grab"
         return 1
     fi
 
-    # Shouldn't reach here, but just in case
+    if [[ "$script_injected" != "true" ]]; then
+        print_error "react-grab script not found in ${layout_file}"
+        echo ""
+        case "$framework_variant" in
+            next-app)
+                echo "  Add to ${layout_file}:"
+                echo "    import Script from 'next/script'"
+                echo ""
+                echo "    // Inside <body>, add:"
+                echo "    <Script src=\"https://unpkg.com/react-grab\" strategy=\"afterInteractive\" />"
+                ;;
+            next-pages)
+                echo "  Add to ${layout_file} <Head>:"
+                echo "    <script src=\"https://unpkg.com/react-grab\" />"
+                ;;
+            vite|cra)
+                echo "  Add to ${layout_file} <head>:"
+                echo "    <script src=\"https://unpkg.com/react-grab\"></script>"
+                ;;
+            gatsby)
+                echo "  Add to ${layout_file}:"
+                echo "    export const onClientEntry = () => {"
+                echo "      const script = document.createElement('script')"
+                echo "      script.src = 'https://unpkg.com/react-grab'"
+                echo "      document.head.appendChild(script)"
+                echo "    }"
+                ;;
+            *)
+                echo "  Add react-grab script to your app's HTML head:"
+                echo "    <script src=\"https://unpkg.com/react-grab\"></script>"
+                ;;
+        esac
+        echo ""
+        echo "  Or run: bunx -y grab@latest init"
+        return 1
+    fi
+
+    if [[ "$mcp_configured" != "true" ]]; then
+        print_error "react-grab MCP server not found in Claude config"
+        echo ""
+        echo "  Add to MCP config:"
+        echo "    bunx -y grab@latest add mcp"
+        echo ""
+        echo "  Or manually add to ~/.config/claude-desktop/claude_desktop_config.json:"
+        echo "    \"react-grab-mcp\": {"
+        echo "      \"command\": \"bunx\","
+        echo "      \"args\": [\"-y\", \"@react-grab/mcp\", \"--stdio\"]"
+        echo "    }"
+        return 1
+    fi
+
     print_error "react-grab not ready. Run: bunx -y grab@latest init"
+    return 1
+}
+
+# Verify svelte-grab setup (exits with guidance on failure)
+verify_svelte_grab_setup() {
+    local config="$1"
+
+    # Use svelteGrab from cached config
+    local grab_json
+    grab_json=$(echo "$config" | jq '.svelteGrab // {}')
+
+    local installed component_injected mcp_configured layout_file framework_variant ready
+    installed=$(echo "$grab_json" | jq -r '.installed // false')
+    component_injected=$(echo "$grab_json" | jq -r '.componentInjected // false')
+    mcp_configured=$(echo "$grab_json" | jq -r '.mcpConfigured // false')
+    layout_file=$(echo "$grab_json" | jq -r '.layoutFile // "layout file"')
+    framework_variant=$(echo "$grab_json" | jq -r '.framework // "unknown"')
+    ready=$(echo "$grab_json" | jq -r '.ready // false')
+
+    if [[ "$ready" == "true" ]]; then
+        print_success "svelte-grab MCP active"
+        return 0
+    fi
+
+    # Not ready — give specific guidance
+    if [[ "$installed" != "true" ]]; then
+        print_error "svelte-grab not installed in this project"
+        echo ""
+        echo "  Setup (one-time):"
+        echo "    npx svelte-grab init"
+        echo ""
+        echo "  This will:"
+        echo "    1. Add svelte-grab to devDependencies"
+        echo "    2. Inject <SvelteDevKit> into your layout"
+        echo "    3. Configure the MCP server"
+        echo ""
+        echo "  Then retry: devtools-mcp start --grab"
+        return 1
+    fi
+
+    if [[ "$component_injected" != "true" ]]; then
+        print_error "SvelteGrab component not found in ${layout_file}"
+        echo ""
+        case "$framework_variant" in
+            sveltekit)
+                echo "  Add to ${layout_file}:"
+                echo "    <script>"
+                echo "      import { SvelteDevKit } from 'svelte-grab'"
+                echo "    </script>"
+                echo ""
+                echo "    <SvelteDevKit enableMcp />"
+                echo "    <slot />"
+                ;;
+            svelte-vite)
+                echo "  Add to ${layout_file}:"
+                echo "    <script>"
+                echo "      import { SvelteDevKit } from 'svelte-grab'"
+                echo "    </script>"
+                echo ""
+                echo "    <SvelteDevKit enableMcp />"
+                ;;
+            *)
+                echo "  Add SvelteDevKit component to your app's root layout:"
+                echo "    import { SvelteDevKit } from 'svelte-grab'"
+                echo "    <SvelteDevKit enableMcp />"
+                ;;
+        esac
+        echo ""
+        echo "  Or run: npx svelte-grab init"
+        return 1
+    fi
+
+    if [[ "$mcp_configured" != "true" ]]; then
+        print_error "svelte-grab MCP server not found in Claude config"
+        echo ""
+        echo "  Add to MCP config (.mcp.json or claude_desktop_config.json):"
+        echo "    \"svelte-grab-mcp\": {"
+        echo "      \"command\": \"bunx\","
+        echo "      \"args\": [\"-y\", \"svelte-grab-mcp\", \"--stdio\"]"
+        echo "    }"
+        return 1
+    fi
+
+    print_error "svelte-grab not ready. Run: npx svelte-grab init"
+    return 1
+}
+
+# Verify grab setup — dispatches to React or Svelte (exits with guidance on failure)
+verify_grab_setup() {
+    local config
+    config=$(get_dev_config) || {
+        print_error "Failed to detect project config"
+        return 1
+    }
+
+    local is_react is_svelte
+    is_react=$(echo "$config" | jq -r '.isReact // false')
+    is_svelte=$(echo "$config" | jq -r '.isSvelte // false')
+
+    if [[ "$is_react" == "true" ]]; then
+        verify_react_grab_setup "$config"
+        return $?
+    fi
+
+    if [[ "$is_svelte" == "true" ]]; then
+        verify_svelte_grab_setup "$config"
+        return $?
+    fi
+
+    local framework
+    framework=$(echo "$config" | jq -r '.framework // "unknown"')
+    print_error "--grab requires a React or Svelte project"
+    echo "  Detected framework: ${framework}"
+    echo "  --grab works with React (react-grab) and Svelte (svelte-grab) projects."
     return 1
 }
 
@@ -369,13 +459,15 @@ verify_grab_setup() {
 
 cmd_verify() {
     print_info "Verifying MCP setup..."
-    local config react_flag=""
+    local config grab_flags=""
     if config=$(get_dev_config 2>/dev/null); then
-        local is_react
+        local is_react is_svelte
         is_react=$(echo "$config" | jq -r '.isReact // false')
-        [[ "$is_react" == "true" ]] && react_flag="--react"
+        is_svelte=$(echo "$config" | jq -r '.isSvelte // false')
+        [[ "$is_react" == "true" ]] && grab_flags="--react"
+        [[ "$is_svelte" == "true" ]] && grab_flags="${grab_flags} --svelte"
     fi
-    node "${SKILL_DIR}/lib/mcp-verify.mjs" $react_flag
+    node "${SKILL_DIR}/lib/mcp-verify.mjs" $grab_flags
 }
 
 cmd_detect() {
