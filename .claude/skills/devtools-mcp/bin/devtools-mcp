@@ -414,9 +414,9 @@ verify_svelte_grab_setup() {
         print_error "svelte-grab MCP server not found in Claude config"
         echo ""
         echo "  Add to MCP config (.mcp.json or claude_desktop_config.json):"
-        echo "    \"svelte-grab-mcp\": {"
-        echo "      \"command\": \"bunx\","
-        echo "      \"args\": [\"-y\", \"svelte-grab-mcp\", \"--stdio\"]"
+        echo "    \"svelte-grab\": {"
+        echo "      \"command\": \"npx\","
+        echo "      \"args\": [\"svelte-grab-mcp\", \"--stdio\"]"
         echo "    }"
         return 1
     fi

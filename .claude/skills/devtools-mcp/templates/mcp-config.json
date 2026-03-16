@@ -24,9 +24,9 @@
       "command": "bunx",
       "args": ["-y", "@react-grab/mcp", "--stdio"]
     },
-    "svelte-grab-mcp": {
-      "command": "bunx",
-      "args": ["-y", "svelte-grab-mcp", "--stdio"]
+    "svelte-grab": {
+      "command": "npx",
+      "args": ["svelte-grab-mcp", "--stdio"]
     }
   }
 }

@@ -24,6 +24,8 @@ env:
 - **CLI-First:** Command-line interfaces over GUIs
 - **Deterministic Code First:** Code before prompts
 - **Prompts Wrap Code:** Prompts orchestrate deterministic components
+- **Solve the Real Problem:** Not just the stated one — understand intent, not just instructions
+- **Simplify Ruthlessly:** Elegance is achieved not when there's nothing left to add, but when there's nothing left to take away
 - See `CONSTITUTION.md` for full philosophy
 
 ## Workflow Routing (SYSTEM PROMPT)
@@ -52,21 +54,21 @@ env:
 | Topic | File | Example triggers |
 |-------|------|----------|
 | Architecture & philosophy | `CONSTITUTION.md` | "Qara architecture", "why is it built this way", "design principles" |
-| CLI-First patterns | `cli-first-guide.md` | "build CLI tool", "API integration", "CLI-first approach" |
-| Stack preferences | `stack-preferences.md` | "what stack should I use", "TypeScript vs Python", "which framework" |
+| CLI-First patterns | `.claude/skills/CORE/cli-first-guide.md` | "build CLI tool", "API integration", "CLI-first approach" |
+| Stack preferences | `.claude/skills/CORE/stack-preferences.md` | "what stack should I use", "TypeScript vs Python", "which framework" |
 | Bun usage | `.claude/context/bun-guide.md` | "bun test", "bun build", "how to run tests", "bun API" |
 | Hooks reference | `.claude/context/hooks-guide.md` | "which hooks exist", "hook events", "hook utilities" |
-| Testing | `testing-guide.md` | "write tests", "run tests", "test patterns", "Playwright" |
-| Contacts | `contacts.md` | "who is X", "contact info", "email for" |
-| Definitions | `MY_DEFINITIONS.md` | "JM's definition of X", "what does JM mean by" |
-| Security | `security-protocols.md` | "API keys", "repo safety", "secrets management" |
-| Tool preferences | `TOOLS.md` | "which CLI tool for", "fd vs find", "bat vs cat" |
+| Testing | `.claude/skills/CORE/testing-guide.md` | "write tests", "run tests", "test patterns", "Playwright" |
+| Contacts | `.claude/skills/CORE/contacts.md` | "who is X", "contact info", "email for" |
+| Definitions | `.claude/skills/CORE/MY_DEFINITIONS.md` | "JM's definition of X", "what does JM mean by" |
+| Security | `.claude/skills/CORE/security-protocols.md` | "API keys", "repo safety", "secrets management" |
+| Tool preferences | `.claude/skills/CORE/TOOLS.md` | "which CLI tool for", "fd vs find", "bat vs cat" |
 | Delegation | `.claude/context/delegation-guide.md` | "which agent", "delegate", "parallel agents", "escalation" |
 | Context analysis | `.claude/hooks/lib/context-graph/cli.ts` | "orphan files", "impact analysis", "context graph", "skill dependencies" |
-| PAI visual aesthetic | `aesthetic.md` | "visual design", "PAI aesthetics", "color palette", "diagram style" |
-| Skill architecture | `skill-structure.md` | "skill archetypes", "skill structure", "routing hierarchy" |
-| Terminal tabs | `terminal-tabs.md` | "tab titles", "terminal tabs", "tab naming", "stop hook tabs" |
-| File organization | `workflows/file-organization-detailed.md` | "where to save", "file organization", "history vs scratchpad" |
+| PAI visual aesthetic | `.claude/skills/CORE/aesthetic.md` | "visual design", "PAI aesthetics", "color palette", "diagram style" |
+| Skill architecture | `.claude/skills/CORE/skill-structure.md` | "skill archetypes", "skill structure", "routing hierarchy" |
+| Terminal tabs | `.claude/skills/CORE/terminal-tabs.md` | "tab titles", "terminal tabs", "tab naming", "stop hook tabs" |
+| File organization | `.claude/skills/CORE/workflows/file-organization-detailed.md` | "where to save", "file organization", "history vs scratchpad" |
 
 **Skills (on-demand):**
 - `hook-authoring` skill → hook creation
@@ -129,6 +131,8 @@ Use via `Task` tool with `subagent_type`:
 | `thoughts-analyzer` | sonnet | Extracting decisions and insights from thoughts/ documents |
 | `thoughts-locator` | haiku | Finding relevant docs in thoughts/ directory |
 | `gemini-researcher` | haiku | Fallback when WebSearch fails — uses Gemini CLI for independent web access |
+| `claude-researcher` | haiku | Primary web researcher — use before gemini/perplexity fallbacks |
+| `perplexity-researcher` | haiku | Fallback web researcher via Perplexity API — strong citation support |
 
 Parallelize when possible — launch multiple agents in a single message.
 

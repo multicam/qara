@@ -1307,14 +1307,14 @@ describe('CLI svelte-grab support', () => {
 // SECTION 18: MCP config template includes svelte-grab-mcp
 // =============================================================================
 
-describe('MCP config template svelte-grab-mcp', () => {
-  it('should include svelte-grab-mcp server', () => {
+describe('MCP config template svelte-grab', () => {
+  it('should include svelte-grab server', () => {
     const configPath = join(SKILL_DIR, 'templates', 'mcp-config.json');
     const config = JSON.parse(readFileSync(configPath, 'utf-8'));
 
-    expect(config.mcpServers['svelte-grab-mcp']).toBeDefined();
-    expect(config.mcpServers['svelte-grab-mcp'].command).toBe('bunx');
-    expect(config.mcpServers['svelte-grab-mcp'].args).toContain('svelte-grab-mcp');
+    expect(config.mcpServers['svelte-grab']).toBeDefined();
+    expect(config.mcpServers['svelte-grab'].command).toBe('npx');
+    expect(config.mcpServers['svelte-grab'].args).toContain('svelte-grab-mcp');
   });
 
   it('should still have react-grab-mcp server (backward compat)', () => {

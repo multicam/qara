@@ -13,7 +13,9 @@ When to delegate to agents and how to use them effectively.
 | Review code quality | `reviewer` | opus | Security, perf, correctness |
 | Mine thoughts/ docs | `thoughts-analyzer` | sonnet | Extracts decisions & insights |
 | Find relevant thought | `thoughts-locator` | haiku | Fast doc discovery |
+| Web research (primary) | `claude-researcher` | haiku | First-line web research via WebSearch |
 | Web research fallback | `gemini-researcher` | haiku | When WebSearch fails |
+| Web research fallback | `perplexity-researcher` | haiku | When WebSearch fails — strong citations |
 
 ## Model Tier Strategy
 
@@ -42,7 +44,7 @@ Launch independent agents in a **single message** with multiple `Task` tool call
 3. **Multi-file implementation** → `engineer` (or multiple in worktrees)
 4. **Complex implementation** → `architect` first, then `engineer`(s)
 5. **Quality gate** → `reviewer` after implementation
-6. **Research needed** → `gemini-researcher` when WebSearch is stale
+6. **Research needed** → `claude-researcher` first, then `gemini-researcher` or `perplexity-researcher` as fallback
 
 ## Task Packaging
 
