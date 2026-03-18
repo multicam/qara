@@ -183,7 +183,15 @@
 
 ### Community Platforms
 
-#### 25. Claude Developers Discord
+#### 25. Matt Pocock Skills Repository
+- **URL**: https://github.com/mattpocock/skills
+- **Content**: Curated Claude Code skills by Matt Pocock (Total TypeScript)
+- **Key Features**: 17 skills across planning, development, tooling, writing domains
+- **PAI Integration**: `grill-me`, `design-it-twice`, `edit-article` skills adapted; TDD/deep-modules references extracted to CORE; vertical slice methodology added to product-shaping
+- **Update Frequency**: Check monthly
+- **Reliability**: High (active maintainer, well-structured, TypeScript-focused)
+
+#### 26. Claude Developers Discord
 - **URL**: https://humanlayer.dev/discord
 - **Content**: Community discussions, early feature previews
 - **Update Frequency**: Real-time
@@ -195,13 +203,13 @@
 
 ### Architecture & Patterns
 
-#### 26. 12-Factor Agents Repository
+#### 27. 12-Factor Agents Repository
 - **URL**: https://github.com/humanlayer/12-factor-agents
 - **Content**: Agent architecture principles
 - **Relevance**: Design patterns for PAI optimization
 - **Reliability**: High
 
-#### 27. Claude Agent SDK Documentation
+#### 28. Claude Agent SDK Documentation
 - **URL**: https://docs.anthropic.com/en/docs/agent-sdk
 - **Content**: SDK for building custom agents
 - **Relevance**: Advanced PAI integration patterns
@@ -398,8 +406,8 @@ Use this checklist when updating the trusted sources document:
 
 ### Total Sources
 - Previous: 10 sources
-- Current: 27 sources
-- Net gain: 17 sources (+170%)
+- Current: 28 sources
+- Net gain: 18 sources (+180%)
 
 ---
 

@@ -122,6 +122,40 @@ grep 'version:' ~/.agents/skills/visual-explainer/SKILL.md
 gh api repos/nicobailon/visual-explainer/releases/latest --jq '.tag_name'
 ```
 
+### 7. Adapted Community Skills Update
+
+PAI includes skills adapted from [mattpocock/skills](https://github.com/mattpocock/skills). These are not symlinked — they were rewritten for PAI conventions. When Matt updates the upstream repo, review changes for improvements to incorporate.
+
+**Adapted skills and their upstream sources:**
+
+| PAI Location | Upstream Source | What Was Adapted |
+|---|---|---|
+| `skills/grill-me/SKILL.md` | `grill-me/SKILL.md` | Expanded methodology, probe patterns, PAI structure |
+| `skills/design-it-twice/SKILL.md` | `design-an-interface/SKILL.md` | Broadened scope (architecture + data models), uses `architect` agents |
+| `skills/edit-article/SKILL.md` | `edit-article/SKILL.md` | Added Phase 3 humaniser pass, expanded scope to docs/specs |
+| `skills/CORE/testing-guide.md` | `tdd/SKILL.md` + `tdd/tests.md` | Merged TDD methodology into existing testing guide |
+| `skills/CORE/references/deep-modules.md` | `tdd/deep-modules.md` | Extracted as shared cross-cutting reference |
+| `skills/CORE/references/mocking-guidelines.md` | `tdd/mocking.md` + `improve-codebase-architecture/REFERENCE.md` | Combined mocking rules + dependency classification |
+| `skills/CORE/references/interface-design.md` | `tdd/interface-design.md` | Extracted as shared reference |
+| `skills/CORE/references/refactoring-signals.md` | `tdd/refactoring.md` | Extracted as shared reference |
+| `skills/product-shaping/workflows/breakdown.md` | `prd-to-issues/SKILL.md` | Vertical slice + HITL/AFK methodology added as Phase 4 |
+| `agents/codebase-analyzer.md` | `improve-codebase-architecture/SKILL.md` | Friction-driven analysis lens added to agent prompt |
+
+**Update check:**
+```bash
+# Check for new commits since last review
+gh api repos/mattpocock/skills/commits --jq '.[0] | "\(.sha[0:7]) \(.commit.message | split("\n")[0]) (\(.commit.author.date[0:10]))"'
+
+# List all skill directories for new additions
+gh api repos/mattpocock/skills/contents/ --jq '.[].name' | sort
+```
+
+**When upstream changes are detected:**
+1. Fetch the changed files and compare against PAI adaptations
+2. Look for: new methodology, improved patterns, additional reference material
+3. Merge improvements while preserving PAI conventions (frontmatter, routing, references)
+4. Do NOT blindly replace — PAI versions are intentionally different from upstream
+
 **Update procedure (when outdated):**
 ```bash
 # Clone latest to temp

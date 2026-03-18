@@ -19,7 +19,7 @@ triggers:
 
 # Product Shaping
 
-Three-phase workflow for turning a product idea into a validated spec with a clear validation plan.
+Four-phase workflow for turning a product idea into a validated spec with implementation slices.
 
 **Output:** `spec-draft.md` (in project folder) + validation plan
 
@@ -54,6 +54,11 @@ Examples: "run the research we scoped", "start the competitive analysis", "launc
 Examples: "let's converge on a design", "write the spec draft", "shape the solution"
 -> **READ:** `${PAI_DIR}/skills/product-shaping/workflows/shape.md`
 -> **EXECUTE:** Phase 3 — converge on a design, produce spec-draft.md
+
+**When user says "break it down", "create issues", "implementation slices", "vertical slices":**
+Examples: "break this spec into issues", "create the implementation plan", "slice it up"
+-> **READ:** `${PAI_DIR}/skills/product-shaping/workflows/breakdown.md`
+-> **EXECUTE:** Phase 4 — break spec into vertical slices, optionally create GitHub issues
 
 **When user says "spec template", "spec format":**
 -> **READ:** `${PAI_DIR}/skills/product-shaping/references/spec-template.md`
@@ -92,6 +97,7 @@ You are a thinking partner, not a scribe. Throughout every phase:
 | **1. Frame + Scope** | Define the problem, plan research | `workflows/frame-and-scope.md` | Problem statement + research plan |
 | **2. Research** | Build the evidence base | `workflows/research.md` | `thoughts/research/*.md` files |
 | **3. Shape** | Converge on a design | `workflows/shape.md` | `spec-draft.md` + validation plan |
+| **4. Breakdown** | Slice spec into implementation work | `workflows/breakdown.md` | Vertical slices + GitHub issues |
 
 ---
 
@@ -102,4 +108,5 @@ You are a thinking partner, not a scribe. Throughout every phase:
 | `workflows/frame-and-scope.md` | Phase 1: problem definition and research planning |
 | `workflows/research.md` | Phase 2: orchestrate parallel research (delegates to `research` skill) |
 | `workflows/shape.md` | Phase 3: converge on design, write spec |
+| `workflows/breakdown.md` | Phase 4: vertical slices + HITL/AFK classification |
 | `references/spec-template.md` | Output template for spec-draft.md |

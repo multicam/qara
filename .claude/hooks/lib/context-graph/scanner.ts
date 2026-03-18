@@ -351,9 +351,14 @@ export function extractReferences(
     }
 
     // Table entries: | Topic | `file.md` or `file.ts` | ... |
+    // Skip paths starting with thoughts/ — these are runtime output paths, not references
+    // Only emit edges for paths that actually exist — table cells are informational,
+    // unlike READ/INVOKE directives. This avoids false positives from documentation
+    // tables listing external/upstream paths (e.g., cc-upgrade-pai's "Upstream Source" column).
     for (const match of line.matchAll(TABLE_PATTERN)) {
+      if (match[1].startsWith('thoughts/')) continue;
       const target = resolveReference(match[1], filePath, paiDir, skillsDir);
-      if (target) addEdge(target, 'TABLE', lineNumber);
+      if (target && existsSync(target)) addEdge(target, 'TABLE', lineNumber);
     }
   }
 
