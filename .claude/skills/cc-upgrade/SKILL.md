@@ -33,6 +33,21 @@ This skill serves as the base for domain-specific upgrade skills:
 2. Then run domain-specific checks
 ```
 
+## Workflow Routing (SYSTEM PROMPT)
+
+**When user requests external skills audit, skill redundancy check, or skill ecosystem review:**
+Examples: "audit external skills", "check installed skills", "skill redundancies",
+"what external skills do we have", "skill hygiene", "analyze skill dependencies"
+→ **READ:** `workflows/external-skills-audit.md`
+→ **EXECUTE:** Full external skills audit with redundancy analysis
+
+**When user needs skill ecosystem references, sources, or evaluation criteria:**
+Examples: "skill ecosystem", "where to find skills", "skill sources", "evaluate this skill"
+→ **READ:** `references/skills-ecosystem-sources.md`
+
+**When user requests CC version check or general .claude/ audit:**
+→ Continue with Core Workflow below
+
 ## Core Workflow
 
 ### 1. Check Current CC Version
@@ -275,6 +290,11 @@ bun run .claude/skills/cc-upgrade/scripts/cc-version-check.ts .
 ### Full Analysis
 ```bash
 bun run .claude/skills/cc-upgrade/scripts/analyse-claude-folder.ts .
+```
+
+### External Skills Analysis
+```bash
+bun run .claude/skills/cc-upgrade/scripts/analyse-external-skills.ts .
 ```
 
 ## Version Tracking

@@ -11,6 +11,22 @@ description: |
 
 PAI-specific analysis extending the base `cc-upgrade` skill.
 
+## Workflow Routing (SYSTEM PROMPT)
+
+**When user requests deep external skills analysis, skill redundancy review, or skill ecosystem audit:**
+Examples: "audit external skills", "deep skill analysis", "analyze installed skills",
+"skill redundancies", "what external skills do we have", "skill hygiene",
+"visual-explainer audit", "mattpocock sync", "skill wrapping opportunities"
+→ **READ:** `workflows/external-skills-deep-analysis.md`
+→ **EXECUTE:** Full PAI external skills deep analysis with UltraThink
+
+**When user needs the external skills registry or inventory:**
+Examples: "external skills registry", "skill inventory", "what skills are installed"
+→ **READ:** `references/external-skills-registry.md`
+
+**When user requests general PAI CC audit:**
+→ Continue with PAI-Specific Analysis below
+
 ## Prerequisites
 
 **Before running PAI analysis, load base skill context:**
@@ -310,6 +326,11 @@ bun run .claude/hooks/lib/context-graph/cli.ts audit --pai-dir $PAI_DIR/.claude
 cd $PAI_DIR/.claude/hooks && bun test --coverage
 ```
 
+### External Skills Analysis
+```bash
+bun run .claude/skills/cc-upgrade/scripts/analyse-external-skills.ts $PAI_DIR
+```
+
 ## Workflow
 
 1. **Run base analysis first:**
@@ -335,13 +356,12 @@ cd $PAI_DIR/.claude/hooks && bun test --coverage
 
 5. **Generate combined report** using the format above
 
-6. **Update external skills** (visual-explainer):
-   ```bash
-   # Check if update available
-   gh api repos/nicobailon/visual-explainer/releases/latest --jq '.tag_name'
-   grep 'version:' ~/.agents/skills/visual-explainer/SKILL.md
+6. **Run external skills deep analysis:**
    ```
-   If outdated, run the update procedure from section 6 above.
+   → READ & EXECUTE: workflows/external-skills-deep-analysis.md
+   ```
+   This covers: visual-explainer ecosystem (22 sub-skills), mattpocock adaptation sync,
+   redundancy analysis, wrapping opportunities, and ecosystem scanning.
 
 7. **Apply fixes** from the report recommendations
 
