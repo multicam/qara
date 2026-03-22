@@ -18,19 +18,32 @@ CHECKED=0
 
 echo "=== Checking .md references in $PAI_DIR/skills ==="
 echo ""
-echo "Note: Only checking explicit workflow routing references (→ READ patterns)"
+echo "Checking: → READ patterns + inline backtick file references + READ: directives"
 echo ""
 
 # Placeholder patterns to ignore (examples in documentation)
-IGNORE_PATTERNS="workflow[0-9]|\[.*\]|due-diligence|lookup"
+IGNORE_PATTERNS="workflow[0-9]|\[.*\]|due-diligence|lookup|some-plan|YYYY|description\.md|skill-name"
 
-# Find all .md files and check workflow routing references
-# Only check lines that contain "→ READ:" or "→ **READ:**" patterns
+# Find all .md files and check references
+# Checks: "→ READ:" patterns, standalone "READ:" directives, backtick-quoted .md refs
 while IFS= read -r file; do
     # Extract workflow references from routing patterns like:
     # → **READ:** ~/.claude/skills/research/workflows/conduct.md
     # → READ: ${PAI_DIR}/skills/CORE/SKILL.md
-    refs=$(grep -oE '→.*READ.*[~/\$][^[:space:]]+\.md' "$file" 2>/dev/null | grep -oE '[^/]+\.md$' | sort -u || true)
+    # READ: .claude/skills/CORE/workflows/plan-template.md
+    refs=$(grep -oE '(→.*READ|^\s*READ:).*[~/\.\$][^[:space:]]+\.md' "$file" 2>/dev/null | grep -oE '[^/]+\.md$' | sort -u || true)
+
+    # Also extract backtick-quoted .md file references like `CONSTITUTION.md`
+    # Only match UPPERCASE filenames (cross-cutting docs) that actually exist in the repo
+    backtick_refs=$(grep -oE '`[A-Z][A-Z_-]*\.md`' "$file" 2>/dev/null | tr -d '`' | sort -u || true)
+    # Filter: only keep backtick refs where the file exists somewhere in the repo
+    filtered_backtick_refs=""
+    for bref in $backtick_refs; do
+        if fd -t f "^${bref}$" "$(dirname "$PAI_DIR")" --max-depth 5 --quiet 2>/dev/null; then
+            filtered_backtick_refs="$filtered_backtick_refs $bref"
+        fi
+    done
+    refs=$(printf '%s\n%s' "$refs" "$filtered_backtick_refs" | tr ' ' '\n' | sort -u | grep -v '^$' || true)
     
     for ref in $refs; do
         # Skip placeholder/example patterns
@@ -58,6 +71,14 @@ while IFS= read -r file; do
         elif [[ -f "$PAI_DIR/skills/CORE/$ref" ]]; then
             found=true
         elif [[ -f "$PAI_DIR/skills/CORE/workflows/$ref" ]]; then
+            found=true
+        elif [[ -f "$PAI_DIR/skills/CORE/references/$ref" ]]; then
+            found=true
+        elif [[ -f "$(dirname "$PAI_DIR")/$ref" ]]; then
+            # Check parent of PAI_DIR (e.g., home dir)
+            found=true
+        elif [[ -f "$SCRIPT_DIR/../$ref" ]]; then
+            # Check repo root (e.g., CONSTITUTION.md, DECISIONS.md)
             found=true
         fi
 
