@@ -69,6 +69,8 @@ env:
 | Skill architecture | `.claude/skills/CORE/skill-structure.md` | "skill archetypes", "skill structure", "routing hierarchy" |
 | Terminal tabs | `.claude/skills/CORE/terminal-tabs.md` | "tab titles", "terminal tabs", "tab naming", "stop hook tabs" |
 | File organization | `.claude/skills/CORE/workflows/file-organization-detailed.md` | "where to save", "file organization", "history vs scratchpad" |
+| Context loading rules | `.claude/skills/CORE/workflows/context-loading-rules.md` | "which context to load", "semantic routing", "context categories" |
+| Session state | `.claude/context/working/README.md` | "session files", "working directory", "transient state" |
 
 **Skills (on-demand):**
 - `hook-authoring` skill → hook creation

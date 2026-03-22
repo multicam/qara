@@ -78,6 +78,9 @@ Iterate until JM approves the breakdown.
 
 ### 6. Write the plan file
 
+READ: `${PAI_DIR}/skills/CORE/workflows/plan-template.md` for standard plan structure
+READ: `${PAI_DIR}/skills/CORE/workflows/plan-common-patterns.md` for common patterns
+
 Create `./plans/` if it doesn't exist. Write as Markdown named after the feature (e.g., `./plans/user-onboarding.md`).
 
 ## Plan Template

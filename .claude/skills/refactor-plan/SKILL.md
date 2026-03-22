@@ -73,6 +73,9 @@ Review existing test coverage in the affected area:
 
 ### Step 7: Create Commit Plan
 
+READ: `${PAI_DIR}/skills/CORE/workflows/plan-template.md` for plan structure
+READ: `${PAI_DIR}/skills/CORE/workflows/plan-common-patterns.md` for common patterns
+
 Break the implementation into minimal commits. Apply the principle:
 
 > "Make each refactoring step as small as possible, so that you can always see the program working."
