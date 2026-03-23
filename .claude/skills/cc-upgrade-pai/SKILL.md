@@ -149,6 +149,10 @@ PAI includes skills adapted from [mattpocock/skills](https://github.com/mattpoco
 | `skills/grill-me/SKILL.md` | `grill-me/SKILL.md` | Expanded methodology, probe patterns, PAI structure |
 | `skills/design-it-twice/SKILL.md` | `design-an-interface/SKILL.md` | Broadened scope (architecture + data models), uses `architect` agents |
 | `skills/edit-article/SKILL.md` | `edit-article/SKILL.md` | Added Phase 3 humaniser pass, expanded scope to docs/specs |
+| `skills/refactor-plan/SKILL.md` | `request-refactor-plan/SKILL.md` | PAI conventions, codebase-analyzer integration |
+| `skills/triage-issue/SKILL.md` | `triage-issue/SKILL.md` | PAI conventions, codebase-analyzer integration, TDD fix plans |
+| `skills/ubiquitous-language/SKILL.md` | `ubiquitous-language/SKILL.md` | PAI conventions, DDD glossary extraction |
+| `skills/prd-to-plan/SKILL.md` | `prd-to-plan/SKILL.md` | PAI conventions, vertical slice tracer bullets |
 | `skills/CORE/testing-guide.md` | `tdd/SKILL.md` + `tdd/tests.md` | Merged TDD methodology into existing testing guide |
 | `skills/CORE/references/deep-modules.md` | `tdd/deep-modules.md` | Extracted as shared cross-cutting reference |
 | `skills/CORE/references/mocking-guidelines.md` | `tdd/mocking.md` + `improve-codebase-architecture/REFERENCE.md` | Combined mocking rules + dependency classification |

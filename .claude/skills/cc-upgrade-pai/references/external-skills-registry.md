@@ -3,7 +3,7 @@
 Comprehensive documentation of all externally-installed skills in the PAI ecosystem.
 Maintained as part of `cc-upgrade-pai`. Updated during each external skills deep analysis.
 
-Last reviewed: 2026-03-22
+Last reviewed: 2026-03-23
 
 ---
 
@@ -111,7 +111,7 @@ visual-explainer (stand-alone, no prerequisites)
 **Author:** Matt Pocock ([@mattpocock](https://github.com/mattpocock))
 **Repository:** [github.com/mattpocock/skills](https://github.com/mattpocock/skills)
 **License:** MIT
-**Last upstream review:** Check with `gh api repos/mattpocock/skills/commits`
+**Last upstream review:** 2026-03-23 (latest commit: `fb3629d` 2026-03-19)
 
 These skills were **rewritten for PAI conventions** — not symlinked. They live as local
 skills but track upstream for improvements.
@@ -121,6 +121,10 @@ skills but track upstream for improvements.
 | `grill-me` | `grill-me/SKILL.md` | Expanded methodology, probe patterns, PAI structure |
 | `design-it-twice` | `design-an-interface/SKILL.md` | Broadened to architecture + data models, uses `architect` agents |
 | `edit-article` | `edit-article/SKILL.md` | Added Phase 3 humaniser pass, expanded to docs/specs |
+| `refactor-plan` | `request-refactor-plan/SKILL.md` | PAI conventions, codebase-analyzer integration, JM-addressed |
+| `triage-issue` | `triage-issue/SKILL.md` | PAI conventions, codebase-analyzer integration, TDD fix plans |
+| `ubiquitous-language` | `ubiquitous-language/SKILL.md` | PAI conventions, DDD glossary extraction |
+| `prd-to-plan` | `prd-to-plan/SKILL.md` | PAI conventions, vertical slice tracer bullets |
 | `CORE/testing-guide.md` | `tdd/SKILL.md` + `tdd/tests.md` | Merged TDD into existing testing guide |
 | `CORE/references/deep-modules.md` | `tdd/deep-modules.md` | Extracted as shared cross-cutting reference |
 | `CORE/references/mocking-guidelines.md` | `tdd/mocking.md` + `improve-codebase-architecture/REFERENCE.md` | Combined mocking rules + dependency classification |
@@ -134,7 +138,6 @@ skills but track upstream for improvements.
 | Upstream Skill | Purpose | Adoption Status | Notes |
 |---------------|---------|-----------------|-------|
 | `write-a-prd` | PRD creation via interview | **Covered** by `product-shaping` | PAI version is more comprehensive |
-| `prd-to-plan` | PRD → implementation plan | **Adopted** as `prd-to-plan` | Direct adaptation |
 | `prd-to-issues` | PRD → GitHub issues | **Merged** into `product-shaping/workflows/breakdown.md` | Combined with vertical slicing |
 | `setup-pre-commit` | Husky + lint-staged setup | **Not needed** | PAI uses hooks system directly |
 | `git-guardrails-claude-code` | Block dangerous git ops | **Covered** by `pre-tool-use-security.ts` hook | PAI uses hook-based security |
@@ -194,3 +197,4 @@ skills but track upstream for improvements.
 | 2026-02-20 | Initial install of visual-explainer | nicobailon/visual-explainer |
 | 2026-03-21 | Updated to latest | npx skills update |
 | 2026-03-22 | Registry created | cc-upgrade-pai deep analysis |
+| 2026-03-23 | Added 4 missing mattpocock adaptations (refactor-plan, triage-issue, ubiquitous-language, prd-to-plan), updated upstream review date, removed adopted skills from NOT-yet-adopted table | PAI audit |
