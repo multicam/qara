@@ -15,7 +15,7 @@ Skills are self-contained knowledge containers with progressive disclosure:
 | `context: same` | Loads in main conversation | CORE, humaniser |
 | `context: fork` | Isolated subagent execution | All other skills |
 
-## All 18 Active Skills
+## All 17 Active Skills
 
 ### Foundation
 
@@ -24,8 +24,6 @@ Skills are self-contained knowledge containers with progressive disclosure:
 ### Research & Content
 
 **research** — `fork`, sonnet. Multi-source parallel research with 3 modes (quick/standard/extensive). Auto-selects agent by API key: Perplexity > Claude WebSearch > Gemini. 9+ workflows including conduct, claude-research, perplexity-research, interview, youtube, web-scraping.
-
-**story-explanation** — `fork`, sonnet. Narrative summaries using UltraThink. 5 workflows (create, create-with-links, create-abridged, cse, cse5).
 
 **thoughts-consolidate** — `fork`, sonnet. Consolidate and clean up thoughts/ files with codebase verification.
 
@@ -70,7 +68,6 @@ Skills are self-contained knowledge containers with progressive disclosure:
 ```
 CORE (foundation)
 ├── cc-upgrade → cc-upgrade-pai (imports base analyzers)
-├── research → story-explanation (complementary)
 ├── design-implementation → frontend-design (design philosophy)
 ├── system-create-skill
 ├── system-create-cli

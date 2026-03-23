@@ -7,7 +7,6 @@ description: |
   inflated symbolism, promotional language, em dash overuse, rule of three,
   AI vocabulary, negative parallelisms, conjunctive phrases.
   USE WHEN: "humanise this", "remove AI patterns", "make this sound natural".
-  NOT for creating new narrative content — use story-explanation for that.
 allowed-tools:
   - Read
   - Write

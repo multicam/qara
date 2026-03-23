@@ -6,6 +6,16 @@ description: Prompt engineering standards and context engineering principles for
 
 # Prompting Skill
 
+## Workflow Routing (SYSTEM PROMPT)
+
+**When user requests prompt creation or engineering:**
+Examples: "create a prompt", "write a prompt for", "prompt template", "help me with prompt engineering"
+→ **READ:** `${PAI_DIR}/skills/prompting/workflows/create-prompt.md`
+
+**When user requests prompt optimization:**
+Examples: "optimize this prompt", "improve this prompt", "make this prompt better", "improve my prompt"
+→ **READ:** `${PAI_DIR}/skills/prompting/workflows/optimize-prompt.md`
+
 ## When to Activate This Skill
 
 - Prompt engineering questions

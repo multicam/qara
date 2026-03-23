@@ -339,6 +339,61 @@ describe('Skill Dependencies', () => {
 });
 
 // =============================================================================
+// SECTION 9: Symlink Integrity
+// =============================================================================
+
+describe('Symlink Integrity', () => {
+  it('all symlinked skills should resolve to valid directories', () => {
+    const broken: string[] = [];
+
+    const entries = readdirSync(SKILLS_DIR).filter((f) => !f.startsWith('.'));
+    for (const entry of entries) {
+      const fullPath = join(SKILLS_DIR, entry);
+      let stat: ReturnType<typeof lstatSync>;
+      try {
+        stat = lstatSync(fullPath);
+      } catch {
+        continue;
+      }
+
+      if (!stat.isSymbolicLink()) continue;
+
+      // Assert the symlink resolves to an existing directory
+      let resolvedStat: ReturnType<typeof statSync>;
+      try {
+        resolvedStat = statSync(fullPath);
+      } catch {
+        broken.push(`${entry}: broken symlink (target does not exist)`);
+        continue;
+      }
+
+      if (!resolvedStat.isDirectory()) {
+        broken.push(`${entry}: symlink does not resolve to a directory`);
+        continue;
+      }
+
+      // Assert the resolved directory contains SKILL.md
+      // (or plugins/*/SKILL.md for visual-explainer-style multi-plugin skills)
+      const rootSkillMd = join(fullPath, 'SKILL.md');
+      if (!existsSync(rootSkillMd)) {
+        // Check for plugins/*/SKILL.md pattern
+        const pluginsDir = join(fullPath, 'plugins');
+        let hasPluginSkillMd = false;
+        if (existsSync(pluginsDir)) {
+          const plugins = readdirSync(pluginsDir);
+          hasPluginSkillMd = plugins.some((p) => existsSync(join(pluginsDir, p, 'SKILL.md')));
+        }
+        if (!hasPluginSkillMd) {
+          broken.push(`${entry}: resolved directory contains no SKILL.md`);
+        }
+      }
+    }
+
+    expect(broken).toEqual([]);
+  });
+});
+
+// =============================================================================
 // Summary
 // =============================================================================
 
