@@ -22,8 +22,8 @@ for skill_dir in "$PAI_DIR/skills"/*/; do
     
     echo "Checking: $skill_name"
     
-    # Check for SKILL.md (required)
-    if [[ ! -f "$skill_dir/SKILL.md" ]]; then
+    # Check for SKILL.md (required) — also check plugins/*/SKILL.md for external skills
+    if [[ ! -f "$skill_dir/SKILL.md" ]] && ! ls "$skill_dir"/plugins/*/SKILL.md &>/dev/null; then
         echo "  ❌ Missing SKILL.md"
         ERRORS=$((ERRORS + 1))
     else
