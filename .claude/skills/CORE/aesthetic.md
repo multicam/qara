@@ -1,333 +1,244 @@
 # PAI Visual Aesthetic System
 
-**A modern digital aesthetic combining Tron-inspired neon elements, Anthropic's warm color palette, and Excalidraw's hand-drawn charm.**
+**Warm, systematic, anti-generic. Informed by Impeccable.style's vocabulary rigor and Tailwind Oatmeal's approachable warmth.**
 
 ---
 
-## Core Concept: Digital Warmth
+## Core Concept: Intentional Clarity
 
-Every visualization balances **futuristic precision** with **human imperfection** — clean digital aesthetics rendered with hand-drawn, sketchy energy that feels approachable and alive.
+Every visual output earns its existence through purpose. No decoration for decoration's sake. Typography drives hierarchy. Color communicates meaning. Space gives the eye room to think.
 
-**The Philosophy:** *"Technology with humanity."*
-- Digital precision meets hand-drawn warmth
-- Neon accents provide energy without overwhelming
-- Sketchy lines convey approachability and thought-in-progress
-- Simplicity = Clarity (remove everything that doesn't serve the message)
-
----
-
-## The PAI Look
-
-### What We Want
-- **Excalidraw-style hand-drawn lines** — Sketchy, rough, whiteboard aesthetic
-- **Tron-inspired neon accents** — Strategic glows on key elements
-- **Anthropic warm palette** — Orange/coral warmth balanced with cool grays
-- **Dark backgrounds** — Deep slate or black for contrast and modern feel
-- **Grid undertones** — Subtle digital grid patterns (optional, tasteful)
-- **Minimal compositions** — 2-4 elements maximum, plenty of breathing room
-
-### Reference Styles
-- **Excalidraw** — Hand-drawn whiteboard diagrams with rough edges
-- **Tron Legacy** — Neon circuit aesthetics, digital grids, glowing elements
-- **Anthropic brand** — Warm orange/coral tones, approachable technology
-- **Cyberpunk wireframes** — Digital blueprint aesthetic
-- **Sketch noting** — Casual, hand-drawn information graphics
-
-### What to AVOID
-- Over-polished corporate vectors
-- Excessive neon (should be accents, not primary)
-- Perfect geometric shapes (keep it sketchy)
-- Cluttered compositions
-- Gradients everywhere (use sparingly for glows only)
-- Photorealistic elements
+**The Philosophy:** *"If it doesn't clarify, remove it."*
+- Hierarchy before aesthetics
+- Warmth before coldness
+- Systematic before arbitrary
+- Accessible before clever
 
 ---
 
-## Color System
+## Color System (OKLCH-Based)
 
-### Backgrounds
-```
-Deep Slate      #1A202C   (primary - sophisticated dark)
-Pure Black      #000000   (alternative - maximum contrast)
-Dark Grid       #2D3748   (optional subtle grid overlay)
-```
+Use OKLCH for perceptual uniformity — colors that *feel* equally spaced, not just mathematically so.
 
-### Primary: Hand-Drawn Lines
-```
-Bright White    #FFFFFF   (dominant sketch lines)
-Light Gray      #E2E8F0   (secondary sketch lines)
-```
+### Warm Neutrals (Foundation)
 
-### Accent Colors (Tron + Anthropic Fusion)
 ```
-Neon Orange     #FF6B35   (Anthropic warmth - primary accent)
-Neon Coral      #FF8C61   (softer warmth variant)
-Cyan Glow       #00D9FF   (Tron digital accent - use sparingly)
-Electric Blue   #0099FF   (secondary digital accent)
-Slate Gray      #4A5568   (neutral technical elements)
+Warm White      oklch(0.98 0.005 80)    #FAF9F7   — Primary background
+Cream           oklch(0.95 0.01  75)    #F2EDE6   — Secondary background, cards
+Sand            oklch(0.88 0.015 70)    #DED4C6   — Borders, dividers
+Stone           oklch(0.65 0.01  60)    #9A9288   — Secondary text, captions
+Charcoal        oklch(0.35 0.015 55)    #4A443D   — Primary text
+Deep Brown      oklch(0.20 0.02  50)    #2A2520   — Headings, emphasis
 ```
 
-**Color Usage Guidelines:**
-- **White/Light Gray** lines dominate (70-80% of composition)
-- **Neon Orange** as primary accent (10-15%) - warmth and energy
-- **Cyan/Blue** as secondary accent (5-10%) - digital sophistication
-- **Glows** only on accent colors, subtle and strategic
-- Balance warm (orange) and cool (cyan) for visual interest
+**No pure black (#000) or pure white (#FFF).** Everything has warmth.
 
-### Color Hierarchy
-1. **WHITE SKETCH LINES are PRIMARY** — hand-drawn, rough, energetic
-2. **Neon Orange as MAIN ACCENT** — warmth, approachability, Anthropic identity
-3. **Cyan/Blue as DIGITAL ACCENT** — technology, precision, Tron influence
-4. **Dark backgrounds** — provide contrast and modern sophistication
-5. **Glows** — subtle, only on neon accents, not overpowering
+### Accent Palette
+
+```
+Signal Orange   oklch(0.70 0.20 45)     #E8652A   — Primary action, emphasis
+Soft Coral      oklch(0.75 0.12 40)     #D98A6A   — Secondary warmth
+Deep Teal       oklch(0.55 0.10 195)    #2B8A8A   — Information, links
+Quiet Blue      oklch(0.60 0.08 240)    #5E7FAD   — Secondary information
+Moss Green      oklch(0.60 0.10 145)    #4A8A5C   — Success, positive
+Warm Red        oklch(0.55 0.18 25)     #C44030   — Error, critical
+```
+
+### Color Usage
+
+| Role | Color | Usage % |
+|------|-------|---------|
+| Background | Warm White / Cream | 60-70% |
+| Text | Charcoal / Deep Brown | 15-20% |
+| Primary accent | Signal Orange | 5-10% |
+| Supporting accents | Teal / Blue / Coral | 3-5% each |
+
+**Rule:** Maximum 3 colors per composition (background + text + 1 accent). Add a second accent only when meaning requires it.
+
+### Dark Mode Variant
+
+When dark backgrounds are needed (presentations, hero sections):
+
+```
+Deep Warm Dark  oklch(0.15 0.02 55)     #1E1A17   — NOT pure black
+Dark Surface    oklch(0.22 0.015 55)    #322C27   — Card/surface elevation
+Muted Stone     oklch(0.50 0.01 60)     #7A7470   — Secondary text on dark
+```
 
 ---
 
-## Linework Characteristics
+## Typography
 
-The sketchy hand-drawn quality is critical:
+### Principles
+- **No Inter.** It's the new Arial — everywhere, nothing.
+- **Optical sizing matters.** Display text ≠ body text, even in the same family.
+- **Fluid scaling.** Use `clamp()` for responsive type. No breakpoint jumps.
+- **Vertical rhythm.** Line heights on the 8px baseline grid.
 
-1. **Rough, imperfect strokes** — Like drawing on a whiteboard quickly
-2. **Variable line weight** — Thicker at connections, thinner at ends
-3. **Wobbly curves** — No perfect circles or smooth Béziers
-4. **Multiple overlapping strokes** — Looks hand-drawn, not vector
-5. **Gaps and breaks** — Lines don't always connect perfectly
-6. **Sketchy hatching** — For shading or emphasis areas
-7. **Casual confidence** — Quick strokes, not labored perfection
+### Scale (Fluid)
 
-### This is NOT
-- Clean vector illustration
-- Perfectly smooth curves
-- Uniform stroke weight
-- Polished corporate graphics
+| Level | Size | Line Height | Weight | Use |
+|-------|------|-------------|--------|-----|
+| Display | clamp(2.5rem, 5vw, 4rem) | 1.1 | 700-800 | Hero, title cards |
+| H1 | clamp(2rem, 3.5vw, 3rem) | 1.15 | 700 | Page headings |
+| H2 | clamp(1.5rem, 2.5vw, 2rem) | 1.2 | 600 | Section headings |
+| H3 | clamp(1.25rem, 1.75vw, 1.5rem) | 1.3 | 600 | Subsections |
+| Body | clamp(1rem, 1.15vw, 1.125rem) | 1.6 | 400 | Paragraphs |
+| Caption | clamp(0.8rem, 0.9vw, 0.875rem) | 1.4 | 400 | Labels, metadata |
+
+### Font Recommendations
+
+| Context | Recommended | Fallback | Why |
+|---------|------------|----------|-----|
+| Headings | Instrument Serif, Fraunces | Georgia | Warmth, character, optical sizing |
+| Body | Instrument Sans, Source Sans 3 | system-ui | Clean geometric, not Inter |
+| Mono | JetBrains Mono, Berkeley Mono | ui-monospace | Coding contexts |
+| Display | Instrument Serif Display | — | Maximum impact |
 
 ---
 
-## Neon Glow Effects (Tron Influence)
+## Spacing System
 
-Strategic use of glowing elements for impact:
+**8px baseline grid.** All spacing derives from multiples of 8.
 
-1. **Glow placement** — Only on key focal points, not everything
-2. **Subtle intensity** — Soft glow, not overwhelming bloom
-3. **Color-coded** — Orange glows for warm elements, cyan for technical
-4. **Circuit aesthetics** — Glowing lines can suggest digital pathways
-5. **Grid intersections** — Glows at connection points create depth
-6. **Accent, not primary** — Glow enhances, doesn't dominate
+```
+4px   — Tight: icon-to-label, related items
+8px   — Base: default gap between inline elements
+16px  — Comfortable: paragraph spacing, list gaps
+24px  — Section element spacing
+32px  — Subsection separation
+48px  — Section separation
+64px  — Major section breaks
+96px  — Page-level breathing room
+```
 
-**Glow Parameters:**
-- Blur radius: 8-12px for subtle effect
-- Opacity: 40-60% for soft presence
-- Color: Match the accent color (#FF6B35 or #00D9FF)
-- Multiple layers: Inner glow + outer glow for depth
+**Principle:** When in doubt, add more space, not less. Generous whitespace signals quality.
+
+---
+
+## Layout
+
+### Grid
+- **Max content width:** 65ch for body text (readability optimal)
+- **Layout grid:** 12-column with generous gutters
+- **Section padding:** Minimum 48px vertical between sections
+- **Edge margins:** 4-8vw horizontal (fluid, never less than 16px)
+
+### Hierarchy Rules
+1. **One focal point per section.** Everything else supports it.
+2. **Size communicates importance.** Don't use color alone for hierarchy.
+3. **Group related items.** Proximity > labels for showing relationships.
+4. **Alignment creates order.** Left-align body text. Center only titles (if at all).
+
+### Anti-Patterns
+- **No card soup.** Generic card grids are lazy design. Each layout decision should be intentional.
+- **No decoration dividers.** If two sections need separating, spacing alone should do it.
+- **No icon-for-the-sake-of-icons.** Only use icons when they're faster to parse than text.
+- **No drop shadows as design.** Shadows are functional (elevation), not decorative.
+- **No gradient backgrounds.** Unless communicating a specific data dimension.
 
 ---
 
 ## Composition Rules
 
-1. **Minimal elements** — 2-4 key components maximum
-2. **Generous negative space** — 40-50% breathing room
-3. **Asymmetric balance** — Dynamic placement, not centered
-4. **Grid alignment** — Elements loosely follow invisible grid
-5. **Hierarchy** — Clear focal point, supporting elements
-6. **Depth through glow** — Layered glows create visual depth
-7. **Hand-drawn feel** — Even geometric shapes look sketched
-
-### Layout Strategies
-- **Circuit board composition** — Elements connected by glowing pathways
-- **Whiteboard sketch** — Casual hand-drawn explanation aesthetic
-- **Digital blueprint** — Technical diagram with neon highlights
-- **Floating elements** — Components suspended in dark space with glows
-- **Grid-anchored** — Subtle grid provides structure, elements break free
+1. **40-50% negative space** — The empty space IS the design.
+2. **Asymmetric balance preferred** — Dynamic, not static centered layouts.
+3. **2-4 key elements per composition** — More than 4 = too complex.
+4. **Clear reading order** — Eye should flow naturally (Z-pattern, F-pattern, or single column).
+5. **Contrast for emphasis** — Size, weight, or color. Never all three simultaneously.
 
 ---
 
-## Visual Metaphors
+## Visual Metaphors (For Image Generation)
 
-**How to translate concepts into PAI aesthetic:**
-
-| Concept Type | Visual Strategy | Style Notes |
-|--------------|-----------------|-------------|
-| System Architecture | Connected boxes with glowing pathways | Excalidraw sketch + cyan circuit lines |
-| Data Flow | Hand-drawn arrows with neon trails | Orange flow direction, white sketch |
-| Process Steps | Numbered circles with connecting lines | Sketchy circles, glowing connections |
-| Hierarchies | Tree diagrams with gradient glows | White branches, orange highlights |
-| Relationships | Network graphs with glowing nodes | Cyan nodes, white sketch edges |
-| Transformations | Before/after with glow transition | Orange glow shows transformation |
-
-**The Formula:**
-```
-1. Identify core concept (single clear idea)
-2. Choose appropriate metaphor (diagram type)
-3. Sketch with rough white lines (Excalidraw feel)
-4. Add strategic neon accents (orange warmth, cyan tech)
-5. Apply subtle glows to focal points (Tron influence)
-6. Place on dark background (modern contrast)
-7. Leave generous negative space (clarity and calm)
-```
+| Concept | Strategy | Notes |
+|---------|----------|-------|
+| Architecture / Systems | Connected boxes, clean lines | Warm neutrals, accent on key paths |
+| Data Flow | Directional arrows, flow lines | Orange for primary flow, teal for secondary |
+| Comparisons | Side-by-side, split composition | Clear labels, minimal decoration |
+| Hierarchies | Tree or layered diagram | Size encodes importance |
+| Processes | Numbered steps, timeline | Left-to-right or top-to-bottom flow |
+| Relationships | Network with weighted edges | Node size = importance |
 
 ---
 
-## Diagram Types
+## Image Generation Prompting
 
-### Flowcharts
-- Hand-drawn boxes (rough, wobbly edges)
-- Sketchy arrows with slight curves
-- Orange glow on decision points
-- Cyan glow on start/end nodes
-- White primary sketch lines
-
-### Network Diagrams
-- Rough circles for nodes
-- Connecting lines with slight wobble
-- Glowing intersections
-- Color-code by type (orange = warm/human, cyan = technical)
-
-### Architecture Diagrams
-- Sketched rectangles for components
-- Glowing connection lines (circuit aesthetic)
-- Grid undertone for structure
-- Hand-drawn labels in casual script
-
-### Mind Maps
-- Central node with orange glow
-- Radiating branches (white sketch)
-- Secondary nodes with subtle cyan accents
-- Organic, flowing structure
-
----
-
-## Typography (When Needed)
-
-**Hand-drawn casual script:**
-- Looks written by hand, not typed
-- Slightly irregular baseline
-- Variable character spacing
-- Uppercase for emphasis, lowercase for body
-- Orange or white, depending on emphasis
-
-**Avoid:**
-- Perfect geometric fonts
-- All-caps technical fonts
-- Serif fonts
-- Overly decorative fonts
-
----
-
-## Background Variations
-
-### Solid Dark (Default)
-- Deep slate (#1A202C) or pure black
-- Clean, modern, maximum contrast
-- Professional and focused
-
-### Subtle Grid
-- Dark background with faint grid lines
-- Grid opacity: 10-20%
-- Grid color: Lighter slate (#2D3748)
-- Tron/digital blueprint aesthetic
-- Don't overdo - very subtle
-
-### Gradient Dark (Optional)
-- Radial gradient from center to edges
-- Center: Slightly lighter (#2D3748)
-- Edges: Darker (#1A202C or black)
-- Subtle depth without distraction
-
----
-
-## Absolute Rules
-
-1. **HAND-DRAWN SKETCH STYLE** — Rough, imperfect, Excalidraw aesthetic
-2. **DARK BACKGROUNDS** — Deep slate or black for contrast
-3. **WHITE PRIMARY LINES** — Dominant sketch linework
-4. **ORANGE MAIN ACCENT** — Anthropic warmth, approachability
-5. **CYAN SECONDARY ACCENT** — Digital/technical elements (Tron)
-6. **SUBTLE GLOWS** — Strategic, not overwhelming
-7. **MINIMAL ELEMENTS** — 2-4 components maximum
-8. **GENEROUS SPACE** — 40-50% negative space for breathing room
-9. **NO PERFECTION** — Embrace the sketchy, hand-drawn quality
-
----
-
-## AI Generation Prompting
-
-**Positive signals for AI generators:**
-```
-"hand-drawn sketch style"
-"Excalidraw whiteboard aesthetic"
-"rough wobbly lines"
-"imperfect hand-drawn strokes"
-"dark background slate or black"
-"neon orange accents"
-"subtle cyan glow"
-"Tron-inspired neon highlights"
-"digital circuit aesthetic"
-"sketchy casual diagram"
-"whiteboard marker style"
-"multiple overlapping strokes"
-"generous negative space"
-"minimal composition"
-```
-
-**Negative signals:**
-```
---no perfect vectors
---no smooth curves
---no polished corporate
---no cluttered
---no excessive neon
---no photorealistic
---no gradients everywhere
---no bright backgrounds
---no complex compositions
-```
-
----
-
-## Example Prompt Template
+### Positive Signals
 
 ```
-Hand-drawn sketch diagram in Excalidraw style on dark slate background (#1A202C).
+"clean typographic composition"
+"warm neutral background, cream or off-white"
+"generous whitespace, breathing room"
+"strong visual hierarchy"
+"Swiss-inspired grid discipline"
+"contemporary editorial design"
+"professional, authoritative but approachable"
+"asymmetric balanced layout"
+"minimal elements, purposeful placement"
+"warm color accents on neutral ground"
+"high contrast typography"
+"modern magazine aesthetic"
+```
 
-STYLE: Rough, wobbly white sketch lines. Imperfect hand-drawn strokes.
-Multiple overlapping strokes like whiteboard markers. Variable line weight.
+### Negative Signals
+
+```
+--no generic corporate stock photo feel
+--no cluttered busy layouts
+--no pure black backgrounds (use warm darks instead)
+--no neon or glowing effects
+--no hand-drawn sketch style
+--no decorative gradients
+--no card grid layouts
+--no Inter font
+--no drop shadows
+--no centered-everything symmetric layouts
+```
+
+### Prompt Template
+
+```
+[Content description] in clean contemporary editorial style.
+
+STYLE: Warm neutral palette. Off-white or cream background.
+Strong typographic hierarchy with confident weight contrast.
+Swiss-grid-informed layout with generous whitespace.
 
 COMPOSITION:
-[Describe 2-4 key elements with rough sketchy boxes/circles/arrows]
+[Describe 2-4 elements with specific placement and proportion]
 
-ACCENTS:
-- Primary: Neon orange (#FF6B35) glow on [focal element]
-- Secondary: Subtle cyan (#00D9FF) glow on [technical element]
-- Glows: Soft, 40-60% opacity, 8-12px blur
-
-LAYOUT:
-- 40-50% negative space
-- Asymmetric balance
-- Elements loosely grid-aligned
-- Dark background for contrast
+COLOR:
+- Background: Warm white or cream (#FAF9F7 or #F2EDE6)
+- Text/lines: Deep warm charcoal (#2A2520)
+- Accent: [Choose ONE from: Signal Orange #E8652A, Deep Teal #2B8A8A, Quiet Blue #5E7FAD]
+- 40-50% negative space minimum
 
 CRITICAL:
-- Hand-drawn imperfect quality (NOT smooth vectors)
-- Subtle glows only (NOT overwhelming neon)
-- Minimal elements (2-4 max)
-- Generous breathing room
-- Sketch aesthetic like Excalidraw/whiteboard
+- NOT corporate clipart or stock photo style
+- Clean, intentional, every element purposeful
+- Professional warmth, not cold minimalism
+- Contemporary editorial magazine quality
 ```
 
 ---
 
-## 🚨 Dynamic Interpretation Required
+## Dynamic Application
 
-**Every visualization should:**
-- Match the content's specific needs
-- Use appropriate diagram type (flowchart, network, architecture, etc.)
-- Balance digital precision (Tron) with human warmth (hand-drawn)
-- Combine Anthropic orange warmth with Tron cyan technical accents
-- Maintain sketchy Excalidraw aesthetic throughout
-- Stay minimal and focused
+**Every visual should:**
+- Match content needs (diagram type, information density)
+- Use the right level of complexity (simple for simple ideas)
+- Maintain warm, accessible tone
+- Prioritize legibility and hierarchy over style
+- Work at the size it will be displayed (don't over-detail thumbnails)
 
-DO NOT create overly complex visuals. The power is in simplicity, clarity, and the unique fusion of hand-drawn warmth with digital neon energy.
+**Adaptation by context:**
+- **Blog/editorial:** More expressive, can use larger type and bolder accents
+- **Technical diagrams:** More restrained, clarity over aesthetics
+- **Presentations:** Larger elements, higher contrast, simpler compositions
+- **Social media:** Bolder, more contrast, readable at small sizes
+- **Documentation:** Most restrained, function over form
 
 ---
 
-**This is the PAI aesthetic: Where Tron meets Excalidraw, powered by Anthropic's warm orange soul.**
+**This is the PAI aesthetic: Warm clarity over cold perfection. Every element earns its place.**

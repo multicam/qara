@@ -10,5 +10,10 @@
   },
   "peerDependencies": {
     "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@google/genai": "^1.46.0",
+    "openai": "^6.32.0",
+    "replicate": "^1.4.0"
   }
 }

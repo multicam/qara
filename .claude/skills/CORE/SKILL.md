@@ -71,10 +71,13 @@ env:
 | File organization | `.claude/skills/CORE/workflows/file-organization-detailed.md` | "where to save", "file organization", "history vs scratchpad" |
 | Context loading rules | `.claude/skills/CORE/workflows/context-loading-rules.md` | "which context to load", "semantic routing", "context categories" |
 | Session state | `.claude/context/working/README.md` | "session files", "working directory", "transient state" |
+| Image generation | `.claude/skills/image/SKILL.md` | "generate image", "create graphic", "hero image", "stock photo", "unsplash" |
+| TGDS aesthetic | `.claude/skills/image/references/tgds-aesthetic.md` | "TGDS brand", "design school style", "TGDS colors" |
 
 **Skills (on-demand):**
 - `hook-authoring` skill → hook creation
 - `system-create-skill` skill → skill creation
+- `image` skill → image generation, stock photos, visual content
 
 ---
 
