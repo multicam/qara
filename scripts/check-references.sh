@@ -22,7 +22,7 @@ echo "Checking: → READ patterns + inline backtick file references + READ: dire
 echo ""
 
 # Placeholder patterns to ignore (examples in documentation)
-IGNORE_PATTERNS="workflow[0-9]|\[.*\]|due-diligence|lookup|some-plan|YYYY|description\.md|skill-name"
+IGNORE_PATTERNS="workflow[0-9]|\[.*\]|due-diligence|lookup|some-plan|YYYY|description\.md|skill-name|UBIQUITOUS_LANGUAGE\.md"
 
 # Find all .md files and check references
 # Checks: "→ READ:" patterns, standalone "READ:" directives, backtick-quoted .md refs

@@ -202,12 +202,12 @@ describe('Skills System', () => {
   });
 
   describe('SKILL.md Frontmatter Validation', () => {
-    for (const skillName of [
-      'CORE',
-      'research',
-      'frontend-design',
-      'system-create-skill',
-    ]) {
+    // Local skills require full frontmatter (name, context, description)
+    const localSkills = ['CORE', 'research', 'system-create-skill'];
+    // External/symlinked skills only require name + description (context is PAI-specific)
+    const externalSkills = ['frontend-design'];
+
+    for (const skillName of localSkills) {
       it(`${skillName} should have valid SKILL.md`, () => {
         const skillMdPath = join(PAI_DIR, 'skills', skillName, 'SKILL.md');
 
@@ -224,6 +224,22 @@ describe('Skills System', () => {
 
         const contextMatch = content.match(/context:\s*(same|fork)/);
         expect(contextMatch).not.toBeNull();
+      });
+    }
+
+    for (const skillName of externalSkills) {
+      it(`${skillName} should have valid SKILL.md`, () => {
+        const skillMdPath = join(PAI_DIR, 'skills', skillName, 'SKILL.md');
+
+        if (!existsSync(skillMdPath)) {
+          return;
+        }
+
+        const content = readFileSync(skillMdPath, 'utf-8');
+
+        expect(content.startsWith('---')).toBe(true);
+        expect(content).toContain('name:');
+        expect(content).toContain('description:');
       });
     }
   });
