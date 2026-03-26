@@ -461,4 +461,19 @@ async function main(): Promise<void> {
     }
 }
 
-main().catch(console.error);
+// Exports for testing
+export {
+    analyzeSkillsSystem,
+    analyzeHooksConfiguration,
+    analyzeDelegationPatterns,
+    analyzeToolIntegration,
+    analyzeWorkflowPatterns,
+    PAI_MODULES,
+};
+
+// Direct execution guard
+const isDirectExecution =
+    import.meta.path === Bun.main || process.argv[1]?.endsWith('analyse-pai.ts');
+if (isDirectExecution && !process.env.ANALYSE_PAI_NO_CLI) {
+    main().catch(console.error);
+}

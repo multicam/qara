@@ -547,7 +547,24 @@ async function main(): Promise<void> {
     }
 }
 
-main().catch(err => {
-    console.error('[fatal]', err instanceof Error ? err.message : String(err));
-    process.exit(1);
-});
+// Exports for testing (pure functions + types)
+export {
+    daysSince,
+    activityStatus,
+    isOutdated,
+    formatReport,
+    type InstalledSkill,
+    type UpstreamData,
+    type SkillPulseEntry,
+    type PulseReport,
+};
+
+// Direct execution guard
+const isDirectExecution =
+    import.meta.path === Bun.main || process.argv[1]?.endsWith('skill-pulse-check.ts');
+if (isDirectExecution && !process.env.SKILL_PULSE_NO_CLI) {
+    main().catch(err => {
+        console.error('[fatal]', err instanceof Error ? err.message : String(err));
+        process.exit(1);
+    });
+}
