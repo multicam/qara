@@ -304,7 +304,26 @@ async function main(): Promise<void> {
     }
 }
 
-main().catch(err => {
-    console.error('[fatal]', err instanceof Error ? err.message : String(err));
-    process.exit(1);
-});
+// Exports for testing (pure functions)
+export {
+    parseChangelog,
+    isFeatureLine,
+    isBugfix,
+    toSuggestedKey,
+    findNewCandidates,
+    findVersionGaps,
+    formatReport,
+    type ChangelogEntry,
+    type FeatureSyncReport,
+    type NewFeatureCandidate,
+};
+
+// Direct execution guard
+const isDirectExecution =
+    import.meta.path === Bun.main || process.argv[1]?.endsWith('cc-feature-sync.ts');
+if (isDirectExecution && !process.env.CC_FEATURE_SYNC_NO_CLI) {
+    main().catch(err => {
+        console.error('[fatal]', err instanceof Error ? err.message : String(err));
+        process.exit(1);
+    });
+}
