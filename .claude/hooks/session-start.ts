@@ -17,6 +17,7 @@ import { join } from 'path';
 import { tmpdir } from 'os';
 import { SKILLS_DIR } from './lib/pai-paths';
 import { setTerminalTabTitle } from './lib/tab-titles';
+import { readTDDStateRaw, clearTDDState, isStateValid } from './lib/tdd-state';
 
 const DEBOUNCE_MS = 2000;
 const sessionId = process.env.CLAUDE_SESSION_ID || process.env.SESSION_ID || 'default';
@@ -76,6 +77,17 @@ async function main() {
     if (shouldDebounce()) {
       console.error('Debouncing duplicate SessionStart');
       process.exit(0);
+    }
+
+    // Clean up stale TDD state from dead sessions
+    try {
+      const stale = readTDDStateRaw();
+      if (stale && !isStateValid(stale)) {
+        clearTDDState();
+        console.error('Cleaned up stale TDD state from previous session');
+      }
+    } catch {
+      // Non-critical — don't let cleanup failure block session start
     }
 
     // Load core context (outputs to stdout)

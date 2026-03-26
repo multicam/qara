@@ -64,7 +64,7 @@ describe("tdd-qa Skill Structure", () => {
     expect(content).toContain("blueprint-pattern.md");
   });
 
-  it("should have all 7 workflows", () => {
+  it("should have all 8 workflows", () => {
     const workflows = [
       "init-project.md",
       "write-scenarios.md",
@@ -73,6 +73,7 @@ describe("tdd-qa Skill Structure", () => {
       "backtest.md",
       "e2e-verify.md",
       "explore-bombadil.md",
+      "mutation-check.md",
     ];
     for (const wf of workflows) {
       expect(existsSync(join(SKILL_DIR, "workflows", wf))).toBe(true);

@@ -12,7 +12,8 @@
  *   bun run test-report.ts parse --file results.xml
  */
 
-import { readFileSync } from "fs";
+import { readFileSync, existsSync } from "fs";
+import { basename, dirname, join, extname } from "path";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -270,11 +271,85 @@ export function formatReport(result: ComparisonResult): string {
   return lines.join("\n");
 }
 
+// ─── Affected Test Finder ────────────────────────────────────────────────────
+
+export interface AffectedResult {
+  changedFiles: string[];
+  affectedTests: string[];
+  unmappedFiles: string[];
+}
+
+const TEST_EXTENSIONS = [".test.ts", ".test.js", ".spec.ts", ".spec.js", ".integration.test.ts", ".integration.test.js"];
+
+function isTestFilePath(filePath: string): boolean {
+  const name = basename(filePath);
+  return TEST_EXTENSIONS.some((ext) => name.endsWith(ext)) ||
+    name.endsWith(".draft.spec.ts") ||
+    name.endsWith(".bombadil.ts");
+}
+
+/**
+ * Find test files affected by changed source files.
+ * Uses co-location heuristic: foo.ts → foo.test.ts, foo.integration.test.ts
+ */
+export function findAffectedTests(changedFiles: string[]): AffectedResult {
+  const affectedTests: string[] = [];
+  const unmappedFiles: string[] = [];
+
+  for (const file of changedFiles) {
+    // If the changed file IS a test file, include it directly
+    if (isTestFilePath(file)) {
+      if (existsSync(file) && !affectedTests.includes(file)) {
+        affectedTests.push(file);
+      } else if (!existsSync(file)) {
+        unmappedFiles.push(file);
+      }
+      continue;
+    }
+
+    const dir = dirname(file);
+    const ext = extname(file);
+    const base = basename(file, ext);
+    let found = false;
+
+    // Check co-located test files
+    const candidates = [
+      join(dir, `${base}.test.ts`),
+      join(dir, `${base}.test.js`),
+      join(dir, `${base}.integration.test.ts`),
+      join(dir, `${base}.integration.test.js`),
+    ];
+
+    // Also check src/ → tests/ mirror path
+    if (dir.includes("/src/") || dir.startsWith("src/")) {
+      const mirrorDir = dir.replace(/\/src\/|^src\//, "/tests/").replace(/^\//, "");
+      candidates.push(
+        join(mirrorDir, `${base}.test.ts`),
+        join(mirrorDir, `${base}.test.js`),
+      );
+    }
+
+    for (const candidate of candidates) {
+      if (existsSync(candidate) && !affectedTests.includes(candidate)) {
+        affectedTests.push(candidate);
+        found = true;
+      }
+    }
+
+    if (!found) {
+      unmappedFiles.push(file);
+    }
+  }
+
+  return { changedFiles, affectedTests, unmappedFiles };
+}
+
 // ─── CLI ─────────────────────────────────────────────────────────────────────
 
 export const USAGE = `Usage:
   test-report compare --baseline <xml> --current <xml> [--coverage-baseline <lcov> --coverage-current <lcov>]
-  test-report parse --file <xml>`;
+  test-report parse --file <xml>
+  test-report affected --files <path1,path2,...>`;
 
 export interface CLIResult {
   exitCode: number;
@@ -336,6 +411,28 @@ export function runCLI(args: string[]): CLIResult {
 
     const result = compare(baseline, current, covBaseline, covCurrent);
     return { exitCode: result.gatesPassed ? 0 : 1, stdout: formatReport(result), stderr: "" };
+  }
+
+  if (command === "affected") {
+    const filesIdx = args.indexOf("--files");
+    if (filesIdx === -1 || !args[filesIdx + 1]) {
+      return { exitCode: 1, stdout: "", stderr: "Error: --files is required for affected command" };
+    }
+    const files = args[filesIdx + 1].split(",").map((f) => f.trim()).filter(Boolean);
+    const result = findAffectedTests(files);
+
+    if (result.affectedTests.length === 0) {
+      const msg = result.unmappedFiles.length > 0
+        ? `No test files found for: ${result.unmappedFiles.join(", ")}`
+        : "No test files found";
+      return { exitCode: 1, stdout: msg, stderr: "" };
+    }
+
+    const lines = result.affectedTests;
+    if (result.unmappedFiles.length > 0) {
+      lines.push(`# unmapped: ${result.unmappedFiles.join(", ")}`);
+    }
+    return { exitCode: 0, stdout: lines.join("\n"), stderr: "" };
   }
 
   return { exitCode: 1, stdout: "", stderr: `Unknown command: ${command}\n${USAGE}` };

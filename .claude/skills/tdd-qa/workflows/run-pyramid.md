@@ -60,7 +60,13 @@ Only runs if `tests/e2e/*.spec.ts` files exist. Skip this step if no frozen E2E 
 
 **Gate:** Zero failures. If any exist, STOP and report.
 
-### 5. Report [DETERMINISTIC]
+### 5. Mutation Testing [DETERMINISTIC] (optional, if StrykerJS installed)
+
+Only runs if `stryker.config.json` exists in the project root. Advisory only — does not fail the pyramid.
+
+See: `mutation-check.md` workflow for details.
+
+### 6. Report [DETERMINISTIC]
 
 ```
 Pyramid complete:

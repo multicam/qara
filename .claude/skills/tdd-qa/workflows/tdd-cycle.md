@@ -16,6 +16,17 @@ RED-GREEN-VERIFY-REFACTOR loop driven by scenario specs. This is the core bluepr
 
 Use the detected runner for all `bun test` commands below.
 
+### Activate TDD Enforcement [DETERMINISTIC]
+
+```bash
+bun ${PAI_DIR}/hooks/lib/tdd-state.ts activate --feature {feature-name} --phase RED
+```
+
+This enables the PreToolUse hook to enforce phase discipline:
+- **RED phase:** only test files can be edited (source file edits are blocked)
+- **GREEN phase:** source files allowed (writing implementation)
+- **REFACTOR phase:** both allowed (cleaning up)
+
 ## The Loop
 
 For each scenario in priority order (critical first):
@@ -54,7 +65,13 @@ The test MUST fail. If it passes, either:
 - The behavior already exists (skip this scenario)
 - The test is wrong (fix it)
 
-### 3. GREEN — Write Minimal Code [AGENTIC]
+### 3. Transition to GREEN [DETERMINISTIC]
+
+```bash
+bun ${PAI_DIR}/hooks/lib/tdd-state.ts phase GREEN
+```
+
+### 4. GREEN — Write Minimal Code [AGENTIC]
 
 Write the minimum code to make the test pass. Nothing more.
 
@@ -64,7 +81,7 @@ Write the minimum code to make the test pass. Nothing more.
 - No "while I'm here" changes
 - If the minimal fix feels wrong, that's signal for the next scenario, not this one
 
-### 4. VERIFY GREEN [DETERMINISTIC]
+### 5. VERIFY GREEN [DETERMINISTIC]
 
 ```bash
 bun test path/to/file.test.ts
@@ -81,7 +98,13 @@ The test MUST pass. If it fails:
   Need: [what JM needs to decide]
   ```
 
-### 5. REFACTOR [AGENTIC]
+### 6. Transition to REFACTOR [DETERMINISTIC]
+
+```bash
+bun ${PAI_DIR}/hooks/lib/tdd-state.ts phase REFACTOR
+```
+
+### 7. REFACTOR [AGENTIC]
 
 Only when GREEN. Clean up:
 - Remove duplication introduced by this cycle
@@ -90,7 +113,7 @@ Only when GREEN. Clean up:
 
 **Never refactor while RED.** If refactoring breaks a test, undo immediately.
 
-### 6. VERIFY REFACTOR [DETERMINISTIC]
+### 8. VERIFY REFACTOR [DETERMINISTIC]
 
 ```bash
 bun test path/to/file.test.ts
@@ -98,11 +121,23 @@ bun test path/to/file.test.ts
 
 All tests must still pass. If any fail, undo the refactor.
 
-### 7. Next Scenario
+### 9. Next Scenario [DETERMINISTIC]
+
+Transition back to RED for the next scenario:
+
+```bash
+bun ${PAI_DIR}/hooks/lib/tdd-state.ts phase RED
+```
 
 Return to step 1 with the next scenario. Each cycle responds to what was learned from the previous one.
 
 ## After All Scenarios
+
+### Deactivate TDD Enforcement [DETERMINISTIC]
+
+```bash
+bun ${PAI_DIR}/hooks/lib/tdd-state.ts clear
+```
 
 ### Type Check [DETERMINISTIC]
 
@@ -133,11 +168,16 @@ Next: "backtest" to update baseline and verify quality gates.
 
 | Step | Node Type | Retries |
 |------|-----------|---------|
+| Activate enforcement | Deterministic | 0 |
 | RED (write test) | Agentic | — |
 | VERIFY RED | Deterministic | 0 |
+| Transition to GREEN | Deterministic | 0 |
 | GREEN (write code) | Agentic | — |
 | VERIFY GREEN | Deterministic | 0 (code fix is agentic, max 2) |
+| Transition to REFACTOR | Deterministic | 0 |
 | REFACTOR | Agentic | — |
 | VERIFY REFACTOR | Deterministic | 0 (undo on fail) |
+| Transition to RED (next) | Deterministic | 0 |
+| Deactivate enforcement | Deterministic | 0 |
 | Type check | Deterministic | 0 |
 | Full suite | Deterministic | 0 |

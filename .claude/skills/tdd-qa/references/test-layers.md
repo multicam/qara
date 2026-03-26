@@ -12,7 +12,7 @@ Adapted from Kent C. Dodds' Testing Trophy for PAI's Bun-first stack.
 | **Integration** | `bun test` | `*.integration.test.ts` | Module boundaries, real code paths | Critical paths covered |
 | **E2E** | Playwright / devtools-mcp | `*.spec.ts` in `tests/e2e/` | User journeys only | 3-5 scenarios per app |
 | **Exploration** | Bombadil (experimental) | `*.bombadil.ts` in `specs/` | UI property invariants | Zero violations on properties |
-| **Quality** | StrykerJS (future) | On demand | Validate test effectiveness | >70% mutation score |
+| **Quality** | StrykerJS (advisory) | On demand | Validate test effectiveness | >70% mutation score |
 
 ## Most Valuable Layer: Integration
 
@@ -57,11 +57,12 @@ Unit tests catch logic errors in isolation. E2E tests catch broken user journeys
 - **Gate:** Separate from backtest loop (own quality gate: zero violations). Will unify with JUnit XML backtest loop if Bombadil is retained long-term.
 - **Status:** v0.3.2, MIT license, experimental. Breaking changes expected.
 
-### Quality — Mutation Testing (future)
+### Quality — Mutation Testing (advisory)
 - **What it catches:** Tests that pass but prove nothing (surviving mutants)
 - **Cost:** Very high (runs test suite N times with code mutations)
 - **Node type:** Deterministic
-- **Tool:** StrykerJS (when Bun compatibility improves)
+- **Tool:** StrykerJS via `mutation-check` workflow (command runner mode: `bun test`)
+- **Gate:** Advisory only — reports score but does not block merges. Threshold: >70%
 
 ## Pyramid Execution Order
 

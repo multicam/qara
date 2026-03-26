@@ -10,6 +10,7 @@ User: Jean-Marc Giorgi (JM). Never say "the user."
 - Never mark a task complete without proving it works (tests, logs, demonstration)
 - Find root causes. No temporary fixes. Senior developer standards.
 - Never mix refactoring with feature work in the same commit. Isolated changes = traceable breakage.
+- Never write placeholder code: no `// TODO`, `// Implementation on hold`, `throw new Error('not implemented')`, empty function bodies, or stub returns. If blocked on implementation, use structured escalation.
 
 **SHOULD:**
 - When given a bug: just fix it. Point at evidence, then resolve.

@@ -1,9 +1,13 @@
-import { describe, it, expect } from "bun:test";
+import { describe, it, expect, beforeAll, afterAll } from "bun:test";
+import { mkdirSync, writeFileSync, rmSync } from "fs";
+import { join } from "path";
+import { tmpdir } from "os";
 import {
   parseJUnitXML,
   parseLcov,
   compare,
   formatReport,
+  findAffectedTests,
   runCLI,
   type TestSummary,
   type CoverageSummary,
@@ -307,5 +311,88 @@ describe("runCLI", () => {
     const result = runCLI(["compare"]);
     expect(result.exitCode).toBe(1);
     expect(result.stderr).toContain("--baseline and --current are required");
+  });
+
+  it("errors on affected without --files", () => {
+    const result = runCLI(["affected"]);
+    expect(result.exitCode).toBe(1);
+    expect(result.stderr).toContain("--files is required");
+  });
+
+  it("affected exits 1 when no tests found", () => {
+    const result = runCLI(["affected", "--files", "/nonexistent/path/foo.ts"]);
+    expect(result.exitCode).toBe(1);
+    expect(result.stdout).toContain("No test files found");
+  });
+});
+
+// ─── findAffectedTests ─────────────────────────────────────────────────────
+
+describe("findAffectedTests", () => {
+  const FIXTURE_DIR = join(tmpdir(), `test-report-fixtures-${process.pid}`);
+
+  beforeAll(() => {
+    // Create fixture file structure
+    mkdirSync(join(FIXTURE_DIR, "src", "auth"), { recursive: true });
+    mkdirSync(join(FIXTURE_DIR, "tests", "auth"), { recursive: true });
+
+    writeFileSync(join(FIXTURE_DIR, "src", "auth", "login.ts"), "export function login() {}");
+    writeFileSync(join(FIXTURE_DIR, "src", "auth", "login.test.ts"), "test('login', () => {})");
+    writeFileSync(join(FIXTURE_DIR, "src", "auth", "login.integration.test.ts"), "test('login int', () => {})");
+    writeFileSync(join(FIXTURE_DIR, "src", "auth", "register.ts"), "export function register() {}");
+    // register has NO co-located test
+  });
+
+  afterAll(() => {
+    rmSync(FIXTURE_DIR, { recursive: true, force: true });
+  });
+
+  it("maps source file to co-located unit test", () => {
+    const result = findAffectedTests([join(FIXTURE_DIR, "src", "auth", "login.ts")]);
+    expect(result.affectedTests).toContain(join(FIXTURE_DIR, "src", "auth", "login.test.ts"));
+  });
+
+  it("maps source file to co-located integration test", () => {
+    const result = findAffectedTests([join(FIXTURE_DIR, "src", "auth", "login.ts")]);
+    expect(result.affectedTests).toContain(join(FIXTURE_DIR, "src", "auth", "login.integration.test.ts"));
+  });
+
+  it("returns test file directly when changed file IS a test", () => {
+    const testFile = join(FIXTURE_DIR, "src", "auth", "login.test.ts");
+    const result = findAffectedTests([testFile]);
+    expect(result.affectedTests).toContain(testFile);
+    expect(result.unmappedFiles).toHaveLength(0);
+  });
+
+  it("adds to unmappedFiles when no test found", () => {
+    const result = findAffectedTests([join(FIXTURE_DIR, "src", "auth", "register.ts")]);
+    expect(result.affectedTests).toHaveLength(0);
+    expect(result.unmappedFiles).toContain(join(FIXTURE_DIR, "src", "auth", "register.ts"));
+  });
+
+  it("handles multiple changed files", () => {
+    const result = findAffectedTests([
+      join(FIXTURE_DIR, "src", "auth", "login.ts"),
+      join(FIXTURE_DIR, "src", "auth", "register.ts"),
+    ]);
+    expect(result.affectedTests.length).toBeGreaterThan(0);
+    expect(result.unmappedFiles).toContain(join(FIXTURE_DIR, "src", "auth", "register.ts"));
+  });
+
+  it("deduplicates test files", () => {
+    const result = findAffectedTests([
+      join(FIXTURE_DIR, "src", "auth", "login.ts"),
+      join(FIXTURE_DIR, "src", "auth", "login.test.ts"),
+    ]);
+    const loginTestCount = result.affectedTests.filter(
+      (f) => f === join(FIXTURE_DIR, "src", "auth", "login.test.ts")
+    ).length;
+    expect(loginTestCount).toBe(1);
+  });
+
+  it("adds nonexistent test file to unmapped", () => {
+    const result = findAffectedTests(["/nonexistent/foo.test.ts"]);
+    expect(result.affectedTests).toHaveLength(0);
+    expect(result.unmappedFiles).toContain("/nonexistent/foo.test.ts");
   });
 });

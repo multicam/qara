@@ -47,6 +47,11 @@ Examples: "explore with bombadil", "property-based UI test", "find bugs I didn't
 -> **READ:** `${PAI_DIR}/skills/tdd-qa/workflows/explore-bombadil.md`
 -> **EXECUTE:** Write property specs, run Bombadil exploration, analyze violations
 
+**When user wants mutation testing:**
+Examples: "run mutation tests", "check mutation score", "how good are my tests"
+-> **READ:** `${PAI_DIR}/skills/tdd-qa/workflows/mutation-check.md`
+-> **EXECUTE:** Run StrykerJS, report mutation score (advisory)
+
 **When user asks about test philosophy, patterns, or mocking:**
 -> These live in CORE. See `testing-guide.md`, `mocking-guidelines.md`, `interface-design.md`
 -> This skill handles orchestration (blueprints), not philosophy

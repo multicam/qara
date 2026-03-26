@@ -9,7 +9,7 @@ Pass/fail criteria for the back-testing loop. All gates are deterministic — no
 | **Zero regressions** | 0 new test failures vs baseline | Yes | JUnit XML diff |
 | **Coverage delta** | Line coverage must not decrease | Yes | lcov file comparison |
 | **Critical scenarios** | 100% pass rate on Priority: critical | Yes | JUnit XML + scenario metadata |
-| **Mutation score** | >70% (future, advisory only) | No | StrykerJS output |
+| **Mutation score** | >70% (advisory, active) | No | StrykerJS output via `mutation-check` workflow |
 
 ## Data Contracts
 
