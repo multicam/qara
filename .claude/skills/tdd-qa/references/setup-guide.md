@@ -76,6 +76,7 @@ bun test --coverage --coverage-reporter=lcov --coverage-dir=.coverage
 .coverage-current/
 .coverage/
 traces/
+.stryker-tmp/
 
 # E2E drafts
 tests/e2e/*.draft.spec.ts
@@ -193,6 +194,88 @@ cp .test-current.xml .test-baseline.xml
 
 ---
 
+## TDD Enforcement Hook (PAI repos)
+
+For PAI repos with the tdd-qa skill, the TDD enforcement hook blocks source file edits during the RED phase of a TDD cycle. This is automatic — the tdd-cycle workflow activates and deactivates it.
+
+**Requirements:**
+- `hooks/lib/tdd-state.ts` — state management library
+- `hooks/pre-tool-use-tdd.ts` — PreToolUse hook for Write/Edit
+- settings.json entries for Write and Edit matchers
+
+**How it works:**
+- RED phase: only test files (`.test.ts`, `.spec.ts`) can be edited
+- GREEN phase: source files allowed (writing implementation)
+- REFACTOR phase: both allowed
+- No active TDD cycle: everything allowed (transparent)
+
+State is session-scoped with 2h TTL. Stale state from crashed sessions is cleaned up on next session start.
+
+---
+
+## Targeted Test Selection
+
+The `test-report affected` command finds tests relevant to changed files:
+
+```bash
+bun $PAI_DIR/skills/tdd-qa/tools/test-report.ts affected --files src/auth.ts,src/utils.ts
+```
+
+Uses co-location heuristic: `foo.ts` → looks for `foo.test.ts` and `foo.integration.test.ts` in the same directory. Faster than running the full suite during TDD inner loops.
+
+---
+
+## Mutation Testing (Advisory)
+
+StrykerJS validates test effectiveness by mutating source code and checking if tests catch the changes.
+
+**Setup:**
+```bash
+# Install (when ready — not required for basic TDD)
+bun add -d @stryker-mutator/core @stryker-mutator/typescript-checker
+```
+
+**Create `stryker.config.json`:**
+```json
+{
+  "testRunner": "command",
+  "commandRunner": { "command": "bun test" },
+  "mutate": ["src/**/*.ts", "!src/**/*.test.ts"],
+  "reporters": ["clear-text"],
+  "tempDirName": ".stryker-tmp"
+}
+```
+
+Adjust `commandRunner.command` for your test runner (e.g., `vitest run` for Vitest projects). Advisory only — reports mutation score but does not block merges. Threshold: >70%.
+
+---
+
+## E2E Browser Testing
+
+For UI projects, E2E tests use **playwright-core** (lightweight, 5MB, no bundled browsers — uses system-installed browsers) or **@playwright/test** (full test runner with fixtures).
+
+| Tool | Use case | Size |
+|------|----------|------|
+| `playwright-core` | Direct browser automation (screenshots, capture) | ~5MB |
+| `@playwright/test` | Full E2E test runner with fixtures and reporters | ~400MB + browsers |
+
+**Recommendation:** Start with `playwright-core` for design verification. Only install `@playwright/test` if you need CI-runnable E2E test suites with fixtures.
+
+```bash
+# Lightweight (design verification, devtools-mcp)
+bun add -d playwright-core
+
+# Full runner (CI E2E suites — heavy)
+bun add -d @playwright/test
+```
+
+The `e2e-verify` workflow auto-drafts `.draft.spec.ts` files. Freeze them to `.spec.ts` for CI:
+```bash
+bun $PAI_DIR/skills/tdd-qa/tools/e2e-freeze.ts tests/e2e/*.draft.spec.ts
+```
+
+---
+
 ## Workflow Usage After Setup
 
 ### Daily development (Mode 1: New feature)
@@ -270,11 +353,20 @@ bombadil --version
 
 ## Checklist: Ready to Use
 
+**Core (required):**
 - [ ] `specs/` directory created with README.md
 - [ ] JUnit XML reporter configured (vitest.config or bun flag)
 - [ ] lcov coverage configured
-- [ ] `.gitignore` updated for baselines and traces
+- [ ] `.gitignore` updated for baselines, traces, and `.stryker-tmp/`
 - [ ] Test scripts added to package.json
 - [ ] Initial baseline captured (`.test-baseline.xml`)
-- [ ] (Optional) Bombadil installed and types added
-- [ ] (Optional) First scenario spec written in `specs/`
+
+**Recommended:**
+- [ ] First scenario spec written in `specs/`
+- [ ] `stryker.config.json` created (advisory mutation testing)
+- [ ] Coverage threshold set in bunfig.toml or vitest.config
+
+**Optional:**
+- [ ] Bombadil installed and types added (UI exploration)
+- [ ] `playwright-core` installed (design verification, lightweight)
+- [ ] TDD enforcement hook configured (PAI repos only)
