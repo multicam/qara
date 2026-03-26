@@ -1,0 +1,13 @@
+{
+  "$schema": "https://raw.githubusercontent.com/stryker-mutator/stryker/master/packages/core/schema/stryker-core.json",
+  "testRunner": "command",
+  "commandRunner": { "command": "bun test ./.claude/" },
+  "mutate": [
+    ".claude/hooks/**/*.ts",
+    ".claude/skills/tdd-qa/tools/**/*.ts",
+    "!.claude/**/*.test.ts",
+    "!.claude/**/*.test.js"
+  ],
+  "reporters": ["clear-text"],
+  "tempDirName": ".stryker-tmp"
+}

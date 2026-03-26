@@ -6,7 +6,8 @@
     "test": "bun test ./.claude/"
   },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "playwright-core": "^1.58.2"
   },
   "peerDependencies": {
     "typescript": "^5.9.3"

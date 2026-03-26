@@ -13,7 +13,7 @@
  *   full        - Full verification (screenshot + console + network + interactions)
  */
 
-import { chromium, Browser, Page, ConsoleMessage, Request, Response } from 'playwright';
+import { chromium, Browser, Page, ConsoleMessage, Request, Response } from 'playwright-core';
 import { parseArgs } from 'util';
 import { mkdirSync } from 'fs';
 
