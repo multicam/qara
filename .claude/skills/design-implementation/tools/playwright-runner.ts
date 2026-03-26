@@ -242,4 +242,12 @@ async function main() {
   }
 }
 
-main();
+// Exports for testing
+export { loadConfig, type Config, type CaptureResult, type ConsoleEntry, type NetworkEntry };
+
+// Direct execution guard
+const isDirectExecution =
+  import.meta.path === Bun.main || process.argv[1]?.endsWith("playwright-runner.ts");
+if (isDirectExecution && !process.env.PLAYWRIGHT_RUNNER_NO_CLI) {
+  main();
+}

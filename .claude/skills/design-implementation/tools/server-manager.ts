@@ -39,7 +39,8 @@ const STATE_FILE = new URL('../state.json', import.meta.url).pathname;
 function detectPort(cwd: string = process.cwd()): number {
   try {
     const pkgPath = `${cwd}/package.json`;
-    const pkg: PackageJson = JSON.parse(Bun.file(pkgPath).text());
+    const { readFileSync } = require("fs");
+    const pkg: PackageJson = JSON.parse(readFileSync(pkgPath, "utf-8"));
     const devScript = pkg.scripts?.dev || pkg.scripts?.start || '';
 
     // Parse common patterns:
@@ -68,7 +69,8 @@ function detectPort(cwd: string = process.cwd()): number {
 function detectCommand(cwd: string = process.cwd()): string {
   try {
     const pkgPath = `${cwd}/package.json`;
-    const pkg: PackageJson = JSON.parse(Bun.file(pkgPath).text());
+    const { readFileSync } = require("fs");
+    const pkg: PackageJson = JSON.parse(readFileSync(pkgPath, "utf-8"));
 
     if (pkg.scripts?.dev) return 'bun run dev';
     if (pkg.scripts?.start) return 'bun run start';
@@ -327,4 +329,12 @@ async function main() {
   }
 }
 
-main();
+// Exports for testing
+export { detectPort, detectCommand, type ServerState };
+
+// Direct execution guard
+const isDirectExecution =
+  import.meta.path === Bun.main || process.argv[1]?.endsWith("server-manager.ts");
+if (isDirectExecution && !process.env.SERVER_MANAGER_NO_CLI) {
+  main();
+}
