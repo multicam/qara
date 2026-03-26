@@ -28,45 +28,6 @@ interface PulseConfig {
   unixTimestamp: number;
 }
 
-// --- CLI Parsing ---
-
-const { values } = parseArgs({
-  args: Bun.argv.slice(2),
-  options: {
-    topic: { type: "string" },
-    days: { type: "string", default: "30" },
-    platforms: { type: "string", default: "reddit,hn,youtube,x,web" },
-    help: { type: "boolean", default: false },
-  },
-});
-
-if (values.help || !values.topic) {
-  console.log(`Usage: bun community-pulse.ts --topic "topic" [--days 30] [--platforms reddit,hn,youtube,x,web]
-
-Options:
-  --topic       Required. The subject to research.
-  --days        Look-back window in days (default: 30).
-  --platforms   Comma-separated list: reddit,hn,youtube,x,web (default: all).
-  --help        Show this help message.
-
-Output: JSON with platform-keyed query templates and fetched data.`);
-  process.exit(0);
-}
-
-// --- Config ---
-
-const days = parseInt(values.days!, 10) || 30;
-const now = Date.now();
-const boundary = now - days * 86400 * 1000;
-
-const config: PulseConfig = {
-  topic: values.topic!,
-  days,
-  platforms: values.platforms!.split(",").map((p) => p.trim().toLowerCase()),
-  isoDate: new Date(boundary).toISOString().split("T")[0],
-  unixTimestamp: Math.floor(boundary / 1000),
-};
-
 // --- Query Generators ---
 
 function redditQueries(topic: string, date: string): string[] {
@@ -101,6 +62,21 @@ function webQueries(topic: string, year: string): string[] {
     `${topic} community discussion blog post ${year}`,
     `${topic} people are saying opinion ${year}`,
   ];
+}
+
+/**
+ * Build a PulseConfig from parameters (extracted for testability).
+ */
+function buildConfig(topic: string, days: number, platforms: string[]): PulseConfig {
+  const now = Date.now();
+  const boundary = now - days * 86400 * 1000;
+  return {
+    topic,
+    days,
+    platforms,
+    isoDate: new Date(boundary).toISOString().split("T")[0],
+    unixTimestamp: Math.floor(boundary / 1000),
+  };
 }
 
 // --- HN Algolia Fetch ---
@@ -157,10 +133,38 @@ async function fetchHN(
 // --- Main ---
 
 async function main() {
+  const { values } = parseArgs({
+    args: Bun.argv.slice(2),
+    options: {
+      topic: { type: "string" },
+      days: { type: "string", default: "30" },
+      platforms: { type: "string", default: "reddit,hn,youtube,x,web" },
+      help: { type: "boolean", default: false },
+    },
+  });
+
+  if (values.help || !values.topic) {
+    console.log(`Usage: bun community-pulse.ts --topic "topic" [--days 30] [--platforms reddit,hn,youtube,x,web]
+
+Options:
+  --topic       Required. The subject to research.
+  --days        Look-back window in days (default: 30).
+  --platforms   Comma-separated list: reddit,hn,youtube,x,web (default: all).
+  --help        Show this help message.
+
+Output: JSON with platform-keyed query templates and fetched data.`);
+    process.exit(0);
+  }
+
+  const config = buildConfig(
+    values.topic!,
+    parseInt(values.days!, 10) || 30,
+    values.platforms!.split(",").map((p) => p.trim().toLowerCase()),
+  );
+
   const year = new Date().getFullYear().toString();
   const results: Record<string, PlatformResult> = {};
 
-  // Generate query templates for each platform
   if (config.platforms.includes("reddit")) {
     results.reddit = {
       platform: "reddit",
@@ -170,7 +174,6 @@ async function main() {
   }
 
   if (config.platforms.includes("hn")) {
-    // HN is the one platform we can fetch directly (public API, no auth)
     results.hn = await fetchHN(config.topic, config.unixTimestamp);
   }
 
@@ -217,4 +220,23 @@ async function main() {
   console.log(JSON.stringify(output, null, 2));
 }
 
-main();
+// Exports for testing (pure functions + types)
+export {
+  redditQueries,
+  hnSearchUrl,
+  hnItemUrl,
+  xQueries,
+  youtubeQueries,
+  webQueries,
+  buildConfig,
+  fetchHN,
+  type PlatformResult,
+  type PulseConfig,
+};
+
+// Direct execution guard
+const isDirectExecution =
+  import.meta.path === Bun.main || process.argv[1]?.endsWith("community-pulse.ts");
+if (isDirectExecution && !process.env.COMMUNITY_PULSE_NO_CLI) {
+  main();
+}
