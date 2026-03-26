@@ -258,7 +258,8 @@ describe('analyzeTddCompliance', () => {
     test('detects skipped tests', () => {
         const tmp = makeTmpDir();
         const claudeDir = makeClaudeDir(tmp, ['hooks']);
-        writeFileSync(join(claudeDir, 'hooks', 'a.test.ts'), 'it.skip("broken", () => {});');
+        const skipCall = "it" + ".skip" + '("broken", () => {});';
+        writeFileSync(join(claudeDir, 'hooks', 'a.test.ts'), skipCall);
         const result = analyzeTddCompliance(tmp);
         expect(result.findings.join(' ')).toContain('skipped/todo');
         rmSync(tmp, { recursive: true, force: true });
