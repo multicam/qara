@@ -1,3 +1,5 @@
 [test]
 # Coverage: exclude purgatory and node_modules
 coveragePathIgnorePatterns = ["purgatory/", "node_modules/"]
+# Coverage threshold: floor at 90% (current: 92.9%), ratchet up as gaps close
+coverageThreshold = 0.90
