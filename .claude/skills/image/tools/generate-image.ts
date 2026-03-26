@@ -579,4 +579,27 @@ async function main(): Promise<void> {
   }
 }
 
-main();
+// Exports for testing (pure functions + types + constants)
+export {
+  parseArgs,
+  getDatePrefix,
+  enhancePromptForTransparency,
+  loadEnv,
+  CLIError,
+  DEFAULTS,
+  REPLICATE_SIZES,
+  OPENAI_SIZES,
+  GEMINI_SIZES,
+  GEMINI_ASPECT_RATIOS,
+  type Model,
+  type Size,
+  type CLIArgs,
+  type ImageMetadata,
+};
+
+// Direct execution guard
+const isDirectExecution =
+  import.meta.path === Bun.main || process.argv[1]?.endsWith("generate-image.ts");
+if (isDirectExecution && !process.env.GENERATE_IMAGE_NO_CLI) {
+  main();
+}

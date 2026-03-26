@@ -410,4 +410,20 @@ async function main(): Promise<void> {
   }
 }
 
-main();
+// Exports for testing
+export {
+  parseArgs,
+  getDatePrefix,
+  loadEnv,
+  CLIError,
+  type CLIArgs,
+  type UnsplashPhoto,
+  type Attribution,
+};
+
+// Direct execution guard
+const isDirectExecution =
+  import.meta.path === Bun.main || process.argv[1]?.endsWith("search-unsplash.ts");
+if (isDirectExecution && !process.env.SEARCH_UNSPLASH_NO_CLI) {
+  main();
+}
