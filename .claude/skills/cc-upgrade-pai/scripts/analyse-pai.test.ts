@@ -20,6 +20,7 @@ import {
   analyzeDelegationPatterns,
   analyzeToolIntegration,
   analyzeWorkflowPatterns,
+  analyzeTddCompliancePAI,
   PAI_MODULES,
 } from "./analyse-pai";
 
@@ -163,20 +164,53 @@ describe("analyse-pai", () => {
     });
   });
 
+  describe("analyzeTddCompliancePAI (qara integration)", () => {
+    it("scores high on qara (has enforcement hook, tdd-qa, state lib)", () => {
+      const result = analyzeTddCompliancePAI(QARA_DIR);
+      expect(result.score).toBeGreaterThanOrEqual(12);
+      const findings = result.findings.join(" ");
+      expect(findings).toContain("TDD enforcement hook registered");
+      expect(findings).toContain("TDD state management library");
+      expect(findings).toContain("tdd-qa skill installed");
+    });
+
+    it("detects quality gates documentation", () => {
+      const result = analyzeTddCompliancePAI(QARA_DIR);
+      expect(result.findings.join(" ")).toContain("Quality gates documented");
+    });
+
+    it("reports healthy test count", () => {
+      const result = analyzeTddCompliancePAI(QARA_DIR);
+      expect(result.findings.join(" ")).toContain("healthy");
+    });
+
+    it("handles bare directory gracefully", () => {
+      const bareDir = join(tmpdir(), `bare-tdd-pai-${process.pid}`);
+      const { mkdirSync: mk } = require("fs");
+      mk(bareDir, { recursive: true });
+      const result = analyzeTddCompliancePAI(bareDir);
+      expect(result.score).toBe(0);
+      const { rmSync: rm } = require("fs");
+      rm(bareDir, { recursive: true, force: true });
+    });
+  });
+
   describe("PAI_MODULES registry", () => {
     it("includes all expected modules", () => {
       expect(Object.keys(PAI_MODULES)).toContain("structure");
       expect(Object.keys(PAI_MODULES)).toContain("context");
       expect(Object.keys(PAI_MODULES)).toContain("agents");
+      expect(Object.keys(PAI_MODULES)).toContain("tddCompliance");
       expect(Object.keys(PAI_MODULES)).toContain("skillsSystem");
       expect(Object.keys(PAI_MODULES)).toContain("hooksConfiguration");
       expect(Object.keys(PAI_MODULES)).toContain("delegationPatterns");
       expect(Object.keys(PAI_MODULES)).toContain("toolIntegration");
       expect(Object.keys(PAI_MODULES)).toContain("workflowPatterns");
+      expect(Object.keys(PAI_MODULES)).toContain("tddCompliancePAI");
     });
 
-    it("has 8 modules (3 base + 5 PAI-specific)", () => {
-      expect(Object.keys(PAI_MODULES).length).toBe(8);
+    it("has 10 modules (4 base + 6 PAI-specific)", () => {
+      expect(Object.keys(PAI_MODULES).length).toBe(10);
     });
   });
 });

@@ -27,6 +27,7 @@ import {
     analyzeStructure as baseStructure,
     analyzeContext as baseContext,
     analyzeAgents as baseAgents,
+    analyzeTddCompliance as baseTddCompliance,
 } from '../../cc-upgrade/scripts/analyse-claude-folder.ts';
 
 // --- PAI-specific analyzers ---
@@ -430,6 +431,124 @@ function analyzeWorkflowPatterns(paiPath: string): AnalysisResult {
     return results;
 }
 
+/** PAI-specific TDD compliance extension (layers on top of base TDD check) */
+function analyzeTddCompliancePAI(paiPath: string): AnalysisResult {
+    // Run base TDD compliance first
+    const base = baseTddCompliance(paiPath);
+    const results = emptyResult(20);
+
+    const claudeDir = join(paiPath, '.claude');
+    if (!existsSync(claudeDir)) return results;
+
+    // 1. TDD enforcement hook registered (3 pts)
+    const settingsPath = join(claudeDir, 'settings.json');
+    if (existsSync(settingsPath)) {
+        try {
+            const settings = JSON.parse(readFileSync(settingsPath, 'utf-8'));
+            const preToolUse = settings.hooks?.PreToolUse || [];
+            const hasTddHook = preToolUse.some((entry: any) =>
+                entry.hooks?.some((h: any) => typeof h.command === 'string' && h.command.includes('pre-tool-use-tdd'))
+            );
+            if (hasTddHook) {
+                results.score += 3;
+                results.findings.push('OK: TDD enforcement hook registered in settings.json');
+            } else {
+                results.findings.push('NO: TDD enforcement hook not registered');
+                results.recommendations.push('Add pre-tool-use-tdd.ts hook for Write/Edit matchers in settings.json');
+            }
+        } catch {
+            results.findings.push('WARN: Could not parse settings.json for TDD hook check');
+        }
+    }
+
+    // 2. TDD state library exists (2 pts)
+    if (existsSync(join(claudeDir, 'hooks', 'lib', 'tdd-state.ts'))) {
+        results.score += 2;
+        results.findings.push('OK: TDD state management library present');
+    } else {
+        results.findings.push('--: No tdd-state.ts library');
+        results.recommendations.push('Create hooks/lib/tdd-state.ts for TDD cycle state management');
+    }
+
+    // 3. tdd-qa skill installed (3 pts)
+    const tddQaDir = join(claudeDir, 'skills', 'tdd-qa');
+    if (existsSync(tddQaDir)) {
+        const workflows = existsSync(join(tddQaDir, 'workflows'))
+            ? readdirSync(join(tddQaDir, 'workflows')).filter(f => f.endsWith('.md')).length
+            : 0;
+        results.score += 3;
+        results.findings.push(`OK: tdd-qa skill installed (${workflows} workflows)`);
+    } else {
+        results.findings.push('NO: tdd-qa skill not installed');
+        results.recommendations.push('Install tdd-qa skill for TDD workflow orchestration');
+    }
+
+    // 4. Hook test coverage (3 pts)
+    const hooksDir = join(claudeDir, 'hooks');
+    if (existsSync(hooksDir)) {
+        const hookScripts = readdirSync(hooksDir).filter(f =>
+            f.endsWith('.ts') && !f.endsWith('.test.ts')
+        );
+        const hookTests = readdirSync(hooksDir).filter(f => f.endsWith('.test.ts'));
+        const tested = hookScripts.filter(h => {
+            const base = h.replace(/\.ts$/, '');
+            return hookTests.some(t => t.startsWith(base));
+        });
+        const pct = hookScripts.length > 0 ? Math.round((tested.length / hookScripts.length) * 100) : 0;
+        if (pct === 100) {
+            results.score += 3;
+            results.findings.push(`OK: ${pct}% hook test coverage (${tested.length}/${hookScripts.length})`);
+        } else if (pct >= 50) {
+            results.score += 1;
+            results.findings.push(`OK: ${pct}% hook test coverage (${tested.length}/${hookScripts.length})`);
+        } else {
+            results.findings.push(`WARN: ${pct}% hook test coverage (${tested.length}/${hookScripts.length})`);
+        }
+    }
+
+    // 5. Tool test coverage (3 pts) — reuses base finding
+    const toolFinding = base.findings.find(f => f.includes('tools/scripts have co-located'));
+    if (toolFinding && toolFinding.includes('100%')) {
+        results.score += 3;
+        results.findings.push('OK: 100% tool/script test coverage');
+    } else if (toolFinding) {
+        results.score += 1;
+        results.findings.push(toolFinding);
+    }
+
+    // 6. Mutation testing configured (2 pts)
+    if (existsSync(join(paiPath, 'stryker.config.json'))) {
+        results.score += 2;
+        results.findings.push('OK: Mutation testing configured (stryker.config.json)');
+    } else {
+        results.findings.push('--: Mutation testing not configured');
+        results.recommendations.push('Add stryker.config.json for mutation testing (advisory)');
+    }
+
+    // 7. Quality gates documented (2 pts)
+    const qgPath = join(claudeDir, 'skills', 'tdd-qa', 'references', 'quality-gates.md');
+    if (existsSync(qgPath)) {
+        results.score += 2;
+        results.findings.push('OK: Quality gates documented');
+    } else {
+        results.findings.push('--: No quality gates documentation');
+    }
+
+    // 8. Test count healthy (2 pts)
+    const allTests = findFiles(claudeDir, '.test.ts');
+    if (allTests.length >= 20) {
+        results.score += 2;
+        results.findings.push(`OK: ${allTests.length} test files (healthy)`);
+    } else if (allTests.length > 0) {
+        results.score += 1;
+        results.findings.push(`WARN: only ${allTests.length} test files (threshold: 20)`);
+    } else {
+        results.findings.push('NO: No test files found');
+    }
+
+    return results;
+}
+
 // --- PAI module registry (base + PAI-specific) ---
 
 const PAI_MODULES: Record<string, AnalyzerFunction> = {
@@ -437,12 +556,14 @@ const PAI_MODULES: Record<string, AnalyzerFunction> = {
     structure: baseStructure,
     context: baseContext,
     agents: baseAgents,
+    tddCompliance: baseTddCompliance,
     // PAI-specific (extended versions)
     skillsSystem: analyzeSkillsSystem,
     hooksConfiguration: analyzeHooksConfiguration,
     delegationPatterns: analyzeDelegationPatterns,
     toolIntegration: analyzeToolIntegration,
     workflowPatterns: analyzeWorkflowPatterns,
+    tddCompliancePAI: analyzeTddCompliancePAI,
 };
 
 // --- Main ---
@@ -468,6 +589,7 @@ export {
     analyzeDelegationPatterns,
     analyzeToolIntegration,
     analyzeWorkflowPatterns,
+    analyzeTddCompliancePAI,
     PAI_MODULES,
 };
 

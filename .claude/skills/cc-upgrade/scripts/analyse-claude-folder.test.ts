@@ -8,6 +8,7 @@ import {
     analyzeHooks,
     analyzeContext,
     analyzeAgents,
+    analyzeTddCompliance,
     BASE_MODULES,
 } from './analyse-claude-folder.ts';
 
@@ -185,8 +186,94 @@ describe('analyzeAgents', () => {
     });
 });
 
+describe('analyzeTddCompliance', () => {
+    test('scores 0 when no .claude/ dir', () => {
+        const tmp = makeTmpDir();
+        const result = analyzeTddCompliance(tmp);
+        expect(result.score).toBe(0);
+        expect(result.findings.join(' ')).toContain('not found');
+        rmSync(tmp, { recursive: true, force: true });
+    });
+
+    test('detects test files in .claude/', () => {
+        const tmp = makeTmpDir();
+        const claudeDir = makeClaudeDir(tmp, ['hooks']);
+        writeFileSync(join(claudeDir, 'hooks', 'my-hook.ts'), 'export const x = 1;');
+        writeFileSync(join(claudeDir, 'hooks', 'my-hook.test.ts'), 'test("x", () => {});');
+        const result = analyzeTddCompliance(tmp);
+        expect(result.findings.join(' ')).toContain('1 test file');
+        expect(result.score).toBeGreaterThan(0);
+        rmSync(tmp, { recursive: true, force: true });
+    });
+
+    test('detects test runner in package.json', () => {
+        const tmp = makeTmpDir();
+        makeClaudeDir(tmp);
+        writeFileSync(join(tmp, 'package.json'), JSON.stringify({ scripts: { test: 'bun test' } }));
+        const result = analyzeTddCompliance(tmp);
+        expect(result.findings.join(' ')).toContain('Test runner configured');
+        rmSync(tmp, { recursive: true, force: true });
+    });
+
+    test('detects test runner in bunfig.toml', () => {
+        const tmp = makeTmpDir();
+        makeClaudeDir(tmp);
+        writeFileSync(join(tmp, 'bunfig.toml'), '[test]\ncoverage = true');
+        const result = analyzeTddCompliance(tmp);
+        expect(result.findings.join(' ')).toContain('Test runner configured');
+        rmSync(tmp, { recursive: true, force: true });
+    });
+
+    test('detects co-located hook tests', () => {
+        const tmp = makeTmpDir();
+        const claudeDir = makeClaudeDir(tmp, ['hooks']);
+        writeFileSync(join(claudeDir, 'hooks', 'security.ts'), 'export const x = 1;');
+        writeFileSync(join(claudeDir, 'hooks', 'security.test.ts'), 'test("x", () => {});');
+        writeFileSync(join(claudeDir, 'hooks', 'logger.ts'), 'export const y = 1;');
+        // logger has NO test
+        const result = analyzeTddCompliance(tmp);
+        expect(result.findings.join(' ')).toContain('1/2 hooks have co-located tests');
+        rmSync(tmp, { recursive: true, force: true });
+    });
+
+    test('detects scenario specs with Given/When/Then', () => {
+        const tmp = makeTmpDir();
+        makeClaudeDir(tmp);
+        mkdirSync(join(tmp, 'specs'), { recursive: true });
+        writeFileSync(join(tmp, 'specs', 'auth.md'), '# Feature: Auth\n\n### Scenario: Login\n- **Given** a user\n- **When** they login\n- **Then** they see dashboard');
+        const result = analyzeTddCompliance(tmp);
+        expect(result.findings.join(' ')).toContain('1 scenario file');
+        rmSync(tmp, { recursive: true, force: true });
+    });
+
+    test('detects coverage config', () => {
+        const tmp = makeTmpDir();
+        makeClaudeDir(tmp);
+        writeFileSync(join(tmp, 'bunfig.toml'), '[test]\ncoverageThreshold = 0.80');
+        const result = analyzeTddCompliance(tmp);
+        expect(result.findings.join(' ')).toContain('Coverage configuration');
+        rmSync(tmp, { recursive: true, force: true });
+    });
+
+    test('detects skipped tests', () => {
+        const tmp = makeTmpDir();
+        const claudeDir = makeClaudeDir(tmp, ['hooks']);
+        writeFileSync(join(claudeDir, 'hooks', 'a.test.ts'), 'it.skip("broken", () => {});');
+        const result = analyzeTddCompliance(tmp);
+        expect(result.findings.join(' ')).toContain('skipped/todo');
+        rmSync(tmp, { recursive: true, force: true });
+    });
+
+    test('scores high on qara itself', () => {
+        const qara = join(import.meta.dir, '..', '..', '..', '..');
+        const result = analyzeTddCompliance(qara);
+        // Qara has tests, runner, specs, coverage config — should score well
+        expect(result.score).toBeGreaterThanOrEqual(14);
+    });
+});
+
 describe('BASE_MODULES', () => {
-    test('has all 5 expected modules', () => {
-        expect(Object.keys(BASE_MODULES)).toEqual(['structure', 'skills', 'hooks', 'context', 'agents']);
+    test('has all 6 expected modules', () => {
+        expect(Object.keys(BASE_MODULES)).toEqual(['structure', 'skills', 'hooks', 'tddCompliance', 'context', 'agents']);
     });
 });
