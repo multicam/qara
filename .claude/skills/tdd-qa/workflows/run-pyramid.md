@@ -2,7 +2,15 @@
 
 Execute test layers bottom-up, failing fast. **100% deterministic — no agentic nodes.**
 
+-> **READ:** `../references/test-layers.md` for layer definitions and when-to-use guidance
+
 ## Steps
+
+### 0. Detect Test Runner [DETERMINISTIC]
+
+- If `vitest.config.ts` or `vitest.config.js` exists → use Vitest commands
+- If `bunfig.toml` has `[test]` section → use Bun commands
+- Else check `package.json` `scripts.test` for hints → fall back to `bun test`
 
 ### 1. Static Analysis [DETERMINISTIC]
 
@@ -14,14 +22,14 @@ bun --check
 
 ### 2. Unit Tests [DETERMINISTIC]
 
-```bash
-bun test --only-failures
-```
-
-If no `--only-failures` needed (first run or clean state):
-
+**Bun:**
 ```bash
 bun test
+```
+
+**Vitest:**
+```bash
+vitest run
 ```
 
 Exclude E2E tests (they live in `tests/e2e/` and use `.spec.ts`).
@@ -30,8 +38,14 @@ Exclude E2E tests (they live in `tests/e2e/` and use `.spec.ts`).
 
 ### 3. Integration Tests [DETERMINISTIC]
 
+**Bun:**
 ```bash
 bun test **/*.integration.test.ts
+```
+
+**Vitest:**
+```bash
+vitest run **/*.integration.test.ts
 ```
 
 **Gate:** Zero failures. If any exist, STOP and report.

@@ -51,48 +51,16 @@ Examples: "explore with bombadil", "property-based UI test", "find bugs I didn't
 -> These live in CORE. See `testing-guide.md`, `mocking-guidelines.md`, `interface-design.md`
 -> This skill handles orchestration (blueprints), not philosophy
 
-## When to Activate This Skill
-
-1. **Core Skill Name** - "tdd-qa", "test-driven development", "QA architecture"
-2. **Action Verbs** - "run TDD", "backtest", "write scenarios", "verify", "init testing"
-3. **Modifiers** - "full TDD cycle", "quick backtest", "complete pyramid"
-4. **Prepositions** - "TDD on this feature", "backtest after refactor", "scenarios for auth"
-5. **Synonyms** - "red green refactor", "regression check", "test baseline", "quality gate"
-6. **Use Case** - New features needing test specs, post-refactor confidence, CI gate checks
-7. **Result-Oriented** - "zero regressions", "prove it works", "test coverage report"
-8. **Tool/Method Specific** - "JUnit XML comparison", "blueprint pattern", "deterministic nodes"
-
-## Boundary: testing-guide vs tdd-qa
-
-| | CORE/testing-guide.md | This skill (tdd-qa) |
-|---|---|---|
-| **Audience** | Humans reading context | Agents executing workflows |
-| **Purpose** | Philosophy — *what* good testing looks like | Blueprints — *how* to execute it step-by-step |
-| **Loaded** | Always (CORE context) | On demand (skill activation) |
-| **Contains** | AAA pattern, vertical slices, coverage goals | Runnable workflows with deterministic/agentic nodes |
+**Boundary:** CORE/testing-guide.md = philosophy (always loaded). This skill = executable blueprints (loaded on demand via fork context).
 
 ## Usage Modes
 
-**Mode 1: New feature** — write-scenarios → tdd-cycle → backtest
-**Mode 2: Bug fix** — triage-issue (separate skill) → engineer executes fix plan → backtest
-**Mode 3: Confidence check** — backtest and/or run-pyramid (pure deterministic)
-**Mode 4: New project** — init-project (run once)
-**Mode 5: Chaos exploration** — explore-bombadil (find bugs you didn't think of, separate quality gate)
+| Mode | Flow |
+|------|------|
+| New feature | write-scenarios -> tdd-cycle -> backtest |
+| Bug fix | triage-issue -> fix -> backtest |
+| Confidence | backtest or run-pyramid |
+| New project | init-project (once) |
+| Chaos | explore-bombadil |
 
-## Blueprint Node Classification
-
-Every workflow step is typed as **deterministic** or **agentic** (Stripe Minions pattern):
-- **Deterministic:** File I/O, bun test, bun --check, XML diff, template copy — cannot hallucinate
-- **Agentic:** Code generation, scenario authoring, failure interpretation — needs LLM reasoning
-- **Retry policy:** Agentic nodes max 2 attempts before structured escalation
-
-See `references/blueprint-pattern.md` for full classification.
-
-## References
-
-- `references/scenario-format.md` — Given/When/Then Markdown spec format
-- `references/test-layers.md` — Testing Trophy layers, tools, when-to-use
-- `references/quality-gates.md` — Thresholds and pass/fail criteria
-- `references/blueprint-pattern.md` — Deterministic/agentic node pattern (Stripe Minions)
-- `references/cross-project-config.md` — Portable config templates
-- `references/setup-guide.md` — Step-by-step setup for Bun and Vitest projects (incl. tgds-schoolyard, tgds-office)
+All workflow steps are typed as **deterministic** or **agentic** (Stripe Minions pattern). See `references/blueprint-pattern.md`.

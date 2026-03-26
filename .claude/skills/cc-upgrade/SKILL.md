@@ -20,33 +20,34 @@ This skill serves as the base for domain-specific upgrade skills:
 |-------|--------------|----------|
 | `cc-upgrade-pai` | PAI-specific analysis | Personal AI Infrastructure repos |
 
-**Composition Pattern:**
-```markdown
-# In your extending skill's SKILL.md:
-
-## Prerequisites
-→ READ: `../cc-upgrade/references/cc-trusted-sources.md`
-→ READ: `../cc-upgrade/references/12-factor-checklist.md`
-
-## Workflow
-1. Run base cc-upgrade analysis first
-2. Then run domain-specific checks
-```
-
 ## Workflow Routing (SYSTEM PROMPT)
 
 **When user requests external skills audit, skill redundancy check, or skill ecosystem review:**
 Examples: "audit external skills", "check installed skills", "skill redundancies",
 "what external skills do we have", "skill hygiene", "analyze skill dependencies"
-→ **READ:** `workflows/external-skills-audit.md`
-→ **EXECUTE:** Full external skills audit with redundancy analysis
+-> **READ:** `workflows/external-skills-audit.md`
+-> **EXECUTE:** Full external skills audit with redundancy analysis
 
 **When user needs skill ecosystem references, sources, or evaluation criteria:**
 Examples: "skill ecosystem", "where to find skills", "skill sources", "evaluate this skill"
-→ **READ:** `references/skills-ecosystem-sources.md`
+-> **READ:** `references/skills-ecosystem-sources.md`
+
+**When user requests a changelog sync, feature gap check, or wants to know what new CC features are not yet tracked:**
+Examples: "sync features from changelog", "what CC features aren't tracked", "check for new CC features", "feature gap", "update FEATURE_REQUIREMENTS"
+-> **RUN:** `bun run scripts/cc-feature-sync.ts`
+-> **REVIEW:** Suggested additions and update `cc-version-check.ts` FEATURE_REQUIREMENTS as needed
+
+**When user requests a skill pulse check, skill update check, or wants to see upstream activity on installed skills:**
+Examples: "check skill updates", "skill pulse", "are my skills up to date", "which skills are stale", "skill ecosystem health"
+-> **RUN:** `bun run scripts/skill-pulse-check.ts`
+-> **REVIEW:** Report for outdated versions and stale upstream repositories
+
+**When user requests thorough/interactive audit:**
+Examples: "full audit", "interview me about my setup", "thorough CC review"
+-> **READ:** `workflows/interactive-audit.md`
 
 **When user requests CC version check or general .claude/ audit:**
-→ Continue with Core Workflow below
+-> Continue with Core Workflow below
 
 ## Core Workflow
 
@@ -108,41 +109,11 @@ Key checks:
 
 ### Hooks Configuration (CC 2.1.x)
 
-Hooks are in settings.json:
+Run `bun run scripts/analyse-claude-folder.ts .` — checks hook scripts for stdin pattern, exit behavior, output schema, shebang, and executable bit. Verifies settings.json hook events and timeout values.
 
-```json
-{
-  "hooks": {
-    "PreToolUse": [...],
-    "PostToolUse": [...],
-    "SessionStart": [...],
-    "UserPromptSubmit": [...],
-    "Stop": [...],
-    "ConfigChange": [...],
-    "Setup": [...],
-    "SubagentStop": [...]
-  }
-}
-```
+### CC Feature Gap Analysis [AUTOMATED]
 
-### CC Feature Gap Analysis
-
-| CC Feature | Min Version | Check Location | Optimization Signal |
-|------------|-------------|----------------|---------------------|
-| Subagents | 1.0.80 | `.claude/agents/` | Missing parallel execution |
-| Checkpoints | 2.0.0 | `/rewind` usage | No rollback safety |
-| Hooks | 2.1.0 | `settings.json` | Missing automation |
-| Skills | 2.0.40 | `.claude/skills/` | No reusable capabilities |
-| Plan Mode | 2.0.50 | Commands | Missing planning phase |
-| Model routing | 2.1.0 | Task tool usage | No per-task model selection |
-| Status line | 2.1.0 | `settings.json` | No custom status |
-| Context % | 2.1.6 | Status line | Not using native percentage |
-| additionalContext | 2.1.9 | PreToolUse hooks | No context injection to model |
-| plansDirectory | 2.1.9 | `settings.json` | Using default plans location |
-| Session ID | 2.1.9 | Skills | No session tracking in skills |
-| Setup hooks | 2.1.13 | `settings.json` | No --init automation |
-| Hook output schema | 2.1.14 | Hook scripts | Using wrong output format |
-| Keybindings | 2.1.18 | `keybindings.json` | No custom shortcuts |
+Run `bun run scripts/cc-version-check.ts .` — canonical feature list in FEATURE_REQUIREMENTS.
 
 ### 12-Factor Compliance Check
 
@@ -209,77 +180,6 @@ Generate report as:
 | Pre-2.1.x context mgmt | Manual UFC patterns | Remove (CC handles natively) |
 | Excessive routing | Decision trees for similar outputs | Single workflow with params |
 
-## Interactive Audit
-
-Combines automated analysis with an interview to surface context-specific issues. Use this instead of (or before) the Quick Commands when doing a thorough review.
-
-### Step 1: Intake Interview
-
-Use AskUserQuestion with up to 4 questions to scope the audit:
-
-**Call 1 — Scope & context (2 questions):**
-
-| # | Question | Header | Options |
-|---|----------|--------|---------|
-| 1 | "Which areas should this audit focus on?" | Scope | **Full audit (Recommended)** — review everything; **Hooks & automation** — hook scripts, settings.json events, lifecycle; **Skills & workflows** — SKILL.md quality, workflow routing, dead skills; **Context & agents** — context file sizes, agent definitions, delegation |
-| 2 | "What's the primary goal for this audit?" | Goal | **Find problems (Recommended)** — surface bugs, anti-patterns, stale config; **Optimize** — reduce bloat, improve performance, simplify; **Expand** — identify unused CC features worth adopting; **Modernize** — update to latest CC patterns |
-
-**Call 2 — Pain points (1-2 questions, adjust based on scope):**
-
-| # | Question | Header | Options |
-|---|----------|--------|---------|
-| 3 | "What's causing the most friction right now?" | Pain point | **Context window pressure** — running out of context mid-task; **Hook failures** — hooks erroring or behaving unexpectedly; **Stale documentation** — docs/skills out of sync with reality; **Agent routing confusion** — wrong agent chosen for tasks |
-| 4 | "How mature is this CC setup?" | Maturity | **New** — just getting started with .claude/; **Growing** — actively adding hooks/skills/agents; **Mature** — optimizing an established setup; **Legacy** — needs modernization or cleanup |
-
-### Step 2: Code Review
-
-Based on interview answers, **read actual source files** (not just check existence). Focus the review on the scope selected in Step 1.
-
-#### Hook Code Quality
-Read each hook script in `.claude/hooks/` and check:
-- stdin reading pattern (`readFileSync(0, 'utf-8')` — not streams, not timeouts)
-- Exit behavior (must exit 0 even on error — exit 1 blocks CC)
-- Output schema compliance (CC 2.1.14+ JSON format)
-- Error handling (try/catch around all IO, graceful degradation)
-- Shebang + executable bit (`#!/usr/bin/env bun` + `chmod +x`)
-
-#### Skill Definition Quality
-Read each `SKILL.md` and check:
-- Frontmatter completeness (name, context, description with USE WHEN)
-- Workflow routing clarity (when does this skill activate?)
-- Dead references (→ READ: paths that don't exist)
-- Size discipline (<500 lines, progressive disclosure via references/)
-
-#### Agent Configuration Quality
-Read each agent `.md` and check:
-- Clear single purpose (Factor 10: small focused agents)
-- Model assignment appropriate for task complexity
-- No overlap with other agents (deduplicate responsibilities)
-- Tool access matches agent needs
-
-#### Settings.json Review
-Parse settings.json and check:
-- Hook events: all core events configured (PreToolUse, PostToolUse, SessionStart, UserPromptSubmit, Stop)
-- Hook timeouts: appropriate for hook complexity (500ms simple, 2000ms+ with bun overhead)
-- Permission rules: no unreachable or contradictory rules
-- Deny patterns: regex anchoring correct (no bare `$` — use `(;|&&|\|\||$)`)
-
-### Step 3: Gap Analysis
-
-Compare current state against CC capabilities. Present as a matrix:
-
-```markdown
-| Capability | Available | In Use | Gap | Priority |
-|------------|-----------|--------|-----|----------|
-| [feature]  | CC 2.1.x+ | Yes/No | [description] | HIGH/MED/LOW |
-```
-
-Priority is informed by the interview: if the user said "context window pressure" then context-saving features get HIGH; if "hook failures" then hook-related gaps get HIGH.
-
-### Step 4: Report
-
-Present findings using the existing Output Format (Executive Summary, per-module details, recommendations). Add an **Interview-Driven Priorities** section that maps findings to the user's stated goal and pain points.
-
 ## Quick Commands
 
 ### Version Check
@@ -297,42 +197,18 @@ bun run .claude/skills/cc-upgrade/scripts/analyse-claude-folder.ts .
 bun run .claude/skills/cc-upgrade/scripts/analyse-external-skills.ts .
 ```
 
-## Version Tracking
-
-```javascript
-// Key CC 2.1.x features
-const CC_2_1_FEATURES = {
-  // 2.1.0
-  modelRouting: "2.1.0",
-  skillInvocation: "2.1.0",
-  backgroundTasks: "2.1.0",
-  taskResume: "2.1.0",
-  statusLine: "2.1.0",
-  settingsJsonHooks: "2.1.0",
-  webSearch: "2.1.0",
-  askUserQuestion: "2.1.0",
-  // 2.1.3
-  mergedSkillsCommands: "2.1.3",
-  releaseChannelToggle: "2.1.3",
-  enhancedDoctor: "2.1.3",
-  extendedHookTimeout: "2.1.3",
-  // 2.1.6
-  configSearch: "2.1.6",
-  statsDateFiltering: "2.1.6",
-  nestedSkillDiscovery: "2.1.6",
-  contextWindowPercentage: "2.1.6",
-  // 2.1.9
-  additionalContext: "2.1.9",
-  plansDirectory: "2.1.9",
-  sessionIdSubstitution: "2.1.9",
-  // 2.1.13
-  setupHooks: "2.1.13",
-  // 2.1.14
-  hookOutputSchema: "2.1.14",
-  // 2.1.18
-  keybindings: "2.1.18",
-  chordBindings: "2.1.18",
-};
+### Feature Sync (changelog vs tracked features)
+```bash
+bun run .claude/skills/cc-upgrade/scripts/cc-feature-sync.ts
+bun run .claude/skills/cc-upgrade/scripts/cc-feature-sync.ts --verbose
 ```
 
-See `scripts/cc-version-check.ts` for automated compatibility checking.
+### Skill Ecosystem Pulse Check
+```bash
+bun run .claude/skills/cc-upgrade/scripts/skill-pulse-check.ts
+bun run .claude/skills/cc-upgrade/scripts/skill-pulse-check.ts --verbose
+```
+
+## Version Tracking
+
+See `scripts/cc-version-check.ts` FEATURE_REQUIREMENTS for the canonical feature registry.

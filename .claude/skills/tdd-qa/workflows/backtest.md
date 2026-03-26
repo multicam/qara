@@ -7,17 +7,36 @@ Regression detection via baseline comparison. **100% deterministic — no agenti
 - Project has test infrastructure (from init-project or pre-existing)
 - `test-report.ts` available at `${PAI_DIR}/skills/tdd-qa/tools/test-report.ts`
 
+-> **READ:** `../references/quality-gates.md` for gate thresholds and pass/fail criteria
+
 ## Steps
+
+### 0. Detect Test Runner [DETERMINISTIC]
+
+- If `vitest.config.ts` or `vitest.config.js` exists → use Vitest commands
+- If `bunfig.toml` has `[test]` section → use Bun commands
+- Else check `package.json` `scripts.test` for hints → fall back to `bun test`
 
 ### 1. Capture Current Results [DETERMINISTIC]
 
+**Bun:**
 ```bash
 bun test --reporter=junit --reporter-outfile=.test-current.xml
 ```
 
-Optional coverage:
+**Vitest:**
+```bash
+vitest run --reporter=junit --outputFile=.test-current.xml
+```
+
+Optional coverage — **Bun:**
 ```bash
 bun test --coverage --coverage-reporter=lcov --coverage-dir=.coverage-current
+```
+
+**Vitest:**
+```bash
+vitest run --coverage --coverage.reporter=lcov
 ```
 
 ### 2. Check for Baseline [DETERMINISTIC]

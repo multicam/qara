@@ -29,6 +29,11 @@ description: |
 
 ### Multi-Source Research Workflows
 
+**When user requests community sentiment, community pulse, or what people are saying:**
+Examples: "what is the community saying about X", "community pulse on Y", "pulse check on Z", "what are people saying about X on Reddit"
+→ **READ:** `${PAI_DIR}/skills/research/workflows/community-pulse.md`
+→ **EXECUTE:** Multi-platform community sentiment research (Reddit, HN, X, YouTube, Web)
+
 **When user requests comprehensive parallel research:**
 Examples: "do research on X", "research this topic", "find information about Y", "investigate this subject"
 → **READ:** `${PAI_DIR}/skills/research/workflows/conduct.md`
@@ -236,3 +241,4 @@ WebSearch is the foundation of `claude-researcher` agent:
 | Web Scraping | `workflows/web-scraping.md` | None |
 | Content Enhancement | `workflows/enhance.md` | None |
 | Knowledge Extraction | `workflows/extract-knowledge.md` | None |
+| Community Pulse | `workflows/community-pulse.md` | None (FREE) |

@@ -306,6 +306,8 @@ code --list-extensions --show-versions 2>/dev/null | grep "anthropic.claude-code
 
 ## CC 2.1.x Key Features
 
+> Canonical feature registry: `scripts/cc-version-check.ts` FEATURE_REQUIREMENTS. This table is a staging area for unconfirmed features spotted in changelogs.
+
 | Feature | Version | Description |
 |---------|---------|-------------|
 | Model routing | 2.1.0+ | Per-task model selection (haiku/sonnet/opus) |

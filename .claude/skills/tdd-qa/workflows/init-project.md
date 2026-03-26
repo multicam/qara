@@ -4,6 +4,9 @@ Bootstrap test infrastructure in any project. Run once per project.
 
 **All nodes: DETERMINISTIC** — no LLM reasoning, just file creation.
 
+-> **READ:** `../references/cross-project-config.md` for portable config templates
+-> **READ:** `../references/setup-guide.md` for Bun/Vitest setup patterns
+
 ## Steps
 
 ### 1. Check Prerequisites [DETERMINISTIC]

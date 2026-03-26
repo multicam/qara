@@ -111,7 +111,7 @@ visual-explainer (stand-alone, no prerequisites)
 **Author:** Matt Pocock ([@mattpocock](https://github.com/mattpocock))
 **Repository:** [github.com/mattpocock/skills](https://github.com/mattpocock/skills)
 **License:** MIT
-**Last upstream review:** 2026-03-23 (latest commit: `fb3629d` 2026-03-19)
+**Last upstream review:** 2026-03-27 (latest commit: `a6bdfd9` 2026-03-26)
 
 These skills were **rewritten for PAI conventions** — not symlinked. They live as local
 skills but track upstream for improvements.
@@ -198,3 +198,4 @@ skills but track upstream for improvements.
 | 2026-03-21 | Updated to latest | npx skills update |
 | 2026-03-22 | Registry created | cc-upgrade-pai deep analysis |
 | 2026-03-23 | Added 4 missing mattpocock adaptations (refactor-plan, triage-issue, ubiquitous-language, prd-to-plan), updated upstream review date, removed adopted skills from NOT-yet-adopted table | PAI audit |
+| 2026-03-27 | Upstream review: `a6bdfd9` (grill-me: "ask questions one at a time") — already incorporated in PAI version. No action needed. visual-explainer at v0.6.3, up to date. | PAI audit |

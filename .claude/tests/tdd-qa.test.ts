@@ -57,22 +57,11 @@ describe("tdd-qa Skill Structure", () => {
     );
   });
 
-  it("should have When to Activate section with 8 categories", () => {
+  it("should have boundary note and usage modes table", () => {
     const content = readFileSync(join(SKILL_DIR, "SKILL.md"), "utf-8");
-    expect(content).toContain("When to Activate This Skill");
-    // Check all 8 categories present
-    for (const cat of [
-      "Core Skill Name",
-      "Action Verbs",
-      "Modifiers",
-      "Prepositions",
-      "Synonyms",
-      "Use Case",
-      "Result-Oriented",
-      "Tool/Method Specific",
-    ]) {
-      expect(content).toContain(cat);
-    }
+    expect(content).toContain("Boundary:");
+    expect(content).toContain("Usage Modes");
+    expect(content).toContain("blueprint-pattern.md");
   });
 
   it("should have all 7 workflows", () => {

@@ -8,6 +8,14 @@ RED-GREEN-VERIFY-REFACTOR loop driven by scenario specs. This is the core bluepr
 - OR JM provides inline requirements (scenarios created on the fly)
 - Project has test infrastructure (from init-project, or pre-existing)
 
+### Detect Test Runner [DETERMINISTIC]
+
+- If `vitest.config.ts` or `vitest.config.js` exists → use `vitest run` for test commands
+- If `bunfig.toml` has `[test]` section → use `bun test`
+- Else check `package.json` `scripts.test` → fall back to `bun test`
+
+Use the detected runner for all `bun test` commands below.
+
 ## The Loop
 
 For each scenario in priority order (critical first):

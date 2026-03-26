@@ -10,7 +10,7 @@ How to set up the tdd-qa testing framework in any project. Covers both Bun and V
 mkdir -p specs
 ```
 
-Add `specs/README.md` — see `references/scenario-format.md` for the template.
+Add `specs/README.md` — see `scenario-format.md` (in this same references directory) for the template.
 
 ### 2. Configure test reporter for JUnit XML
 
@@ -99,7 +99,7 @@ tests/e2e/*.draft.spec.ts
 
 ### tgds-schoolyard (SvelteKit + Vitest)
 
-**Path:** `/media/ssdev/tgds/tgds-schoolyard`
+**Path:** `<project-root>` (e.g. your local schoolyard checkout)
 **Stack:** SvelteKit 2, Vite 5, pnpm, Vitest 4.1, TailwindCSS, Carbon
 **Dev server:** `pnpm dev` (port 5500)
 **Existing tests:** 62 files in `tests/`
@@ -107,7 +107,7 @@ tests/e2e/*.draft.spec.ts
 **Setup steps:**
 
 ```bash
-cd /media/ssdev/tgds/tgds-schoolyard
+cd <project-root>
 
 # 1. Create specs directory
 mkdir -p specs
@@ -148,7 +148,7 @@ pnpm add -D @antithesishq/bombadil
 
 ### tgds-office (Next.js + Vitest)
 
-**Path:** `/media/ssdev/tgds/tgds-office`
+**Path:** `<project-root>` (e.g. your local office checkout)
 **Stack:** Next.js 15.5, React 18, pnpm workspace, Vitest 4.1, Blueprint.js
 **Dev server:** `make dev` (port 6300)
 **Existing tests:** 14 files in `tests/`
@@ -157,7 +157,7 @@ pnpm add -D @antithesishq/bombadil
 **Setup steps:**
 
 ```bash
-cd /media/ssdev/tgds/tgds-office
+cd <project-root>
 
 # 1. Create specs directory
 mkdir -p specs
