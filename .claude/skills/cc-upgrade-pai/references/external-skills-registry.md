@@ -3,7 +3,7 @@
 Comprehensive documentation of all externally-installed skills in the PAI ecosystem.
 Maintained as part of `cc-upgrade-pai`. Updated during each external skills deep analysis.
 
-Last reviewed: 2026-03-23
+Last reviewed: 2026-03-27
 
 ---
 
@@ -111,7 +111,7 @@ visual-explainer (stand-alone, no prerequisites)
 **Author:** Matt Pocock ([@mattpocock](https://github.com/mattpocock))
 **Repository:** [github.com/mattpocock/skills](https://github.com/mattpocock/skills)
 **License:** MIT
-**Last upstream review:** 2026-03-27 (latest commit: `a6bdfd9` 2026-03-26)
+**Last upstream review:** 2026-03-27 (latest commit: `eebfb3c` 2026-03-26)
 
 These skills were **rewritten for PAI conventions** — not symlinked. They live as local
 skills but track upstream for improvements.
@@ -122,7 +122,7 @@ skills but track upstream for improvements.
 | `design-it-twice` | `design-an-interface/SKILL.md` | Broadened to architecture + data models, uses `architect` agents |
 | `edit-article` | `edit-article/SKILL.md` | Added Phase 3 humaniser pass, expanded to docs/specs |
 | `refactor-plan` | `request-refactor-plan/SKILL.md` | PAI conventions, codebase-analyzer integration, JM-addressed |
-| `triage-issue` | `triage-issue/SKILL.md` | PAI conventions, codebase-analyzer integration, TDD fix plans |
+| `triage-issue` | `triage-issue/SKILL.md` + `qa/SKILL.md` | PAI conventions, codebase-analyzer integration, TDD fix plans, batch mode with blocking relationships (from qa) |
 | `ubiquitous-language` | `ubiquitous-language/SKILL.md` | PAI conventions, DDD glossary extraction |
 | `prd-to-plan` | `prd-to-plan/SKILL.md` | PAI conventions, vertical slice tracer bullets |
 | `CORE/testing-guide.md` | `tdd/SKILL.md` + `tdd/tests.md` | Merged TDD into existing testing guide |
@@ -144,7 +144,8 @@ skills but track upstream for improvements.
 | `write-a-skill` | Skill creation guide | **Covered** by `system-create-skill` | PAI version is more structured |
 | `migrate-to-shoehorn` | Test assertion migration | **Not relevant** | TypeScript-specific, not used in PAI |
 | `scaffold-exercises` | Exercise directory creation | **Not relevant** | Educational tooling |
-| `obsidian-vault` | Obsidian integration | **Evaluate** | Could complement thoughts/ system |
+| `obsidian-vault` | Obsidian integration | **Not adopted** | Built custom `diderot` skill instead — JM's vault uses folders (not flat wikilinks), needs retrieval not creation |
+| `qa` | Interactive QA session: user reports bugs conversationally, agent files GitHub issues with blocking relationships | **Merged** into `triage-issue` batch mode | Developer-focused adaptation: kept root cause + TDD fix plans, added scope assessment + blocking relationships + session continuation from qa |
 
 ---
 
@@ -199,3 +200,5 @@ skills but track upstream for improvements.
 | 2026-03-22 | Registry created | cc-upgrade-pai deep analysis |
 | 2026-03-23 | Added 4 missing mattpocock adaptations (refactor-plan, triage-issue, ubiquitous-language, prd-to-plan), updated upstream review date, removed adopted skills from NOT-yet-adopted table | PAI audit |
 | 2026-03-27 | Upstream review: `a6bdfd9` (grill-me: "ask questions one at a time") — already incorporated in PAI version. No action needed. visual-explainer at v0.6.3, up to date. | PAI audit |
+| 2026-03-27 | Deep analysis: 3 new upstream commits reviewed (`eebfb3c`, `98fecc7`, `6a87ed0`). ubiquitous-language: merged "domain expert terms only" rule from upstream. New `qa` skill discovered (issue breakdown + blocking relationships) — logged for evaluation. visual-explainer v0.6.3 confirmed up to date. Context graph: 1 broken ref in upstream visual-explainer (double-nested path). All 25 CORE doc index paths valid, all 10 agents match, 1035 tests pass. | cc-upgrade-pai deep analysis |
+| 2026-03-27 | Addressed 3 recommendations: (1) Merged qa patterns into triage-issue batch mode (scope assessment, blocking relationships, session continuation). (2) Filed upstream issue nicobailon/visual-explainer#35 for broken path; applied fix locally. (3) Built custom `diderot` knowledge retrieval skill; marked obsidian-vault as Not adopted. **MONITOR:** On next `npx skills update`, check if nicobailon/visual-explainer#35 is fixed upstream — if so, remove local patch note. | Post-audit implementation |

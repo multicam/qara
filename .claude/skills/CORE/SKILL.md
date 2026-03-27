@@ -45,6 +45,9 @@ env:
 **When user says "rewind", "checkpoint", "rollback", "recover", "undo changes":**
 → **READ:** `${PAI_DIR}/skills/CORE/workflows/checkpoint-protocol.md`
 
+**When user says "ask diderot", "diderot search", "check my notes", "what do I know about", "vault search", "in my knowledge base":**
+→ **INVOKE SKILL:** diderot
+
 ---
 
 ## 📚 Documentation Index
@@ -73,6 +76,7 @@ env:
 | Session state | `.claude/context/working/README.md` | "session files", "working directory", "transient state" |
 | Image generation | `.claude/skills/image/SKILL.md` | "generate image", "create graphic", "hero image", "stock photo", "unsplash" |
 | TGDS aesthetic | `.claude/skills/image/references/tgds-aesthetic.md` | "TGDS brand", "design school style", "TGDS colors" |
+| Diderot vault | `.claude/skills/diderot/SKILL.md` | "ask diderot", "vault search", "check my notes" |
 
 **Skills (on-demand):**
 - `hook-authoring` skill → hook creation

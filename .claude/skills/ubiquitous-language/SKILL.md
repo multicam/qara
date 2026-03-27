@@ -4,7 +4,7 @@ context: fork
 description: |
   Extract and formalize domain terminology from conversation into a consistent glossary.
   DDD-inspired ubiquitous language extraction. Produces UBIQUITOUS_LANGUAGE.md.
-  Adapted from mattpocock/skills (upstream commit 1325b14, 2026-03-18).
+  Adapted from mattpocock/skills (upstream commit eebfb3c, 2026-03-26).
   USE WHEN: "define terms", "glossary", "ubiquitous language", "domain terminology",
   "what do we call X", "clarify naming", "DDD", "domain model vocabulary"
 ---
@@ -73,6 +73,7 @@ Write `UBIQUITOUS_LANGUAGE.md` with this structure:
 
 - **Be opinionated.** Pick the best term, list others as aliases to avoid.
 - **Flag conflicts explicitly.** Ambiguous terms go in "Flagged ambiguities" with a clear recommendation.
+- **Only include terms relevant for domain experts.** Skip the names of modules or classes unless they have meaning in the domain language.
 - **Keep definitions tight.** One sentence. Define what it IS, not what it does.
 - **Show relationships.** Bold term names, express cardinality where obvious.
 - **Only domain terms.** Skip generic programming concepts unless they have domain-specific meaning.
