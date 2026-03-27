@@ -3,6 +3,15 @@
     "brave-devtools": {
       "command": "npx",
       "args": ["chrome-devtools-mcp-for-brave@latest"]
+    },
+    "mattermost": {
+      "command": "npx",
+      "args": ["@dakatan/mcp-mattermost"],
+      "env": {
+        "MCP_MATTERMOST_URL": "http://192.168.10.245:8065",
+        "MCP_MATTERMOST_TOKEN": "xiup73ojzjn6txwmati3ufmbme",
+        "MCP_MATTERMOST_TEAM_ID": "ddjcg8fdhtbzdj1gtz6qop1nkh"
+      }
     }
   }
 }

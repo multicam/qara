@@ -77,11 +77,13 @@ env:
 | Image generation | `.claude/skills/image/SKILL.md` | "generate image", "create graphic", "hero image", "stock photo", "unsplash" |
 | TGDS aesthetic | `.claude/skills/image/references/tgds-aesthetic.md` | "TGDS brand", "design school style", "TGDS colors" |
 | Diderot vault | `.claude/skills/diderot/SKILL.md` | "ask diderot", "vault search", "check my notes" |
+| Introspection | `.claude/skills/introspect/SKILL.md` | "daily reflect", "introspect", "mine logs", "weekly synthesize", "monthly evolve" |
 
 **Skills (on-demand):**
 - `hook-authoring` skill → hook creation
 - `system-create-skill` skill → skill creation
 - `image` skill → image generation, stock photos, visual content
+- `introspect` skill → session mining, pattern synthesis, self-improvement
 
 ---
 
