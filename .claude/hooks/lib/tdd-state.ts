@@ -20,8 +20,8 @@
  *   bun tdd-state.ts status
  */
 
-import { existsSync, readFileSync, writeFileSync, unlinkSync } from "fs";
-import { join, basename, extname } from "path";
+import { existsSync, readFileSync, writeFileSync, unlinkSync, renameSync } from "fs";
+import { join, basename } from "path";
 import { STATE_DIR, ensureDir } from "./pai-paths";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -32,7 +32,6 @@ export interface TDDState {
   active: boolean;
   feature: string;
   phase: TDDPhase;
-  testFiles: string[];
   sessionId: string;
   startedAt: string;
   expiresAt: string;
@@ -85,13 +84,23 @@ export function readTDDState(): TDDState | null {
 }
 
 /**
+ * Atomic write: write to temp file then rename (POSIX atomic).
+ * Prevents parallel hook invocations from reading partial JSON.
+ */
+function atomicWriteState(state: TDDState): void {
+  ensureDir(STATE_DIR);
+  const tmp = STATE_FILE + ".tmp";
+  writeFileSync(tmp, JSON.stringify(state, null, 2));
+  renameSync(tmp, STATE_FILE);
+}
+
+/**
  * Write a new TDD state (activates TDD mode).
  * Auto-computes startedAt and expiresAt.
  */
 export function writeTDDState(params: {
   feature: string;
   phase: TDDPhase;
-  testFiles?: string[];
   sessionId?: string;
 }): void {
   const now = new Date();
@@ -99,7 +108,6 @@ export function writeTDDState(params: {
     active: true,
     feature: params.feature,
     phase: params.phase,
-    testFiles: params.testFiles || [],
     sessionId:
       params.sessionId ||
       process.env.CLAUDE_SESSION_ID ||
@@ -108,23 +116,23 @@ export function writeTDDState(params: {
     startedAt: now.toISOString(),
     expiresAt: new Date(now.getTime() + TTL_MS).toISOString(),
   };
-  ensureDir(STATE_DIR);
-  writeFileSync(STATE_FILE, JSON.stringify(state, null, 2));
+  atomicWriteState(state);
 }
 
 /**
  * Transition to a new phase (RED/GREEN/REFACTOR).
  * Preserves all other state fields. Extends TTL from now.
+ * Uses validated read to prevent reviving expired/wrong-session state.
  */
 export function updatePhase(phase: TDDPhase): void {
-  const state = readTDDStateRaw();
+  const state = readTDDState();
   if (!state) {
-    throw new Error("No active TDD state to update. Activate first.");
+    throw new Error("No active TDD state to update. Activate first (state may be expired or from another session).");
   }
   const now = new Date();
   state.phase = phase;
   state.expiresAt = new Date(now.getTime() + TTL_MS).toISOString();
-  writeFileSync(STATE_FILE, JSON.stringify(state, null, 2));
+  atomicWriteState(state);
 }
 
 /**

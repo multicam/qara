@@ -152,7 +152,6 @@ export function writeMockTDDState(
     active: true,
     feature: "test-feature",
     phase,
-    testFiles: [],
     sessionId: "unknown",
     startedAt: new Date().toISOString(),
     expiresAt: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),

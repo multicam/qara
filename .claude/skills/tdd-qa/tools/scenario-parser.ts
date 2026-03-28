@@ -253,8 +253,10 @@ export function runCLI(args: string[]): void {
   }
 }
 
-// Auto-run CLI when executed directly
-if (!process.env.SCENARIO_PARSER_NO_CLI) {
+// Direct execution guard — same pattern as test-report.ts and tdd-state.ts
+const isDirectExecution =
+  import.meta.path === Bun.main || process.argv[1]?.endsWith("scenario-parser.ts");
+if (isDirectExecution && !process.env.SCENARIO_PARSER_NO_CLI) {
   const args = process.argv.slice(2);
   if (args.length > 0) {
     runCLI(args);

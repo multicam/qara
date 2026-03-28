@@ -107,14 +107,11 @@ describe("TDD State Management", () => {
       expect(state.sessionId).toBe("explicit-id");
     });
 
-    it("should store testFiles", () => {
-      writeTDDState({
-        feature: "auth",
-        phase: "RED",
-        testFiles: ["auth.test.ts", "auth.integration.test.ts"],
-      });
+    it("should store feature and phase", () => {
+      writeTDDState({ feature: "auth", phase: "GREEN" });
       const state = readTDDState()!;
-      expect(state.testFiles).toEqual(["auth.test.ts", "auth.integration.test.ts"]);
+      expect(state.feature).toBe("auth");
+      expect(state.phase).toBe("GREEN");
     });
   });
 

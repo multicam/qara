@@ -8,6 +8,7 @@ Pass/fail criteria for the back-testing loop. All gates are deterministic — no
 |------|-----------|---------------|-------------|
 | **Zero regressions** | 0 new test failures vs baseline | Yes | JUnit XML diff |
 | **Coverage delta** | Line coverage must not decrease | Yes | lcov file comparison |
+| **Coverage floor** | 90% minimum (enforced by bun `--coverage` flag via `bunfig.toml`, not by `test-report.ts`) | Yes (when `--coverage` passed) | bun built-in |
 | **Critical scenarios** | 100% pass rate on Priority: critical | Yes | JUnit XML + scenario metadata |
 | **Mutation score** | >70% (advisory, active) | No | StrykerJS output via `mutation-check` workflow |
 

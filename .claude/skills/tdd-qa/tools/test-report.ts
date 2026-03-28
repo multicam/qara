@@ -14,7 +14,8 @@
 
 import { readFileSync, existsSync, statSync } from "fs";
 import { basename, dirname, join, extname } from "path";
-import { parseScenarioFile, parseScenarioDir, type ScenarioManifest, type Scenario } from "./scenario-parser";
+import { parseScenarioFile, parseScenarioDir, type ScenarioManifest } from "./scenario-parser";
+import { isTestFile } from "../../../hooks/lib/tdd-state";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -280,14 +281,7 @@ export interface AffectedResult {
   unmappedFiles: string[];
 }
 
-const TEST_EXTENSIONS = [".test.ts", ".test.js", ".spec.ts", ".spec.js", ".integration.test.ts", ".integration.test.js"];
-
-function isTestFilePath(filePath: string): boolean {
-  const name = basename(filePath);
-  return TEST_EXTENSIONS.some((ext) => name.endsWith(ext)) ||
-    name.endsWith(".draft.spec.ts") ||
-    name.endsWith(".bombadil.ts");
-}
+// isTestFile imported from tdd-state.ts — single source of truth for test file detection
 
 /**
  * Find test files affected by changed source files.
@@ -299,7 +293,7 @@ export function findAffectedTests(changedFiles: string[]): AffectedResult {
 
   for (const file of changedFiles) {
     // If the changed file IS a test file, include it directly
-    if (isTestFilePath(file)) {
+    if (isTestFile(file)) {
       if (existsSync(file) && !affectedTests.includes(file)) {
         affectedTests.push(file);
       } else if (!existsSync(file)) {
@@ -321,9 +315,11 @@ export function findAffectedTests(changedFiles: string[]): AffectedResult {
       join(dir, `${base}.integration.test.js`),
     ];
 
-    // Also check src/ → tests/ mirror path
-    if (dir.includes("/src/") || dir.startsWith("src/")) {
-      const mirrorDir = dir.replace(/\/src\/|^src\//, "/tests/").replace(/^\//, "");
+    // Also check src/ → tests/ mirror path (replace first /src/ segment only)
+    const srcSegment = dir.startsWith("src/") ? "src/" : dir.includes("/src/") ? "/src/" : null;
+    if (srcSegment) {
+      const idx = dir.indexOf(srcSegment);
+      const mirrorDir = dir.substring(0, idx) + srcSegment.replace("src", "tests") + dir.substring(idx + srcSegment.length);
       candidates.push(
         join(mirrorDir, `${base}.test.ts`),
         join(mirrorDir, `${base}.test.js`),
@@ -397,10 +393,9 @@ export function scenarioCoverage(
       let matchedTest: string | null = null;
 
       for (const test of testNames) {
-        if (
-          test.normalized.includes(scenarioNorm) ||
-          scenarioNorm.includes(test.normalized)
-        ) {
+        // One-direction: test name must contain the scenario name (not reverse)
+        // Reverse matching is too permissive — short names match everything
+        if (test.normalized.includes(scenarioNorm)) {
           matchedTest = test.original;
           break;
         }
@@ -549,7 +544,7 @@ export function runCLI(args: string[]): CLIResult {
       return { exitCode: 1, stdout: msg, stderr: "" };
     }
 
-    const lines = result.affectedTests;
+    const lines = [...result.affectedTests];
     if (result.unmappedFiles.length > 0) {
       lines.push(`# unmapped: ${result.unmappedFiles.join(", ")}`);
     }
