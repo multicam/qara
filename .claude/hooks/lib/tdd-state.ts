@@ -65,6 +65,7 @@ export function readTDDStateRaw(): TDDState | null {
     if (!existsSync(STATE_FILE)) return null;
     const content = readFileSync(STATE_FILE, "utf-8");
     const state = JSON.parse(content) as TDDState;
+    if (typeof state.phase !== "string" || typeof state.expiresAt !== "string") return null;
     if (!state.active) return null;
     return state;
   } catch {

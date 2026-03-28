@@ -10,11 +10,7 @@ RED-GREEN-VERIFY-REFACTOR loop driven by scenario specs. This is the core bluepr
 
 ### Detect Test Runner [DETERMINISTIC]
 
-- If `vitest.config.ts` or `vitest.config.js` exists → use `vitest run` for test commands
-- If `bunfig.toml` has `[test]` section → use `bun test`
-- Else check `package.json` `scripts.test` → fall back to `bun test`
-
-Use the detected runner for all `bun test` commands below.
+-> **READ:** `../references/detect-runner.md` for test runner detection heuristic
 
 ### Activate TDD Enforcement [DETERMINISTIC]
 
@@ -26,6 +22,8 @@ This enables the PreToolUse hook to enforce phase discipline:
 - **RED phase:** only test files can be edited (source file edits are blocked)
 - **GREEN phase:** source files allowed (writing implementation)
 - **REFACTOR phase:** both allowed (cleaning up)
+
+> **Why phase enforcement?** It prevents the most common TDD failure mode: writing implementation and tests together, which produces tests that verify what the code *does* rather than what it *should do*. The RED phase guarantees every test is written against a *missing* behavior, not an existing one. Without enforcement, it's too easy to "peek" at the implementation and write a test that passes by accident.
 
 ## The Loop
 
@@ -88,6 +86,9 @@ bun test path/to/file.test.ts
 ```
 
 The test MUST pass. If it fails:
+
+2 fix attempts. If both fail, escalate.
+
 - **Attempt 1:** Read the error, fix the code [AGENTIC]
 - **Attempt 2:** Read the error, fix the code [AGENTIC]
 - **Attempt 3:** STOP. Structured escalation to JM:
@@ -142,7 +143,7 @@ bun ${PAI_DIR}/hooks/lib/tdd-state.ts clear
 ### Type Check [DETERMINISTIC]
 
 ```bash
-bun --check
+bunx tsc --noEmit
 ```
 
 ### Full Test Suite [DETERMINISTIC]
@@ -163,6 +164,13 @@ TDD cycle complete: {feature-name}
 
 Next: "backtest" to update baseline and verify quality gates.
 ```
+
+## Interruption Handling
+
+If JM cancels mid-cycle or the session ends unexpectedly:
+- Run `bun tdd-state.ts clear` to deactivate enforcement immediately
+- TDD state also auto-expires after 2 hours (crash resilience)
+- Partial work (tests without implementation) is safe to leave — pick up in the next session
 
 ## Blueprint Summary
 

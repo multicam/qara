@@ -145,9 +145,9 @@ async function main(): Promise<void> {
         if (isTest) {
           logDecision(filePath, state.phase, isTest, "allow", "test file edit during GREEN (advisory)");
           allow("TDD: Phase is GREEN. Minimal test changes only — focus on implementation.");
-          return;
+        } else {
+          logDecision(filePath, state.phase, isTest, "allow", "source file edit during GREEN");
         }
-        logDecision(filePath, state.phase, isTest, "allow", "source file edit during GREEN");
       } else {
         // REFACTOR: everything allowed
         logDecision(filePath, state.phase, isTest, "allow", `edit during REFACTOR`);

@@ -1,5 +1,7 @@
 # Workflow: Init Project
 
+> This workflow is idempotent — running it twice will not overwrite existing content. Each step checks for existing files before writing.
+
 Bootstrap test infrastructure in any project. Run once per project.
 
 **All nodes: DETERMINISTIC** — no LLM reasoning, just file creation.

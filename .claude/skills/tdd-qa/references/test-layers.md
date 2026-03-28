@@ -7,8 +7,8 @@ Adapted from Kent C. Dodds' Testing Trophy for PAI's Bun-first stack.
 
 | Layer | Tool | File Pattern | When to Run | Coverage Goal |
 |-------|------|-------------|-------------|---------------|
-| **Static** | `bun --check` (tsc) | `*.ts` | Always, pre-commit | 100% of source files |
-| **Unit** | `bun test` | `*.test.ts` (co-located) | Pure logic, utils, transforms | 80%+ line coverage |
+| **Static** | `bunx tsc --noEmit` | `*.ts` | Always, pre-commit | 100% of source files |
+| **Unit** | `bun test` | `*.test.ts` (co-located) | Pure logic, utils, transforms | 90%+ line coverage |
 | **Integration** | `bun test` | `*.integration.test.ts` | Module boundaries, real code paths | Critical paths covered |
 | **E2E** | Playwright / devtools-mcp | `*.spec.ts` in `tests/e2e/` | User journeys only | 3-5 scenarios per app |
 | **Exploration** | Bombadil (experimental) | `*.bombadil.ts` in `specs/` | UI property invariants | Zero violations on properties |
@@ -20,11 +20,11 @@ Unit tests catch logic errors in isolation. E2E tests catch broken user journeys
 
 ## Layer Details
 
-### Static (bun --check)
+### Static (bunx tsc --noEmit)
 - **What it catches:** Type errors, missing imports, interface mismatches
 - **Cost:** Near-zero (seconds)
 - **Node type:** Deterministic
-- **Command:** `bun --check` or `tsc --noEmit`
+- **Command:** `bunx tsc --noEmit`
 
 ### Unit (bun test *.test.ts)
 - **What it catches:** Logic errors in pure functions, edge cases, boundary conditions

@@ -69,3 +69,46 @@ Examples: "run mutation tests", "check mutation score", "how good are my tests"
 | Chaos | explore-bombadil |
 
 All workflow steps are typed as **deterministic** or **agentic** (Stripe Minions pattern). See `references/blueprint-pattern.md`.
+
+## Lifecycle Completion
+
+### Minimum Complete Cycle
+
+1. `write-scenarios` — define Given/When/Then specs (mandatory human review gate at step 4)
+2. `tdd-cycle` — RED→GREEN→REFACTOR loop for each scenario
+3. `backtest` — regression check, baseline update
+
+When backtest passes with zero regressions and baseline updated, the minimum cycle is complete.
+
+### Optional Extensions
+
+| Extension | When to suggest | Prerequisite |
+|-----------|----------------|--------------|
+| `mutation-check` | After backtest passes, for critical code paths | StrykerJS installed |
+| `e2e-verify` | When feature has a browser UI | devtools-mcp available |
+| `explore-bombadil` | When feature has complex state/UI interactions | Playwright available |
+| `run-pyramid` | Before merging a PR, as a final confidence check | Tests exist at multiple layers |
+
+### System-Level "Done"
+
+A feature is fully tested when:
+- All quality gates pass (zero regressions, coverage not decreased)
+- Baseline updated
+- JM has reviewed and approved scenarios
+
+Do not proactively run optional extensions unless JM asks or the feature touches critical code paths.
+
+## Composing Workflows
+
+### Canonical Sequences
+
+| Request type | Sequence | Skippable steps |
+|---|---|---|
+| **New feature** | write-scenarios → tdd-cycle → backtest | write-scenarios can be skipped if JM provides inline requirements |
+| **Bug fix** | tdd-cycle (RED: write failing test for the bug) → backtest | write-scenarios usually skipped for single bugs |
+| **Confidence check** | backtest or run-pyramid | Both standalone |
+| **Refactoring** | backtest (before) → refactor → backtest (after) | No TDD cycle needed — existing tests are the safety net |
+
+### When a Request Matches Multiple Workflows
+
+If JM's request is ambiguous or spans multiple workflows, **ask which workflow to start with** rather than guessing. Example: "I want to add auth and make sure nothing breaks" could mean write-scenarios + tdd-cycle + backtest, or just a confidence backtest on existing code.

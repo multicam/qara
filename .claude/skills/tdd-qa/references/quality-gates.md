@@ -66,5 +66,5 @@ GATE RESULT: PASS (0 regressions, coverage increased)
 When a gate fails:
 1. `test-report.ts` exits with code 1
 2. Agent reports regressions with file:line references
-3. If agentic fix attempted: max 2 retries before structured escalation to JM
+3. If agentic fix attempted: 2 fix attempts. If both fail, structured escalation (see blueprint-pattern.md)
 4. Structured escalation format: Problem / Tried / Hypothesis / Need

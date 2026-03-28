@@ -21,6 +21,7 @@ import {
   parseScenarioDir,
   runCLI,
   USAGE,
+  type CLIResult,
   type ScenarioManifest,
 } from "./scenario-parser";
 
@@ -304,6 +305,24 @@ describe("scenario-parser", () => {
 
     it("exports runCLI function", () => {
       expect(typeof runCLI).toBe("function");
+    });
+
+    it("should return help for empty args", () => {
+      const result = runCLI([]);
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Usage:");
+    });
+
+    it("should return help for --help", () => {
+      const result = runCLI(["--help"]);
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Usage:");
+    });
+
+    it("should error for nonexistent path", () => {
+      const result = runCLI(["/tmp/nonexistent-scenario-dir-xyz"]);
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr).toContain("Error:");
     });
   });
 });

@@ -126,7 +126,7 @@ Each cycle responds to what you learned from the previous one.
 
 ## Coverage Goals
 
-- Unit: 80%+
+- Unit: 90%+ (enforced via bunfig.toml)
 - Integration: Cover critical paths
 - E2E: Critical user journeys only (not 100%)
 

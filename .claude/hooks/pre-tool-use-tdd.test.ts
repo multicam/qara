@@ -18,7 +18,6 @@ import {
   parseHookDecision,
   createTestPaiDir,
   writeMockTDDState,
-  clearTDDState,
 } from "./lib/test-macros";
 
 const HOOK = join(import.meta.dir, "pre-tool-use-tdd.ts");
@@ -108,6 +107,36 @@ describe("pre-tool-use-tdd.ts", () => {
 
     it("should allow Write to draft spec", async () => {
       const result = await runHook(writeInput("/tmp/tests/e2e/login.draft.spec.ts"));
+      expect(result.exitCode).toBe(0);
+      const { decision } = parseHookDecision(result.stdout);
+      expect(decision).toBe("allow");
+    });
+
+    it("should DENY MultiEdit containing source file", async () => {
+      const result = await runHook({
+        tool_name: "MultiEdit",
+        tool_input: {
+          edits: [
+            { file_path: "/tmp/src/auth.test.ts", old_string: "a", new_string: "b" },
+            { file_path: "/tmp/src/auth.ts", old_string: "x", new_string: "y" },
+          ],
+        },
+      });
+      expect(result.exitCode).toBe(0);
+      const { decision } = parseHookDecision(result.stdout);
+      expect(decision).toBe("deny");
+    });
+
+    it("should allow MultiEdit containing only test files", async () => {
+      const result = await runHook({
+        tool_name: "MultiEdit",
+        tool_input: {
+          edits: [
+            { file_path: "/tmp/src/auth.test.ts", old_string: "a", new_string: "b" },
+            { file_path: "/tmp/src/utils.spec.ts", old_string: "x", new_string: "y" },
+          ],
+        },
+      });
       expect(result.exitCode).toBe(0);
       const { decision } = parseHookDecision(result.stdout);
       expect(decision).toBe("allow");

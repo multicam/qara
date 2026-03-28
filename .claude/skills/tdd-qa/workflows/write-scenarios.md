@@ -2,6 +2,8 @@
 
 Translate requirements into Given/When/Then scenario specs. Produces files in `specs/`.
 
+> **Gate warning:** This workflow includes a mandatory human review gate (step 4). Do not chain into tdd-cycle automatically — wait for JM's confirmation before proceeding.
+
 ## Steps
 
 ### 1. Understand the Feature [AGENTIC]

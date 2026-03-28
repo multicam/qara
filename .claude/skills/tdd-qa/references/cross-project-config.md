@@ -69,6 +69,6 @@ These are conventions, not config — they work regardless of project setup:
 - **AAA pattern** for all tests (Arrange/Act/Assert)
 - **Mock at boundaries only** (see CORE/references/mocking-guidelines.md)
 - **Test behavior, not implementation** (see CORE/testing-guide.md)
-- **80%+ unit coverage** target
+- **80%+ unit coverage** target (Qara targets 90% — see bunfig.toml)
 - **3-5 E2E scenarios max** per app
 - **Priority levels** on all scenarios (critical/important/nice-to-have)

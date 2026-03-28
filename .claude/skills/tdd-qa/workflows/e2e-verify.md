@@ -8,6 +8,8 @@ Execute E2E scenarios via devtools-mcp browser automation. Auto-drafts `.spec.ts
 - Dev server running (or URL provided by JM)
 - devtools-mcp available (Brave with remote debugging)
 
+> If devtools-mcp is not available, skip this workflow and inform JM. Browser automation requires Chrome DevTools Protocol — there is no meaningful fallback.
+
 ## Steps
 
 ### 1. Identify E2E Scenarios [DETERMINISTIC]

@@ -288,14 +288,14 @@ export interface AffectedResult {
  * Uses co-location heuristic: foo.ts → foo.test.ts, foo.integration.test.ts
  */
 export function findAffectedTests(changedFiles: string[]): AffectedResult {
-  const affectedTests: string[] = [];
+  const seen = new Set<string>();
   const unmappedFiles: string[] = [];
 
   for (const file of changedFiles) {
     // If the changed file IS a test file, include it directly
     if (isTestFile(file)) {
-      if (existsSync(file) && !affectedTests.includes(file)) {
-        affectedTests.push(file);
+      if (existsSync(file) && !seen.has(file)) {
+        seen.add(file);
       } else if (!existsSync(file)) {
         unmappedFiles.push(file);
       }
@@ -327,8 +327,8 @@ export function findAffectedTests(changedFiles: string[]): AffectedResult {
     }
 
     for (const candidate of candidates) {
-      if (existsSync(candidate) && !affectedTests.includes(candidate)) {
-        affectedTests.push(candidate);
+      if (existsSync(candidate) && !seen.has(candidate)) {
+        seen.add(candidate);
         found = true;
       }
     }
@@ -338,7 +338,7 @@ export function findAffectedTests(changedFiles: string[]): AffectedResult {
     }
   }
 
-  return { changedFiles, affectedTests, unmappedFiles };
+  return { changedFiles, affectedTests: [...seen], unmappedFiles };
 }
 
 // ─── Scenario Coverage ───────────────────────────────────────────────────────

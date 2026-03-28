@@ -124,6 +124,10 @@ Gate: PASS (0 violations) / FAIL ({n} violations — investigate)
 ## Relationship to Other Layers
 
 - **Bombadil does NOT replace E2E scenarios.** E2E tests specific user journeys. Bombadil explores the space between journeys.
+
+**When to use which:**
+- **e2e-verify** — when you know the specific user journeys to test (happy paths, known edge cases)
+- **Bombadil** — when you want to discover bugs *between* known journeys: unexpected action sequences, timing edge cases, state corruption from unusual navigation patterns
 - **Bombadil does NOT feed into the backtest loop.** It has its own quality gate (zero violations). This is deliberate — Bombadil is experimental (v0.3.2) and its output format (JSONL) differs from the JUnit XML contract.
 - **Future:** If Bombadil stabilizes and is retained, build a JSONL→JUnit XML adapter in `test-report.ts` to unify with the backtest loop.
 

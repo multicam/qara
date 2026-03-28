@@ -8,19 +8,17 @@ Execute test layers bottom-up, failing fast. **100% deterministic — no agentic
 
 ### 0. Detect Test Runner [DETERMINISTIC]
 
-- If `vitest.config.ts` or `vitest.config.js` exists → use Vitest commands
-- If `bunfig.toml` has `[test]` section → use Bun commands
-- Else check `package.json` `scripts.test` for hints → fall back to `bun test`
+-> **READ:** `../references/detect-runner.md` for test runner detection heuristic
 
 ### 1. Static Analysis [DETERMINISTIC]
 
 ```bash
-bun --check
+bunx tsc --noEmit
 ```
 
 **Gate:** Zero type errors. If any exist, STOP and report.
 
-### 2. Unit Tests [DETERMINISTIC]
+### 2. Unit + Integration Tests [DETERMINISTIC]
 
 **Bun:**
 ```bash
@@ -36,21 +34,7 @@ Exclude E2E tests (they live in `tests/e2e/` and use `.spec.ts`).
 
 **Gate:** Zero failures. If any exist, STOP and report failing tests with file:line references.
 
-### 3. Integration Tests [DETERMINISTIC]
-
-**Bun:**
-```bash
-bun test **/*.integration.test.ts
-```
-
-**Vitest:**
-```bash
-vitest run **/*.integration.test.ts
-```
-
-**Gate:** Zero failures. If any exist, STOP and report.
-
-### 4. E2E Tests [DETERMINISTIC] (only if frozen .spec.ts files exist)
+### 3. E2E Tests [DETERMINISTIC] (only if frozen .spec.ts files exist)
 
 ```bash
 bun playwright test
@@ -60,20 +44,19 @@ Only runs if `tests/e2e/*.spec.ts` files exist. Skip this step if no frozen E2E 
 
 **Gate:** Zero failures. If any exist, STOP and report.
 
-### 5. Mutation Testing [DETERMINISTIC] (optional, if StrykerJS installed)
+### 4. Mutation Testing [DETERMINISTIC] (optional, if StrykerJS installed)
 
 Only runs if `stryker.config.json` exists in the project root. Advisory only — does not fail the pyramid.
 
 See: `mutation-check.md` workflow for details.
 
-### 6. Report [DETERMINISTIC]
+### 5. Report [DETERMINISTIC]
 
 ```
 Pyramid complete:
-  Static:      ✓ 0 type errors
-  Unit:        ✓ {n} pass, 0 fail
-  Integration: ✓ {n} pass, 0 fail
-  E2E:         ✓ {n} pass, 0 fail (or "skipped — no frozen .spec.ts")
+  Static:               ✓ 0 type errors
+  Unit + Integration:   ✓ {n} pass, 0 fail
+  E2E:                  ✓ {n} pass, 0 fail (or "skipped — no frozen .spec.ts")
 
 All gates passed.
 ```

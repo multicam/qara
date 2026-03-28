@@ -205,10 +205,15 @@ Examples:
   bun scenario-parser.ts specs/
   bun scenario-parser.ts specs/ --json`;
 
-export function runCLI(args: string[]): void {
+export interface CLIResult {
+  exitCode: number;
+  stdout: string;
+  stderr: string;
+}
+
+export function runCLI(args: string[]): CLIResult {
   if (args.length === 0 || args.includes("--help") || args.includes("-h")) {
-    console.log(USAGE);
-    process.exit(0);
+    return { exitCode: 0, stdout: USAGE, stderr: "" };
   }
 
   const target = args[0];
@@ -226,31 +231,31 @@ export function runCLI(args: string[]): void {
     }
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
-    console.error(`Error: ${msg}`);
-    process.exit(1);
+    return { exitCode: 1, stdout: "", stderr: `Error: ${msg}` };
   }
 
   if (jsonMode) {
-    console.log(JSON.stringify(manifests, null, 2));
-    return;
+    return { exitCode: 0, stdout: JSON.stringify(manifests, null, 2), stderr: "" };
   }
 
   // Human-readable summary
+  const lines: string[] = [];
   for (const m of manifests) {
-    console.log(`\n# ${m.feature || "(no feature name)"}`);
-    console.log(`  Source: ${m.sourceFile}`);
-    if (m.context) console.log(`  Context: ${m.context}`);
-    console.log(`  Scenarios: ${m.scenarios.length}`);
+    lines.push(`\n# ${m.feature || "(no feature name)"}`);
+    lines.push(`  Source: ${m.sourceFile}`);
+    if (m.context) lines.push(`  Context: ${m.context}`);
+    lines.push(`  Scenarios: ${m.scenarios.length}`);
     for (const s of m.scenarios) {
-      console.log(`    - [${s.priority}] ${s.name} (${s.steps.length} steps)`);
+      lines.push(`    - [${s.priority}] ${s.name} (${s.steps.length} steps)`);
     }
     if (m.outOfScope.length > 0) {
-      console.log(`  Out of scope: ${m.outOfScope.length} items`);
+      lines.push(`  Out of scope: ${m.outOfScope.length} items`);
     }
     if (m.acceptanceCriteria.length > 0) {
-      console.log(`  Acceptance criteria: ${m.acceptanceCriteria.length} items`);
+      lines.push(`  Acceptance criteria: ${m.acceptanceCriteria.length} items`);
     }
   }
+  return { exitCode: 0, stdout: lines.join("\n"), stderr: "" };
 }
 
 // Direct execution guard — same pattern as test-report.ts and tdd-state.ts
@@ -259,6 +264,9 @@ const isDirectExecution =
 if (isDirectExecution && !process.env.SCENARIO_PARSER_NO_CLI) {
   const args = process.argv.slice(2);
   if (args.length > 0) {
-    runCLI(args);
+    const result = runCLI(args);
+    if (result.stdout) console.log(result.stdout);
+    if (result.stderr) console.error(result.stderr);
+    process.exit(result.exitCode);
   }
 }

@@ -17,7 +17,7 @@ The guardrails ARE the deterministic nodes. They're checkpoints where you stop a
 
 ### Deterministic Nodes (rectangles in Stripe's diagrams)
 - File I/O: reading specs, writing test files, copying templates
-- Test execution: `bun test`, `bun --check`, `playwright test`
+- Test execution: `bun test`, `bunx tsc --noEmit`, `playwright test`
 - Comparison: JUnit XML diff, lcov diff, baseline update
 - Formatting: linting, code formatting
 - Git operations: commit, branch, push
@@ -37,7 +37,7 @@ The guardrails ARE the deterministic nodes. They're checkpoints where you stop a
 ## Retry Policy
 
 - **Deterministic nodes:** No retry. Failure is signal, not error. If `bun test` fails, the test caught something real.
-- **Agentic nodes:** Max 2 attempts. After 2 failures, structured escalation:
+- **Agentic nodes:** 2 fix attempts. If both fail, structured escalation to JM:
   ```
   Problem: [precise statement]
   Tried: [what was attempted]
@@ -51,7 +51,7 @@ This aligns with Stripe's "at most two CI rounds" policy and JM's existing CLAUD
 
 | Workflow | Deterministic Nodes | Agentic Nodes |
 |---|---|---|
-| **tdd-cycle** | VERIFY (bun test), type-check (bun --check) | RED (write test), GREEN (write code), REFACTOR |
+| **tdd-cycle** | VERIFY (bun test), type-check (bunx tsc --noEmit) | RED (write test), GREEN (write code), REFACTOR |
 | **backtest** | ALL: baseline capture, XML diff, coverage diff, gate check | none |
 | **run-pyramid** | ALL: static → unit → integration → e2e in sequence | none |
 | **e2e-verify** | server start/stop, pass/fail record, .spec.ts draft write | scenario execution via devtools-mcp |

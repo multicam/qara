@@ -13,9 +13,7 @@ Regression detection via baseline comparison. **100% deterministic — no agenti
 
 ### 0. Detect Test Runner [DETERMINISTIC]
 
-- If `vitest.config.ts` or `vitest.config.js` exists → use Vitest commands
-- If `bunfig.toml` has `[test]` section → use Bun commands
-- Else check `package.json` `scripts.test` for hints → fall back to `bun test`
+-> **READ:** `../references/detect-runner.md` for test runner detection heuristic
 
 ### 1. Capture Current Results [DETERMINISTIC]
 
@@ -115,8 +113,10 @@ Backtest FAILED:
 
 ## When to Use
 
-- After completing a tdd-cycle (verify no regressions)
-- After refactoring (confidence check)
-- After dependency upgrades
-- Before merging a PR
-- As part of Mode 3 (confidence check)
+| Context | Run coverage? | Run scenario-coverage? | Expected outcome |
+|---------|--------------|----------------------|------------------|
+| After tdd-cycle | Yes | Yes (if specs/ exists) | Baseline updated, ready for next cycle |
+| After refactoring | Yes | No | Confidence that refactor was safe |
+| Before merging PR | Yes | Yes | Final quality gate |
+| After dependency upgrade | Yes | No | Regression check |
+| Confidence check (Mode 3) | Optional | No | Quick pass/fail |
