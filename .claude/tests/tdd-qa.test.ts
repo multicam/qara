@@ -15,17 +15,21 @@ import { homedir } from "os";
 
 // Suppress CLI auto-execution during tests
 process.env.TEST_REPORT_NO_CLI = "1";
+process.env.SCENARIO_PARSER_NO_CLI = "1";
 
 import {
   parseJUnitXML,
   parseLcov,
   compare,
   formatReport,
+  scenarioCoverage,
+  formatScenarioCoverage,
   runCLI,
   USAGE,
   type TestSummary,
   type CoverageSummary,
 } from "../skills/tdd-qa/tools/test-report";
+import { parseScenarioFile } from "../skills/tdd-qa/tools/scenario-parser";
 
 const SKILL_DIR = join(homedir(), "qara", ".claude", "skills", "tdd-qa");
 
@@ -800,5 +804,122 @@ describe("Integration: parse real bun test output", () => {
 
     const report = formatReport(result);
     expect(report).toContain("GATE RESULT: PASS");
+  });
+});
+
+// =============================================================================
+// SECTION: Scenario Coverage
+// =============================================================================
+
+describe("scenarioCoverage", () => {
+  const SPEC = `# Feature: Auth
+
+## Scenarios
+
+### Scenario: successful login
+- **Given** valid credentials
+- **When** user logs in
+- **Then** token is returned
+- **Priority:** critical
+
+### Scenario: failed login
+- **Given** invalid credentials
+- **When** user logs in
+- **Then** error is shown
+- **Priority:** critical
+
+### Scenario: session timeout
+- **Given** idle session
+- **When** 30 minutes pass
+- **Then** session expires
+- **Priority:** important
+`;
+
+  const matchingXML = `<?xml version="1.0"?>
+<testsuites>
+  <testsuite name="Auth">
+    <testcase classname="Feature: Auth" name="Scenario: successful login" time="0.1"/>
+    <testcase classname="Feature: Auth" name="Scenario: failed login" time="0.2"/>
+    <testcase classname="Feature: Auth" name="Scenario: session timeout" time="0.3"/>
+  </testsuite>
+</testsuites>`;
+
+  const partialXML = `<?xml version="1.0"?>
+<testsuites>
+  <testsuite name="Auth">
+    <testcase classname="Feature: Auth" name="Scenario: successful login" time="0.1"/>
+  </testsuite>
+</testsuites>`;
+
+  it("should map all scenarios when test names match", () => {
+    const manifest = parseScenarioFile(SPEC, "specs/auth.md");
+    const tests = parseJUnitXML(matchingXML);
+    const result = scenarioCoverage([manifest], tests);
+
+    expect(result.total).toBe(3);
+    expect(result.mapped).toBe(3);
+    expect(result.unmapped).toBe(0);
+    expect(result.passed).toBe(true);
+  });
+
+  it("should detect unmapped critical scenarios", () => {
+    const manifest = parseScenarioFile(SPEC, "specs/auth.md");
+    const tests = parseJUnitXML(partialXML);
+    const result = scenarioCoverage([manifest], tests);
+
+    expect(result.total).toBe(3);
+    expect(result.mapped).toBe(1);
+    expect(result.unmapped).toBe(2);
+    expect(result.criticalUnmapped).toHaveLength(1); // "failed login" is critical and unmapped
+    expect(result.criticalUnmapped[0].scenario).toBe("failed login");
+    expect(result.passed).toBe(false);
+  });
+
+  it("should pass when only non-critical scenarios are unmapped", () => {
+    const noCriticalUnmappedXML = `<?xml version="1.0"?>
+<testsuites>
+  <testsuite name="Auth">
+    <testcase classname="Feature: Auth" name="Scenario: successful login" time="0.1"/>
+    <testcase classname="Feature: Auth" name="Scenario: failed login" time="0.2"/>
+  </testsuite>
+</testsuites>`;
+
+    const manifest = parseScenarioFile(SPEC, "specs/auth.md");
+    const tests = parseJUnitXML(noCriticalUnmappedXML);
+    const result = scenarioCoverage([manifest], tests);
+
+    expect(result.total).toBe(3);
+    expect(result.mapped).toBe(2);
+    expect(result.unmapped).toBe(1);
+    expect(result.criticalUnmapped).toHaveLength(0);
+    expect(result.passed).toBe(true);
+  });
+
+  it("should handle empty scenarios", () => {
+    const emptySpec = `# Feature: Empty\n\n## Scenarios\n`;
+    const manifest = parseScenarioFile(emptySpec, "specs/empty.md");
+    const tests = parseJUnitXML(matchingXML);
+    const result = scenarioCoverage([manifest], tests);
+
+    expect(result.total).toBe(0);
+    expect(result.mapped).toBe(0);
+    expect(result.passed).toBe(true);
+  });
+
+  it("should format coverage report", () => {
+    const manifest = parseScenarioFile(SPEC, "specs/auth.md");
+    const tests = parseJUnitXML(partialXML);
+    const result = scenarioCoverage([manifest], tests);
+    const report = formatScenarioCoverage(result);
+
+    expect(report).toContain("SCENARIO COVERAGE: 1/3");
+    expect(report).toContain("UNMAPPED SCENARIOS:");
+    expect(report).toContain("[critical]");
+    expect(report).toContain("GATE RESULT: FAIL");
+    expect(report).toContain("Critical scenario unmapped");
+  });
+
+  it("should include scenario-coverage in USAGE", () => {
+    expect(USAGE).toContain("scenario-coverage");
   });
 });

@@ -12,8 +12,9 @@
  *   bun run test-report.ts parse --file results.xml
  */
 
-import { readFileSync, existsSync } from "fs";
+import { readFileSync, existsSync, statSync } from "fs";
 import { basename, dirname, join, extname } from "path";
+import { parseScenarioFile, parseScenarioDir, type ScenarioManifest, type Scenario } from "./scenario-parser";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -97,7 +98,7 @@ export function parseJUnitXML(xml: string): TestSummary {
 }
 
 function extractAttr(attrs: string, name: string): string | null {
-  const regex = new RegExp(`${name}="([^"]*)"`, "i");
+  const regex = new RegExp(`(?:^|\\s)${name}="([^"]*)"`, "i");
   const match = attrs.match(regex);
   return match ? decodeXMLEntities(match[1]) : null;
 }
@@ -344,12 +345,132 @@ export function findAffectedTests(changedFiles: string[]): AffectedResult {
   return { changedFiles, affectedTests, unmappedFiles };
 }
 
+// ─── Scenario Coverage ───────────────────────────────────────────────────────
+
+export interface ScenarioMapping {
+  scenario: string;
+  priority: string;
+  matchedTest: string | null;
+}
+
+export interface ScenarioCoverageResult {
+  total: number;
+  mapped: number;
+  unmapped: number;
+  mappings: ScenarioMapping[];
+  criticalUnmapped: ScenarioMapping[];
+  passed: boolean;
+}
+
+/**
+ * Normalize a string for fuzzy matching: lowercase, strip "scenario:" prefix,
+ * collapse whitespace, remove punctuation.
+ */
+function normalize(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/^scenario:\s*/i, "")
+    .replace(/[^\w\s]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/**
+ * Cross-reference parsed scenarios against JUnit XML test case names.
+ * Uses fuzzy matching: normalized scenario name must appear as a substring
+ * of the normalized test name (or vice versa).
+ */
+export function scenarioCoverage(
+  manifests: ScenarioManifest[],
+  testSummary: TestSummary
+): ScenarioCoverageResult {
+  const testNames = testSummary.results.map((t) => ({
+    original: `${t.classname} > ${t.name}`,
+    normalized: normalize(`${t.classname} ${t.name}`),
+  }));
+
+  const mappings: ScenarioMapping[] = [];
+
+  for (const manifest of manifests) {
+    for (const scenario of manifest.scenarios) {
+      const scenarioNorm = normalize(scenario.name);
+      let matchedTest: string | null = null;
+
+      for (const test of testNames) {
+        if (
+          test.normalized.includes(scenarioNorm) ||
+          scenarioNorm.includes(test.normalized)
+        ) {
+          matchedTest = test.original;
+          break;
+        }
+      }
+
+      mappings.push({
+        scenario: scenario.name,
+        priority: scenario.priority,
+        matchedTest,
+      });
+    }
+  }
+
+  const mapped = mappings.filter((m) => m.matchedTest !== null).length;
+  const criticalUnmapped = mappings.filter(
+    (m) => m.matchedTest === null && m.priority === "critical"
+  );
+
+  return {
+    total: mappings.length,
+    mapped,
+    unmapped: mappings.length - mapped,
+    mappings,
+    criticalUnmapped,
+    passed: criticalUnmapped.length === 0,
+  };
+}
+
+export function formatScenarioCoverage(result: ScenarioCoverageResult): string {
+  const lines: string[] = [];
+  lines.push(`SCENARIO COVERAGE: ${result.mapped}/${result.total} scenarios mapped to tests`);
+  lines.push("");
+
+  const unmapped = result.mappings.filter((m) => m.matchedTest === null);
+  if (unmapped.length > 0) {
+    lines.push("UNMAPPED SCENARIOS:");
+    for (const m of unmapped) {
+      lines.push(`  [${m.priority}] "${m.scenario}"`);
+    }
+    lines.push("");
+  }
+
+  const mappedEntries = result.mappings.filter((m) => m.matchedTest !== null);
+  if (mappedEntries.length > 0) {
+    lines.push("MAPPED SCENARIOS:");
+    for (const m of mappedEntries) {
+      lines.push(`  [${m.priority}] "${m.scenario}" → ${m.matchedTest}`);
+    }
+    lines.push("");
+  }
+
+  if (result.passed) {
+    lines.push("GATE RESULT: PASS (all critical scenarios have matching tests)");
+  } else {
+    lines.push("GATE RESULT: FAIL");
+    for (const c of result.criticalUnmapped) {
+      lines.push(`  ✗ Critical scenario unmapped: "${c.scenario}"`);
+    }
+  }
+
+  return lines.join("\n");
+}
+
 // ─── CLI ─────────────────────────────────────────────────────────────────────
 
 export const USAGE = `Usage:
   test-report compare --baseline <xml> --current <xml> [--coverage-baseline <lcov> --coverage-current <lcov>]
   test-report parse --file <xml>
-  test-report affected --files <path1,path2,...>`;
+  test-report affected --files <path1,path2,...>
+  test-report scenario-coverage --specs <dir-or-file> --results <junit-xml>`;
 
 export interface CLIResult {
   exitCode: number;
@@ -433,6 +554,40 @@ export function runCLI(args: string[]): CLIResult {
       lines.push(`# unmapped: ${result.unmappedFiles.join(", ")}`);
     }
     return { exitCode: 0, stdout: lines.join("\n"), stderr: "" };
+  }
+
+  if (command === "scenario-coverage") {
+    const specsIdx = args.indexOf("--specs");
+    const resultsIdx = args.indexOf("--results");
+
+    if (specsIdx === -1 || !args[specsIdx + 1] || resultsIdx === -1 || !args[resultsIdx + 1]) {
+      return { exitCode: 1, stdout: "", stderr: "Error: --specs and --results are required for scenario-coverage" };
+    }
+
+    const specsPath = args[specsIdx + 1];
+    const resultsPath = args[resultsIdx + 1];
+
+    let manifests: ScenarioManifest[];
+    try {
+      if (statSync(specsPath).isDirectory()) {
+        manifests = parseScenarioDir(specsPath);
+      } else {
+        const content = readFileSync(specsPath, "utf-8");
+        manifests = [parseScenarioFile(content, specsPath)];
+      }
+    } catch {
+      return { exitCode: 1, stdout: "", stderr: `Error: cannot read specs at ${specsPath}` };
+    }
+
+    const xml = readFileSync(resultsPath, "utf-8");
+    const testSummary = parseJUnitXML(xml);
+    const result = scenarioCoverage(manifests, testSummary);
+
+    return {
+      exitCode: result.passed ? 0 : 1,
+      stdout: formatScenarioCoverage(result),
+      stderr: "",
+    };
   }
 
   return { exitCode: 1, stdout: "", stderr: `Unknown command: ${command}\n${USAGE}` };

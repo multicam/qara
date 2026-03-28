@@ -62,6 +62,18 @@ The tool outputs:
 - Coverage delta
 - Gate result (PASS or FAIL with reasons)
 
+### 3b. Scenario Coverage (optional) [DETERMINISTIC]
+
+If `specs/` directory exists with `.md` files, cross-reference scenario specs against test results:
+
+```bash
+bun run ${PAI_DIR}/skills/tdd-qa/tools/test-report.ts scenario-coverage \
+  --specs specs/ \
+  --results .test-current.xml
+```
+
+Reports which scenarios have matching tests and which don't. Fails if critical scenarios lack test coverage. This step is advisory — it does not block the gate in step 4 unless JM opts in.
+
 ### 4. Gate Decision [DETERMINISTIC]
 
 If `test-report.ts` exits 0 → all gates pass → proceed to step 5.
