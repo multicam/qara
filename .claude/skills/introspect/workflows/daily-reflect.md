@@ -23,6 +23,8 @@ Capture the JSON output. If the miner reports zero data across all categories, n
 
 ### 3. Interpret Results
 
+The miner JSON includes a `baseline` section (null if no prior non-bootstrap observations exist). When baseline is available, use delta values to compare today against the 7-day average — this makes comparisons deterministic rather than relying on hardcoded baselines.
+
 For each section of the miner output, compose observations following the tag taxonomy:
 
 **Tool usage** (`tool_usage` section):
@@ -32,6 +34,7 @@ For each section of the miner output, compose observations following the tag tax
 - If `anomalies` array is non-empty, create one observation per anomaly
 
 **Sessions** (`sessions` section):
+- Session count uses time-gap heuristic (>5 min gap = new session), not session_id
 - Note session count and any unusual stop reasons
 - If session count is 0, flag as `[session-quality][anomaly]`
 

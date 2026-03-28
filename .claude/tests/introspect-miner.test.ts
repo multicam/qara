@@ -7,6 +7,7 @@ import {
     getDateRange,
     readJsonlFile,
     detectAnomalies,
+    countSessionsByTimeGap,
 } from '../skills/introspect/tools/introspect-miner';
 import { writeFileSync, mkdirSync, rmSync } from 'fs';
 import { join } from 'path';
@@ -149,6 +150,57 @@ describe('readJsonlFile', () => {
     // Cleanup
     test('cleanup', () => {
         rmSync(tmpDir, { recursive: true, force: true });
+    });
+});
+
+// ---------------------------------------------------------------------------
+// detectAnomalies
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// countSessionsByTimeGap
+// ---------------------------------------------------------------------------
+describe('countSessionsByTimeGap', () => {
+    test('returns 0 for empty checkpoints', () => {
+        expect(countSessionsByTimeGap([])).toBe(0);
+    });
+
+    test('single checkpoint = 1 session', () => {
+        expect(countSessionsByTimeGap([
+            { timestamp: '2026-03-28T01:00:00Z', session_id: 'x', stop_reason: 'end', summary: '' },
+        ])).toBe(1);
+    });
+
+    test('checkpoints within 5 min = 1 session', () => {
+        expect(countSessionsByTimeGap([
+            { timestamp: '2026-03-28T01:00:00Z', session_id: 'x', stop_reason: 'end', summary: '' },
+            { timestamp: '2026-03-28T01:02:00Z', session_id: 'x', stop_reason: 'end', summary: '' },
+            { timestamp: '2026-03-28T01:04:00Z', session_id: 'x', stop_reason: 'end', summary: '' },
+        ])).toBe(1);
+    });
+
+    test('gap > 5 min splits into 2 sessions', () => {
+        expect(countSessionsByTimeGap([
+            { timestamp: '2026-03-28T01:00:00Z', session_id: 'x', stop_reason: 'end', summary: '' },
+            { timestamp: '2026-03-28T01:02:00Z', session_id: 'x', stop_reason: 'end', summary: '' },
+            { timestamp: '2026-03-28T02:00:00Z', session_id: 'x', stop_reason: 'end', summary: '' },
+        ])).toBe(2);
+    });
+
+    test('multiple gaps = multiple sessions', () => {
+        expect(countSessionsByTimeGap([
+            { timestamp: '2026-03-28T01:00:00Z', session_id: 'x', stop_reason: 'end', summary: '' },
+            { timestamp: '2026-03-28T03:00:00Z', session_id: 'x', stop_reason: 'end', summary: '' },
+            { timestamp: '2026-03-28T06:00:00Z', session_id: 'x', stop_reason: 'end', summary: '' },
+            { timestamp: '2026-03-28T06:01:00Z', session_id: 'x', stop_reason: 'end', summary: '' },
+        ])).toBe(3);
+    });
+
+    test('handles unsorted input', () => {
+        expect(countSessionsByTimeGap([
+            { timestamp: '2026-03-28T06:00:00Z', session_id: 'x', stop_reason: 'end', summary: '' },
+            { timestamp: '2026-03-28T01:00:00Z', session_id: 'x', stop_reason: 'end', summary: '' },
+            { timestamp: '2026-03-28T03:00:00Z', session_id: 'x', stop_reason: 'end', summary: '' },
+        ])).toBe(3);
     });
 });
 

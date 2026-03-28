@@ -97,6 +97,7 @@ interface DailyReport {
         commit_messages: string[];
     };
     cc_version: string | null;
+    baseline: Baseline | null;
 }
 
 interface WeeklyReport {
@@ -325,6 +326,24 @@ function getGitActivity(targetDate: string): { commits: number; branches: string
 }
 
 // ---------------------------------------------------------------------------
+// Session detection via time-gap heuristic
+// ---------------------------------------------------------------------------
+const SESSION_GAP_MS = 5 * 60 * 1000; // 5 minutes
+
+function countSessionsByTimeGap(checkpoints: SessionCheckpoint[]): number {
+    if (checkpoints.length === 0) return 0;
+    const sorted = [...checkpoints].sort((a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    );
+    let sessions = 1;
+    for (let i = 1; i < sorted.length; i++) {
+        const gap = new Date(sorted[i].timestamp).getTime() - new Date(sorted[i - 1].timestamp).getTime();
+        if (gap > SESSION_GAP_MS) sessions++;
+    }
+    return sessions;
+}
+
+// ---------------------------------------------------------------------------
 // Anomaly detection
 // ---------------------------------------------------------------------------
 function detectAnomalies(
@@ -341,6 +360,79 @@ function detectAnomalies(
         anomalies.push(`Overall error rate ${(overallErrorRate * 100).toFixed(1)}% exceeds 3% threshold`);
     }
     return anomalies;
+}
+
+// ---------------------------------------------------------------------------
+// Baseline computation from prior observation files
+// ---------------------------------------------------------------------------
+interface ObservationFrontmatter {
+    date: string;
+    sessions: number;
+    tools_total: number;
+    errors_total: number;
+    corrections: number;
+    is_bootstrap?: boolean;
+}
+
+interface Baseline {
+    days_available: number;
+    avg_tools: number;
+    avg_errors: number;
+    avg_sessions: number;
+    avg_corrections: number;
+    delta_tools: number;
+    delta_errors: number;
+    delta_sessions: number;
+}
+
+function parseObservationFrontmatter(filepath: string): ObservationFrontmatter | null {
+    if (!existsSync(filepath)) return null;
+    const content = readFileSync(filepath, 'utf-8');
+    const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
+    if (!fmMatch) return null;
+    const fm: Record<string, unknown> = {};
+    for (const line of fmMatch[1].split('\n')) {
+        const [key, ...rest] = line.split(':');
+        if (key && rest.length > 0) {
+            const val = rest.join(':').trim().replace(/^"(.*)"$/, '$1');
+            fm[key.trim()] = isNaN(Number(val)) ? val : Number(val);
+        }
+    }
+    return fm as unknown as ObservationFrontmatter;
+}
+
+function computeBaseline(targetDate: string, lookbackDays: number = 7): Baseline | null {
+    const obsDir = join(INTROSPECTION_DIR, 'observations');
+    if (!existsSync(obsDir)) return null;
+
+    const entries: ObservationFrontmatter[] = [];
+    const d = new Date(targetDate + 'T00:00:00');
+    for (let i = 1; i <= lookbackDays; i++) {
+        const prev = new Date(d);
+        prev.setDate(prev.getDate() - i);
+        const dateStr = prev.toISOString().slice(0, 10);
+        const fm = parseObservationFrontmatter(join(obsDir, `${dateStr}.md`));
+        if (fm && !fm.is_bootstrap) entries.push(fm);
+    }
+
+    if (entries.length === 0) return null;
+
+    const avg = (arr: number[]) => arr.reduce((s, v) => s + v, 0) / arr.length;
+    const avgTools = avg(entries.map(e => e.tools_total));
+    const avgErrors = avg(entries.map(e => e.errors_total));
+    const avgSessions = avg(entries.map(e => e.sessions));
+    const avgCorrections = avg(entries.map(e => e.corrections));
+
+    return {
+        days_available: entries.length,
+        avg_tools: Math.round(avgTools),
+        avg_errors: Math.round(avgErrors * 10) / 10,
+        avg_sessions: Math.round(avgSessions * 10) / 10,
+        avg_corrections: Math.round(avgCorrections * 10) / 10,
+        delta_tools: 0, // Filled by caller with today's actual
+        delta_errors: 0,
+        delta_sessions: 0,
+    };
 }
 
 // ---------------------------------------------------------------------------
@@ -362,9 +454,10 @@ function runDaily(targetDate: string): DailyReport {
     const overallErrorRate = tools.length > 0 ? totalErrors / tools.length : 0;
     const anomalies = detectAnomalies(byTool, overallErrorRate);
 
-    // Sessions
+    // Sessions (time-gap heuristic: >5 min gap = new session)
     const checkpoints = collectCheckpoints(targetDate);
-    const uniqueSessions = [...new Set(checkpoints.map(c => c.session_id))];
+    const sessionCount = countSessionsByTimeGap(checkpoints);
+    const uniqueSessions = Array.from({ length: sessionCount }, (_, i) => `session-${i + 1}`);
     const stopReasons: Record<string, number> = {};
     for (const cp of checkpoints) {
         stopReasons[cp.stop_reason] = (stopReasons[cp.stop_reason] || 0) + 1;
@@ -410,7 +503,19 @@ function runDaily(targetDate: string): DailyReport {
         corrections,
         git,
         cc_version: ccVersion,
+        baseline: null, // Populated below if data available
     };
+
+    // Baseline comparison (always computed — uses prior non-bootstrap observation files)
+    const baseline = computeBaseline(targetDate);
+    if (baseline) {
+        baseline.delta_tools = tools.length - baseline.avg_tools;
+        baseline.delta_errors = totalErrors - baseline.avg_errors;
+        baseline.delta_sessions = sessionCount - baseline.avg_sessions;
+        report.baseline = baseline;
+    }
+
+    return report;
 }
 
 // ---------------------------------------------------------------------------
@@ -566,6 +671,10 @@ export {
     getDateRange,
     readJsonlFile,
     detectAnomalies,
+    countSessionsByTimeGap,
+    SESSION_GAP_MS,
+    computeBaseline,
+    parseObservationFrontmatter,
     runDaily,
     runWeekly,
     runMonthly,

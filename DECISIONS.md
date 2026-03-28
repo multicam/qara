@@ -66,3 +66,13 @@ Append-only record of architectural and design decisions. Memory files capture *
 **Why:** CONSTITUTION Principles 2 (Deterministic Code First) and 5 (Goal->Code->CLI->Prompts) dictate that repeatable operations should be code. Log parsing, aggregation, and anomaly detection are deterministic — same input always same output. Pattern synthesis and observation composition require judgment, so they stay as prompt workflows. Inspired by marciopuga/cog but adapted to Qara's Code-Before-Prompts philosophy.
 **Trade-offs:** CLI adds a code artifact to maintain. But it's ~200 lines with tests, and deterministic code is easier to debug than prompt-based parsing.
 **Revisit if:** CC adds native log analysis tools, or the miner grows beyond 500 lines (suggesting it should become its own standalone tool).
+
+---
+
+## 2026-03-29 — Introspection scheduling via system crontab (not RemoteTrigger)
+
+**Chosen:** All three cadences (daily/weekly/monthly) scheduled via system crontab using `claude -p` with `cd ~/qara &&` prefix
+**Alternatives:** RemoteTrigger API (tried — schema undocumented, rejected after 8 failed attempts); `/loop` skill (session-scoped, not persistent); hybrid (crontab for daily, RemoteTrigger for weekly/monthly)
+**Why:** System crontab is the most reliable scheduling primitive available — runs regardless of CC state, survives reboots, uses the same pattern as existing qara cron jobs (daily-digest, log-rotate). RemoteTrigger API schema was not discoverable. The `cd ~/qara &&` prefix ensures the claude CLI loads the correct project context.
+**Trade-offs:** Crontab means cold-start sessions (no warm context). Acceptable — each cadence is self-contained and loads its own workflow.
+**Revisit if:** RemoteTrigger API is documented, or CC adds native scheduled task support.

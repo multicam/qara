@@ -100,3 +100,4 @@ Monthly evolve                     AI reviews patterns -> proposed memory update
 - **Writes to:** `~/qara/thoughts/shared/introspection/` (observations, patterns, reports, glacier)
 - **Complements:** `cc-upgrade-pai` (infrastructure audit) — monthly evolve checks if cc-upgrade-pai was run recently
 - **Miner CLI:** `bun ${PAI_DIR}/skills/introspect/tools/introspect-miner.ts --mode [daily|weekly|monthly]`
+- **Miner features:** time-gap session detection (>5min between checkpoints), baseline comparison (auto-computed from prior non-bootstrap observation frontmatter), correction detection heuristics (negation/redirection/frustration patterns)
