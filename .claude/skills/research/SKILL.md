@@ -111,8 +111,9 @@ Examples: "extract knowledge from X", "get insights from this"
 
 ### Available Research Agents
 
-Check `${PAI_DIR}/agents/` for agents with "researcher" in their name:
-- `gemini-researcher` - Uses Gemini CLI as fallback when WebSearch fails (requires GOOGLE_API_KEY)
+- `claude-researcher` - Primary researcher using Claude's native WebSearch/WebFetch (use first)
+- `gemini-researcher` - Fallback using Gemini CLI when WebSearch fails (requires GOOGLE_API_KEY)
+- `perplexity-researcher` - Fallback using Perplexity API with strong citation support
 
 ### Speed Benefits
 

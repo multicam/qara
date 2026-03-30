@@ -174,8 +174,8 @@ function isTimestampInRange(timestamp: string, start: string, end: string): bool
 
 function getDateRange(startStr: string, endStr: string): string[] {
     const dates: string[] = [];
-    const current = new Date(startStr + 'T00:00:00');
-    const end = new Date(endStr + 'T00:00:00');
+    const current = new Date(startStr + 'T00:00:00Z');
+    const end = new Date(endStr + 'T00:00:00Z');
     while (current <= end) {
         dates.push(current.toISOString().slice(0, 10));
         current.setDate(current.getDate() + 1);
@@ -404,7 +404,7 @@ function computeBaseline(targetDate: string, lookbackDays: number = 7): Baseline
     if (!existsSync(obsDir)) return null;
 
     const entries: ObservationFrontmatter[] = [];
-    const d = new Date(targetDate + 'T00:00:00');
+    const d = new Date(targetDate + 'T00:00:00Z');
     for (let i = 1; i <= lookbackDays; i++) {
         const prev = new Date(d);
         prev.setDate(prev.getDate() - i);
@@ -628,18 +628,18 @@ function main() {
     switch (mode) {
         case 'daily': {
             const dateIdx = args.indexOf('--date');
-            const targetDate = dateIdx >= 0 ? args[dateIdx + 1] : today;
+            const targetDate = (dateIdx >= 0 && args[dateIdx + 1]) ? args[dateIdx + 1] : today;
             result = runDaily(targetDate);
             break;
         }
         case 'weekly': {
             const rangeIdx = args.indexOf('--date-range');
             let start: string, end: string;
-            if (rangeIdx >= 0) {
+            if (rangeIdx >= 0 && args[rangeIdx + 1]) {
                 [start, end] = args[rangeIdx + 1].split(':');
             } else {
                 end = today;
-                const d = new Date(today + 'T00:00:00');
+                const d = new Date(today + 'T00:00:00Z');
                 d.setDate(d.getDate() - 6);
                 start = d.toISOString().slice(0, 10);
             }

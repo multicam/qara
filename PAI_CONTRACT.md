@@ -45,7 +45,7 @@ ${PAI_DIR}/
 
 Run tests:
 ```bash
-cd $PAI_DIR && bun test
+cd $PAI_DIR && bun run test
 ```
 
 Verify key symlinks:

@@ -94,7 +94,27 @@
         ]
       },
       {
-        "matcher": "Write|Edit|MultiEdit",
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/pre-tool-use-tdd.ts",
+            "timeout": 1000
+          }
+        ]
+      },
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/pre-tool-use-tdd.ts",
+            "timeout": 1000
+          }
+        ]
+      },
+      {
+        "matcher": "MultiEdit",
         "hooks": [
           {
             "type": "command",

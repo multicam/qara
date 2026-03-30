@@ -129,9 +129,8 @@ git pull
 bun install
 
 # Verify symlinks
-ls -la ~/.claude/hooks
-ls -la ~/.claude/skills
-ls -la ~/.claude/commands
+ls -la ~/.claude/settings.json
+ls -la ~/.claude/.env
 ```
 
 ---

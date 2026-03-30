@@ -127,6 +127,8 @@ async function main(): Promise<void> {
     }
 
     // Check each file path
+    let advisoryContext: string | undefined;
+
     for (const filePath of filePaths) {
       const isTest = isTestFile(filePath);
 
@@ -144,7 +146,7 @@ async function main(): Promise<void> {
         // GREEN: both allowed, advisory context for test edits
         if (isTest) {
           logDecision(filePath, state.phase, isTest, "allow", "test file edit during GREEN (advisory)");
-          allow("TDD: Phase is GREEN. Minimal test changes only — focus on implementation.");
+          advisoryContext = "TDD: Phase is GREEN. Minimal test changes only — focus on implementation.";
         } else {
           logDecision(filePath, state.phase, isTest, "allow", "source file edit during GREEN");
         }
@@ -154,7 +156,10 @@ async function main(): Promise<void> {
       }
     }
 
-    // All paths checked and approved
+    // All paths checked and approved — emit single output
+    if (advisoryContext) {
+      allow(advisoryContext);
+    }
     return;
   } catch (error) {
     // Fail open — any error = allow

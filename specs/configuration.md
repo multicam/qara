@@ -7,7 +7,7 @@
 | Base | `settings.json` | gitignored | Main configuration (symlink chain) |
 | Local | `settings.local.json` | gitignored | Machine-specific overrides |
 
-Symlink: `~/.claude/settings.json` → `qara/.claude/settings.json` (one canonical file, direct symlink).
+Symlink: `~/.claude/settings.json` -> `qara/.claude/settings.json` (one canonical file, direct symlink).
 
 ## Environment Variables (settings.json)
 
@@ -32,9 +32,9 @@ Symlink: `~/.claude/settings.json` → `qara/.claude/settings.json` (one canonic
 | `alwaysThinkingEnabled` | true |
 | `plansDirectory` | `thoughts/shared/plans` |
 | `showTurnDuration` | true |
-| `effortLevel` | medium |
+| `effortLevel` | high |
 | `enableAllProjectMcpServers` | false |
-| `enabledMcpjsonServers` | brave-devtools |
+| `enabledMcpjsonServers` | brave-devtools, context7, mattermost |
 
 ## Status Line (statusline-command.sh)
 
@@ -43,14 +43,16 @@ Symlink: `~/.claude/settings.json` → `qara/.claude/settings.json` (one canonic
 
 ## MCP Servers
 
-Configured via `.mcp.json` at project root. Server implementations in `.claude/mcp-servers/`.
+Configured via `.claude/mcp.json`. Credentials in `.claude/.env` (gitignored).
 
 | Server | Transport | Purpose |
 |--------|-----------|---------|
-| `ollama` | stdio (bun) | Local LLM integration via Ollama API |
+| `brave-devtools` | npx | Browser automation via Chrome DevTools |
+| `context7` | npx | Live library documentation (9k+ libraries) |
+| `mattermost` | npx | Team chat integration |
 
 ## Git Configuration
 
-**.gitignore highlights:** `.claude/state/`, `.claude/settings.json`, `settings.local.json`, `.claude/.env`, `thoughts/`
+**.gitignore highlights:** `.claude/settings.json`, `settings.local.json`, `.claude/.env`, `thoughts/`
 
-**Pre-commit hook (scripts/pre-commit):** 4 gates — skill structure validation, reference integrity, .env prevention, settings.json prevention.
+**Pre-commit hook (scripts/pre-commit):** 4 gates -- skill structure validation, reference integrity, .env prevention, settings.json prevention.
