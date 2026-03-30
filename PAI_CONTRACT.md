@@ -25,6 +25,7 @@ ${PAI_DIR}/
 ### 3. Hooks Execute Reliably
 - `session-start.ts` - Loads CORE context at session start
 - `pre-tool-use-security.ts` - Blocks dangerous Bash commands
+- `pre-tool-use-tdd.ts` - TDD discipline enforcement (Write/Edit/MultiEdit)
 - `post-tool-use.ts` - Logs all tool usage to JSONL
 - `update-tab-titles.ts` - Sets terminal tab titles on prompt submit
 - `stop-hook.ts` - Checkpoint logging, tab update on completion
@@ -47,12 +48,14 @@ Run tests:
 cd $PAI_DIR && bun test
 ```
 
-Verify symlinks:
+Verify key symlinks:
 ```bash
-for item in hooks skills commands agents; do
-  [ -L "$HOME/.claude/$item" ] && echo "$item: OK" || echo "$item: MISSING"
+for item in settings.json .env; do
+  [ -L "$HOME/.claude/$item" ] && echo "$item: OK ($(readlink $HOME/.claude/$item))" || echo "$item: NOT LINKED"
 done
 ```
+
+> **Note:** In Qara's setup, `~/.claude/` IS the qara checkout's `.claude/` via the settings.json symlink. Hooks, skills, commands, and agents are referenced via `${PAI_DIR}` paths in settings.json, not individual symlinks.
 
 ---
 

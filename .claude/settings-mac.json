@@ -65,7 +65,9 @@
   },
   "enableAllProjectMcpServers": false,
   "enabledMcpjsonServers": [
-    "brave-devtools"
+    "brave-devtools",
+    "context7",
+    "mattermost"
   ],
   "hooks": {
     "SessionStart": [
@@ -87,6 +89,16 @@
           {
             "type": "command",
             "command": "${PAI_DIR}/hooks/pre-tool-use-security.ts",
+            "timeout": 1000
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/pre-tool-use-tdd.ts",
             "timeout": 1000
           }
         ]

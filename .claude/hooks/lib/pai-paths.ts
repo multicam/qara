@@ -74,9 +74,7 @@ export function getHistoryFilePath(subdir: string, filename: string): string {
  * @param dir Directory path to ensure exists
  */
 export function ensureDir(dir: string): void {
-    if (!existsSync(dir)) {
-        mkdirSync(dir, { recursive: true });
-    }
+    mkdirSync(dir, { recursive: true });
 }
 
 /**
@@ -102,7 +100,7 @@ export function loadEnv(): void {
                 // Only set if not already in environment
                 if (!process.env[key]) {
                     // Strip surrounding quotes and handle $HOME expansion
-                    const unquoted = value.replace(/^["'](.*)["']$/, '$1');
+                    const unquoted = value.replace(/^"(.*)"$/, '$1').replace(/^'(.*)'$/, '$1');
                     const expandedValue = unquoted.replace(/\$HOME/g, homedir());
                     process.env[key] = expandedValue;
                 }

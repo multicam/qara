@@ -10,6 +10,7 @@ Claude Code hooks in `.claude/hooks/`. All hooks are Bun TypeScript.
 | `stop-hook.ts` | Stop | Extracts COMPLETED line, updates tab title |
 | `update-tab-titles.ts` | UserPromptSubmit | Sets processing indicator |
 | `pre-tool-use-security.ts` | PreToolUse:Bash | Detects dangerous patterns, blocks/approves |
+| `pre-tool-use-tdd.ts` | PreToolUse:Write,Edit,MultiEdit | TDD discipline enforcement |
 | `post-tool-use.ts` | PostToolUse | Logs tool execution results for audit trail |
 | `config-change.ts` | ConfigChange | Logs settings changes during a session |
 
@@ -23,6 +24,8 @@ Located in `.claude/hooks/lib/`:
 | `tab-titles.ts` | generateTabTitle, setTerminalTabTitle |
 | `jsonl-utils.ts` | appendJsonl for structured logging |
 | `datetime-utils.ts` | getISOTimestamp, getDateString |
+| `tdd-state.ts` | TDD state machine (red/green/refactor) |
+| `test-macros.ts` | Test helper macros |
 
 ## Hook Events Reference
 

@@ -76,3 +76,31 @@ Append-only record of architectural and design decisions. Memory files capture *
 **Why:** System crontab is the most reliable scheduling primitive available — runs regardless of CC state, survives reboots, uses the same pattern as existing qara cron jobs (daily-digest, log-rotate). RemoteTrigger API schema was not discoverable. The `cd ~/qara &&` prefix ensures the claude CLI loads the correct project context.
 **Trade-offs:** Crontab means cold-start sessions (no warm context). Acceptable — each cadence is self-contained and loads its own workflow.
 **Revisit if:** RemoteTrigger API is documented, or CC adds native scheduled task support.
+
+---
+
+## 2026-03-30 — Context7 MCP for live library documentation
+
+**Chosen:** Context7 MCP (`@upstash/context7-mcp`) on free tier, no API key
+**Alternatives:** Docfork (OSS, self-hosted, unlimited but requires setup); Ref ($9/mo, supports PDFs + private repos); direct WebSearch for docs (already available but returns mixed results)
+**Why:** Bun, Playwright, and TypeScript ecosystem move fast. Model training cutoff (May 2025) is 10 months stale. Context7 injects current, version-specific docs with two MCP tool calls. Near-zero integration cost (one mcp.json entry). 9,000+ libraries indexed.
+**Trade-offs:** Cloud dependency (every query hits Upstash servers, ~15s latency). Free tier limited to 1,000 calls/month (was 6,000, cut 92% in Jan 2026). No offline mode. 3.3k tokens per response consumes context.
+**Revisit if:** Free tier hits limits regularly (upgrade to Pro $10/mo or switch to Docfork for self-hosted unlimited). Or if CC adds native doc-fetching capability.
+
+---
+
+## 2026-03-31 — Deep review audit and remediation
+
+**Chosen:** Three-way parallel deep review (code, skills, config) followed by systematic fix-all
+**Findings:**
+- **C1 (security):** Mattermost token was hardcoded in tracked `mcp.json`. Moved to `.env`, replaced with env var references.
+- **C2 (config):** `~/.claude/.env` was a regular file with test data, not the documented symlink. Fixed to symlink to `qara/.claude/.env`.
+- **C3 (code):** `introspect-miner.ts` baseline comparison was dead code — early return made it unreachable. Fixed.
+- **C4 (skills):** `context-loading-rules.md` had 7+ broken references to removed personal context dirs. Removed stale sections.
+- **H1-H3 (code):** Fixed mismatched quote regex, array mutation in extractCCVersion, either/or archive logic (now merges both sources).
+- **M1-M5 (code):** CVC consonant doubling, eval regex false positives, ensureDir TOCTOU, arg parsing edge case, prompting skill triggers.
+- **W1-W11 (skills/config):** Research agent routing contradiction, missing TDD hook in docs, wrong product-shaping defaults, hollow example-skill, trigger overlaps, hooks-guide gaps, MEMORY lib count, settings-mac drift, duplicate CLAUDE.md.
+- **Housekeeping:** Removed literal `~/` dir, stale `.venv`, empty `mcp-servers/`. Expanded CORE on-demand skills list.
+**Why:** Accumulated drift between documentation and system state. Several bugs (dead code, archive data loss) only visible through deep review.
+**Token impact:** Deduplicated `.claude/CLAUDE.md` saves ~36 lines of redundant context per session.
+**Mattermost token:** Needs rotation — was in git history before this fix.

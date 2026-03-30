@@ -13,9 +13,9 @@ PAI-specific analysis extending the base `cc-upgrade` skill.
 
 ## Workflow Routing (SYSTEM PROMPT)
 
-**When user requests deep external skills analysis, skill redundancy review, or skill ecosystem audit:**
-Examples: "audit external skills", "deep skill analysis", "analyze installed skills",
-"skill redundancies", "what external skills do we have", "skill hygiene",
+**When user requests PAI external skills analysis, PAI skill ecosystem audit, or Qara skill review:**
+Examples: "audit PAI skills", "deep skill analysis", "analyze PAI installed skills",
+"PAI skill redundancies", "what external skills do we have", "PAI skill hygiene",
 "visual-explainer audit", "mattpocock sync", "skill wrapping opportunities"
 → **READ:** `workflows/external-skills-deep-analysis.md`
 → **EXECUTE:** Full PAI external skills deep analysis with UltraThink
@@ -52,7 +52,7 @@ $PAI_DIR/
 │   │   └── lib/           # Hook libraries
 │   └── settings.json
 ├── CLAUDE.md              # Root context
-├── CONSTITUTION.md        # Philosophy doc
+├── .claude/skills/CORE/CONSTITUTION.md  # Philosophy doc
 └── DECISIONS.md           # Decision log (append-only)
 ```
 

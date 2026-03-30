@@ -3,7 +3,7 @@
 Comprehensive documentation of all externally-installed skills in the PAI ecosystem.
 Maintained as part of `cc-upgrade-pai`. Updated during each external skills deep analysis.
 
-Last reviewed: 2026-03-27
+Last reviewed: 2026-03-31
 
 ---
 
@@ -23,9 +23,9 @@ Last reviewed: 2026-03-27
 
 **Author:** Nico Bailón ([@nicobailon](https://github.com/nicobailon))
 **Repository:** [github.com/nicobailon/visual-explainer](https://github.com/nicobailon/visual-explainer)
-**Stars:** 6.8k+ | **License:** MIT
-**Installed:** 2026-02-20 | **Last Updated:** 2026-03-21
-**Lock hash:** `1e92fcf6677...`
+**Stars:** 7.0k+ | **License:** MIT
+**Installed:** 2026-02-20 | **Last Updated:** 2026-03-29
+**Lock hash:** `339a338e9e2...`
 
 ### Skills Provided (22 sub-skills)
 
@@ -111,7 +111,7 @@ visual-explainer (stand-alone, no prerequisites)
 **Author:** Matt Pocock ([@mattpocock](https://github.com/mattpocock))
 **Repository:** [github.com/mattpocock/skills](https://github.com/mattpocock/skills)
 **License:** MIT
-**Last upstream review:** 2026-03-27 (latest commit: `eebfb3c` 2026-03-26)
+**Last upstream review:** 2026-03-31 (latest commit: `eebfb3c` 2026-03-26)
 
 These skills were **rewritten for PAI conventions** — not symlinked. They live as local
 skills but track upstream for improvements.
@@ -133,19 +133,16 @@ skills but track upstream for improvements.
 | `product-shaping/workflows/breakdown.md` | `prd-to-issues/SKILL.md` | Vertical slice + HITL/AFK methodology as Phase 4 |
 | `agents/codebase-analyzer.md` | `improve-codebase-architecture/SKILL.md` | Friction-driven analysis lens added |
 
-### Upstream Skills NOT Yet Adopted
+### Upstream Skills — Declined
 
-| Upstream Skill | Purpose | Adoption Status | Notes |
-|---------------|---------|-----------------|-------|
-| `write-a-prd` | PRD creation via interview | **Covered** by `product-shaping` | PAI version is more comprehensive |
-| `prd-to-issues` | PRD → GitHub issues | **Merged** into `product-shaping/workflows/breakdown.md` | Combined with vertical slicing |
+All upstream skills evaluated. Redundant entries (write-a-prd, prd-to-issues, git-guardrails-claude-code, write-a-skill, qa) removed — covered by PAI equivalents (product-shaping, pre-tool-use-security.ts, system-create-skill, triage-issue).
+
+| Upstream Skill | Purpose | Status | Notes |
+|---------------|---------|--------|-------|
 | `setup-pre-commit` | Husky + lint-staged setup | **Not needed** | PAI uses hooks system directly |
-| `git-guardrails-claude-code` | Block dangerous git ops | **Covered** by `pre-tool-use-security.ts` hook | PAI uses hook-based security |
-| `write-a-skill` | Skill creation guide | **Covered** by `system-create-skill` | PAI version is more structured |
 | `migrate-to-shoehorn` | Test assertion migration | **Not relevant** | TypeScript-specific, not used in PAI |
 | `scaffold-exercises` | Exercise directory creation | **Not relevant** | Educational tooling |
 | `obsidian-vault` | Obsidian integration | **Not adopted** | Built custom `diderot` skill instead — JM's vault uses folders (not flat wikilinks), needs retrieval not creation |
-| `qa` | Interactive QA session: user reports bugs conversationally, agent files GitHub issues with blocking relationships | **Merged** into `triage-issue` batch mode | Developer-focused adaptation: kept root cause + TDD fix plans, added scope assessment + blocking relationships + session continuation from qa |
 
 ---
 
@@ -202,3 +199,5 @@ skills but track upstream for improvements.
 | 2026-03-27 | Upstream review: `a6bdfd9` (grill-me: "ask questions one at a time") — already incorporated in PAI version. No action needed. visual-explainer at v0.6.3, up to date. | PAI audit |
 | 2026-03-27 | Deep analysis: 3 new upstream commits reviewed (`eebfb3c`, `98fecc7`, `6a87ed0`). ubiquitous-language: merged "domain expert terms only" rule from upstream. New `qa` skill discovered (issue breakdown + blocking relationships) — logged for evaluation. visual-explainer v0.6.3 confirmed up to date. Context graph: 1 broken ref in upstream visual-explainer (double-nested path). All 25 CORE doc index paths valid, all 10 agents match, 1035 tests pass. | cc-upgrade-pai deep analysis |
 | 2026-03-27 | Addressed 3 recommendations: (1) Merged qa patterns into triage-issue batch mode (scope assessment, blocking relationships, session continuation). (2) Filed upstream issue nicobailon/visual-explainer#35 for broken path; applied fix locally. (3) Built custom `diderot` knowledge retrieval skill; marked obsidian-vault as Not adopted. **MONITOR:** On next `npx skills update`, check if nicobailon/visual-explainer#35 is fixed upstream — if so, remove local patch note. | Post-audit implementation |
+| 2026-03-30 | Renamed "NOT Yet Adopted" → "Declined". Removed 5 redundant entries (write-a-prd, prd-to-issues, git-guardrails-claude-code, write-a-skill, qa) — all covered by PAI equivalents. 4 remaining entries kept for historical context. | cc-upgrade-pai audit cleanup |
+| 2026-03-31 | Quarterly deep analysis. visual-explainer v0.6.3 confirmed up to date (updated 2026-03-29, lock hash refreshed). Issue #35 closed upstream and fix included — MONITOR note cleared. mattpocock: no new commits since `eebfb3c` (2026-03-26). Stars: visual-explainer 7.0k, mattpocock 11.0k. Context graph: 183 nodes, 0 broken local refs, 1 cosmetic upstream ref (`slide-patterns.md` without `references/` prefix — functional, not worth upstream issue). 27/27 CORE doc index paths valid. 10/10 agents match. 1120 tests pass (42 files). No action items. | cc-upgrade-pai deep analysis |

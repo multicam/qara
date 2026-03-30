@@ -1,7 +1,9 @@
 ---
 name: prompting
 context: fork
-description: Prompt engineering standards and context engineering principles for AI agents based on Anthropic best practices. Covers clarity, structure, progressive discovery, and optimization for signal-to-noise ratio.
+description: |
+  Prompt engineering standards and context engineering principles for AI agents based on Anthropic best practices. Covers clarity, structure, progressive discovery, and optimization for signal-to-noise ratio.
+  USE WHEN: "create a prompt", "prompt engineering", "optimize this prompt", "prompt template", "context engineering"
 ---
 
 # Prompting Skill

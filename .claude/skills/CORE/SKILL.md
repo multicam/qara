@@ -26,7 +26,7 @@ env:
 - **Prompts Wrap Code:** Prompts orchestrate deterministic components
 - **Solve the Real Problem:** Not just the stated one — understand intent, not just instructions
 - **Simplify Ruthlessly:** Elegance is achieved not when there's nothing left to add, but when there's nothing left to take away
-- See `CONSTITUTION.md` for full philosophy
+- See `.claude/skills/CORE/CONSTITUTION.md` for full philosophy
 
 ## Workflow Routing (SYSTEM PROMPT)
 
@@ -56,7 +56,7 @@ env:
 
 | Topic | File | Example triggers |
 |-------|------|----------|
-| Architecture & philosophy | `CONSTITUTION.md` | "Qara architecture", "why is it built this way", "design principles" |
+| Architecture & philosophy | `.claude/skills/CORE/CONSTITUTION.md` | "Qara architecture", "why is it built this way", "design principles" |
 | CLI-First patterns | `.claude/skills/CORE/cli-first-guide.md` | "build CLI tool", "API integration", "CLI-first approach" |
 | Stack preferences | `.claude/skills/CORE/stack-preferences.md` | "what stack should I use", "TypeScript vs Python", "which framework" |
 | Bun usage | `.claude/context/bun-guide.md` | "bun test", "bun build", "how to run tests", "bun API" |
@@ -84,6 +84,14 @@ env:
 - `system-create-skill` skill → skill creation
 - `image` skill → image generation, stock photos, visual content
 - `introspect` skill → session mining, pattern synthesis, self-improvement
+- `tdd-qa` skill → test-driven development, QA blueprints
+- `research` skill → web research, content extraction, deep analysis
+- `product-shaping` skill → product specs, feature scoping, competitor research
+- `cc-upgrade` / `cc-upgrade-pai` skill → CC setup audit, 12-factor compliance
+- `triage-issue` skill → bug investigation, GitHub issue creation
+- `grill-me` skill → stress-test plans and designs
+- `edit-article` skill → article editing, structural analysis, prose tightening
+- `humaniser` skill → remove AI writing patterns
 
 ---
 
@@ -93,6 +101,7 @@ env:
 - **Package managers:** bun (NOT npm/yarn/pnpm), uv for Python (NOT pip)
 - **Markdown > HTML:** NEVER HTML for basic content. HTML ONLY for custom components.
 - **Analysis vs Action:** If asked to analyze, don't change things unless asked
+- **Live docs:** Use Context7 MCP (`resolve-library-id` + `get-library-docs`) for current API docs when working with fast-moving libraries (Bun, Playwright, Next.js, etc.). Trigger: "use context7" or call tools directly.
 
 ---
 

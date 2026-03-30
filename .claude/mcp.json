@@ -4,13 +4,17 @@
       "command": "npx",
       "args": ["chrome-devtools-mcp-for-brave@latest"]
     },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp@latest"]
+    },
     "mattermost": {
       "command": "npx",
       "args": ["@dakatan/mcp-mattermost"],
       "env": {
-        "MCP_MATTERMOST_URL": "http://192.168.10.245:8065",
-        "MCP_MATTERMOST_TOKEN": "xiup73ojzjn6txwmati3ufmbme",
-        "MCP_MATTERMOST_TEAM_ID": "ddjcg8fdhtbzdj1gtz6qop1nkh"
+        "MCP_MATTERMOST_URL": "${MCP_MATTERMOST_URL}",
+        "MCP_MATTERMOST_TOKEN": "${MCP_MATTERMOST_TOKEN}",
+        "MCP_MATTERMOST_TEAM_ID": "${MCP_MATTERMOST_TEAM_ID}"
       }
     }
   }

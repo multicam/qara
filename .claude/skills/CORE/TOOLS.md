@@ -19,6 +19,7 @@
 | Python packages | `uv` | `pip` | 10-100x |
 | Benchmarking | `hyperfine` | `time` | Statistical |
 | Semantic code | `ast-grep` (`sg`) | `grep` | AST-aware |
+| JSON path search | `jsongrep` (`jg`) | `jq` (for search) | DFA-compiled, O(1)/node |
 | GitHub ops | `gh` | browser | Native CLI, scriptable |
 | Fuzzy finder | `fzf` | - | Interactive |
 
@@ -28,7 +29,7 @@
 
 ```bash
 # Core (Rust-based modern CLI)
-cargo install fd-find ripgrep sd bat eza git-delta hyperfine ast-grep
+cargo install fd-find ripgrep sd bat eza git-delta hyperfine ast-grep jsongrep
 
 # Interactive
 brew install fzf
@@ -54,7 +55,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 - fd, rg, sd, bat, eza, delta, fzf, hyperfine
 
 **Development:**
-- gh (GitHub CLI), ast-grep, markdownlint-cli2
+- gh (GitHub CLI), ast-grep, jsongrep, markdownlint-cli2
 
 **AI Agents:**
 - Claude Code (primary), Gemini CLI
@@ -64,7 +65,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ## Quick Verification
 
 ```bash
-fd --version && rg --version && sd --version && bat --version && eza --version && delta --version && hyperfine --version && sg --version && gh --version
+fd --version && rg --version && sd --version && bat --version && eza --version && delta --version && hyperfine --version && sg --version && jg --version && gh --version
 ```
 
 ---

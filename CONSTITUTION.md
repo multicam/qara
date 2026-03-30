@@ -1,1 +1,0 @@
-.claude/skills/CORE/CONSTITUTION.md

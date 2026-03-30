@@ -20,6 +20,7 @@
 **REQUIRED FIRST STEP:**
 ```bash
 ${PAI_DIR}/skills/CORE/skill-structure.md
+${PAI_DIR}/skills/system-create-skill/references/quality-checklist.md
 ```
 
 Extract: 3 archetypes, mandatory requirements, routing rules, naming conventions, quality checklist.

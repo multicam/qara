@@ -28,74 +28,26 @@ Skills in PAI are organized as self-contained containers with:
 2. **Instructions** (loaded when triggered) - This SKILL.md content
 3. **Resources** (loaded as needed) - Individual workflow and asset files
 
-## Included Workflows
+## Skill Directory Layout
 
-This skill includes three example workflows demonstrating different complexity levels:
-
-### 1. simple-task.md
-**Purpose:** Basic single-step workflow
-**Trigger:** User says "simple example", "basic task"
-**Demonstrates:** Minimal workflow structure
-
-### 2. complex-task.md
-**Purpose:** Multi-step workflow with dependencies
-**Trigger:** User says "complex example", "multi-step task"
-**Demonstrates:** Structured workflow with validation
-
-### 3. parallel-task.md
-**Purpose:** Agent orchestration for parallel execution
-**Trigger:** User says "parallel example", "parallel task"
-**Demonstrates:** Multi-agent coordination pattern
-
-## Routing Logic
-
-Natural language automatically routes to the right workflow:
+A typical skill follows this structure:
 
 ```
-User Intent → Skill Activation → Workflow Selection → Execution
-
-Example Flow:
-"Show me a simple example"
-    ↓ (matches trigger)
-example-skill loads
-    ↓ (analyzes intent: "simple")
-simple-task.md selected
-    ↓
-Workflow executes
+skill-name/
+├── SKILL.md           # Core definition (always loaded when triggered)
+├── workflows/         # Task-specific workflows (loaded on demand)
+│   ├── workflow-a.md
+│   └── workflow-b.md
+├── references/        # Supporting documentation
+│   └── guide.md
+└── assets/            # Templates, examples
+    └── template.md
 ```
 
-## Assets
+## Routing Flow
 
-This skill includes example assets in the `assets/` directory:
-- `template.md` - Example template file
-- `reference.md` - Example reference material
-
-These demonstrate how to organize supporting resources.
-
-## Usage Examples
-
-### Basic Usage
 ```
-User: "Show me a simple example"
-→ Loads example-skill
-→ Executes simple-task.md workflow
-→ Returns basic workflow demonstration
-```
-
-### Complex Usage
-```
-User: "I need a complex multi-step example"
-→ Loads example-skill
-→ Executes complex-task.md workflow
-→ Returns structured multi-step demonstration
-```
-
-### Parallel Usage
-```
-User: "How do I parallelize work?"
-→ Loads example-skill
-→ Executes parallel-task.md workflow
-→ Returns agent orchestration demonstration
+User Intent → Skill Activation (via description: USE WHEN) → Workflow Selection → Execution
 ```
 
 ## Creating Your Own Skill

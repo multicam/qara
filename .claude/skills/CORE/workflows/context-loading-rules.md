@@ -13,44 +13,6 @@ The patterns below are EXAMPLES to guide semantic understanding, NOT exact strin
 
 ---
 
-## Alma Company
-
-**When user is asking about:**
-- Alma
-- Alma security program
-- Etc.
-
-**Example phrases:**
-- "Let's add context for Alma about..."
-
-**Context to load:**
-```bash
-read ${PAI_DIR}/context/projects/Alma.md
-```
-
----
-
-## Live Conversation Recording (Limitless.ai)
-
-**When user is asking about:**
-- Live conversations
-- In-person conversation
-- What was talked about in a meeting
-- What was talked about while walking or chatting
-
-**Example phrases:**
-- "I had a conversation the other day"
-- "I had a meeting yesterday"
-- "We talked about something at dinner"
-- "At our lunch on July 9th"
-
-**Command to use:**
-```bash
-read ${PAI_DIR}/commands/get-life-log.md
-```
-
----
-
 ## Conversational & Philosophical Discussion
 
 **When user is asking about:**
@@ -92,7 +54,7 @@ read ${PAI_DIR}/commands/get-life-log.md
 - "tell me about X", "what's new with Y"
 - "I need to understand Z"
 
-**Agent to use:** gemini-researcher
+**Agent to use:** claude-researcher (primary), gemini-researcher (fallback), perplexity-researcher (fallback)
 
 ---
 
@@ -112,82 +74,6 @@ read ${PAI_DIR}/commands/get-life-log.md
 - Port scanning, service detection, network reconnaissance
 
 **Note:** No pentesting agent available. Handle security questions directly or use gemini-researcher for external documentation.
-
----
-
-## Financial & Analytics
-
-**When user is asking about:**
-- Personal or business expenses
-- Bills and utilities
-- Budget analysis
-- Financial tracking
-- Spending patterns
-- Income and costs
-
-**Example phrases:**
-- "PG&E bill", "expenses", "spending", "budget"
-- "how much am I paying", "financial analysis"
-
-**Context to load:**
-```bash
-read ${PAI_DIR}/context/life/expenses.md
-read ${PAI_DIR}/context/life/finances/
-```
-
-**Special instructions:**
-- Use the answer-finance-question command directly
-- Parse financial PDFs and extract specific data
-
----
-
-## Health & Wellness
-
-**When user is asking about:**
-- Health tracking or metrics
-- Medical information or conditions
-- Fitness and exercise
-- Nutrition and diet
-- Sleep patterns
-- Mental health
-- Wellness goals
-- Medical appointments or records
-
-**Example phrases:**
-- "my health", "track my fitness", "medical records"
-- "sleep data", "nutrition plan", "wellness goals"
-
-**Context to load:**
-```bash
-read ${PAI_DIR}/Projects/Life/Health/CLAUDE.md
-```
-
----
-
-## Benefits & Perks Optimization
-
-**When user is asking about:**
-- Benefits they're not using
-- Credit card perks or rewards
-- Membership benefits
-- Subscription perks
-- Insurance benefits
-- Employer benefits
-- Maximizing value from memberships
-- Restaurants they can go to (dining credits)
-- Hotel bookings or travel perks
-- Lounge access
-
-**Example phrases:**
-- "benefits I'm not using", "credit card perks"
-- "restaurants I can go to", "where can I eat"
-- "Resy restaurants", "hotel credits"
-- "am I getting value from", "unused credits"
-
-**Context to load:**
-```bash
-read ${PAI_DIR}/context/benefits/CLAUDE.md
-```
 
 ---
 
@@ -227,7 +113,7 @@ read ${PAI_DIR}/CLAUDE.md
 
 **Context to load:**
 ```bash
-read ${PAI_DIR}/context/tools/CLAUDE.md
+read ${PAI_DIR}/context/tools/README.md
 ```
 
 **Agent to use:** designer
@@ -254,19 +140,10 @@ read ${PAI_DIR}/context/tools/CLAUDE.md
 - "That worked!", "Excellent, save this"
 
 **Action to take:**
-1. Run capture-learning command:
-   ```bash
-   bun ${PAI_DIR}/commands/capture-learning.ts "[problem]" "[solution]"
-   ```
-2. File will be created in `${PAI_DIR}/context/learnings/`
-3. Filename format: `YYYY-MM-DD-HHMM:SS-hyphenated-problem-description.md`
+1. Write a learning document to `thoughts/shared/learnings/`
+2. Filename format: `YYYY-MM-DD-hyphenated-problem-description.md`
+3. Include: problem, solution, key tools/commands, gotchas/insights
 4. Confirm success
-
-**Important:**
-- Extract the problem from what we were working on
-- Summarize the solution implemented
-- Include key tools, commands, or techniques
-- Note any gotchas or insights
 
 ---
 

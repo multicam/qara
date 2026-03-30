@@ -61,7 +61,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 source $HOME/.cargo/env
 
 # Install modern CLI tools
-cargo install fd-find ripgrep ast-grep bat
+cargo install fd-find ripgrep ast-grep bat jsongrep
 ```
 
 ---
@@ -93,21 +93,15 @@ source ~/.zshrc
 mkdir -p ~/.claude
 
 # Platform-specific settings:
-# Linux: settings.json is the canonical file
+# Linux: settings.json is the canonical file in $PAI_DIR/.claude/
 # macOS: copy settings-mac.json → settings.json, update username in PAI_DIR and PATH
 
-# Link settings
-ln -sf $PAI_DIR/settings.json ~/.claude/settings.json
+# Link settings (this is the key symlink — hooks/skills/agents are referenced
+# via ${PAI_DIR} paths inside settings.json, not as separate symlinks)
+ln -sf $PAI_DIR/.claude/settings.json ~/.claude/settings.json
 
-# Link hooks, skills, commands
-ln -sf $PAI_DIR/hooks ~/.claude/hooks
-ln -sf $PAI_DIR/skills ~/.claude/skills
-ln -sf $PAI_DIR/commands ~/.claude/commands
-ln -sf $PAI_DIR/agents ~/.claude/agents
-ln -sf $PAI_DIR/.env ~/.claude/.env
-
-# Create scratchpad
-mkdir -p ~/.claude/scratchpad
+# Link .env (API keys)
+ln -sf $PAI_DIR/.claude/.env ~/.claude/.env
 ```
 
 ### 3. Install Dependencies
@@ -174,8 +168,8 @@ echo "Commands: $(ls $PAI_DIR/commands/*.md 2>/dev/null | wc -l | tr -d ' ')"
 ### Verify Symlinks
 
 ```bash
-# Check all symlinks point correctly
-for item in hooks skills commands agents settings.json; do
+# Check key symlinks point correctly
+for item in settings.json .env; do
   if [ -L "$HOME/.claude/$item" ]; then
     target=$(readlink "$HOME/.claude/$item")
     echo "$item -> $target"
@@ -214,16 +208,12 @@ ln -sf $PAI_DIR/hooks ~/.claude/hooks
 ls -la ~/.claude/hooks
 ```
 
-### Reset all symlinks
+### Reset symlinks
 
 ```bash
-rm -f ~/.claude/{hooks,skills,commands,agents,settings.json,.env}
-ln -sf $PAI_DIR/hooks ~/.claude/hooks
-ln -sf $PAI_DIR/skills ~/.claude/skills
-ln -sf $PAI_DIR/commands ~/.claude/commands
-ln -sf $PAI_DIR/agents ~/.claude/agents
-ln -sf $PAI_DIR/settings.json ~/.claude/settings.json
-ln -sf $PAI_DIR/.env ~/.claude/.env
+rm -f ~/.claude/{settings.json,.env}
+ln -sf $PAI_DIR/.claude/settings.json ~/.claude/settings.json
+ln -sf $PAI_DIR/.claude/.env ~/.claude/.env
 ```
 
 ### Missing CLI tools
@@ -235,7 +225,7 @@ brew install fd ripgrep ast-grep bat
 
 **Linux:**
 ```bash
-cargo install fd-find ripgrep ast-grep bat
+cargo install fd-find ripgrep ast-grep bat jsongrep
 ```
 
 ---
@@ -260,6 +250,7 @@ cargo install fd-find ripgrep ast-grep bat
 | ripgrep | Fast text search (10-50x faster than grep) | `cargo install ripgrep` | `brew install ripgrep` |
 | ast-grep | Semantic code search & refactoring | `cargo install ast-grep` | `brew install ast-grep` |
 | bat | Syntax-highlighted file viewer | `cargo install bat` | `brew install bat` |
+| jsongrep | DFA-compiled JSON path search | `cargo install jsongrep` | `brew install jsongrep` |
 
 ### Development Tools
 

@@ -219,26 +219,24 @@ function isCorrection(text: string): boolean {
 // Log collection with archive fallback
 // ---------------------------------------------------------------------------
 function collectToolUsage(targetDate: string): ToolUsageEntry[] {
-    // Try current log file first
     const current = readJsonlFile<ToolUsageEntry>(join(STATE_DIR, 'tool-usage.jsonl'))
         .filter(e => isTimestampOnDate(e.timestamp, targetDate));
-    if (current.length > 0) return current;
-    // Fall back to archive
-    return readArchivedJsonl<ToolUsageEntry>('tool-usage', targetDate);
+    const archived = readArchivedJsonl<ToolUsageEntry>('tool-usage', targetDate);
+    return [...current, ...archived];
 }
 
 function collectCheckpoints(targetDate: string): SessionCheckpoint[] {
     const current = readJsonlFile<SessionCheckpoint>(join(STATE_DIR, 'session-checkpoints.jsonl'))
         .filter(e => isTimestampOnDate(e.timestamp, targetDate));
-    if (current.length > 0) return current;
-    return readArchivedJsonl<SessionCheckpoint>('session-checkpoints', targetDate);
+    const archived = readArchivedJsonl<SessionCheckpoint>('session-checkpoints', targetDate);
+    return [...current, ...archived];
 }
 
 function collectSecurity(targetDate: string): SecurityCheck[] {
     const current = readJsonlFile<SecurityCheck>(join(STATE_DIR, 'security-checks.jsonl'))
         .filter(e => isTimestampOnDate(e.timestamp, targetDate));
-    if (current.length > 0) return current;
-    return readArchivedJsonl<SecurityCheck>('security-checks', targetDate);
+    const archived = readArchivedJsonl<SecurityCheck>('security-checks', targetDate);
+    return [...current, ...archived];
 }
 
 // ---------------------------------------------------------------------------
@@ -290,7 +288,7 @@ function extractCorrections(transcripts: string[], targetDate: string): Correcti
 
 function extractCCVersion(transcripts: string[]): string | null {
     // Read most recent transcript, look for version field
-    for (const filepath of transcripts.reverse()) {
+    for (const filepath of [...transcripts].reverse()) {
         const messages = readJsonlFile<TranscriptMessage>(filepath);
         for (const msg of messages) {
             if (msg.version) return msg.version;
@@ -480,6 +478,14 @@ function runDaily(targetDate: string): DailyReport {
     // Git
     const git = getGitActivity(targetDate);
 
+    // Baseline comparison (always computed — uses prior non-bootstrap observation files)
+    const baseline = computeBaseline(targetDate);
+    if (baseline) {
+        baseline.delta_tools = tools.length - baseline.avg_tools;
+        baseline.delta_errors = totalErrors - baseline.avg_errors;
+        baseline.delta_sessions = sessionCount - baseline.avg_sessions;
+    }
+
     return {
         mode: 'daily',
         date: targetDate,
@@ -503,19 +509,8 @@ function runDaily(targetDate: string): DailyReport {
         corrections,
         git,
         cc_version: ccVersion,
-        baseline: null, // Populated below if data available
+        baseline,
     };
-
-    // Baseline comparison (always computed — uses prior non-bootstrap observation files)
-    const baseline = computeBaseline(targetDate);
-    if (baseline) {
-        baseline.delta_tools = tools.length - baseline.avg_tools;
-        baseline.delta_errors = totalErrors - baseline.avg_errors;
-        baseline.delta_sessions = sessionCount - baseline.avg_sessions;
-        report.baseline = baseline;
-    }
-
-    return report;
 }
 
 // ---------------------------------------------------------------------------
@@ -624,7 +619,8 @@ function runMonthly(): MonthlyReport {
 // ---------------------------------------------------------------------------
 function main() {
     const args = process.argv.slice(2);
-    const mode = args[args.indexOf('--mode') + 1] || 'daily';
+    const modeIdx = args.indexOf('--mode');
+    const mode = modeIdx >= 0 ? (args[modeIdx + 1] || 'daily') : 'daily';
     const today = getSydneyDate();
 
     let result: DailyReport | WeeklyReport | MonthlyReport;

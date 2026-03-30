@@ -224,6 +224,8 @@ Verify skill activates with natural language triggers from description.
 
 **READ:** `references/skill-examples.md` for 6 detailed examples covering all common scenarios
 
+**READ:** `references/quality-checklist.md` for skill validation checklist (structure, routing, activation, documentation, integration)
+
 ---
 
 ## Summary

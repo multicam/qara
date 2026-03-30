@@ -31,10 +31,10 @@ Override these per-project in the conversation or via frontmatter:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `codebase` | `/media/ssdev/tgds` | Primary codebase path |
-| `server` | `~/server` | Server-side code path |
-| `evidence_source` | Asana | Where feature requests and user signal live |
-| `domain` | Construction SaaS | Industry context for domain-specific research |
+| `codebase` | *(set per-project)* | Primary codebase path |
+| `server` | *(set per-project)* | Server-side code path |
+| `evidence_source` | *(set per-project)* | Where feature requests and user signal live |
+| `domain` | *(set per-project)* | Industry context for domain-specific research |
 
 ---
 

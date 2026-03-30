@@ -36,7 +36,7 @@
 
 ## Detailed Directory Guide
 
-### `~/claude/skills/` - Domain Expertise
+### `~/.claude/skills/` - Domain Expertise
 
 **What Goes Here:**
 - Skill packages with SKILL.md files

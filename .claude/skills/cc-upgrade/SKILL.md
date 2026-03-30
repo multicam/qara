@@ -22,9 +22,9 @@ This skill serves as the base for domain-specific upgrade skills:
 
 ## Workflow Routing (SYSTEM PROMPT)
 
-**When user requests external skills audit, skill redundancy check, or skill ecosystem review:**
-Examples: "audit external skills", "check installed skills", "skill redundancies",
-"what external skills do we have", "skill hygiene", "analyze skill dependencies"
+**When user requests generic CC external skills audit (non-PAI repos):**
+Examples: "check installed skills", "skill redundancies",
+"skill hygiene", "analyze skill dependencies"
 -> **READ:** `workflows/external-skills-audit.md`
 -> **EXECUTE:** Full external skills audit with redundancy analysis
 

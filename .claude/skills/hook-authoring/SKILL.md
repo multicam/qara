@@ -126,6 +126,7 @@ const sessionFile = `${PAI_DIR}/state/sessions/${input.session_id}.json`;
 | `post-tool-use.ts` | PostToolUse | JSONL tool usage logging |
 | `update-tab-titles.ts` | UserPromptSubmit | Set terminal tab titles |
 | `stop-hook.ts` | Stop | Checkpoint logging, tab update |
+| `pre-tool-use-tdd.ts` | PreToolUse | TDD discipline enforcement (Write/Edit/MultiEdit) |
 | `config-change.ts` | ConfigChange | Settings sync validation |
 
 ---

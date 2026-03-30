@@ -42,9 +42,9 @@ function toPastTense(verb: string): string {
   const lower = verb.toLowerCase();
   if (IRREGULAR_PAST[lower]) return IRREGULAR_PAST[lower];
   if (lower.endsWith('e')) return verb.charAt(0).toUpperCase() + verb.slice(1) + 'd';
-  if (/[bcdfghlmnprstvwz]$/.test(lower) && /[aeiou].$/.test(lower)) {
-    // CVC pattern: double final consonant (e.g., "set" -> but handled by irregulars)
-    return verb.charAt(0).toUpperCase() + verb.slice(1) + 'ed';
+  if (/^[a-z]*[bcdfghlmnprstvwz]$/.test(lower) && /[aeiou].$/.test(lower)) {
+    // CVC pattern: double final consonant (e.g., "debug" -> "Debugged")
+    return verb.charAt(0).toUpperCase() + verb.slice(1) + verb.slice(-1) + 'ed';
   }
   return verb.charAt(0).toUpperCase() + verb.slice(1) + 'ed';
 }

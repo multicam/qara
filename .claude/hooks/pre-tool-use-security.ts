@@ -40,7 +40,7 @@ const DANGEROUS_PATTERNS: Array<{ pattern: RegExp; risk: string; severity: "bloc
   // Remote code execution
   { pattern: /curl.*\|\s*(ba)?sh/, risk: "pipe curl to shell", severity: "block" },
   { pattern: /wget.*\|\s*(ba)?sh/, risk: "pipe wget to shell", severity: "block" },
-  { pattern: /\beval\b/, risk: "eval execution", severity: "approve" },
+  { pattern: /(?:^|[;&|]\s*)eval\s/, risk: "eval execution", severity: "approve" },
 
   // Credential exposure
   { pattern: /echo.*API_KEY.*>/, risk: "writing API key to file", severity: "approve" },
