@@ -49,6 +49,15 @@ For each topic file, process the relevant observations:
 - established: 10-25 total observations
 - confirmed: 25+ total observations
 
+### Cross-Session Recovery & Failure Patterns
+
+Process `[recovery]` and `[repeated-failure]` observations from the week's observation files:
+
+- Look for `[recovery]` observations that appear on 3+ different days — these represent systemic workarounds that should become infrastructure fixes. Promote to a pattern in `patterns/error-recovery.md`.
+- Look for `[repeated-failure]` observations that span multiple days — these represent unresolved issues the system is not learning from. Create or update a pattern entry in `patterns/error-recovery.md` with trend: `increasing` if the count is growing.
+- When creating new patterns from recovery/failure observations, use `patterns/error-recovery.md` as the target file (create it if it does not exist, following `pattern-format.md`).
+- Cross-reference with `patterns/tool-usage.md` for tool-specific patterns that correlate with recovery events (e.g. if a tool has high error_rate and also appears frequently in recovery chains).
+
 ### 4. Detect Trends
 
 Compare this week's observation distribution against prior observations (if available):

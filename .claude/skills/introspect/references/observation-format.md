@@ -41,11 +41,13 @@ Each observation is a markdown list item with tags in square brackets:
 | `git-activity` | Commit patterns, branch usage, workflow | "7 commits on master" |
 | `anomaly` | Orthogonal — any unexpected deviation | Always paired with a primary tag |
 | `improvement` | Opportunity spotted for self-improvement | "Delegation guide may need update" |
+| `recovery` | Error→success chain in traces (Phase 2) | "Bash error on `bun test`, recovered by scoping" |
+| `repeated-failure` | Same tool+input failing 3+ times (Phase 2) | "3x `git push` timeout this week" |
 
 ## Rules
 
 - Tags are lowercase, hyphenated
-- `anomaly` and `improvement` are always secondary tags (paired with a primary)
+- `anomaly`, `improvement`, `recovery`, and `repeated-failure` are always secondary tags (paired with a primary)
 - Observations should be specific with evidence (numbers, session IDs, quotes)
 - One observation per line — no multi-line entries
 - Frontmatter totals must match the miner output

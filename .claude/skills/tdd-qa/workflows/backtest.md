@@ -15,6 +15,18 @@ Regression detection via baseline comparison. **100% deterministic — no agenti
 
 -> **READ:** `../references/detect-runner.md` for test runner detection heuristic
 
+### 0.5. Pattern-Informed Regression [DETERMINISTIC] (Optional)
+
+Before running backtests, check the introspection patterns for known error-recovery chains:
+
+```bash
+cat ~/qara/thoughts/shared/introspection/patterns/error-recovery.md 2>/dev/null
+```
+
+Any pattern with `confidence: established` or `confidence: confirmed` and `trend: increasing` should trigger targeted regression tests for that area. These are recurring failures the system has been working around — backtests should verify they haven't regressed.
+
+> **Skip this step** if: no `error-recovery.md` exists, or all patterns have `trend: stable/decreasing`.
+
 ### 1. Capture Current Results [DETERMINISTIC]
 
 **Bun:**

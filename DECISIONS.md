@@ -105,3 +105,23 @@ Append-only record of architectural and design decisions. Memory files capture *
 **Why:** Accumulated drift between documentation and system state. Several bugs (dead code, archive data loss) only visible through deep review.
 **Token impact:** Deduplicated `.claude/CLAUDE.md` saves ~36 lines of redundant context per session.
 **Mattermost token:** Needs rotation — was in git history before this fix.
+
+---
+
+## 2026-04-01 — RTK adopted for token-efficient CLI sessions
+
+**Chosen:** RTK (Rust Token Killer) v0.34.2 as global CLI proxy via PreToolUse hook
+**Alternatives:** No proxy (status quo); custom filtering in post-tool-use hook; context window management via prompt engineering
+**Why:** 60-90% token reduction on Bash output with <10ms overhead. Opus sessions are expensive; RTK amortizes quickly. MIT-licensed, 16k stars, Rust binary. Complements Phase 1 trace enrichment — different concerns (working model efficiency vs introspection signal).
+**Trade-offs:** External binary dependency. Only filters Bash tool calls (not Read/Grep/Glob). Young project (months old). Settings.json patching requires care with symlink setup.
+**Revisit if:** RTK project goes unmaintained, or CC adds native output compression, or token costs drop significantly.
+
+---
+
+## 2026-04-01 — Meta-Harness-inspired trace enrichment (Phase 1)
+
+**Chosen:** Enrich post-tool-use and stop hooks with structural metadata (input_summary, output_len, error_detail, message_len, has_code_blocks, topic_hint)
+**Alternatives:** Full output logging (privacy risk, storage bloat); summary-based logging (Meta-Harness ablation proved this ineffective); status quo (91 bytes/entry, "scores only" tier)
+**Why:** Meta-Harness ablation study (Lee et al., arXiv 2603.28052) showed full traces at 50.0% median vs scores-only at 34.6%. Qara was at "scores only" tier. Enriched traces enable Phase 2 causal reasoning (recovery patterns, repeated failure detection) without logging sensitive content.
+**Trade-offs:** ~3x storage increase per entry (91→300 bytes). Acceptable — gzip compression and existing rotation handle it. All new fields optional for backward compat.
+**Revisit if:** Storage growth becomes a concern (monitor via `wc -l` on state files), or CC adds native trace logging.

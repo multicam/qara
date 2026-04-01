@@ -29,6 +29,18 @@ This enables the PreToolUse hook to enforce phase discipline:
 
 For each scenario in priority order (critical first):
 
+### 0.5. Trace-Informed RED [DETERMINISTIC] (Optional)
+
+Before writing scenarios from scratch, check if the introspection pipeline has data on repeated failures in the target area:
+
+```bash
+bun ${PAI_DIR}/skills/introspect/tools/introspect-miner.ts --mode daily | jq '.repeated_failures'
+```
+
+Each repeated failure is a candidate scenario — the system is working around a bug instead of testing for it. If `repeated_failures` contains entries matching the target module, write a test for that failure pattern FIRST. This is the Meta-Harness insight: traces reveal untested behaviors.
+
+> **Skip this step** if: no introspection data exists, or the miner returns empty `repeated_failures`, or the target module has no trace history.
+
 ### 1. RED — Write Failing Test [AGENTIC]
 
 Read the scenario's Given/When/Then and write a test that:

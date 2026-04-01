@@ -56,6 +56,20 @@ For each section of the miner output, compose observations following the tag tax
 - If version changed from yesterday's observation, create `[harness-change]` observation
 - To check yesterday's version: read the previous observation file if it exists
 
+**Session Traces & Recovery Patterns** (`session_traces`, `recovery_patterns`, `repeated_failures` sections):
+
+For each `session_trace` in the miner output, compose a brief narrative as a `[session-quality]` observation:
+> "Session [id] ([duration] min, [dominant_activity]): [tool_count] tool calls, [error_count] errors. Top tools: [tools_used first 3]."
+
+For each `recovery_pattern`, create a `[tool-usage][recovery]` observation:
+> "Error on [error_tool] ([error_input]) recovered by [recovery_tool] ([recovery_input]) after [gap] calls"
+
+For each `repeated_failure`, create a `[tool-usage][repeated-failure]` observation:
+> "[tool] failing repeatedly on similar input ([input_pattern]): [count] occurrences from [first_seen] to [last_seen]"
+
+Summarize the day's session mix as a `[session-quality]` observation:
+> "Today: [N] sessions — [breakdown by dominant_activity]"
+
 ### 4. Compose Observation File
 
 Write to `~/qara/thoughts/shared/introspection/observations/YYYY-MM-DD.md`

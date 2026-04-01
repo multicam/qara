@@ -40,10 +40,29 @@ import {
     type SessionCheckpoint,
     type TranscriptMessage,
     type CorrectionCandidate,
-    type DailyReport,
+    type DailyReport as DailyReportBase,
     type WeeklyReport,
     type MonthlyReport,
 } from './miner-lib';
+
+import {
+    buildSessionTraces,
+    detectRecoveryPatterns,
+    detectRepeatedFailures,
+    computeSessionProfile,
+    type SessionTrace,
+    type RecoveryPattern,
+    type RepeatedFailure,
+    type SessionProfile,
+} from './miner-trace-lib';
+
+// Extend the base DailyReport with trace-lib fields
+type DailyReport = DailyReportBase & {
+    session_traces: SessionTrace[];
+    recovery_patterns: RecoveryPattern[];
+    repeated_failures: RepeatedFailure[];
+    session_profiles: SessionProfile[];
+};
 
 // ---------------------------------------------------------------------------
 // Mode: Daily
@@ -98,6 +117,12 @@ function runDaily(targetDate: string): DailyReport {
         baseline.delta_sessions = sessionCount - baseline.avg_sessions;
     }
 
+    // Trace analysis
+    const session_traces = buildSessionTraces(tools);
+    const recovery_patterns = detectRecoveryPatterns(tools);
+    const repeated_failures = detectRepeatedFailures(tools);
+    const session_profiles = session_traces.map(trace => computeSessionProfile(trace));
+
     return {
         mode: 'daily',
         date: targetDate,
@@ -122,6 +147,10 @@ function runDaily(targetDate: string): DailyReport {
         git,
         cc_version: ccVersion,
         baseline,
+        session_traces,
+        recovery_patterns,
+        repeated_failures,
+        session_profiles,
     };
 }
 
@@ -284,6 +313,13 @@ export {
 } from './miner-lib';
 
 export {
+    buildSessionTraces,
+    detectRecoveryPatterns,
+    detectRepeatedFailures,
+    computeSessionProfile,
+} from './miner-trace-lib';
+
+export {
     runDaily,
     runWeekly,
     runMonthly,
@@ -293,6 +329,10 @@ export {
     type ToolUsageEntry,
     type SessionCheckpoint,
     type CorrectionCandidate,
+    type SessionTrace,
+    type RecoveryPattern,
+    type RepeatedFailure,
+    type SessionProfile,
 };
 
 // Run if executed directly

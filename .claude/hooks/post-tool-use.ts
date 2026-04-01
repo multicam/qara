@@ -21,6 +21,7 @@ interface PostToolInput {
 }
 
 async function main(): Promise<void> {
+  const hookStart = Date.now();
   try {
     const input = readFileSync(0, 'utf-8');
     if (!input.trim()) return;
@@ -38,6 +39,7 @@ async function main(): Promise<void> {
       input_summary: extractInputSummary(tool_name, tool_input || {}),
       output_len: typeof tool_output === 'string' ? tool_output.length : 0,
       error_detail: (was_error && tool_output) ? extractErrorDetail(tool_output) : null,
+      duration_ms: Date.now() - hookStart,
     });
   } catch {
     // Non-critical — don't let logging failure affect execution
