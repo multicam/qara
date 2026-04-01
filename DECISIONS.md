@@ -64,8 +64,9 @@ Append-only record of architectural and design decisions. Memory files capture *
 **Chosen:** TypeScript CLI (`introspect-miner.ts`) for deterministic log parsing, with skill workflows for AI interpretation and synthesis
 **Alternatives:** Pure prompt-based mining (COG-style, no code); full TypeScript pipeline (code for everything including synthesis)
 **Why:** CONSTITUTION Principles 2 (Deterministic Code First) and 5 (Goal->Code->CLI->Prompts) dictate that repeatable operations should be code. Log parsing, aggregation, and anomaly detection are deterministic — same input always same output. Pattern synthesis and observation composition require judgment, so they stay as prompt workflows. Inspired by marciopuga/cog but adapted to Qara's Code-Before-Prompts philosophy.
-**Trade-offs:** CLI adds a code artifact to maintain. But it's ~200 lines with tests, and deterministic code is easier to debug than prompt-based parsing.
-**Revisit if:** CC adds native log analysis tools, or the miner grows beyond 500 lines (suggesting it should become its own standalone tool).
+**Trade-offs:** CLI adds a code artifact to maintain. But it's deterministic code with tests, easier to debug than prompt-based parsing.
+**Revisit if:** CC adds native log analysis tools, or the miner grows beyond 500 lines per module.
+**Status (2026-04-01):** Miner reached 690 lines total, triggering the 500-line revisit condition. Resolved by extracting `miner-lib.ts` (476 lines: types, parsers, collectors) from `introspect-miner.ts` (301 lines: CLI + mode handlers). Both modules under threshold. Decision stands — still CLI miner + skill workflows, just split into two files.
 
 ---
 
