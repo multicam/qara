@@ -14,6 +14,7 @@ import { generateTabTitle, setTerminalTabTitle } from './lib/tab-titles';
 import { STATE_DIR } from './lib/pai-paths';
 import { appendJsonl } from './lib/jsonl-utils';
 import { getISOTimestamp } from './lib/datetime-utils';
+import { classifyTopic } from './lib/trace-utils';
 
 async function main() {
   try {
@@ -34,6 +35,9 @@ async function main() {
       session_id: process.env.CLAUDE_SESSION_ID || process.env.SESSION_ID || 'unknown',
       stop_reason: parsed.stop_reason || 'unknown',
       summary: title || lastMessage.substring(0, 200),
+      message_len: lastMessage.length,
+      has_code_blocks: /```/.test(lastMessage),
+      topic_hint: classifyTopic(lastMessage),
     });
   } catch {
     process.exit(0);

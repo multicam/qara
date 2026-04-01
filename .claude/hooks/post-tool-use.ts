@@ -11,6 +11,7 @@ import { readFileSync } from 'fs';
 import { STATE_DIR } from './lib/pai-paths';
 import { appendJsonl } from './lib/jsonl-utils';
 import { getISOTimestamp } from './lib/datetime-utils';
+import { extractInputSummary, extractErrorDetail } from './lib/trace-utils';
 
 interface PostToolInput {
   tool_name: string;
@@ -25,7 +26,7 @@ async function main(): Promise<void> {
     if (!input.trim()) return;
 
     const hookData: PostToolInput = JSON.parse(input);
-    const { tool_name, was_error } = hookData;
+    const { tool_name, tool_input, tool_output, was_error } = hookData;
 
     const logFile = join(STATE_DIR, 'tool-usage.jsonl');
 
@@ -34,6 +35,9 @@ async function main(): Promise<void> {
       tool: tool_name,
       error: was_error || false,
       session_id: process.env.CLAUDE_SESSION_ID || process.env.SESSION_ID || 'unknown',
+      input_summary: extractInputSummary(tool_name, tool_input || {}),
+      output_len: typeof tool_output === 'string' ? tool_output.length : 0,
+      error_detail: (was_error && tool_output) ? extractErrorDetail(tool_output) : null,
     });
   } catch {
     // Non-critical — don't let logging failure affect execution

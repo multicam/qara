@@ -29,6 +29,10 @@ interface ToolUsageEntry {
     tool: string;
     error: boolean;
     session_id: string;
+    // Phase 1 enrichment (optional for backward compat with pre-enrichment data)
+    input_summary?: string;
+    output_len?: number;
+    error_detail?: string | null;
 }
 
 interface SessionCheckpoint {
@@ -36,6 +40,10 @@ interface SessionCheckpoint {
     session_id: string;
     stop_reason: string;
     summary: string;
+    // Phase 1 enrichment (optional for backward compat)
+    message_len?: number;
+    has_code_blocks?: boolean;
+    topic_hint?: string;
 }
 
 interface SecurityCheck {
