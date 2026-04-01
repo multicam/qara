@@ -52,9 +52,11 @@ interface SecurityCheck {
     session_id: string;
 }
 
+type TranscriptContentBlock = { type: string; text?: string; [key: string]: unknown };
+
 interface TranscriptMessage {
     type: string;
-    message?: { role: string; content: string };
+    message?: { role: string; content: string | TranscriptContentBlock[] };
     timestamp: string;
     sessionId?: string;
     version?: string;
@@ -300,10 +302,11 @@ function extractCorrections(transcripts: string[], targetDate: string): Correcti
         let lastAssistant = '';
         for (const msg of messages) {
             if (msg.type === 'assistant' && msg.message?.content) {
-                const content = typeof msg.message.content === 'string'
-                    ? msg.message.content
-                    : JSON.stringify(msg.message.content);
-                lastAssistant = content.slice(0, 200);
+                const raw = msg.message.content;
+                const text = typeof raw === 'string' ? raw
+                    : Array.isArray(raw) ? raw.filter(b => b.type === 'text').map(b => b.text ?? '').join(' ').trim()
+                    : '';
+                lastAssistant = text.slice(0, 200);
             }
             if (msg.type === 'user' && msg.userType === 'external' && !msg.isMeta) {
                 const content = typeof msg.message?.content === 'string'
@@ -431,17 +434,12 @@ function computeBaseline(targetDate: string, lookbackDays: number = 7): Baseline
     if (entries.length === 0) return null;
 
     const avg = (arr: number[]) => arr.reduce((s, v) => s + v, 0) / arr.length;
-    const avgTools = avg(entries.map(e => e.tools_total));
-    const avgErrors = avg(entries.map(e => e.errors_total));
-    const avgSessions = avg(entries.map(e => e.sessions));
-    const avgCorrections = avg(entries.map(e => e.corrections));
-
     return {
         days_available: entries.length,
-        avg_tools: Math.round(avgTools),
-        avg_errors: Math.round(avgErrors * 10) / 10,
-        avg_sessions: Math.round(avgSessions * 10) / 10,
-        avg_corrections: Math.round(avgCorrections * 10) / 10,
+        avg_tools: Math.round(avg(entries.map(e => e.tools_total))),
+        avg_errors: Math.round(avg(entries.map(e => e.errors_total)) * 10) / 10,
+        avg_sessions: Math.round(avg(entries.map(e => e.sessions)) * 10) / 10,
+        avg_corrections: Math.round(avg(entries.map(e => e.corrections)) * 10) / 10,
         delta_tools: 0, // Filled by caller with today's actual
         delta_errors: 0,
         delta_sessions: 0,
