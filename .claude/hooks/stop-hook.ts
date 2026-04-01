@@ -26,6 +26,15 @@ async function main() {
 
     if (!lastMessage) process.exit(0);
 
+    // CC Stop event provides: last_assistant_message, transcript_path, session_id
+    // stop_reason is NOT in the Stop event payload (CC limitation).
+    // Infer from message content: tool_use if message ends with tool call patterns,
+    // end_turn otherwise. This is a heuristic, not authoritative.
+    let stopReason = parsed.stop_reason || 'end_turn';
+    if (!parsed.stop_reason) {
+      if (/\btool_use\b/.test(lastMessage.slice(-200))) stopReason = 'tool_use';
+    }
+
     const title = generateTabTitle('', lastMessage);
     setTerminalTabTitle(title);
 
@@ -33,7 +42,7 @@ async function main() {
     appendJsonl(join(STATE_DIR, 'session-checkpoints.jsonl'), {
       timestamp: getISOTimestamp(),
       session_id: process.env.CLAUDE_SESSION_ID || process.env.SESSION_ID || 'unknown',
-      stop_reason: parsed.stop_reason || 'unknown',
+      stop_reason: stopReason,
       summary: title || lastMessage.substring(0, 200),
       message_len: lastMessage.length,
       has_code_blocks: /```/.test(lastMessage),

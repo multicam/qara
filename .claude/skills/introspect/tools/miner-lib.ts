@@ -120,6 +120,8 @@ interface MonthlyReport {
     // Phase 3 harness evolution fields (optional for backward compat)
     error_hotspots?: Array<{ tool: string; input_pattern: string; count: number; error_rate: number }>;
     session_profile_distribution?: Record<string, number>;
+    // RTK savings (optional — only present when rtk is installed)
+    rtk_savings?: { total_commands: number; tokens_saved: string; efficiency_pct: number };
 }
 
 interface ObservationFrontmatter {
@@ -260,7 +262,24 @@ function collectSecurity(targetDate: string): SecurityCheck[] {
     const current = readJsonlFile<SecurityCheck>(join(STATE_DIR, 'security-checks.jsonl'))
         .filter(e => isTimestampOnDate(e.timestamp, targetDate));
     const archived = readArchivedJsonl<SecurityCheck>('security-checks', targetDate);
-    return [...current, ...archived];
+    return filterTestNoise([...current, ...archived]);
+}
+
+// Filter security test noise: >3 BLOCKED entries in the same second = test vectors
+function filterTestNoise(entries: SecurityCheck[]): SecurityCheck[] {
+    const bySecond = new Map<string, SecurityCheck[]>();
+    for (const e of entries) {
+        const sec = e.timestamp.slice(0, 19); // YYYY-MM-DDTHH:MM:SS
+        if (!bySecond.has(sec)) bySecond.set(sec, []);
+        bySecond.get(sec)!.push(e);
+    }
+    const result: SecurityCheck[] = [];
+    for (const [, group] of bySecond) {
+        const blocked = group.filter(e => e.decision === 'BLOCKED');
+        if (blocked.length > 3) continue; // test vector burst — skip entire second
+        result.push(...group);
+    }
+    return result;
 }
 
 // ---------------------------------------------------------------------------

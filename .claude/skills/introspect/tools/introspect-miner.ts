@@ -13,6 +13,7 @@
 
 import { readFileSync, readdirSync, statSync, existsSync } from 'fs';
 import { join } from 'path';
+import { execSync } from 'child_process';
 
 import {
     // Constants
@@ -306,6 +307,21 @@ function runMonthly(): MonthlyReport {
         } catch { /* skip days that fail */ }
     }
 
+    // --- RTK savings (if rtk is installed) ---
+    let rtk_savings: MonthlyReport['rtk_savings'] = undefined;
+    try {
+        const rtkOutput = execSync('rtk gain 2>/dev/null', { encoding: 'utf-8', timeout: 5000 });
+        const cmdMatch = rtkOutput.match(/Total commands:\s+(\d+)/);
+        const savedMatch = rtkOutput.match(/Tokens saved:\s+([\d.]+[KMB]?)\s+\(([\d.]+)%\)/);
+        if (cmdMatch && savedMatch) {
+            rtk_savings = {
+                total_commands: parseInt(cmdMatch[1]),
+                tokens_saved: savedMatch[1],
+                efficiency_pct: parseFloat(savedMatch[2]),
+            };
+        }
+    } catch { /* rtk not installed or failed — skip */ }
+
     return {
         mode: 'monthly',
         generated_at: new Date().toISOString(),
@@ -314,6 +330,7 @@ function runMonthly(): MonthlyReport {
         pattern_summaries: patternSummaries,
         error_hotspots,
         session_profile_distribution,
+        rtk_savings,
     };
 }
 
