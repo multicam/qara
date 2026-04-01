@@ -70,6 +70,18 @@ Use this template structure when writing implementation plans:
 
 ---
 
+## Pre-flight Checklist
+
+Before finalizing this plan, verify:
+
+- [ ] All hard constraints identified and respected (security, architecture, policy)
+- [ ] Competing approaches considered — not just the first plausible idea
+- [ ] Load-bearing decisions marked and justified (decisions that change everything downstream)
+- [ ] No open questions remaining (all resolved or explicitly deferred with reason)
+- [ ] Each phase has a risk note (what could go wrong, what's the rollback)
+- [ ] Success criteria are falsifiable (not "it works" but "command X returns Y")
+- [ ] Dependency order is correct (no phase requires output from a later phase)
+
 ## Testing Strategy
 
 ### Unit Tests:

@@ -68,7 +68,8 @@ OUTPUTS
 | session_id | string | env var | Which session |
 | input_summary | string | trace-utils | What was requested (truncated, privacy-safe) |
 | output_len | number | hook stdin | How much output (bytes, not content) |
-| error_detail | string/null | trace-utils | Error text when failed (300 char max) |
+| error_detail | string/null | trace-utils | Error text when failed (300 char max, secrets redacted) |
+| duration_ms | number | hook timing | Hook execution overhead |
 
 ### session-checkpoints.jsonl
 
@@ -108,7 +109,9 @@ OUTPUTS
 | Trace utils | `.claude/hooks/lib/trace-utils.ts` |
 | RTK hook | `.claude/hooks/rtk-rewrite.sh` |
 | Miner lib | `.claude/skills/introspect/tools/miner-lib.ts` |
+| Trace analysis lib | `.claude/skills/introspect/tools/miner-trace-lib.ts` |
 | Miner CLI | `.claude/skills/introspect/tools/introspect-miner.ts` |
+| Experiment tracker | `.claude/skills/introspect/tools/experiment-tracker.ts` |
 | Daily workflow | `.claude/skills/introspect/workflows/daily-reflect.md` |
 | Weekly workflow | `.claude/skills/introspect/workflows/weekly-synthesize.md` |
 | Monthly workflow | `.claude/skills/introspect/workflows/monthly-evolve.md` |

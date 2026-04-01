@@ -91,6 +91,11 @@ Monthly evolve                     AI reviews patterns -> proposed memory update
 | Pattern format spec | `${PAI_DIR}/skills/introspect/references/pattern-format.md` |
 | Miner CLI source | `${PAI_DIR}/skills/introspect/tools/introspect-miner.ts` |
 | Miner library | `${PAI_DIR}/skills/introspect/tools/miner-lib.ts` |
+| Trace analysis library | `${PAI_DIR}/skills/introspect/tools/miner-trace-lib.ts` |
+| Experiment tracker CLI | `${PAI_DIR}/skills/introspect/tools/experiment-tracker.ts` |
+| Proposal format spec | `${PAI_DIR}/skills/introspect/references/proposal-format.md` |
+| Experiment format spec | `${PAI_DIR}/skills/introspect/references/experiment-format.md` |
+| System overview | `${PAI_DIR}/skills/introspect/references/system-overview.md` |
 | Daily reflect workflow | `${PAI_DIR}/skills/introspect/workflows/daily-reflect.md` |
 | Weekly synthesize workflow | `${PAI_DIR}/skills/introspect/workflows/weekly-synthesize.md` |
 | Monthly evolve workflow | `${PAI_DIR}/skills/introspect/workflows/monthly-evolve.md` |

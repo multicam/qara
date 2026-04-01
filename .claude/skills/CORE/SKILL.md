@@ -147,6 +147,7 @@ Use via `Task` tool with `subagent_type`:
 |-------|-------|----------|
 | `codebase-analyzer` | sonnet | Deep-diving into how code works, tracing data flow, finding reusable patterns |
 | `designer` | opus | Design review, UX/UI, typography, visual polish (loads frontend-design skill) |
+| `planner` | opus | Breaking ambiguous problems into dependency graphs, phased vertical-slice plans |
 | `architect` | opus | PRD creation, system design, technical specifications (loads research skill) |
 | `engineer` | sonnet | Code implementation, debugging, optimization, testing from PRDs |
 | `reviewer` | opus | Code review for correctness, security, performance, maintainability |

@@ -113,13 +113,32 @@ When spawning research sub-tasks:
    - Cross-check findings against the actual codebase
    - Don't accept results that seem incorrect
 
-**Example of spawning multiple tasks:**
-```python
-# Spawn these tasks concurrently:
-tasks = [
-    Task("Research database schema", db_research_prompt),
-    Task("Find API patterns", api_research_prompt),
-    Task("Investigate UI components", ui_research_prompt),
-    Task("Check test patterns", test_research_prompt)
-]
-```
+## Intelligent Persistence (Error Handling During Planning)
+
+Research agents can fail or return thin results. How you respond matters:
+
+**On empty results:**
+- Reformulate the search — different keywords, broader directory scope
+- Try a different agent type (e.g., codebase-analyzer instead of thoughts-locator)
+- Don't conclude "nothing exists" from a single failed search
+
+**On ambiguous or contradictory results:**
+- Spawn a second agent to cross-verify the specific claim
+- Read the conflicting files yourself in the main context
+- Flag the contradiction explicitly — don't silently pick one version
+
+**On agent timeout or error:**
+- Retry once with a simpler, more focused prompt
+- If it fails again, do the research yourself with direct tool calls
+- Don't block the entire plan on one failed sub-task
+
+**On surprising findings (code that contradicts assumptions):**
+- This is the most valuable signal — don't dismiss it
+- Re-read the relevant code yourself to confirm
+- Revise your hypotheses before continuing
+- A plan built on wrong assumptions is worse than a late plan
+
+**What NOT to do:**
+- Don't retry the exact same prompt on a non-transient error
+- Don't ignore thin results and plan around the gap
+- Don't spawn 5+ agents to research the same question from different angles — 2 is enough for cross-verification

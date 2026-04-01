@@ -33,6 +33,30 @@ For deeper analysis, try: `/create_plan think deeply about thoughts/shared/plans
 
 Then wait for the user's input.
 
+## Pre-Planning Reasoning Protocol
+
+Before spawning research agents or writing anything, reason through these dimensions.
+Document your reasoning inline (the user should see it) — this prevents anchoring on the first idea.
+
+1. **Constraint hierarchy** — What are the hard constraints (security, architecture, policy)
+   vs. soft preferences (style, convention)? If they conflict, hard wins. List them explicitly.
+
+2. **Hypothesis formation** — Form 2-3 competing theories about the right approach.
+   Don't anchor on the first plausible idea. What would a contrarian argue?
+
+3. **Dependency graph** — What must be decided before what? Which decisions are
+   load-bearing (change everything downstream) vs. leaf decisions (local impact only)?
+   Identify the critical path.
+
+4. **Information gaps** — What do I need to know that I don't yet? Which gaps can I
+   fill with tools (codebase-analyzer, thoughts-locator) vs. which require asking JM?
+   Don't ask what you can look up.
+
+5. **Inhibition check** — Am I ready to act, or am I about to jump to a conclusion?
+   State what I'm still uncertain about before proceeding.
+
+Only after completing this reasoning should you move to Step 1.
+
 ## Process Steps
 
 ### Step 1: Context Gathering & Initial Analysis
@@ -92,6 +116,18 @@ Then wait for the user's input.
    ```
 
    Only ask questions that you genuinely cannot answer through code investigation.
+
+### Step 1.5: Adaptation Check
+
+After research agents report back, pause and reason:
+
+- Does any finding **contradict** my initial hypotheses? If so, which hypothesis survives?
+- Do I need to **revise the problem statement** based on what I actually found in the code?
+- Are there constraints I didn't know about (e.g., existing patterns, coupling, tech debt)?
+- Should I **re-scope** before proceeding?
+
+If any answer is yes: revise hypotheses and re-research the specific gap.
+If all answers are no: proceed with documented confidence to Step 2.
 
 ### Step 2: Research & Discovery
 
