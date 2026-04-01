@@ -1,10 +1,7 @@
 /**
  * miner-lib — Types and utility functions for the introspect-miner.
- *
  * Extracted from introspect-miner.ts to keep each module under 500 lines.
- * All deterministic parsing, collection, and detection logic lives here.
  */
-
 import { readFileSync, readdirSync, statSync, existsSync } from 'fs';
 import { join } from 'path';
 import { execSync } from 'child_process';
@@ -269,17 +266,14 @@ function collectSecurity(targetDate: string): SecurityCheck[] {
 function filterTestNoise(entries: SecurityCheck[]): SecurityCheck[] {
     const bySecond = new Map<string, SecurityCheck[]>();
     for (const e of entries) {
-        const sec = e.timestamp.slice(0, 19); // YYYY-MM-DDTHH:MM:SS
-        if (!bySecond.has(sec)) bySecond.set(sec, []);
-        bySecond.get(sec)!.push(e);
+        const sec = e.timestamp.slice(0, 19);
+        const group = bySecond.get(sec) || [];
+        group.push(e);
+        bySecond.set(sec, group);
     }
-    const result: SecurityCheck[] = [];
-    for (const [, group] of bySecond) {
-        const blocked = group.filter(e => e.decision === 'BLOCKED');
-        if (blocked.length > 3) continue; // test vector burst — skip entire second
-        result.push(...group);
-    }
-    return result;
+    return [...bySecond.values()]
+        .filter(group => group.filter(e => e.decision === 'BLOCKED').length <= 3)
+        .flat();
 }
 
 // ---------------------------------------------------------------------------
