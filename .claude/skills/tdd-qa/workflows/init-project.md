@@ -89,3 +89,17 @@ tdd-qa init complete:
 
 Next: "write scenarios for [feature]" to define your first test specs.
 ```
+
+### 7. Capture Test Environment Snapshot [DETERMINISTIC]
+
+Before the first TDD cycle, capture a snapshot of the project's test state. This eliminates 2-4 exploratory turns normally spent discovering project structure (Meta-Harness TerminalBench insight).
+
+```bash
+echo "Test Environment Snapshot ($(date -Iseconds))"
+echo "Runner: $(bun --version 2>/dev/null && echo 'bun:test' || echo 'unknown')"
+echo "Test files: $(find . -name '*.test.ts' -o -name '*.spec.ts' 2>/dev/null | wc -l)"
+echo "Test count: $(bun test --dry-run 2>/dev/null | grep -c 'test' || echo 'unknown')"
+echo "Last run: $(stat -c %Y .test-current.xml 2>/dev/null | xargs -I{} date -d @{} -Iseconds || echo 'never')"
+```
+
+Output this snapshot to the conversation so the TDD cycle starts with full project awareness — no need to explore file structure or discover the test runner.

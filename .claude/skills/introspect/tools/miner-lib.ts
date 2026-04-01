@@ -117,6 +117,9 @@ interface MonthlyReport {
     cc_version: string | null;
     cc_version_history: Array<{ date: string; version: string }>;
     pattern_summaries: Record<string, number>;
+    // Phase 3 harness evolution fields (optional for backward compat)
+    error_hotspots?: Array<{ tool: string; input_pattern: string; count: number; error_rate: number }>;
+    session_profile_distribution?: Record<string, number>;
 }
 
 interface ObservationFrontmatter {

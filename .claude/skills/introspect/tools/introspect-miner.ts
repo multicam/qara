@@ -16,6 +16,7 @@ import { join } from 'path';
 
 import {
     // Constants
+    STATE_DIR,
     INTROSPECTION_DIR,
     PROJECT_DIR,
     // JSONL / dates
@@ -209,6 +210,10 @@ function runWeekly(start: string, end: string): WeeklyReport {
 // Mode: Monthly
 // ---------------------------------------------------------------------------
 function runMonthly(): MonthlyReport {
+    const today = getSydneyDate();
+    const currentMonth = today.slice(0, 7); // YYYY-MM
+
+    // --- CC version history ---
     const versionHistory: Array<{ date: string; version: string }> = [];
     const seenVersions = new Set<string>();
     if (existsSync(PROJECT_DIR)) {
@@ -234,6 +239,7 @@ function runMonthly(): MonthlyReport {
     }
     versionHistory.sort((a, b) => a.date.localeCompare(b.date));
 
+    // --- Pattern summaries ---
     const patternDir = join(INTROSPECTION_DIR, 'patterns');
     const patternSummaries: Record<string, number> = {};
     if (existsSync(patternDir)) {
@@ -244,12 +250,70 @@ function runMonthly(): MonthlyReport {
         }
     }
 
+    // --- Error hotspots: aggregate errors by tool + first 50 chars of input_summary ---
+    // Read tool-usage.jsonl and filter to the current month
+    const allToolUsage = readJsonlFile<ToolUsageEntry>(join(STATE_DIR, 'tool-usage.jsonl'))
+        .filter(e => {
+            try {
+                return getSydneyDate(new Date(e.timestamp)).slice(0, 7) === currentMonth;
+            } catch { return false; }
+        });
+
+    type HotspotAccum = { count: number; errors: number };
+    const hotspotMap = new Map<string, HotspotAccum>();
+    for (const entry of allToolUsage) {
+        const inputPrefix = (entry.input_summary || '').slice(0, 50);
+        const key = `${entry.tool}\x00${inputPrefix}`;
+        const existing = hotspotMap.get(key);
+        if (existing) {
+            existing.count++;
+            if (entry.error) existing.errors++;
+        } else {
+            hotspotMap.set(key, { count: 1, errors: entry.error ? 1 : 0 });
+        }
+    }
+
+    const error_hotspots: MonthlyReport['error_hotspots'] = [];
+    for (const [key, { count, errors }] of hotspotMap) {
+        if (count >= 3 && errors > 0) {
+            const sepIdx = key.indexOf('\x00');
+            const tool = key.slice(0, sepIdx);
+            const input_pattern = key.slice(sepIdx + 1);
+            error_hotspots.push({
+                tool,
+                input_pattern,
+                count,
+                error_rate: errors / count,
+            });
+        }
+    }
+    // Sort by error_rate descending, then count descending
+    error_hotspots.sort((a, b) => b.error_rate - a.error_rate || b.count - a.count);
+
+    // --- Session profile distribution: run daily reports for last 7 days ---
+    const session_profile_distribution: Record<string, number> = {};
+    const d = new Date(today + 'T00:00:00Z');
+    for (let i = 6; i >= 0; i--) {
+        const dayDate = new Date(d);
+        dayDate.setDate(dayDate.getDate() - i);
+        const dateStr = dayDate.toISOString().slice(0, 10);
+        try {
+            const daily = runDaily(dateStr);
+            for (const profile of daily.session_profiles) {
+                const activity = profile.dominant_activity;
+                session_profile_distribution[activity] = (session_profile_distribution[activity] || 0) + 1;
+            }
+        } catch { /* skip days that fail */ }
+    }
+
     return {
         mode: 'monthly',
         generated_at: new Date().toISOString(),
         cc_version: versionHistory.length > 0 ? versionHistory[versionHistory.length - 1].version : null,
         cc_version_history: versionHistory,
         pattern_summaries: patternSummaries,
+        error_hotspots,
+        session_profile_distribution,
     };
 }
 

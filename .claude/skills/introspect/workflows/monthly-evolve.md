@@ -48,7 +48,37 @@ From the miner's monthly output:
   - Recommend checking CC changelog for capability changes
   - Flag if new hook events, tools, or features may be available
 
-### 4. cc-upgrade-pai Status
+### 4. Harness Code Proposals
+
+For each **confirmed** (25+) or **established** (10-25) pattern, evaluate whether a CODE change (not just a memory update) would address it:
+
+1. **Hook changes:** If a pattern reveals inadequate logging or a repeated manual workaround, propose enriching the relevant hook or automating the workaround.
+
+2. **Miner changes:** If the weekly synthesize frequently encounters a signal the miner doesn't extract, propose adding that extraction to miner-lib or miner-trace-lib.
+
+3. **Workflow changes:** If daily observations consistently miss a category of insight, propose updating the relevant workflow prompt.
+
+4. **Settings changes:** If patterns reveal timeout issues, delegation underuse, or permission friction, propose a settings.json edit.
+
+5. **New tool/skill proposals:** If patterns reveal a recurring need that no existing skill addresses, propose creating one.
+
+Each proposal follows the format in `${PAI_DIR}/skills/introspect/references/proposal-format.md`. Write all proposals to `~/qara/thoughts/shared/introspection/reports/proposals-YYYY-MM.md`.
+
+Add a summary table to the monthly report:
+
+```markdown
+## Harness Evolution Proposals
+
+| # | Title | Type | Target | Risk | Evidence |
+|---|-------|------|--------|------|----------|
+| 1 | [title] | hook | post-tool-use.ts | low | [pattern] confirmed |
+
+See `proposals-YYYY-MM.md` for full details.
+```
+
+**Safety reminder:** Proposals are NEVER auto-applied. Each includes risk rating and rollback instructions. Write proposals as review-ready documents for JM.
+
+### 5. cc-upgrade-pai Status
 
 Check when cc-upgrade-pai was last run:
 ```bash
@@ -58,7 +88,7 @@ cd ~/qara && git log --all --oneline --since="30 days ago" | grep -i "cc-upgrade
 - If run in past 30 days: note date and summary
 - If not: recommend running cc-upgrade-pai as part of monthly hygiene
 
-### 5. Self-Improvement Assessment
+### 6. Self-Improvement Assessment
 
 Review the introspection system itself:
 - Are daily observations being generated consistently? (Check observation file count and dates)
@@ -67,7 +97,7 @@ Review the introspection system itself:
 - Is the correction detection finding real corrections? (Check false positive rate by reviewing recent corrections)
 - Propose specific workflow modifications if warranted (but don't apply them directly)
 
-### 6. Architecture Review
+### 7. Architecture Review
 
 Check for staleness:
 - `DECISIONS.md` entries: are any "Revisit if" conditions now true?
@@ -76,7 +106,7 @@ Check for staleness:
 
 This is lighter than cc-upgrade-pai — focused on what patterns revealed, not full infrastructure audit.
 
-### 7. Compose Monthly Report
+### 8. Compose Monthly Report
 
 Write to `~/qara/thoughts/shared/introspection/reports/monthly-YYYY-MM.md`:
 
@@ -108,7 +138,7 @@ Write to `~/qara/thoughts/shared/introspection/reports/monthly-YYYY-MM.md`:
 [Stale DECISIONS.md entries, broken references, drift detected]
 ```
 
-### 8. Write Proposed Updates File
+### 9. Write Proposed Updates File
 
 If there are concrete memory changes to propose, also write:
 `~/qara/thoughts/shared/introspection/reports/proposed-updates-YYYY-MM.md`
@@ -126,7 +156,7 @@ This file contains the exact content to add/modify in memory files, ready for JM
 [exact markdown to add/change]
 ```
 
-### 9. Summary
+### 10. Summary
 
 Output to the conversation:
 - Report location
