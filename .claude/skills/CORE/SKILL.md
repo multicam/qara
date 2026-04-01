@@ -78,6 +78,7 @@ env:
 | TGDS aesthetic | `.claude/skills/image/references/tgds-aesthetic.md` | "TGDS brand", "design school style", "TGDS colors" |
 | Diderot vault | `.claude/skills/diderot/SKILL.md` | "ask diderot", "vault search", "check my notes" |
 | Introspection | `.claude/skills/introspect/SKILL.md` | "daily reflect", "introspect", "mine logs", "weekly synthesize", "monthly evolve" |
+| Visual canvas | `.claude/skills/csf-view/SKILL.md` | "csf-view", "open canvas", "visual shaping", "tldraw" |
 
 **Skills (on-demand):**
 - `hook-authoring` skill → hook creation
@@ -85,6 +86,7 @@ env:
 - `image` skill → image generation, stock photos, visual content
 - `introspect` skill → session mining, pattern synthesis, self-improvement
 - `tdd-qa` skill → test-driven development, QA blueprints
+- `csf-view` skill → visual canvas (tldraw), visual thinking for any workflow
 - `research` skill → web research, content extraction, deep analysis
 - `product-shaping` skill → product specs, feature scoping, competitor research
 - `cc-upgrade` / `cc-upgrade-pai` skill → CC setup audit, 12-factor compliance

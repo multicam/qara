@@ -12,426 +12,38 @@
  */
 
 import { readFileSync, readdirSync, statSync, existsSync } from 'fs';
-import { join, basename } from 'path';
-import { execSync } from 'child_process';
+import { join } from 'path';
 
-// ---------------------------------------------------------------------------
-// Path constants (inline to avoid import side-effects during testing)
-// ---------------------------------------------------------------------------
-const HOME = process.env.HOME || require('os').homedir();
-const PAI_DIR = process.env.PAI_DIR || join(HOME, '.claude');
-const STATE_DIR = join(PAI_DIR, 'state');
-const ARCHIVE_DIR = join(STATE_DIR, 'archive');
-const PROJECT_DIR = join(PAI_DIR, 'projects', '-home-jean-marc-qara');
-const QARA_DIR = join(HOME, 'qara');
-const INTROSPECTION_DIR = join(QARA_DIR, 'thoughts', 'shared', 'introspection');
-const TIMEZONE = 'Australia/Sydney';
-
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-interface ToolUsageEntry {
-    timestamp: string;
-    tool: string;
-    error: boolean;
-    session_id: string;
-}
-
-interface SessionCheckpoint {
-    timestamp: string;
-    session_id: string;
-    stop_reason: string;
-    summary: string;
-}
-
-interface SecurityCheck {
-    timestamp: string;
-    operation: string;
-    pattern_matched: string;
-    risk: string;
-    decision: string;
-    session_id: string;
-}
-
-interface TranscriptMessage {
-    type: string;
-    message?: { role: string; content: string };
-    timestamp: string;
-    sessionId?: string;
-    version?: string;
-    userType?: string;
-    isMeta?: boolean;
-}
-
-interface CorrectionCandidate {
-    timestamp: string;
-    session_id: string;
-    user_message: string;
-    preceding_assistant: string;
-}
-
-interface DailyReport {
-    mode: 'daily';
-    date: string;
-    generated_at: string;
-    tool_usage: {
-        total: number;
-        by_tool: Record<string, { count: number; errors: number; error_rate: number }>;
-        overall_error_rate: number;
-        anomalies: string[];
-    };
-    sessions: {
-        count: number;
-        unique_sessions: string[];
-        stop_reasons: Record<string, number>;
-    };
-    security: {
-        total: number;
-        by_decision: Record<string, number>;
-        new_risks: string[];
-    };
-    corrections: CorrectionCandidate[];
-    git: {
-        commits: number;
-        branches: string[];
-        commit_messages: string[];
-    };
-    cc_version: string | null;
-    baseline: Baseline | null;
-}
-
-interface WeeklyReport {
-    mode: 'weekly';
-    date_range: { start: string; end: string };
-    generated_at: string;
-    daily_summaries: Array<{ date: string; tools_total: number; errors_total: number; sessions: number; corrections: number }>;
-    aggregated_tools: Record<string, { count: number; errors: number; pct: number }>;
-    observation_tags: Record<string, number>;
-}
-
-interface MonthlyReport {
-    mode: 'monthly';
-    generated_at: string;
-    cc_version: string | null;
-    cc_version_history: Array<{ date: string; version: string }>;
-    pattern_summaries: Record<string, number>;
-}
-
-// ---------------------------------------------------------------------------
-// JSONL parsing
-// ---------------------------------------------------------------------------
-function readJsonlFile<T>(filepath: string): T[] {
-    if (!existsSync(filepath)) return [];
-    const content = readFileSync(filepath, 'utf-8');
-    const entries: T[] = [];
-    for (const line of content.split('\n')) {
-        const trimmed = line.trim();
-        if (!trimmed) continue;
-        try {
-            entries.push(JSON.parse(trimmed) as T);
-        } catch { /* skip malformed lines */ }
-    }
-    return entries;
-}
-
-function readArchivedJsonl<T>(pattern: string, dateStr: string): T[] {
-    if (!existsSync(ARCHIVE_DIR)) return [];
-    const archiveFile = join(ARCHIVE_DIR, `${pattern}_${dateStr}.jsonl.gz`);
-    if (!existsSync(archiveFile)) return [];
-    try {
-        const content = execSync(`gzip -dc "${archiveFile}"`, { encoding: 'utf-8', maxBuffer: 10 * 1024 * 1024 });
-        const entries: T[] = [];
-        for (const line of content.split('\n')) {
-            const trimmed = line.trim();
-            if (!trimmed) continue;
-            try { entries.push(JSON.parse(trimmed) as T); } catch { /* skip */ }
-        }
-        return entries;
-    } catch { return []; }
-}
-
-// ---------------------------------------------------------------------------
-// Date helpers
-// ---------------------------------------------------------------------------
-function getSydneyDate(date: Date = new Date()): string {
-    const formatter = new Intl.DateTimeFormat('en-CA', { timeZone: TIMEZONE, year: 'numeric', month: '2-digit', day: '2-digit' });
-    return formatter.format(date); // YYYY-MM-DD
-}
-
-function isTimestampOnDate(timestamp: string, targetDate: string): boolean {
-    try {
-        const d = new Date(timestamp);
-        return getSydneyDate(d) === targetDate;
-    } catch { return false; }
-}
-
-function isTimestampInRange(timestamp: string, start: string, end: string): boolean {
-    try {
-        const dateStr = getSydneyDate(new Date(timestamp));
-        return dateStr >= start && dateStr <= end;
-    } catch { return false; }
-}
-
-function getDateRange(startStr: string, endStr: string): string[] {
-    const dates: string[] = [];
-    const current = new Date(startStr + 'T00:00:00Z');
-    const end = new Date(endStr + 'T00:00:00Z');
-    while (current <= end) {
-        dates.push(current.toISOString().slice(0, 10));
-        current.setDate(current.getDate() + 1);
-    }
-    return dates;
-}
-
-// ---------------------------------------------------------------------------
-// Correction detection
-// ---------------------------------------------------------------------------
-const NEGATION_PATTERNS = [
-    /^no[,.\s!]/i,
-    /^nope/i,
-    /^wrong/i,
-    /^stop/i,
-    /^that'?s not/i,
-    /^not what i/i,
-    /^don'?t/i,
-];
-
-const REDIRECTION_PATTERNS = [
-    /^actually[,\s]/i,
-    /^instead[,\s]/i,
-    /\bi meant\b/i,
-    /\bi said\b/i,
-    /\bi asked\b/i,
-];
-
-const FRUSTRATION_PATTERNS = [
-    /\b(fuck|shit|damn|crap|wtf|ffs)\b/i,
-];
-
-function isCorrection(text: string): boolean {
-    if (!text || text.length > 200 || text.length < 2) return false;
-    // Skip system/meta messages
-    if (text.startsWith('<') || text.startsWith('/')) return false;
-    return [...NEGATION_PATTERNS, ...REDIRECTION_PATTERNS, ...FRUSTRATION_PATTERNS].some(p => p.test(text));
-}
-
-// ---------------------------------------------------------------------------
-// Log collection with archive fallback
-// ---------------------------------------------------------------------------
-function collectToolUsage(targetDate: string): ToolUsageEntry[] {
-    const current = readJsonlFile<ToolUsageEntry>(join(STATE_DIR, 'tool-usage.jsonl'))
-        .filter(e => isTimestampOnDate(e.timestamp, targetDate));
-    const archived = readArchivedJsonl<ToolUsageEntry>('tool-usage', targetDate);
-    return [...current, ...archived];
-}
-
-function collectCheckpoints(targetDate: string): SessionCheckpoint[] {
-    const current = readJsonlFile<SessionCheckpoint>(join(STATE_DIR, 'session-checkpoints.jsonl'))
-        .filter(e => isTimestampOnDate(e.timestamp, targetDate));
-    const archived = readArchivedJsonl<SessionCheckpoint>('session-checkpoints', targetDate);
-    return [...current, ...archived];
-}
-
-function collectSecurity(targetDate: string): SecurityCheck[] {
-    const current = readJsonlFile<SecurityCheck>(join(STATE_DIR, 'security-checks.jsonl'))
-        .filter(e => isTimestampOnDate(e.timestamp, targetDate));
-    const archived = readArchivedJsonl<SecurityCheck>('security-checks', targetDate);
-    return [...current, ...archived];
-}
-
-// ---------------------------------------------------------------------------
-// Session transcript mining
-// ---------------------------------------------------------------------------
-function findTranscriptsForDate(targetDate: string): string[] {
-    if (!existsSync(PROJECT_DIR)) return [];
-    return readdirSync(PROJECT_DIR)
-        .filter(f => f.endsWith('.jsonl'))
-        .map(f => join(PROJECT_DIR, f))
-        .filter(f => {
-            try {
-                const stat = statSync(f);
-                const modDate = getSydneyDate(stat.mtime);
-                // Include if modified on or after the target date (session may span days)
-                return modDate >= targetDate;
-            } catch { return false; }
-        });
-}
-
-function extractCorrections(transcripts: string[], targetDate: string): CorrectionCandidate[] {
-    const candidates: CorrectionCandidate[] = [];
-    for (const filepath of transcripts) {
-        const messages = readJsonlFile<TranscriptMessage>(filepath);
-        let lastAssistant = '';
-        for (const msg of messages) {
-            if (msg.type === 'assistant' && msg.message?.content) {
-                const content = typeof msg.message.content === 'string'
-                    ? msg.message.content
-                    : JSON.stringify(msg.message.content);
-                lastAssistant = content.slice(0, 200);
-            }
-            if (msg.type === 'user' && msg.userType === 'external' && !msg.isMeta) {
-                const content = typeof msg.message?.content === 'string'
-                    ? msg.message.content : '';
-                if (isTimestampOnDate(msg.timestamp, targetDate) && isCorrection(content)) {
-                    candidates.push({
-                        timestamp: msg.timestamp,
-                        session_id: msg.sessionId || 'unknown',
-                        user_message: content.slice(0, 200),
-                        preceding_assistant: lastAssistant,
-                    });
-                }
-            }
-        }
-    }
-    return candidates;
-}
-
-function extractCCVersion(transcripts: string[]): string | null {
-    // Read most recent transcript, look for version field
-    for (const filepath of [...transcripts].reverse()) {
-        const messages = readJsonlFile<TranscriptMessage>(filepath);
-        for (const msg of messages) {
-            if (msg.version) return msg.version;
-        }
-    }
-    return null;
-}
-
-// ---------------------------------------------------------------------------
-// Git activity
-// ---------------------------------------------------------------------------
-function getGitActivity(targetDate: string): { commits: number; branches: string[]; commit_messages: string[] } {
-    try {
-        const log = execSync(
-            `cd "${QARA_DIR}" && git log --all --since="${targetDate}" --until="${targetDate}T23:59:59" --format="%h %s|||%D" 2>/dev/null`,
-            { encoding: 'utf-8' }
-        ).trim();
-        if (!log) return { commits: 0, branches: [], commit_messages: [] };
-        const lines = log.split('\n').filter(Boolean);
-        const messages = lines.map(l => l.split('|||')[0].trim());
-        const branches = new Set<string>();
-        for (const line of lines) {
-            const refs = line.split('|||')[1]?.trim();
-            if (refs) {
-                for (const ref of refs.split(',')) {
-                    const clean = ref.trim().replace(/^HEAD -> /, '').replace(/^origin\//, '');
-                    if (clean && !clean.includes('HEAD')) branches.add(clean);
-                }
-            }
-        }
-        return { commits: lines.length, branches: [...branches], commit_messages: messages };
-    } catch { return { commits: 0, branches: [], commit_messages: [] }; }
-}
-
-// ---------------------------------------------------------------------------
-// Session detection via time-gap heuristic
-// ---------------------------------------------------------------------------
-const SESSION_GAP_MS = 5 * 60 * 1000; // 5 minutes
-
-function countSessionsByTimeGap(checkpoints: SessionCheckpoint[]): number {
-    if (checkpoints.length === 0) return 0;
-    const sorted = [...checkpoints].sort((a, b) =>
-        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-    );
-    let sessions = 1;
-    for (let i = 1; i < sorted.length; i++) {
-        const gap = new Date(sorted[i].timestamp).getTime() - new Date(sorted[i - 1].timestamp).getTime();
-        if (gap > SESSION_GAP_MS) sessions++;
-    }
-    return sessions;
-}
-
-// ---------------------------------------------------------------------------
-// Anomaly detection
-// ---------------------------------------------------------------------------
-function detectAnomalies(
-    toolData: Record<string, { count: number; errors: number; error_rate: number }>,
-    overallErrorRate: number,
-): string[] {
-    const anomalies: string[] = [];
-    for (const [tool, data] of Object.entries(toolData)) {
-        if (data.errors > 0 && data.error_rate > 0.05) {
-            anomalies.push(`${tool} error rate ${(data.error_rate * 100).toFixed(1)}% (${data.errors}/${data.count})`);
-        }
-    }
-    if (overallErrorRate > 0.03) {
-        anomalies.push(`Overall error rate ${(overallErrorRate * 100).toFixed(1)}% exceeds 3% threshold`);
-    }
-    return anomalies;
-}
-
-// ---------------------------------------------------------------------------
-// Baseline computation from prior observation files
-// ---------------------------------------------------------------------------
-interface ObservationFrontmatter {
-    date: string;
-    sessions: number;
-    tools_total: number;
-    errors_total: number;
-    corrections: number;
-    is_bootstrap?: boolean;
-}
-
-interface Baseline {
-    days_available: number;
-    avg_tools: number;
-    avg_errors: number;
-    avg_sessions: number;
-    avg_corrections: number;
-    delta_tools: number;
-    delta_errors: number;
-    delta_sessions: number;
-}
-
-function parseObservationFrontmatter(filepath: string): ObservationFrontmatter | null {
-    if (!existsSync(filepath)) return null;
-    const content = readFileSync(filepath, 'utf-8');
-    const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
-    if (!fmMatch) return null;
-    const fm: Record<string, unknown> = {};
-    for (const line of fmMatch[1].split('\n')) {
-        const [key, ...rest] = line.split(':');
-        if (key && rest.length > 0) {
-            const val = rest.join(':').trim().replace(/^"(.*)"$/, '$1');
-            fm[key.trim()] = isNaN(Number(val)) ? val : Number(val);
-        }
-    }
-    return fm as unknown as ObservationFrontmatter;
-}
-
-function computeBaseline(targetDate: string, lookbackDays: number = 7): Baseline | null {
-    const obsDir = join(INTROSPECTION_DIR, 'observations');
-    if (!existsSync(obsDir)) return null;
-
-    const entries: ObservationFrontmatter[] = [];
-    const d = new Date(targetDate + 'T00:00:00Z');
-    for (let i = 1; i <= lookbackDays; i++) {
-        const prev = new Date(d);
-        prev.setDate(prev.getDate() - i);
-        const dateStr = prev.toISOString().slice(0, 10);
-        const fm = parseObservationFrontmatter(join(obsDir, `${dateStr}.md`));
-        if (fm && !fm.is_bootstrap) entries.push(fm);
-    }
-
-    if (entries.length === 0) return null;
-
-    const avg = (arr: number[]) => arr.reduce((s, v) => s + v, 0) / arr.length;
-    const avgTools = avg(entries.map(e => e.tools_total));
-    const avgErrors = avg(entries.map(e => e.errors_total));
-    const avgSessions = avg(entries.map(e => e.sessions));
-    const avgCorrections = avg(entries.map(e => e.corrections));
-
-    return {
-        days_available: entries.length,
-        avg_tools: Math.round(avgTools),
-        avg_errors: Math.round(avgErrors * 10) / 10,
-        avg_sessions: Math.round(avgSessions * 10) / 10,
-        avg_corrections: Math.round(avgCorrections * 10) / 10,
-        delta_tools: 0, // Filled by caller with today's actual
-        delta_errors: 0,
-        delta_sessions: 0,
-    };
-}
+import {
+    // Constants
+    INTROSPECTION_DIR,
+    PROJECT_DIR,
+    // JSONL / dates
+    readJsonlFile,
+    getSydneyDate,
+    getDateRange,
+    // Collection
+    collectToolUsage,
+    collectCheckpoints,
+    collectSecurity,
+    // Transcript mining
+    findTranscriptsForDate,
+    extractCorrections,
+    extractCCVersion,
+    // Analysis
+    getGitActivity,
+    countSessionsByTimeGap,
+    detectAnomalies,
+    computeBaseline,
+    // Re-export types for consumers
+    type ToolUsageEntry,
+    type SessionCheckpoint,
+    type TranscriptMessage,
+    type CorrectionCandidate,
+    type DailyReport,
+    type WeeklyReport,
+    type MonthlyReport,
+} from './miner-lib';
 
 // ---------------------------------------------------------------------------
 // Mode: Daily
@@ -478,7 +90,7 @@ function runDaily(targetDate: string): DailyReport {
     // Git
     const git = getGitActivity(targetDate);
 
-    // Baseline comparison (always computed — uses prior non-bootstrap observation files)
+    // Baseline comparison
     const baseline = computeBaseline(targetDate);
     if (baseline) {
         baseline.delta_tools = tools.length - baseline.avg_tools;
@@ -568,7 +180,6 @@ function runWeekly(start: string, end: string): WeeklyReport {
 // Mode: Monthly
 // ---------------------------------------------------------------------------
 function runMonthly(): MonthlyReport {
-    // Scan recent transcripts for CC version history
     const versionHistory: Array<{ date: string; version: string }> = [];
     const seenVersions = new Set<string>();
     if (existsSync(PROJECT_DIR)) {
@@ -576,7 +187,7 @@ function runMonthly(): MonthlyReport {
             .filter(f => f.endsWith('.jsonl'))
             .map(f => join(PROJECT_DIR, f))
             .sort((a, b) => statSync(b).mtimeMs - statSync(a).mtimeMs)
-            .slice(0, 20); // Last 20 transcripts
+            .slice(0, 20);
         for (const filepath of transcripts) {
             const messages = readJsonlFile<TranscriptMessage>(filepath);
             for (const msg of messages) {
@@ -587,14 +198,13 @@ function runMonthly(): MonthlyReport {
                         seenVersions.add(key);
                         versionHistory.push({ date, version: msg.version });
                     }
-                    break; // One per transcript is enough
+                    break;
                 }
             }
         }
     }
     versionHistory.sort((a, b) => a.date.localeCompare(b.date));
 
-    // Count pattern entries
     const patternDir = join(INTROSPECTION_DIR, 'patterns');
     const patternSummaries: Record<string, number> = {};
     if (existsSync(patternDir)) {
@@ -658,7 +268,7 @@ function main() {
     console.log(JSON.stringify(result, null, 2));
 }
 
-// Export for testing
+// Re-export everything from miner-lib for backward compatibility
 export {
     isCorrection,
     isTimestampOnDate,
@@ -671,17 +281,18 @@ export {
     SESSION_GAP_MS,
     computeBaseline,
     parseObservationFrontmatter,
+} from './miner-lib';
+
+export {
     runDaily,
     runWeekly,
     runMonthly,
-    // Types
-    type ToolUsageEntry,
-    type SessionCheckpoint,
-    type SecurityCheck,
-    type CorrectionCandidate,
     type DailyReport,
     type WeeklyReport,
     type MonthlyReport,
+    type ToolUsageEntry,
+    type SessionCheckpoint,
+    type CorrectionCandidate,
 };
 
 // Run if executed directly
