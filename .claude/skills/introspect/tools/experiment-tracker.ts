@@ -73,7 +73,8 @@ export function parseExperimentFile(content: string): Experiment | null {
     }
 
     // Required fields
-    if (!raw.id || !raw.status) return null;
+    const VALID_STATUSES = new Set(['proposed', 'active', 'completed', 'abandoned']);
+    if (!raw.id || !raw.status || !VALID_STATUSES.has(raw.status)) return null;
 
     const experiment: Experiment = {
         id: raw.id,

@@ -191,4 +191,25 @@ describe('extractErrorDetail', () => {
         expect(result).not.toBeNull();
         expect(result!.length).toBeLessThanOrEqual(15);
     });
+
+    test('redacts API tokens (sk-, ghp_, Bearer)', () => {
+        expect(extractErrorDetail('Error: auth failed sk-1234567890abcdef'))
+            .toBe('Error: auth failed sk-[REDACTED]');
+        expect(extractErrorDetail('Error: ghp_abcdef123456 invalid'))
+            .toBe('Error: ghp_[REDACTED] invalid');
+        expect(extractErrorDetail('Error: Bearer eyJhbGciOiJIUzI1NiJ9 expired'))
+            .toBe('Error: Bearer [REDACTED] expired');
+    });
+
+    test('redacts URL credentials', () => {
+        expect(extractErrorDetail('Error: failed https://user:pass123@github.com/repo'))
+            .toBe('Error: failed https://[REDACTED]@github.com/repo');
+    });
+
+    test('redacts long base64-like keys', () => {
+        const key = 'A'.repeat(44);
+        const result = extractErrorDetail(`Error: key=${key} invalid`);
+        expect(result).not.toContain(key);
+        expect(result).toContain('[REDACTED_KEY]');
+    });
 });

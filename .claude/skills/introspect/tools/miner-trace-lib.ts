@@ -92,6 +92,19 @@ function extractFilePath(summary: string): string | null {
 }
 
 /**
+ * Returns true if strings a and b share a common prefix of at least minLen
+ * characters.
+ */
+function hasSharedPrefix(a: string, b: string, minLen: number): boolean {
+    const maxLen = Math.min(a.length, b.length);
+    if (maxLen < minLen) return false;
+    for (let i = 0; i < maxLen; i++) {
+        if (a[i] !== b[i]) return i >= minLen;
+    }
+    return maxLen >= minLen;
+}
+
+/**
  * Returns true if two input_summary strings share a target (file path or
  * pattern string of 20+ chars).
  *
@@ -112,12 +125,7 @@ function hasSimilarTarget(a: string, b: string): boolean {
     const bPattern = b.match(patternRe)?.[1]?.trim();
     if (aPattern && bPattern) {
         if (aPattern === bPattern) return true;
-        const maxLen = Math.min(aPattern.length, bPattern.length);
-        if (maxLen < SHARED_PREFIX_MIN_LEN) return false;
-        for (let i = 0; i < maxLen; i++) {
-            if (aPattern[i] !== bPattern[i]) return i >= SHARED_PREFIX_MIN_LEN;
-        }
-        return maxLen >= SHARED_PREFIX_MIN_LEN;
+        return hasSharedPrefix(aPattern, bPattern, SHARED_PREFIX_MIN_LEN);
     }
 
     // General command substring matching: extract content after "command: "
@@ -125,13 +133,7 @@ function hasSimilarTarget(a: string, b: string): boolean {
     const aCmd = (a.match(cmdRe)?.[1] ?? a).trim();
     const bCmd = (b.match(cmdRe)?.[1] ?? b).trim();
 
-    // Shared prefix of 20+ chars
-    const maxLen = Math.min(aCmd.length, bCmd.length);
-    if (maxLen < SHARED_PREFIX_MIN_LEN) return false;
-    for (let i = 0; i < maxLen; i++) {
-        if (aCmd[i] !== bCmd[i]) return i >= SHARED_PREFIX_MIN_LEN;
-    }
-    return maxLen >= SHARED_PREFIX_MIN_LEN;
+    return hasSharedPrefix(aCmd, bCmd, SHARED_PREFIX_MIN_LEN);
 }
 
 /**
@@ -154,23 +156,17 @@ function isRecoveryPair(errorEntry: ToolUsageEntry, candidateEntry: ToolUsageEnt
 /**
  * Checks whether two error entries have "similar" input_summaries:
  * - Same file path, OR
- * - Shared prefix of 20+ characters in the command/content portion
+ * - Shared prefix of 20+ characters in the full input_summary string
  */
 function hasSimilarFailureInput(a: string, b: string): boolean {
     if (!a || !b) return false;
 
-    const filePathRe = /^file:\s+(\S+)/;
-    const aFile = a.match(filePathRe);
-    const bFile = b.match(filePathRe);
-    if (aFile && bFile) return aFile[1] === bFile[1];
+    const aFile = extractFilePath(a);
+    const bFile = extractFilePath(b);
+    if (aFile && bFile) return aFile === bFile;
 
     // Full string prefix comparison (includes "command: " prefix)
-    const len = Math.min(a.length, b.length);
-    if (len < SHARED_PREFIX_MIN_LEN) return false;
-    for (let i = 0; i < len; i++) {
-        if (a[i] !== b[i]) return i >= SHARED_PREFIX_MIN_LEN;
-    }
-    return len >= SHARED_PREFIX_MIN_LEN;
+    return hasSharedPrefix(a, b, SHARED_PREFIX_MIN_LEN);
 }
 
 // ---------------------------------------------------------------------------
@@ -254,11 +250,8 @@ function buildSessionTraces(entries: ToolUsageEntry[]): SessionTrace[] {
             }
         }
 
-        // Strip the synthetic "unknown-N" prefix back to "unknown" for the output
-        const outputSessionId = sessionId.startsWith('unknown-') ? 'unknown' : sessionId;
-
         traces.push({
-            session_id: outputSessionId,
+            session_id: sessionId,
             start,
             end,
             duration_ms,

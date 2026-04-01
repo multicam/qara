@@ -60,7 +60,7 @@ function extractInputSummary(toolName: string, toolInput: Record<string, unknown
         case 'Agent': {
             const parts: string[] = [];
             if (typeof toolInput.subagent_type === 'string') parts.push('type: ' + toolInput.subagent_type);
-            if (typeof toolInput.description === 'string') parts.push(truncate(toolInput.description as string, 150));
+            if (typeof toolInput.description === 'string') parts.push(truncate(toolInput.description, 150));
             return parts.join(' ');
         }
 
@@ -115,12 +115,23 @@ function classifyTopic(message: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// Error detail extraction (privacy-safe — errors contain stack traces, not secrets)
+// Secret redaction (applied to error details before logging)
+// ---------------------------------------------------------------------------
+
+function redactSecrets(s: string): string {
+    return s
+        .replace(/\b(sk-|ghp_|gho_|glpat-|Bearer\s+|token[=:]\s*)\S+/gi, '$1[REDACTED]')
+        .replace(/:\/\/[^@\s]+@/g, '://[REDACTED]@')
+        .replace(/\b[A-Za-z0-9+/]{40,}={0,2}\b/g, '[REDACTED_KEY]');
+}
+
+// ---------------------------------------------------------------------------
+// Error detail extraction (redacted for safety)
 // ---------------------------------------------------------------------------
 
 function extractErrorDetail(toolOutput: string | undefined, maxLen: number = 300): string | null {
     if (!toolOutput) return null;
-    return truncate(toolOutput, maxLen);
+    return truncate(redactSecrets(toolOutput), maxLen);
 }
 
 // ---------------------------------------------------------------------------

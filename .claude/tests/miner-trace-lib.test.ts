@@ -123,6 +123,7 @@ describe('buildSessionTraces', () => {
         const traces = buildSessionTraces(entries);
         expect(traces).toHaveLength(1);
         expect(traces[0].tool_count).toBe(3);
+        expect(traces[0].session_id).toBe('unknown-0');
     });
 
     test('handles session_id "unknown" with time-gap heuristic — >5 min gap = 2 sessions', () => {
@@ -134,9 +135,11 @@ describe('buildSessionTraces', () => {
         ];
         const traces = buildSessionTraces(entries);
         expect(traces).toHaveLength(2);
-        // First session has T0, T1
+        // First session has T0, T1 — synthetic ID unknown-0
+        expect(traces[0].session_id).toBe('unknown-0');
         expect(traces[0].tool_count).toBe(2);
-        // Second session has T8, T9
+        // Second session has T8, T9 — synthetic ID unknown-1
+        expect(traces[1].session_id).toBe('unknown-1');
         expect(traces[1].tool_count).toBe(2);
     });
 
