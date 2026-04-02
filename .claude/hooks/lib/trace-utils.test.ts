@@ -3,7 +3,6 @@ import {
     extractInputSummary,
     classifyTopic,
     extractErrorDetail,
-    classifySessionPhase,
 } from './trace-utils';
 
 // ---------------------------------------------------------------------------
@@ -215,53 +214,3 @@ describe('extractErrorDetail', () => {
     });
 });
 
-// ---------------------------------------------------------------------------
-// classifySessionPhase
-// ---------------------------------------------------------------------------
-describe('classifySessionPhase', () => {
-    test('exploring: Read >45%, WebSearch >3%, Edit <3%', () => {
-        // Read=500, WebSearch=40, Bash=200, Edit=10 → total=750
-        // Read%=66.7%, WebSearch%=5.3%, Edit%=1.3% → exploring
-        expect(classifySessionPhase({ Read: 500, WebSearch: 40, Bash: 200, Edit: 10 }))
-            .toBe('exploring');
-    });
-
-    test('implementing: Edit >5%, Write >3%', () => {
-        // Read=100, Edit=80, Write=50, Bash=200 → total=430
-        // Edit%=18.6%, Write%=11.6% → implementing
-        expect(classifySessionPhase({ Read: 100, Edit: 80, Write: 50, Bash: 200 }))
-            .toBe('implementing');
-    });
-
-    test('testing: Bash >40%', () => {
-        // Bash=500, Read=100, Grep=50 → total=650
-        // Bash%=76.9% → testing
-        expect(classifySessionPhase({ Bash: 500, Read: 100, Grep: 50 }))
-            .toBe('testing');
-    });
-
-    test('mixed: no threshold met', () => {
-        // Read=100, Bash=100, Edit=50, Grep=50 → total=300
-        // Read%=33%, Bash%=33%, Edit%=16.7% → mixed
-        expect(classifySessionPhase({ Read: 100, Bash: 100, Edit: 50, Grep: 50 }))
-            .toBe('mixed');
-    });
-
-    test('mixed: empty input', () => {
-        expect(classifySessionPhase({})).toBe('mixed');
-    });
-
-    test('exploring requires Grep >5% as alternative discovery signal', () => {
-        // Read=500, Grep=40, Bash=150, Edit=5 → total=695
-        // Read%=71.9%, Grep%=5.75%, Edit%=0.72% → exploring
-        expect(classifySessionPhase({ Read: 500, Grep: 40, Bash: 150, Edit: 5 }))
-            .toBe('exploring');
-    });
-
-    test('exploring blocked when Edit is too high', () => {
-        // Read=500, WebSearch=40, Bash=100, Edit=30 → total=670
-        // Read%=74.6%, WebSearch%=5.97%, Edit%=4.5% → not exploring (Edit >=3%)
-        const result = classifySessionPhase({ Read: 500, WebSearch: 40, Bash: 100, Edit: 30 });
-        expect(result).not.toBe('exploring');
-    });
-});

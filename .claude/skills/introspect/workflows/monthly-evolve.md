@@ -78,7 +78,30 @@ See `proposals-YYYY-MM.md` for full details.
 
 **Safety reminder:** Proposals are NEVER auto-applied. Each includes risk rating and rollback instructions. Write proposals as review-ready documents for JM.
 
-### 5. cc-upgrade-pai Status
+### 5. Diderot Demand Signals
+
+Scan the month's observations for research-related sessions. Look for:
+- Sessions where `topic_hint` contains words like "research", "investigate", "search", "explore", "find", "what is", "how does"
+- Sessions with `dominant_activity='searching'` or heavy use of WebSearch/WebFetch tools
+- Patterns in `tool-usage.md` or `session-quality.md` that reference external knowledge-seeking
+
+For each research-related session found, extract the topic being researched and write it as a demand signal to `~/qara/thoughts/shared/introspection/diderot-signals.md`:
+
+```
+- [YYYY-MM-DD] <topic> — <evidence from session>
+```
+
+Example:
+```
+- [2026-04-15] TypeScript inference performance — WebSearch calls in 3 sessions around TS compiler slowdowns
+- [2026-04-22] WCAG 2.2 contrast ratio changes — repeated WebFetch to accessibility docs
+```
+
+Append new signals to the existing file (do not overwrite prior signals). Update the file header's implicit date by adding entries in chronological order.
+
+These signals represent topics Qara actively needed external knowledge on during the month. They can be manually fed into Diderot's `_meta/logs/knowledge_gaps.yaml` to guide knowledge acquisition. Note in the monthly report how many signals were extracted and their top themes.
+
+### 6. cc-upgrade-pai Status
 
 Check when cc-upgrade-pai was last run:
 ```bash
@@ -88,7 +111,7 @@ cd ~/qara && git log --all --oneline --since="30 days ago" | grep -i "cc-upgrade
 - If run in past 30 days: note date and summary
 - If not: recommend running cc-upgrade-pai as part of monthly hygiene
 
-### 6. Self-Improvement Assessment
+### 7. Self-Improvement Assessment
 
 Review the introspection system itself:
 - Are daily observations being generated consistently? (Check observation file count and dates)
@@ -97,7 +120,7 @@ Review the introspection system itself:
 - Is the correction detection finding real corrections? (Check false positive rate by reviewing recent corrections)
 - Propose specific workflow modifications if warranted (but don't apply them directly)
 
-### 7. Architecture Review
+### 8. Architecture Review
 
 Check for staleness:
 - `DECISIONS.md` entries: are any "Revisit if" conditions now true?
@@ -106,7 +129,7 @@ Check for staleness:
 
 This is lighter than cc-upgrade-pai — focused on what patterns revealed, not full infrastructure audit.
 
-### 8. Compose Monthly Report
+### 9. Compose Monthly Report
 
 Write to `~/qara/thoughts/shared/introspection/reports/monthly-YYYY-MM.md`:
 
@@ -138,7 +161,7 @@ Write to `~/qara/thoughts/shared/introspection/reports/monthly-YYYY-MM.md`:
 [Stale DECISIONS.md entries, broken references, drift detected]
 ```
 
-### 9. Write Proposed Updates File
+### 10. Write Proposed Updates File
 
 If there are concrete memory changes to propose, also write:
 `~/qara/thoughts/shared/introspection/reports/proposed-updates-YYYY-MM.md`
@@ -156,7 +179,7 @@ This file contains the exact content to add/modify in memory files, ready for JM
 [exact markdown to add/change]
 ```
 
-### 10. Summary
+### 11. Summary
 
 Output to the conversation:
 - Report location
@@ -164,3 +187,4 @@ Output to the conversation:
 - CC version status
 - Top recommendation
 - Whether cc-upgrade-pai is stale
+- Number of Diderot demand signals extracted this month

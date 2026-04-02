@@ -83,13 +83,22 @@ OUTPUTS
 | has_code_blocks | boolean | regex | Did it include code? |
 | topic_hint | string | trace-utils | What was it about? |
 
+## Observation Taxonomy (fixed)
+
+`tool-usage`, `session-quality`, `security`, `user-correction`, `harness-change`, `git-activity`, `anomaly`, `improvement`, `recovery`, `repeated-failure`
+
 ## Confidence Tiers
 
-| Tier | Observations | Action |
+Tiers use evidence-weighted scoring, not raw observation count:
+- Each observation from a **unique day** contributes 1.0
+- Multiple observations from the **same day**: first = 1.0, each additional = 0.3
+- Rationale: 8 observations on one day (score 3.1) is weaker evidence than 5 observations across 5 days (score 5.0)
+
+| Tier | Weighted Score | Action |
 |---|---|---|
-| Emerging (3-9) | Monitor, don't act | Continue observing |
-| Established (10-25) | Act with caution | Propose if clear |
-| Confirmed (25+) | Act with confidence | Propose code/memory changes |
+| Emerging (3.0–9.9) | Monitor, don't act | Continue observing |
+| Established (10.0–24.9) | Act with caution | Propose if clear |
+| Confirmed (25.0+) | Act with confidence | Propose code/memory changes |
 
 ## Safety Invariants
 

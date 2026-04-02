@@ -135,43 +135,6 @@ function extractErrorDetail(toolOutput: string | undefined, maxLen: number = 300
 }
 
 // ---------------------------------------------------------------------------
-// Session phase classification (tool distribution → phase label)
-// ---------------------------------------------------------------------------
-
-type SessionPhase = 'exploring' | 'implementing' | 'testing' | 'mixed';
-
-function classifySessionPhase(toolCounts: Record<string, number>): SessionPhase {
-    const total = Object.values(toolCounts).reduce((sum, n) => sum + n, 0);
-    if (total === 0) return 'mixed';
-
-    const pct = (tool: string): number => (toolCounts[tool] ?? 0) / total;
-
-    const readPct = pct('Read');
-    const editPct = pct('Edit');
-    const writePct = pct('Write');
-    const bashPct = pct('Bash');
-    const webSearchPct = pct('WebSearch');
-    const grepPct = pct('Grep');
-
-    // Exploring: Read-heavy with discovery tools, minimal editing
-    if (readPct > 0.45 && (webSearchPct > 0.03 || grepPct > 0.05) && editPct < 0.03) {
-        return 'exploring';
-    }
-
-    // Implementing: Writing and editing code
-    if (editPct > 0.05 && writePct > 0.03) {
-        return 'implementing';
-    }
-
-    // Testing: Bash-dominant (running test commands)
-    if (bashPct > 0.40) {
-        return 'testing';
-    }
-
-    return 'mixed';
-}
-
-// ---------------------------------------------------------------------------
 // Exports
 // ---------------------------------------------------------------------------
 
@@ -179,6 +142,4 @@ export {
     extractInputSummary,
     classifyTopic,
     extractErrorDetail,
-    classifySessionPhase,
 };
-export type { SessionPhase };

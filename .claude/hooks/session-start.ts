@@ -15,7 +15,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
-import { SKILLS_DIR } from './lib/pai-paths';
+import { SKILLS_DIR, QARA_DIR } from './lib/pai-paths';
 import { setTerminalTabTitle } from './lib/tab-titles';
 import { readTDDStateRaw, clearTDDState, isStateValid } from './lib/tdd-state';
 
@@ -66,6 +66,37 @@ function loadCoreContext(): void {
   console.log(`<system-reminder>\n${skillContent}\n</system-reminder>`);
 }
 
+/**
+ * Load active hints from session-hints.md and output as system-reminder.
+ * Extracts only the ## Active Hints section to keep the reminder focused.
+ * Fails silently — hints are advisory and must never block session start.
+ */
+function loadSessionHints(): void {
+  try {
+    const hintsPath = join(QARA_DIR, 'thoughts', 'shared', 'introspection', 'session-hints.md');
+    if (!existsSync(hintsPath)) {
+      return;
+    }
+
+    const content = readFileSync(hintsPath, 'utf-8');
+
+    // Extract the ## Active Hints section
+    const match = content.match(/## Active Hints\n([\s\S]*?)(?=\n## |\s*$)/);
+    if (!match) {
+      return;
+    }
+
+    const hintsSection = match[1].trim();
+    if (!hintsSection) {
+      return;
+    }
+
+    console.log(`<system-reminder>\n## Session Hints (from introspection patterns)\n\n${hintsSection}\n</system-reminder>`);
+  } catch {
+    // Hints are advisory — never let a failure here surface to the user
+  }
+}
+
 async function main() {
   try {
     // Skip for subagents
@@ -92,6 +123,9 @@ async function main() {
 
     // Load core context (outputs to stdout)
     loadCoreContext();
+
+    // Load session hints from introspection patterns (outputs to stdout if hints exist)
+    loadSessionHints();
 
     // Set initial tab title
     const daName = process.env.DA || 'AI';

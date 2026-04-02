@@ -37,6 +37,8 @@ export interface PeriodMetrics {
     session_count: number;
     recovery_count: number;
     repeated_failure_count: number;
+    correction_count: number;
+    avg_session_duration_ms: number;
 }
 
 export interface Comparison {
@@ -146,6 +148,9 @@ export function computeMetricsForPeriod(
     let session_count = 0;
     let recovery_count = 0;
     let repeated_failure_count = 0;
+    let correction_count = 0;
+    let total_session_duration_ms = 0;
+    let session_trace_count = 0;
 
     for (const date of dates) {
         try {
@@ -156,12 +161,20 @@ export function computeMetricsForPeriod(
             session_count += report.sessions.count;
             recovery_count += report.recovery_patterns.length;
             repeated_failure_count += report.repeated_failures.length;
+            correction_count += report.corrections.length;
+            for (const trace of report.session_traces) {
+                total_session_duration_ms += trace.duration_ms;
+                session_trace_count++;
+            }
         } catch {
             // Skip days that fail (e.g. missing log files)
         }
     }
 
     const error_rate = total_tools > 0 ? total_errors / total_tools : 0;
+    const avg_session_duration_ms = session_trace_count > 0
+        ? total_session_duration_ms / session_trace_count
+        : 0;
 
     return {
         days: dates.length,
@@ -171,6 +184,8 @@ export function computeMetricsForPeriod(
         session_count,
         recovery_count,
         repeated_failure_count,
+        correction_count,
+        avg_session_duration_ms,
     };
 }
 
@@ -185,6 +200,8 @@ const METRIC_KEYS: Array<keyof Omit<PeriodMetrics, 'days'>> = [
     'session_count',
     'recovery_count',
     'repeated_failure_count',
+    'correction_count',
+    'avg_session_duration_ms',
 ];
 
 /**

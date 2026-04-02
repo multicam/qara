@@ -67,6 +67,9 @@ const RECOVERY_TOOL_PAIRS: Array<[string, string]> = [
     ['Edit', 'Write'],
     ['Grep', 'Glob'],
     ['Glob', 'Grep'],
+    ['Bash', 'Bash'],
+    ['Write', 'Write'],
+    ['Edit', 'Edit'],
 ];
 
 const MAX_INTERVENING_CALLS = 3;

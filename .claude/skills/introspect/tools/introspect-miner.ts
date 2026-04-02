@@ -28,6 +28,7 @@ import {
     collectToolUsage,
     collectCheckpoints,
     collectSecurity,
+    collectCheckpointEvents,
     // Transcript mining
     findTranscriptsForDate,
     extractCorrections,
@@ -108,6 +109,9 @@ function runDaily(targetDate: string): DailyReport {
     const corrections = extractCorrections(transcripts, targetDate);
     const ccVersion = extractCCVersion(transcripts);
 
+    // Checkpoint events
+    const checkpoint_events = collectCheckpointEvents(targetDate);
+
     // Git
     const git = getGitActivity(targetDate);
 
@@ -146,6 +150,7 @@ function runDaily(targetDate: string): DailyReport {
             new_risks: [...riskValues],
         },
         corrections,
+        checkpoint_events,
         git,
         cc_version: ccVersion,
         baseline,

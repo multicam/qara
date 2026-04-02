@@ -72,7 +72,7 @@ Monthly evolve                     AI reviews patterns -> proposed memory update
 
 ### Observation Taxonomy (fixed)
 
-`tool-usage`, `session-quality`, `security`, `user-correction`, `harness-change`, `git-activity`, `anomaly`, `improvement`
+`tool-usage`, `session-quality`, `security`, `user-correction`, `harness-change`, `git-activity`, `anomaly`, `improvement`, `recovery`, `repeated-failure`
 
 ### Data Locations
 

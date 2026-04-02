@@ -47,6 +47,8 @@ async function main() {
       message_len: lastMessage.length,
       has_code_blocks: /```/.test(lastMessage),
       topic_hint: classifyTopic(lastMessage),
+      transcript_path: process.env.CLAUDE_TRANSCRIPT_PATH || '',
+      project_dir: process.env.CLAUDE_PROJECT_DIR || '',
     });
   } catch {
     process.exit(0);

@@ -44,10 +44,20 @@ For each topic file, process the relevant observations:
 - If a cluster has 3+ observations across 2+ days, create a new pattern entry with confidence: `emerging`, trend: `new`
 - Write a descriptive title that captures the specific insight (not generic like "Bash errors" but "Bash errors correlate with large test suite runs")
 
-**Recalculate confidence tiers:**
-- emerging: 3-9 total observations
-- established: 10-25 total observations
-- confirmed: 25+ total observations
+**Recalculate confidence tiers using evidence-weighted scoring:**
+
+For each pattern, compute a weighted score from its supporting observations:
+- Each observation from a UNIQUE day contributes 1.0 to the score
+- Multiple observations from the SAME day: the first counts 1.0, each additional counts 0.3
+- Example: 8 observations all on one day → score = 1.0 + 7×0.3 = 3.1 (emerging)
+- Example: 5 observations across 5 different days → score = 5.0 (established)
+
+Tier thresholds (weighted score, not raw count):
+- emerging: 3.0–9.9 weighted score
+- established: 10.0–24.9 weighted score
+- confirmed: 25.0+ weighted score
+
+When updating confidence, count unique days contributing observations, not raw observation count. A pattern seen on 5 different days (weight 5.0) is stronger than one seen 8 times on a single day (weight 1.0 + 7×0.3 = 3.1).
 
 ### Cross-Session Recovery & Failure Patterns
 
@@ -90,7 +100,36 @@ Count files in `observations/`:
 - Move (not copy) the observation files to glacier
 - Update `glacier/index.md` with the new archive entry
 
-### 7. Summary
+### 7. Regenerate Session Hints
+
+After updating pattern files, regenerate `~/qara/thoughts/shared/introspection/session-hints.md`.
+
+For each pattern at 'established' or 'confirmed' confidence, write one actionable hint — a single sentence that tells Qara what to do differently based on what the pattern reveals. Good hints are specific and behavioral (e.g., "When a Bash command fails, read the full error output before retrying rather than issuing the same command again."). Avoid generic advice.
+
+Remove hints for patterns that have been demoted below 'established' or flagged as stale.
+
+Write the file in this format:
+
+```markdown
+# Session Hints
+
+Auto-generated from confirmed introspection patterns. Loaded by session-start hook.
+Last updated: YYYY-MM-DD
+
+## Active Hints
+
+- [one-line actionable hint per established/confirmed pattern]
+
+## How This File Works
+
+The weekly-synthesize workflow updates this file when patterns reach "established" or higher.
+The session-start hook reads this file and includes hints in the session context.
+Hints are removed when their source pattern is demoted below "established".
+```
+
+If no patterns are at 'established' or above yet, write the file with an empty `## Active Hints` section (no bullet points).
+
+### 8. Summary
 
 Output to the conversation:
 - Number of observations processed

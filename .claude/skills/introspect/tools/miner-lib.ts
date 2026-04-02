@@ -64,11 +64,26 @@ interface TranscriptMessage {
     isMeta?: boolean;
 }
 
+interface CheckpointEvent {
+    timestamp: string;
+    session_id: string;
+    event_type: string;
+    error_count?: number;
+    [key: string]: unknown;
+}
+
+interface CheckpointEventSummary {
+    total: number;
+    by_type: Record<string, number>;
+}
+
 interface CorrectionCandidate {
     timestamp: string;
     session_id: string;
     user_message: string;
     preceding_assistant: string;
+    pattern?: string;
+    confidence?: 'high' | 'low';
 }
 
 interface DailyReport {
@@ -92,6 +107,7 @@ interface DailyReport {
         new_risks: string[];
     };
     corrections: CorrectionCandidate[];
+    checkpoint_events: CheckpointEventSummary;
     git: {
         commits: number;
         branches: string[];
@@ -184,6 +200,12 @@ function getSydneyDate(date: Date = new Date()): string {
     return formatter.format(date); // YYYY-MM-DD
 }
 
+function getNextDay(dateStr: string): string {
+    const d = new Date(dateStr + 'T12:00:00Z'); // noon UTC to avoid DST edge cases
+    d.setUTCDate(d.getUTCDate() + 1);
+    return d.toISOString().slice(0, 10);
+}
+
 function isTimestampOnDate(timestamp: string, targetDate: string): boolean {
     try {
         const d = new Date(timestamp);
@@ -212,32 +234,71 @@ function getDateRange(startStr: string, endStr: string): string[] {
 // ---------------------------------------------------------------------------
 // Correction detection
 // ---------------------------------------------------------------------------
-const NEGATION_PATTERNS = [
-    /^no[,.\s!]/i,
-    /^nope/i,
-    /^wrong/i,
-    /^stop/i,
-    /^that'?s not/i,
-    /^not what i/i,
-    /^don'?t/i,
+const NEGATION_PATTERNS: Array<[RegExp, string]> = [
+    [/^no[,.\s!]/i, 'negation-no'],
+    [/^nope/i, 'negation-nope'],
+    [/^wrong/i, 'negation-wrong'],
+    [/^that'?s wrong/i, 'negation-thats-wrong'],
+    [/^that'?s not/i, 'negation-thats-not'],
+    [/^not that\b/i, 'negation-not-that'],
+    [/^not what i/i, 'negation-not-what-i'],
+    [/^stop/i, 'negation-stop'],
+    [/^don'?t/i, 'negation-dont'],
+    [/^wait[,.\s!]/i, 'negation-wait'],
+    [/^hold on/i, 'negation-hold-on'],
+    [/^undo/i, 'negation-undo'],
+    [/^go back/i, 'negation-go-back'],
+    [/^start over/i, 'negation-start-over'],
+    [/^try again/i, 'negation-try-again'],
+    [/^revert/i, 'negation-revert'],
 ];
 
-const REDIRECTION_PATTERNS = [
-    /^actually[,\s]/i,
-    /^instead[,\s]/i,
-    /\bi meant\b/i,
-    /\bi said\b/i,
-    /\bi asked\b/i,
+const REDIRECTION_PATTERNS: Array<[RegExp, string]> = [
+    [/^actually[,\s]/i, 'redirect-actually'],
+    [/^instead[,\s]/i, 'redirect-instead'],
+    [/\bi meant\b/i, 'redirect-i-meant'],
+    [/\bi wanted\b/i, 'redirect-i-wanted'],
+    [/\bi said\b/i, 'redirect-i-said'],
+    [/\bi asked\b/i, 'redirect-i-asked'],
+    [/\bthe other\b/i, 'redirect-the-other'],
 ];
 
-const FRUSTRATION_PATTERNS = [
-    /\b(fuck|shit|damn|crap|wtf|ffs)\b/i,
+const FRUSTRATION_PATTERNS: Array<[RegExp, string]> = [
+    [/\b(fuck|shit|damn|crap|wtf|ffs)\b/i, 'frustration'],
 ];
 
+const ALL_CORRECTION_PATTERNS = [
+    ...NEGATION_PATTERNS,
+    ...REDIRECTION_PATTERNS,
+    ...FRUSTRATION_PATTERNS,
+];
+
+/** Returns the pattern name if the text matches a known correction pattern, otherwise null. */
+function detectCorrectionPattern(text: string): string | null {
+    if (!text || text.length > 200 || text.length < 2) return null;
+    if (text.startsWith('<') || text.startsWith('/')) return null;
+    for (const [regex, name] of ALL_CORRECTION_PATTERNS) {
+        if (regex.test(text)) return name;
+    }
+    return null;
+}
+
+/** Backward-compatible boolean check used by external callers. */
 function isCorrection(text: string): boolean {
-    if (!text || text.length > 200 || text.length < 2) return false;
-    if (text.startsWith('<') || text.startsWith('/')) return false;
-    return [...NEGATION_PATTERNS, ...REDIRECTION_PATTERNS, ...FRUSTRATION_PATTERNS].some(p => p.test(text));
+    return detectCorrectionPattern(text) !== null;
+}
+
+// Contextual heuristic: imperative verbs that commonly open short redirect messages
+const IMPERATIVE_VERBS = /^(use|try|change|make|do|run|add|remove|delete|move|put|fix|update|set|check)\b/i;
+// Negation words that signal disagreement mid-message
+const NEGATION_WORDS = /\b(not|don't|doesn't|isn't|won't|can't|shouldn't|instead|rather|actually|but)\b/i;
+
+/**
+ * Returns true if the assistant message looks like it contained a code block or a file path —
+ * i.e. the context in which a short follow-up is likely to be a redirect.
+ */
+function assistantHadCodeOrPath(assistantSnippet: string): boolean {
+    return assistantSnippet.includes('```') || /[/\\][a-zA-Z0-9._-]/.test(assistantSnippet);
 }
 
 // ---------------------------------------------------------------------------
@@ -262,6 +323,16 @@ function collectSecurity(targetDate: string): SecurityCheck[] {
         .filter(e => isTimestampOnDate(e.timestamp, targetDate));
     const archived = readArchivedJsonl<SecurityCheck>('security-checks', targetDate);
     return filterTestNoise([...current, ...archived]);
+}
+
+function collectCheckpointEvents(targetDate: string): CheckpointEventSummary {
+    const entries = readJsonlFile<CheckpointEvent>(join(STATE_DIR, 'checkpoint-events.jsonl'))
+        .filter(e => isTimestampOnDate(e.timestamp, targetDate));
+    const by_type: Record<string, number> = {};
+    for (const e of entries) {
+        by_type[e.event_type] = (by_type[e.event_type] || 0) + 1;
+    }
+    return { total: entries.length, by_type };
 }
 
 // Filter security test noise: >3 BLOCKED entries in the same second = test vectors
@@ -290,38 +361,73 @@ function findTranscriptsForDate(targetDate: string): string[] {
             try {
                 const stat = statSync(f);
                 const modDate = getSydneyDate(stat.mtime);
-                return modDate >= targetDate;
+                const nextDay = getNextDay(targetDate);
+                return modDate === targetDate || modDate === nextDay;
             } catch { return false; }
         });
 }
 
 function extractCorrections(transcripts: string[], targetDate: string): CorrectionCandidate[] {
     const candidates: CorrectionCandidate[] = [];
+
     for (const filepath of transcripts) {
         const messages = readJsonlFile<TranscriptMessage>(filepath);
         let lastAssistant = '';
+
         for (const msg of messages) {
+            // Track the most recent assistant message (store enough to detect code blocks / paths)
             if (msg.type === 'assistant' && msg.message?.content) {
                 const raw = msg.message.content;
                 const text = typeof raw === 'string' ? raw
                     : Array.isArray(raw) ? raw.filter(b => b.type === 'text').map(b => b.text ?? '').join(' ').trim()
                     : '';
-                lastAssistant = text.slice(0, 200);
+                // Keep 500 chars so code-block fences (```) are reliably captured
+                lastAssistant = text.slice(0, 500);
             }
+
             if (msg.type === 'user' && msg.userType === 'external' && !msg.isMeta) {
                 const content = typeof msg.message?.content === 'string'
                     ? msg.message.content : '';
-                if (isTimestampOnDate(msg.timestamp, targetDate) && isCorrection(content)) {
+                if (!content || !isTimestampOnDate(msg.timestamp, targetDate)) continue;
+
+                // --- Pass 1: high-confidence regex patterns ---
+                const patternName = detectCorrectionPattern(content);
+                if (patternName) {
                     candidates.push({
                         timestamp: msg.timestamp,
                         session_id: msg.sessionId || 'unknown',
                         user_message: content.slice(0, 200),
-                        preceding_assistant: lastAssistant,
+                        preceding_assistant: lastAssistant.slice(0, 200),
+                        pattern: patternName,
+                        confidence: 'high',
                     });
+                    continue; // already captured — skip contextual pass for this message
+                }
+
+                // --- Pass 2: contextual redirect heuristic (low confidence) ---
+                // Only fires when the assistant just produced code or a file path
+                if (assistantHadCodeOrPath(lastAssistant)) {
+                    const words = content.trim().split(/\s+/);
+                    if (words.length < 30) {
+                        const hasQuestion = content.includes('?');
+                        const hasImperative = IMPERATIVE_VERBS.test(content.trimStart());
+                        const hasNegationWord = NEGATION_WORDS.test(content);
+                        if (hasQuestion || hasImperative || hasNegationWord) {
+                            candidates.push({
+                                timestamp: msg.timestamp,
+                                session_id: msg.sessionId || 'unknown',
+                                user_message: content.slice(0, 200),
+                                preceding_assistant: lastAssistant.slice(0, 200),
+                                pattern: 'contextual-redirect',
+                                confidence: 'low',
+                            });
+                        }
+                    }
                 }
             }
         }
     }
+
     return candidates;
 }
 
@@ -341,7 +447,7 @@ function extractCCVersion(transcripts: string[]): string | null {
 function getGitActivity(targetDate: string): { commits: number; branches: string[]; commit_messages: string[] } {
     try {
         const log = execSync(
-            `cd "${QARA_DIR}" && git log --all --since="${targetDate}" --until="${targetDate}T23:59:59" --format="%h %s|||%D" 2>/dev/null`,
+            `cd "${QARA_DIR}" && git log --all --since="${targetDate}T00:00:00+11:00" --until="${targetDate}T23:59:59+11:00" --format="%h %s|||%D" 2>/dev/null`,
             { encoding: 'utf-8' }
         ).trim();
         if (!log) return { commits: 0, branches: [], commit_messages: [] };
@@ -467,10 +573,15 @@ export {
     getDateRange,
     // Correction detection
     isCorrection,
+    detectCorrectionPattern,
+    assistantHadCodeOrPath,
+    IMPERATIVE_VERBS,
+    NEGATION_WORDS,
     // Log collection
     collectToolUsage,
     collectCheckpoints,
     collectSecurity,
+    collectCheckpointEvents,
     // Transcript mining
     findTranscriptsForDate,
     extractCorrections,
@@ -490,6 +601,8 @@ export {
     type SecurityCheck,
     type TranscriptMessage,
     type CorrectionCandidate,
+    type CheckpointEvent,
+    type CheckpointEventSummary,
     type DailyReport,
     type WeeklyReport,
     type MonthlyReport,
