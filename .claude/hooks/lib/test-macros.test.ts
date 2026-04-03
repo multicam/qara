@@ -21,6 +21,7 @@ import {
   clearTDDState,
   getLastLogLine,
   getLogLineCount,
+  waitForLogLineCount,
 } from "./test-macros";
 
 // ─── Input Builders ──────────────────────────────────────────────────────────
@@ -198,8 +199,28 @@ describe("JSONL log helpers", () => {
     expect(getLogLineCount("/tmp/nonexistent-log-file.jsonl")).toBe(0);
   });
 
+  it("getLogLineCount returns 0 for empty file", () => {
+    const ctx = createTestPaiDir("jsonl-empty-count");
+    paiDir = ctx.paiDir;
+    cleanupFn = ctx.cleanup;
+
+    const logFile = join(ctx.stateDir, "empty.jsonl");
+    writeFileSync(logFile, "");
+    expect(getLogLineCount(logFile)).toBe(0);
+  });
+
   it("getLastLogLine returns null for missing file", () => {
     expect(getLastLogLine("/tmp/nonexistent-log-file.jsonl")).toBeNull();
+  });
+
+  it("getLastLogLine returns null for empty file", () => {
+    const ctx = createTestPaiDir("jsonl-empty-last");
+    paiDir = ctx.paiDir;
+    cleanupFn = ctx.cleanup;
+
+    const logFile = join(ctx.stateDir, "empty.jsonl");
+    writeFileSync(logFile, "");
+    expect(getLastLogLine(logFile)).toBeNull();
   });
 
   it("getLogLineCount counts lines correctly", () => {
@@ -227,5 +248,33 @@ describe("JSONL log helpers", () => {
     );
     const last = getLastLogLine(logFile);
     expect(last).toEqual({ tool: "Edit" });
+  });
+
+  it("waitForLogLineCount waits for async log writes", async () => {
+    const ctx = createTestPaiDir("jsonl-wait");
+    paiDir = ctx.paiDir;
+    cleanupFn = ctx.cleanup;
+
+    const logFile = join(ctx.stateDir, "async.jsonl");
+    setTimeout(() => {
+      writeFileSync(logFile, '{"tool":"Write"}\n');
+    }, 20);
+
+    await expect(
+      waitForLogLineCount(logFile, 1, { timeout: 500, interval: 10 })
+    ).resolves.toBe(1);
+  });
+
+  it("waitForLogLineCount returns current count after timeout", async () => {
+    const ctx = createTestPaiDir("jsonl-timeout");
+    paiDir = ctx.paiDir;
+    cleanupFn = ctx.cleanup;
+
+    const logFile = join(ctx.stateDir, "timeout.jsonl");
+    writeFileSync(logFile, '{"tool":"Read"}\n');
+
+    await expect(
+      waitForLogLineCount(logFile, 2, { timeout: 30, interval: 10 })
+    ).resolves.toBe(1);
   });
 });

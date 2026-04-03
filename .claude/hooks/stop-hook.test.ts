@@ -10,6 +10,8 @@ import { join } from "path";
 import {
   runHook as runHookBase,
   createTestPaiDir,
+  getLogLineCount,
+  waitForLogLineCount,
 } from "./lib/test-macros";
 
 const HOOK = join(import.meta.dir, "stop-hook.ts");
@@ -95,11 +97,12 @@ describe("stop-hook.ts", () => {
 
   describe("session checkpoint persistence", () => {
     it("should write checkpoint to JSONL on valid message", async () => {
+      const before = getLogLineCount(CHECKPOINT_FILE);
       await runHook({
         last_assistant_message: "Refactored the auth module",
         stop_reason: "end_turn",
       });
-      await new Promise((r) => setTimeout(r, 300));
+      await waitForLogLineCount(CHECKPOINT_FILE, before + 1);
 
       expect(existsSync(CHECKPOINT_FILE)).toBe(true);
       const lines = readFileSync(CHECKPOINT_FILE, "utf-8").trim().split("\n");
@@ -110,11 +113,12 @@ describe("stop-hook.ts", () => {
     });
 
     it("should record session_id from environment", async () => {
+      const before = getLogLineCount(CHECKPOINT_FILE);
       await runHook(
         { last_assistant_message: "Fixed the login bug" },
         { CLAUDE_SESSION_ID: "checkpoint-test-session" }
       );
-      await new Promise((r) => setTimeout(r, 300));
+      await waitForLogLineCount(CHECKPOINT_FILE, before + 1);
 
       const lines = readFileSync(CHECKPOINT_FILE, "utf-8").trim().split("\n");
       const last = JSON.parse(lines[lines.length - 1]);
@@ -122,15 +126,14 @@ describe("stop-hook.ts", () => {
     });
 
     it("should not write checkpoint when no last_assistant_message", async () => {
-      const before = existsSync(CHECKPOINT_FILE)
-        ? readFileSync(CHECKPOINT_FILE, "utf-8").trim().split("\n").length
-        : 0;
+      const before = getLogLineCount(CHECKPOINT_FILE);
       await runHook({ stop_reason: "end_turn" });
-      await new Promise((r) => setTimeout(r, 300));
+      await waitForLogLineCount(CHECKPOINT_FILE, before + 1, {
+        timeout: 200,
+        interval: 25,
+      });
 
-      const after = existsSync(CHECKPOINT_FILE)
-        ? readFileSync(CHECKPOINT_FILE, "utf-8").trim().split("\n").length
-        : 0;
+      const after = getLogLineCount(CHECKPOINT_FILE);
       expect(after).toBe(before);
     });
   });

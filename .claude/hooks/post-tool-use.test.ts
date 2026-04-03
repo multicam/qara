@@ -11,6 +11,7 @@ import {
   createTestPaiDir,
   getLastLogLine,
   getLogLineCount,
+  waitForLogLineCount,
 } from "./lib/test-macros";
 
 const HOOK = join(import.meta.dir, "post-tool-use.ts");
@@ -32,9 +33,7 @@ describe("post-tool-use.ts", () => {
         tool_input: { file_path: "/tmp/test.txt" },
         was_error: false,
       });
-      await new Promise((r) => setTimeout(r, 300));
-
-      const after = getLogLineCount(LOG_FILE);
+      const after = await waitForLogLineCount(LOG_FILE, before + 1);
       expect(after).toBeGreaterThan(before);
 
       const last = getLastLogLine(LOG_FILE);
@@ -45,12 +44,13 @@ describe("post-tool-use.ts", () => {
     });
 
     it("should record was_error=true for failed tools", async () => {
+      const before = getLogLineCount(LOG_FILE);
       await runHook({
         tool_name: "FailedTool",
         tool_input: { command: "false" },
         was_error: true,
       });
-      await new Promise((r) => setTimeout(r, 300));
+      await waitForLogLineCount(LOG_FILE, before + 1);
 
       const last = getLastLogLine(LOG_FILE);
       expect(last!.tool).toBe("FailedTool");
@@ -58,22 +58,24 @@ describe("post-tool-use.ts", () => {
     });
 
     it("should record session_id from environment", async () => {
+      const before = getLogLineCount(LOG_FILE);
       await runHook(
         { tool_name: "SessionTest", tool_input: {}, was_error: false },
         { CLAUDE_SESSION_ID: "test-session-xyz" }
       );
-      await new Promise((r) => setTimeout(r, 300));
+      await waitForLogLineCount(LOG_FILE, before + 1);
 
       const last = getLastLogLine(LOG_FILE);
       expect(last!.session_id).toBe("test-session-xyz");
     });
 
     it("should fall back to SESSION_ID env var", async () => {
+      const before = getLogLineCount(LOG_FILE);
       await runHook(
         { tool_name: "SessionFallback", tool_input: {}, was_error: false },
         { SESSION_ID: "fallback-session-abc", CLAUDE_SESSION_ID: "" }
       );
-      await new Promise((r) => setTimeout(r, 300));
+      await waitForLogLineCount(LOG_FILE, before + 1);
 
       const last = getLastLogLine(LOG_FILE);
       expect(last!.session_id).toBeDefined();

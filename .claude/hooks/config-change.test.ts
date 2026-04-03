@@ -11,6 +11,7 @@ import {
   createTestPaiDir,
   getLastLogLine,
   getLogLineCount,
+  waitForLogLineCount,
 } from "./lib/test-macros";
 
 const HOOK = join(import.meta.dir, "config-change.ts");
@@ -31,9 +32,7 @@ describe("config-change.ts", () => {
         config_source: "settings.json",
         session_id: "test-session-1",
       });
-      await new Promise((r) => setTimeout(r, 300));
-
-      const after = getLogLineCount(LOG_FILE);
+      const after = await waitForLogLineCount(LOG_FILE, before + 1);
       expect(after).toBeGreaterThan(before);
 
       const last = getLastLogLine(LOG_FILE);
@@ -43,30 +42,33 @@ describe("config-change.ts", () => {
     });
 
     it("should record session_id from input", async () => {
+      const before = getLogLineCount(LOG_FILE);
       await runHook({
         config_source: "mcp.json",
         session_id: "explicit-session-id",
       });
-      await new Promise((r) => setTimeout(r, 300));
+      await waitForLogLineCount(LOG_FILE, before + 1);
 
       const last = getLastLogLine(LOG_FILE);
       expect(last!.session_id).toBe("explicit-session-id");
     });
 
     it("should fall back to CLAUDE_SESSION_ID env var", async () => {
+      const before = getLogLineCount(LOG_FILE);
       await runHook(
         { config_source: "settings.json" },
         { CLAUDE_SESSION_ID: "env-session-xyz" }
       );
-      await new Promise((r) => setTimeout(r, 300));
+      await waitForLogLineCount(LOG_FILE, before + 1);
 
       const last = getLastLogLine(LOG_FILE);
       expect(last!.session_id).toBe("env-session-xyz");
     });
 
     it('should use "unknown" for missing source', async () => {
+      const before = getLogLineCount(LOG_FILE);
       await runHook({ session_id: "test" });
-      await new Promise((r) => setTimeout(r, 300));
+      await waitForLogLineCount(LOG_FILE, before + 1);
 
       const last = getLastLogLine(LOG_FILE);
       expect(last!.source).toBe("unknown");

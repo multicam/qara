@@ -1,0 +1,9 @@
+{
+  "session_id": "omx-1775245712445-s2y668",
+  "started_at": "2026-04-03T19:48:32.831Z",
+  "cwd": "/home/jean-marc/qara",
+  "pid": 1137239,
+  "platform": "linux",
+  "pid_start_ticks": 16547258,
+  "pid_cmdline": "/home/jean-marc/.local/share/mise/installs/node/24.11.1/bin/node /home/jean-marc/.local/share/mise/installs/node/24.11.1/bin/omx --madmax --high"
+}

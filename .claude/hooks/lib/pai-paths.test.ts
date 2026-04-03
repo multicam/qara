@@ -268,10 +268,11 @@ TEST_VAR_2=value2
       loadEnv();
 
       // Should expand $HOME
-      if (process.env.TEST_VAR_HOME) {
-        expect(process.env.TEST_VAR_HOME).not.toContain('$HOME');
-        expect(process.env.TEST_VAR_HOME).toContain('test/path');
-      }
+      const homeValue = process.env.TEST_VAR_HOME;
+      expect(homeValue).toBeDefined();
+      const resolvedHomeValue = String(homeValue);
+      expect(resolvedHomeValue).not.toContain('$HOME');
+      expect(resolvedHomeValue).toContain('test/path');
     });
 
     it('should not overwrite existing environment variables', () => {

@@ -4,8 +4,12 @@ state/
 # Agent session data
 agent-sessions.json
 
+# Local environment secrets
+.env
+
 # Local settings (user-specific)
 settings.json
 settings.local.json
 
-history/
+history/*
+!history/.gitkeep

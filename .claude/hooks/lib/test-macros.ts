@@ -174,14 +174,20 @@ export function clearTDDState(paiDir: string): void {
 
 // ─── JSONL Log Helpers ───────────────────────────────────────────────────────
 
+function readJsonlLines(logFile: string): string[] {
+  if (!existsSync(logFile)) return [];
+  const content = readFileSync(logFile, "utf-8").trim();
+  return content ? content.split("\n") : [];
+}
+
 /**
  * Read the last line of a JSONL log file as a parsed object.
  */
 export function getLastLogLine(
   logFile: string
 ): Record<string, unknown> | null {
-  if (!existsSync(logFile)) return null;
-  const lines = readFileSync(logFile, "utf-8").trim().split("\n");
+  const lines = readJsonlLines(logFile);
+  if (lines.length === 0) return null;
   return JSON.parse(lines[lines.length - 1]);
 }
 
@@ -189,6 +195,27 @@ export function getLastLogLine(
  * Count lines in a JSONL log file.
  */
 export function getLogLineCount(logFile: string): number {
-  if (!existsSync(logFile)) return 0;
-  return readFileSync(logFile, "utf-8").trim().split("\n").length;
+  return readJsonlLines(logFile).length;
+}
+
+/**
+ * Poll until a JSONL log file reaches the expected number of lines.
+ * Returns the final observed count even if the timeout expires.
+ */
+export async function waitForLogLineCount(
+  logFile: string,
+  expectedCount: number,
+  opts?: { timeout?: number; interval?: number }
+): Promise<number> {
+  const timeout = opts?.timeout ?? 1000;
+  const interval = opts?.interval ?? 25;
+  const deadline = Date.now() + timeout;
+
+  while (Date.now() <= deadline) {
+    const count = getLogLineCount(logFile);
+    if (count >= expectedCount) return count;
+    await new Promise((resolve) => setTimeout(resolve, interval));
+  }
+
+  return getLogLineCount(logFile);
 }

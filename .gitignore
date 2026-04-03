@@ -11,6 +11,8 @@ bun.lock
 
 history/
 thoughts/
+!.claude/history/
+!.claude/history/.gitkeep
 
 .venv
 

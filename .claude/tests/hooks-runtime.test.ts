@@ -7,14 +7,19 @@
  * Run with: bun test ./.claude/tests/hooks-runtime.test.ts
  */
 
-import { describe, it, expect, afterAll } from 'bun:test';
-import { existsSync, readFileSync, unlinkSync, mkdirSync } from 'fs';
+import { describe, it, expect } from 'bun:test';
+import { unlinkSync, mkdirSync } from 'fs';
 import { join } from 'path';
-import { homedir, tmpdir } from 'os';
-import { spawn } from 'child_process';
+import { tmpdir } from 'os';
+import {
+  runHook as runHookBase,
+  createTestPaiDir,
+  getLastLogLine,
+  getLogLineCount,
+  waitForLogLineCount,
+} from '../hooks/lib/test-macros';
 
-const HOOKS_DIR = join(homedir(), 'qara', '.claude', 'hooks');
-const STATE_DIR = join(homedir(), '.claude', 'state');
+const HOOKS_DIR = join(import.meta.dir, '..', 'hooks');
 
 // Helper: run a hook with JSON stdin and capture output
 async function runHook(
@@ -22,32 +27,7 @@ async function runHook(
   input: object | string,
   env?: Record<string, string>
 ): Promise<{ stdout: string; stderr: string; exitCode: number }> {
-  return new Promise((resolve) => {
-    const proc = spawn('bun', ['run', join(HOOKS_DIR, hookFile)], {
-      cwd: HOOKS_DIR,
-      env: { ...process.env, ...env },
-    });
-
-    let stdout = '';
-    let stderr = '';
-
-    proc.stdout.on('data', (d) => { stdout += d.toString(); });
-    proc.stderr.on('data', (d) => { stderr += d.toString(); });
-
-    const stdinStr = typeof input === 'string' ? input : JSON.stringify(input);
-    proc.stdin.write(stdinStr);
-    proc.stdin.end();
-
-    const timer = setTimeout(() => {
-      proc.kill('SIGTERM');
-      resolve({ stdout, stderr, exitCode: 124 }); // timeout
-    }, 10000);
-
-    proc.on('close', (code) => {
-      clearTimeout(timer);
-      resolve({ stdout, stderr, exitCode: code ?? 1 });
-    });
-  });
+  return runHookBase(join(HOOKS_DIR, hookFile), input, { env });
 }
 
 // =============================================================================
@@ -84,30 +64,31 @@ describe('post-tool-use.ts', () => {
   });
 
   it('should log to tool-usage.jsonl', async () => {
-    const logFile = join(STATE_DIR, 'tool-usage.jsonl');
-    const beforeLines = existsSync(logFile)
-      ? readFileSync(logFile, 'utf-8').trim().split('\n').length
-      : 0;
+    const { paiDir, stateDir, cleanup } = createTestPaiDir('hooks-runtime-post-tool');
+    const logFile = join(stateDir, 'tool-usage.jsonl');
+    try {
+      const beforeLines = getLogLineCount(logFile);
 
-    await runHook('post-tool-use.ts', {
-      tool_name: 'TestTool',
-      tool_input: {},
-      was_error: false,
-    });
+      await runHook(
+        'post-tool-use.ts',
+        {
+          tool_name: 'TestTool',
+          tool_input: {},
+          was_error: false,
+        },
+        { PAI_DIR: paiDir }
+      );
 
-    // Give a moment for file write
-    await new Promise(r => setTimeout(r, 200));
-
-    if (existsSync(logFile)) {
-      const afterLines = readFileSync(logFile, 'utf-8').trim().split('\n').length;
+      const afterLines = await waitForLogLineCount(logFile, beforeLines + 1);
       expect(afterLines).toBeGreaterThan(beforeLines);
 
-      // Check last line is valid JSON with expected fields
-      const lines = readFileSync(logFile, 'utf-8').trim().split('\n');
-      const last = JSON.parse(lines[lines.length - 1]);
-      expect(last.tool).toBe('TestTool');
-      expect(last.error).toBe(false);
-      expect(last.timestamp).toBeDefined();
+      const last = getLastLogLine(logFile);
+      expect(last).not.toBeNull();
+      expect(last!.tool).toBe('TestTool');
+      expect(last!.error).toBe(false);
+      expect(last!.timestamp).toBeDefined();
+    } finally {
+      cleanup();
     }
   });
 
