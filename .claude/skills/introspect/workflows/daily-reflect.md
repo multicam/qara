@@ -70,6 +70,24 @@ For each `repeated_failure`, create a `[tool-usage][repeated-failure]` observati
 Summarize the day's session mix as a `[session-quality]` observation:
 > "Today: [N] sessions — [breakdown by dominant_activity]"
 
+**Hint Compliance** (`hint_compliance` and `hints_loaded` sections):
+
+Record in the observation's YAML frontmatter:
+```yaml
+hints_loaded:
+  - "hint text 1"
+  - "hint text 2"
+hint_compliance:
+  bash_pct: 34.5
+  agent_delegation_pct: 1.8
+  bash_retry_rate: 0.05
+```
+
+If any hint compliance metric has shifted notably from the 7-day baseline, note it as a `[tool-usage]` observation:
+> "Hint compliance: Bash at [X]% (baseline [Y]%), agent delegation [X]% (baseline [Y]%), retry rate [X] (baseline [Y])"
+
+This enables measuring whether session hints are changing actual behavior over time.
+
 ### 4. Compose Observation File
 
 Write to `~/qara/thoughts/shared/introspection/observations/YYYY-MM-DD.md`
