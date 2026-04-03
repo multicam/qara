@@ -6,7 +6,7 @@ description: |
   with TDD-based fix plans. Supports single bugs and batch sessions with
   blocking relationships and dependency ordering. Pairs with codebase-analyzer
   and engineer agents.
-  Adapted from mattpocock/skills (upstream commits 1325b14 triage-issue + 6a87ed0 qa).
+  Adapted from mattpocock/skills (upstream commits 1325b14 triage-issue + 6a87ed0 qa + 651eab0 github-triage cherry-picks).
   USE WHEN: "triage this bug", "investigate issue", "file a bug", "root cause analysis",
   "what's causing this", "create issue for this bug", "batch triage", "QA session",
   "I have a pile of issues"
@@ -84,6 +84,9 @@ After identifying the root cause, determine if this is a single issue or needs b
 **When entering batch mode explicitly** (JM says "I have a pile"):
 Skip scope assessment — go straight to per-issue loop. Track cross-references as issues accumulate.
 
+**Out-of-scope KB check** (for wontfix candidates):
+Before classifying an enhancement as wontfix, check `.out-of-scope/` at the project root for a matching concept file. If found, surface the prior reasoning to JM and reference the existing record when closing. If no match exists and JM confirms wontfix, create a new record in Phase 5.
+
 ### Phase 4: TDD Fix Plan
 
 Create ordered RED-GREEN test cycles with minimal code changes per cycle:
@@ -93,6 +96,36 @@ Create ordered RED-GREEN test cycles with minimal code changes per cycle:
 - **Observable outcomes**: Test API responses, UI state, user-visible effects — not internal state
 - **Vertical slices**: Each test-code cycle is one vertical slice against public interfaces
 - **Minimal steps**: Smallest possible change per cycle
+
+### Phase 4.5: Agent Brief (Optional)
+
+When an issue is suited for agent work (clear scope, testable criteria, no ambiguous design decisions), generate a durable agent brief alongside the TDD plan. The brief describes *interfaces and behaviors*, not file paths or line numbers, so it survives refactoring.
+
+```md
+## Agent Brief
+
+**Category:** bug / enhancement
+**Summary:** one-line description of what needs to happen
+
+**Current behavior:**
+What happens now — the broken behavior or status quo.
+
+**Desired behavior:**
+What should happen after the fix. Be specific about edge cases.
+
+**Key interfaces:**
+- `TypeName` — what needs to change and why
+- `functionName()` — current return vs expected return
+
+**Acceptance criteria:**
+- [ ] Testable criterion 1
+- [ ] Testable criterion 2
+
+**Out of scope:**
+- What should NOT be changed in this fix
+```
+
+Include the agent brief as a collapsible section in the GitHub issue body when generated.
 
 ### Phase 5: Issue Creation
 
@@ -123,6 +156,9 @@ Or: None — can start immediately
 ## Out of Scope
 [What this fix deliberately does NOT address]
 ```
+
+**Wontfix with out-of-scope record** (enhancements only):
+When JM confirms an enhancement as wontfix, create `.out-of-scope/<concept>.md` at the project root — one file per concept (kebab-case), not per issue. Include substantive reasoning (not just "we don't want this"), references to project scope or technical constraints, and prior issue numbers. If a file already exists for the concept, append the new issue number to "Prior requests." Close the issue with a `wontfix` label and link to the reasoning.
 
 **Batch mode filing rules:**
 - File issues in dependency order (blockers first) so real issue numbers can be referenced

@@ -49,6 +49,12 @@ import {
 } from './miner-lib';
 
 import {
+    computeHintCompliance,
+    readActiveHintsFromFile,
+    type HintCompliance,
+} from './miner-hint-lib';
+
+import {
     buildSessionTraces,
     detectRecoveryPatterns,
     detectRepeatedFailures,
@@ -59,12 +65,14 @@ import {
     type SessionProfile,
 } from './miner-trace-lib';
 
-// Extend the base DailyReport with trace-lib fields
+// Extend the base DailyReport with trace-lib and hint-lib fields
 type DailyReport = DailyReportBase & {
     session_traces: SessionTrace[];
     recovery_patterns: RecoveryPattern[];
     repeated_failures: RepeatedFailure[];
     session_profiles: SessionProfile[];
+    hint_compliance: HintCompliance;
+    hints_loaded: string[];
 };
 
 // ---------------------------------------------------------------------------
@@ -129,6 +137,10 @@ function runDaily(targetDate: string): DailyReport {
     const repeated_failures = detectRepeatedFailures(tools);
     const session_profiles = session_traces.map(trace => computeSessionProfile(trace));
 
+    // Hint compliance
+    const hint_compliance = computeHintCompliance(tools);
+    const hints_loaded = readActiveHintsFromFile(INTROSPECTION_DIR);
+
     return {
         mode: 'daily',
         date: targetDate,
@@ -158,6 +170,8 @@ function runDaily(targetDate: string): DailyReport {
         recovery_patterns,
         repeated_failures,
         session_profiles,
+        hint_compliance,
+        hints_loaded,
     };
 }
 
@@ -404,6 +418,13 @@ export {
     detectRepeatedFailures,
     computeSessionProfile,
 } from './miner-trace-lib';
+
+export {
+    computeHintCompliance,
+    readActiveHints,
+    readActiveHintsFromFile,
+    type HintCompliance,
+} from './miner-hint-lib';
 
 export {
     runDaily,

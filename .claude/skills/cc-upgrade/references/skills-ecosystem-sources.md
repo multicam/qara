@@ -3,7 +3,7 @@
 Comprehensive directory of the agent skills ecosystem — registries, key authors,
 CLI tools, open standards, and curated collections. Maintained as part of `cc-upgrade`.
 
-Last reviewed: 2026-03-22
+Last reviewed: 2026-04-02
 
 ---
 
@@ -69,13 +69,13 @@ Prefer curated sources below.
 | Repository | Author | Description | Install Count |
 |-----------|--------|-------------|---------------|
 | [anthropics/skills](https://github.com/anthropics/skills) | Anthropic | Official document skills (DOCX, PDF, PPTX, XLSX) + examples | 99k+ stars |
-| [mattpocock/skills](https://github.com/mattpocock/skills) | Matt Pocock | 16 production skills (PRD, TDD, refactoring, design) | — |
-| [nicobailon/visual-explainer](https://github.com/nicobailon/visual-explainer) | Nico Bailón | Visual diagrams, slides, diff reviews — 22 sub-skills | 6.8k stars |
+| [mattpocock/skills](https://github.com/mattpocock/skills) | Matt Pocock | 17 production skills (PRD, TDD, refactoring, design, triage) | 11.3k stars |
+| [nicobailon/visual-explainer](https://github.com/nicobailon/visual-explainer) | Nico Bailón | Visual diagrams, slides, diff reviews — 22 sub-skills | 7.1k stars |
 
 ### Matt Pocock Skills Detail
 
 **Planning:** write-a-prd, prd-to-plan, prd-to-issues, design-an-interface, request-refactor-plan, grill-me
-**Development:** tdd, triage-issue, improve-codebase-architecture, migrate-to-shoehorn, scaffold-exercises
+**Development:** tdd, triage-issue, github-triage, improve-codebase-architecture, migrate-to-shoehorn, scaffold-exercises, qa
 **Tooling:** setup-pre-commit, git-guardrails-claude-code
 **Writing:** write-a-skill, edit-article, ubiquitous-language, obsidian-vault
 

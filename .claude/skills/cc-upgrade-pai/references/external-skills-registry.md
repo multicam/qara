@@ -3,7 +3,7 @@
 Comprehensive documentation of all externally-installed skills in the PAI ecosystem.
 Maintained as part of `cc-upgrade-pai`. Updated during each external skills deep analysis.
 
-Last reviewed: 2026-03-31
+Last reviewed: 2026-04-03
 
 ---
 
@@ -111,7 +111,7 @@ visual-explainer (stand-alone, no prerequisites)
 **Author:** Matt Pocock ([@mattpocock](https://github.com/mattpocock))
 **Repository:** [github.com/mattpocock/skills](https://github.com/mattpocock/skills)
 **License:** MIT
-**Last upstream review:** 2026-03-31 (latest commit: `eebfb3c` 2026-03-26)
+**Last upstream review:** 2026-04-02 (latest commit: `651eab0` 2026-04-01)
 
 These skills were **rewritten for PAI conventions** — not symlinked. They live as local
 skills but track upstream for improvements.
@@ -135,7 +135,7 @@ skills but track upstream for improvements.
 
 ### Upstream Skills — Declined
 
-All upstream skills evaluated. Redundant entries (write-a-prd, prd-to-issues, git-guardrails-claude-code, write-a-skill, qa) removed — covered by PAI equivalents (product-shaping, pre-tool-use-security.ts, system-create-skill, triage-issue).
+All upstream skills evaluated. Redundant entries (write-a-prd, prd-to-issues, git-guardrails-claude-code, write-a-skill, qa) removed — covered by PAI equivalents (product-shaping, pre-tool-use-security.ts, system-create-skill, triage-issue). New `github-triage` (2026-04-01) evaluated below.
 
 | Upstream Skill | Purpose | Status | Notes |
 |---------------|---------|--------|-------|
@@ -143,6 +143,7 @@ All upstream skills evaluated. Redundant entries (write-a-prd, prd-to-issues, gi
 | `migrate-to-shoehorn` | Test assertion migration | **Not relevant** | TypeScript-specific, not used in PAI |
 | `scaffold-exercises` | Exercise directory creation | **Not relevant** | Educational tooling |
 | `obsidian-vault` | Obsidian integration | **Not adopted** | Built custom `diderot` skill instead — JM's vault uses folders (not flat wikilinks), needs retrieval not creation |
+| `github-triage` | Label-based issue state machine with grilling, agent briefs, `.out-of-scope/` KB | **Cherry-picked** | Added 2026-04-01. Two patterns cherry-picked into PAI `triage-issue` (2026-04-03): (1) Agent brief template (Phase 4.5) for durable behavioral specs, (2) `.out-of-scope/` KB for wontfix institutional memory (Phase 3.5 check + Phase 5 record creation). Full skill not adopted — PAI has TDD fix plans and codebase-analyzer integration. |
 
 ---
 
@@ -201,3 +202,6 @@ All upstream skills evaluated. Redundant entries (write-a-prd, prd-to-issues, gi
 | 2026-03-27 | Addressed 3 recommendations: (1) Merged qa patterns into triage-issue batch mode (scope assessment, blocking relationships, session continuation). (2) Filed upstream issue nicobailon/visual-explainer#35 for broken path; applied fix locally. (3) Built custom `diderot` knowledge retrieval skill; marked obsidian-vault as Not adopted. **MONITOR:** On next `npx skills update`, check if nicobailon/visual-explainer#35 is fixed upstream — if so, remove local patch note. | Post-audit implementation |
 | 2026-03-30 | Renamed "NOT Yet Adopted" → "Declined". Removed 5 redundant entries (write-a-prd, prd-to-issues, git-guardrails-claude-code, write-a-skill, qa) — all covered by PAI equivalents. 4 remaining entries kept for historical context. | cc-upgrade-pai audit cleanup |
 | 2026-03-31 | Quarterly deep analysis. visual-explainer v0.6.3 confirmed up to date (updated 2026-03-29, lock hash refreshed). Issue #35 closed upstream and fix included — MONITOR note cleared. mattpocock: no new commits since `eebfb3c` (2026-03-26). Stars: visual-explainer 7.0k, mattpocock 11.0k. Context graph: 183 nodes, 0 broken local refs, 1 cosmetic upstream ref (`slide-patterns.md` without `references/` prefix — functional, not worth upstream issue). 27/27 CORE doc index paths valid. 10/10 agents match. 1120 tests pass (42 files). No action items. | cc-upgrade-pai deep analysis |
+| 2026-04-02 | Deep analysis. **mattpocock:** 1 new commit `651eab0` (2026-04-01) adds `github-triage` skill (175-line SKILL.md + AGENT-BRIEF.md + OUT-OF-SCOPE.md). Evaluated: heavy overlap with PAI `triage-issue` — declined as standalone adoption. Two patterns worth cherry-picking: (1) durable agent brief template (behavioral specs, no file paths/line numbers), (2) `.out-of-scope/` knowledge base for rejected features. **visual-explainer:** v0.6.3 confirmed current (last commit `9a97a58` 2026-03-29, no changes since last audit). Stars: 7.1k (+100). **Context graph:** 189 nodes (+6), 195 edges, 0 broken local refs, 1 cosmetic upstream ref persists (line 334 `slide-patterns.md`). 15 unreferenced files (mostly visual-explainer commands — by design, invoked via slash commands). 11 agents (+1 `planner.md`). 1225 tests pass (45 files, +105 tests, +3 files). **awesome-agent-skills:** active (commit 2026-04-01, PR #329 ru-text skill), no PAI-relevant additions. **anthropics/skills:** `claude-api` skill auto-synced (2026-03-25), already loaded by CC natively. No action items beyond optional `triage-issue` enhancement. | cc-upgrade-pai deep analysis |
+| 2026-04-03 | Routine deep analysis. **mattpocock:** No new commits since `651eab0` (2026-04-01). 21 entries (19 skills + LICENSE + README). All PAI adaptations current. **visual-explainer:** v0.6.3 confirmed current (last commit `9a97a58` 2026-03-29, lock hash `339a338e9e2`). Stars: 7,127 (+27). 22 sub-skills installed, all symlinks intact. **Context graph:** 189 nodes, 195 edges, 0 broken local refs, 1 cosmetic upstream ref persists (line 334 `slide-patterns.md` without `references/` prefix). 15 unreferenced files (visual-explainer commands + cc-upgrade refs — by design). 27 local + 22 symlinked = 49 skills. 11 agents. **Tests:** 1,218 pass (45 files, -7 from prior count — likely test consolidation). **anthropics/skills:** `claude-api` auto-synced 2026-03-25, no new activity. **awesome-agent-skills:** 2 commits since last audit (`91aa397` link updates 2026-04-02, `23f7569` ru-text skill 2026-04-01) — no PAI-relevant additions. | cc-upgrade-pai deep analysis |
+| 2026-04-03 | Cherry-picked 2 patterns from mattpocock `github-triage` into PAI `triage-issue`: (1) Agent brief template added as Phase 4.5 — durable behavioral specs for agent-ready issues. (2) `.out-of-scope/` KB pattern integrated into Phase 3.5 (wontfix check) and Phase 5 (record creation). Registry status updated from "Not adopted" to "Cherry-picked". MEMORY.md test count corrected 1225→1218. | Post-audit implementation |

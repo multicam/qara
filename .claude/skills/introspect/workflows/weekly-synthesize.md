@@ -81,6 +81,7 @@ Write/update each pattern topic file following the format in `pattern-format.md`
 - One `## ` section per pattern, separated by `---`
 - Cap supporting dates list at 10 most recent
 - Preserve existing patterns even if no new evidence this week (but flag stale ones)
+- **first_observed tracking**: For each pattern, preserve the `first_observed` date if it already exists. For new patterns, set `first_observed` to today's date. This enables measuring pattern promotion velocity (days from first observation to "established").
 
 Create topic files that don't yet exist if observations warrant them.
 
