@@ -12,9 +12,9 @@
   "dispatch_drain": {
     "enabled": true,
     "max_per_tick": 5,
-    "run_count": 2931,
+    "run_count": 23782,
     "leader_only": true,
-    "last_tick_at": "2026-04-03T20:01:53.864Z",
+    "last_tick_at": "2026-04-03T21:41:23.917Z",
     "last_result": {
       "processed": 0,
       "skipped": 0,
@@ -27,16 +27,16 @@
     "leader_only": true,
     "stale_threshold_ms": 180000,
     "precomputed_leader_stale": true,
-    "last_tick_at": "2026-04-03T20:01:53.865Z",
+    "last_tick_at": "2026-04-03T21:41:23.918Z",
     "last_error": null,
-    "run_count": 2931
+    "run_count": 23782
   },
   "ralph_continue_steer": {
     "enabled": true,
     "cadence_ms": 60000,
     "message": "Ralph loop active continue",
     "active": false,
-    "last_state_check_at": "2026-04-03T20:01:53.894Z",
+    "last_state_check_at": "2026-04-03T21:41:23.968Z",
     "last_sent_at": "",
     "cooldown_anchor_at": "",
     "last_reason": "blocked_by_current_session",
@@ -52,10 +52,10 @@
   "fallback_auto_nudge": {
     "enabled": true,
     "stall_ms": 5000,
-    "last_tick_at": "2026-04-03T20:01:53.881Z",
-    "last_turn_at": "2026-04-03T19:57:33.877Z",
-    "last_turn_count": 1,
-    "last_message": "AI SLOP CLEANUP REPORT\n======================\n\nScope: hook/runtime test hygiene + small repo validat",
+    "last_tick_at": "2026-04-03T21:41:23.954Z",
+    "last_turn_at": "2026-04-03T20:25:02.602Z",
+    "last_turn_count": 2,
+    "last_message": "{\"findings\":[{\"title\":\"[P2] Drop generated `.omx` log output from the patch\",\"body\":\"If anyone runs ",
     "last_reason": "eligible_but_not_sent",
     "last_error": null,
     "last_nudged_signature": "",
