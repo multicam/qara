@@ -395,7 +395,7 @@ Track OMC evolution as an inspiration source for PAI improvement opportunities. 
 
 **Check:**
 ```bash
-gh api repos/anthropics/oh-my-claudecode/commits --jq '.[0:3] | .[] | "\(.sha[0:7]) \(.commit.message | split("\n")[0]) (\(.commit.author.date[0:10]))"'
+gh api repos/Yeachan-Heo/oh-my-claudecode/commits --jq '.[0:3] | .[] | "\(.sha[0:7]) \(.commit.message | split("\n")[0]) (\(.commit.author.date[0:10]))"'
 ```
 
 **When new OMC features detected:**

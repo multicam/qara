@@ -3,6 +3,7 @@ name: engineer
 description: Software engineering specialist. Use for code implementation, debugging, performance optimization, security hardening, testing, and technical problem-solving. Implements solutions from PRDs with production-ready code.
 model: sonnet
 tools: [Read, Grep, Glob, Bash, Write, Edit, Agent, WebSearch, WebFetch]
+memory: project
 skills:
   - research
 ---

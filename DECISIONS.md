@@ -33,7 +33,7 @@ Append-only record of architectural and design decisions. Memory files capture *
 **Why:** Single source of truth. Any edit to either path is immediately reflected. No sync scripts, no drift, no merge conflicts. settings-minimal.json was a redundant duplicate and was removed.
 **Trade-offs:** Editing via CC settings UI modifies the repo file directly (could cause accidental commits). Mitigated by git awareness.
 **Revisit if:** CC gains native multi-profile settings support, or if repo-level settings need to diverge from global.
-**Status (2026-03-19):** Confirmed — CC 2.1.78 has no multi-profile support. No divergence needed. Decision stands.
+**Status (2026-04-06):** Confirmed — CC 2.1.92 has no multi-profile support. No divergence needed. Decision stands.
 
 ---
 
