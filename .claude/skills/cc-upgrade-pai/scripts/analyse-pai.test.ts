@@ -209,8 +209,8 @@ describe("analyse-pai", () => {
       expect(Object.keys(PAI_MODULES)).toContain("tddCompliancePAI");
     });
 
-    it("has 10 modules (4 base + 6 PAI-specific)", () => {
-      expect(Object.keys(PAI_MODULES).length).toBe(10);
+    it("has 11 modules (4 base + 7 PAI-specific)", () => {
+      expect(Object.keys(PAI_MODULES).length).toBe(11);
     });
   });
 });

@@ -111,6 +111,15 @@ Key checks:
 
 Run `bun run scripts/analyse-claude-folder.ts .` — checks hook scripts for stdin pattern, exit behavior, output schema, shebang, and executable bit. Verifies settings.json hook events and timeout values.
 
+### Execution Modes (Advanced Pattern)
+
+Check for persistent execution modes — Stop hook continuation loops:
+- Mode state management (JSON file with TTL, session scoping)
+- Keyword-based activation (UserPromptSubmit hook)
+- Working memory (session-scoped files surviving compression)
+- Quality gates (pre-impl critic + post-impl verifier agents)
+- Crash recovery (PreCompact checkpoint + SessionStart restore)
+
 ### CC Feature Gap Analysis [AUTOMATED]
 
 Run `bun run scripts/cc-version-check.ts .` — canonical feature list in FEATURE_REQUIREMENTS.
@@ -121,10 +130,12 @@ Reference `references/12-factor-checklist.md` for complete audit criteria.
 
 Key factors to validate:
 
-1. **Factor 3 - Own Context Window**: Is context hydration explicit and controlled?
-2. **Factor 8 - Own Control Flow**: Is agent loop logic in application code?
-3. **Factor 10 - Small Focused Agents**: Are agents single-purpose?
-4. **Factor 12 - Stateless Reducer**: Is state externalized?
+1. **Factor 3 - Own Context Window**: Is context hydration explicit and controlled? (PreCompact checkpoints, working memory injection)
+2. **Factor 5 - Unify State**: Is execution state externalized? (mode-state.json, tdd-mode.json, prd.json)
+3. **Factor 6 - Launch/Pause/Resume**: Can agent sessions be stopped and resumed? (compact checkpoints, crash recovery in SessionStart)
+4. **Factor 8 - Own Control Flow**: Is agent loop logic in application code? (Stop hook continuation, keyword router)
+5. **Factor 10 - Small Focused Agents**: Are agents single-purpose? (critic vs verifier vs reviewer)
+6. **Factor 12 - Stateless Reducer**: Is state externalized? (all state in files, not in context window)
 
 ## Output Format
 

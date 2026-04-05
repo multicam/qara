@@ -84,29 +84,76 @@ PAI requires explicit delegation guidance:
 
 ### 4. Hook Library Analysis
 
-PAI hooks follow TypeScript patterns:
+PAI hooks (12 scripts, 10 CC events, 11 libs):
 
 ```
 .claude/hooks/
 ├── lib/
-│   ├── pai-paths.ts        # PAI directory resolution
-│   ├── tab-titles.ts       # Terminal tab title generation
-│   ├── jsonl-utils.ts      # JSONL append/rotate
-│   ├── datetime-utils.ts   # Timestamp formatting
-│   └── context-graph/      # Static context analyzer
-├── session-start.ts
-├── pre-tool-use-security.ts
-├── post-tool-use.ts
-├── update-tab-titles.ts
-├── stop-hook.ts
-├── config-change.ts
-└── *.test.ts               # Tests alongside source
+│   ├── pai-paths.ts          # Paths + getSessionId + atomicWriteJson
+│   ├── tab-titles.ts         # Terminal tab title generation
+│   ├── jsonl-utils.ts        # JSONL append/rotate
+│   ├── datetime-utils.ts     # Timestamp formatting
+│   ├── tdd-state.ts          # TDD RED/GREEN/REFACTOR state machine
+│   ├── trace-utils.ts        # Topic classification
+│   ├── mode-state.ts         # Execution mode lifecycle (drive/cruise/turbo)
+│   ├── keyword-routes.json   # Declarative keyword→skill routing config
+│   ├── working-memory.ts     # Session-scoped 4-file memory
+│   ├── compact-checkpoint.ts # State snapshot before compression
+│   ├── prd-utils.ts          # PRD read/write, story tracking
+│   └── context-graph/        # Static context analyzer
+├── session-start.ts          # SessionStart: CORE, hints, crash recovery
+├── update-tab-titles.ts      # UserPromptSubmit: processing indicator
+├── keyword-router.ts         # UserPromptSubmit: mode activation
+├── rtk-rewrite.sh            # PreToolUse:Bash: RTK token reduction
+├── pre-tool-use-security.ts  # PreToolUse:Bash: dangerous pattern detection
+├── pre-tool-use-tdd.ts       # PreToolUse:Write,Edit: TDD enforcement
+├── post-tool-use.ts          # PostToolUse: telemetry logging
+├── post-tool-failure.ts      # PostToolUseFailure: consecutive failure tracking
+├── subagent-start.ts         # SubagentStart: delegation logging
+├── subagent-stop.ts          # SubagentStop: deliverable recording
+├── pre-compact.ts            # PreCompact: state checkpoint
+├── stop-hook.ts              # Stop: tab title, mode continuation, memory injection
+└── config-change.ts          # ConfigChange: settings logging
 ```
 
 Check for:
 - [ ] TypeScript (not JavaScript)
-- [ ] Tests with `bun test`
+- [ ] Tests in `.claude/tests/` (hidden dir, use `bun test ./.claude/`)
 - [ ] Proper hook output schema (CC 2.1.14)
+- [ ] Never `exit(1)` — always `exit(0)`, even on error
+- [ ] Uses `readFileSync(0, 'utf-8')` for stdin (not Bun.stdin.stream)
+- [ ] Uses `getSessionId()` from pai-paths.ts (not inline env var chains)
+
+### 4a. Execution Modes System
+
+PAI has 3 persistent execution modes activated via keyword-router:
+
+| Mode | Trigger | Purpose | Max Iterations |
+|------|---------|---------|----------------|
+| drive | `drive:`, `drive mode` | PRD-driven TDD with critic/verifier gates | 50 |
+| cruise | `cruise:`, `cruise mode` | Phased: Discover → Plan → Implement → Verify | 20 |
+| turbo | `turbo:`, `turbo mode` | Parallel agent dispatch | 30 |
+
+Check for:
+- [ ] mode-state.ts: state machine with TTL, session scoping, atomic writes
+- [ ] keyword-routes.json: patterns require colon or "mode" suffix (no bare words)
+- [ ] Stop hook: reads mode state, injects continuation, respects safety valves
+- [ ] Working memory: session-scoped 4-file memory survives compression via re-injection
+- [ ] Compact checkpoint: PreCompact saves state, session-start recovers from crash
+- [ ] Deactivation: 3 exit paths (complete, cancelled, max-iterations)
+
+### 4b. Quality Gate Agents
+
+| Agent | Role | When |
+|-------|------|------|
+| critic | Pre-implementation plan review | Before coding — checks approach vs criteria |
+| verifier | Post-implementation acceptance | After coding — runs quality gates |
+| reviewer | Code review | General code quality |
+
+Check for:
+- [ ] critic.md: deterministic checks, verdict format (proceed/revise)
+- [ ] verifier.md: quality gate suite (bun test, tsc, baseline comparison)
+- [ ] No overlap between the three (disambiguation documented in delegation-guide)
 
 ### 5. Context Engineering (UFC)
 
@@ -149,10 +196,10 @@ PAI includes skills adapted from [mattpocock/skills](https://github.com/mattpoco
 | `skills/grill-me/SKILL.md` | `grill-me/SKILL.md` | Expanded methodology, probe patterns, PAI structure |
 | `skills/design-it-twice/SKILL.md` | `design-an-interface/SKILL.md` | Broadened scope (architecture + data models), uses `architect` agents |
 | `skills/edit-article/SKILL.md` | `edit-article/SKILL.md` | Added Phase 3 humaniser pass, expanded scope to docs/specs |
-| `skills/refactor-plan/SKILL.md` | `request-refactor-plan/SKILL.md` | PAI conventions, codebase-analyzer integration |
+| ~~`skills/refactor-plan/SKILL.md`~~ | ~~`request-refactor-plan/SKILL.md`~~ | RETIRED — subsumed by cruise mode |
 | `skills/triage-issue/SKILL.md` | `triage-issue/SKILL.md` | PAI conventions, codebase-analyzer integration, TDD fix plans |
 | `skills/ubiquitous-language/SKILL.md` | `ubiquitous-language/SKILL.md` | PAI conventions, DDD glossary extraction |
-| `skills/prd-to-plan/SKILL.md` | `prd-to-plan/SKILL.md` | PAI conventions, vertical slice tracer bullets |
+| ~~`skills/prd-to-plan/SKILL.md`~~ | ~~`prd-to-plan/SKILL.md`~~ | RETIRED — subsumed by drive mode + product-shaping Phase 4 |
 | `skills/CORE/testing-guide.md` | `tdd/SKILL.md` + `tdd/tests.md` | Merged TDD methodology into existing testing guide |
 | `skills/CORE/references/deep-modules.md` | `tdd/deep-modules.md` | Extracted as shared cross-cutting reference |
 | `skills/CORE/references/mocking-guidelines.md` | `tdd/mocking.md` + `improve-codebase-architecture/REFERENCE.md` | Combined mocking rules + dependency classification |
@@ -270,11 +317,18 @@ Extend the base gap analysis matrix with PAI-specific rows:
 |----------------|----------|--------|-----|----------|
 | CLAUDE.md severity levels | MUST/SHOULD/RECOMMENDED | ? | | |
 | Decision log | DECISIONS.md exists | ? | | |
-| Hook lib coverage | All 4 libs tested | ? | | |
+| Hook lib coverage | All 11 libs present | ? | | |
+| Hook event coverage | 10 CC events configured | ? | | |
 | CORE routing integrity | All paths resolve | ? | | |
 | Context graph health | 0 broken refs, 0 cycles | ? | | |
-| Agent specialization | No overlap | ? | | |
+| Agent specialization | No overlap, 13 agents | ? | | |
 | External skill versions | Up to date | ? | | |
+| Execution modes | 3 modes (drive/cruise/turbo) | ? | | |
+| Mode state machine | TTL, session scoping, atomic writes | ? | | |
+| Working memory | 4-file session memory | ? | | |
+| Compact checkpoint | PreCompact + crash recovery | ? | | |
+| Quality gates | critic + verifier agents | ? | | |
+| Keyword routing | No false positives, colon/mode patterns | ? | | |
 ```
 
 ## PAI Compliance Report Format
@@ -334,6 +388,21 @@ cd $PAI_DIR/.claude/hooks && bun test --coverage
 ```bash
 bun run .claude/skills/cc-upgrade/scripts/analyse-external-skills.ts $PAI_DIR
 ```
+
+### OMC (oh-my-claudecode) Monitoring
+
+Track OMC evolution as an inspiration source for PAI improvement opportunities. OMC was the prior art that triggered the unified evolution plan (persistent modes, working memory, subagent tracking). Even though PAI now has its own implementation, OMC may evolve new patterns worth adopting.
+
+**Check:**
+```bash
+gh api repos/anthropics/oh-my-claudecode/commits --jq '.[0:3] | .[] | "\(.sha[0:7]) \(.commit.message | split("\n")[0]) (\(.commit.author.date[0:10]))"'
+```
+
+**When new OMC features detected:**
+1. Compare against PAI's current capabilities
+2. IF OMC has a pattern PAI lacks: evaluate for adoption
+3. IF PAI has a better implementation: document why (prevents re-evaluation)
+4. Log findings in `references/external-skills-registry.md` update history
 
 ## Workflow
 

@@ -163,7 +163,7 @@ function analyzeHooksConfiguration(paiPath: string): AnalysisResult {
                 results.findings.push(`OK: Hooks configured in settings.json: ${hookEvents.join(', ')}`);
 
                 const coreEvents = ['PreToolUse', 'PostToolUse', 'SessionStart', 'UserPromptSubmit', 'Stop', 'ConfigChange'];
-                const advancedEvents = ['Setup', 'SubagentStart', 'SubagentStop', 'PreCompact'];
+                const advancedEvents = ['PostToolUseFailure', 'SubagentStart', 'SubagentStop', 'PreCompact'];
 
                 const missingCoreEvents = coreEvents.filter(e => !hookEvents.includes(e));
 
@@ -549,6 +549,90 @@ function analyzeTddCompliancePAI(paiPath: string): AnalysisResult {
     return results;
 }
 
+/** Analyze execution mode system (drive/cruise/turbo) */
+function analyzeModeSystem(paiPath: string): AnalysisResult {
+    const results = emptyResult(20);
+    const claudeDir = join(paiPath, '.claude');
+    if (!existsSync(claudeDir)) return results;
+
+    // 1. Mode state library (3 pts)
+    if (existsSync(join(claudeDir, 'hooks', 'lib', 'mode-state.ts'))) {
+        results.score += 3;
+        results.findings.push('OK: Mode state management library present');
+    } else {
+        results.findings.push('NO: No mode-state.ts library');
+        results.recommendations.push('Create hooks/lib/mode-state.ts for execution mode lifecycle');
+    }
+
+    // 2. Keyword router (3 pts)
+    if (existsSync(join(claudeDir, 'hooks', 'keyword-router.ts'))) {
+        results.score += 3;
+        results.findings.push('OK: Keyword router hook present');
+    } else {
+        results.findings.push('NO: No keyword-router.ts hook');
+    }
+
+    // 3. Keyword routes config (2 pts)
+    const routesPath = join(claudeDir, 'hooks', 'lib', 'keyword-routes.json');
+    if (existsSync(routesPath)) {
+        results.score += 2;
+        try {
+            const routes = JSON.parse(readFileSync(routesPath, 'utf-8'));
+            const modeCount = Object.keys(routes).filter(k => routes[k].activatesMode).length;
+            results.findings.push(`OK: ${modeCount} execution modes configured`);
+
+            // Check for bare-word false positive risk
+            for (const [name, route] of Object.entries(routes) as [string, any][]) {
+                if (route.patterns?.some((p: string) => p === `\\b${name}\\b`)) {
+                    results.findings.push(`WARN: Route '${name}' has bare-word pattern — false positive risk`);
+                    results.recommendations.push(`Tighten '${name}' pattern to require colon or 'mode' suffix`);
+                }
+            }
+        } catch {
+            results.findings.push('WARN: Could not parse keyword-routes.json');
+        }
+    }
+
+    // 4. Mode skills exist (3 pts)
+    const modeSkills = ['drive', 'cruise', 'turbo'];
+    let foundModes = 0;
+    for (const mode of modeSkills) {
+        if (existsSync(join(claudeDir, 'skills', mode, 'SKILL.md'))) {
+            foundModes++;
+        } else {
+            results.findings.push(`--: Missing ${mode} mode skill`);
+        }
+    }
+    if (foundModes === modeSkills.length) {
+        results.score += 3;
+        results.findings.push('OK: All 3 mode skills present (drive, cruise, turbo)');
+    } else if (foundModes > 0) {
+        results.score += 1;
+        results.findings.push(`OK: ${foundModes}/${modeSkills.length} mode skills present`);
+    }
+
+    // 5. Working memory (3 pts)
+    if (existsSync(join(claudeDir, 'hooks', 'lib', 'working-memory.ts'))) {
+        results.score += 3;
+        results.findings.push('OK: Working memory library present');
+    } else {
+        results.findings.push('--: No working-memory.ts');
+        results.recommendations.push('Add working-memory.ts for session-scoped persistence');
+    }
+
+    // 6. Compact checkpoint (3 pts)
+    if (existsSync(join(claudeDir, 'hooks', 'lib', 'compact-checkpoint.ts')) &&
+        existsSync(join(claudeDir, 'hooks', 'pre-compact.ts'))) {
+        results.score += 3;
+        results.findings.push('OK: Compact checkpoint system present (lib + hook)');
+    } else {
+        results.findings.push('--: Compact checkpoint incomplete');
+        results.recommendations.push('Add compact-checkpoint.ts + pre-compact.ts for state recovery');
+    }
+
+    return results;
+}
+
 // --- PAI module registry (base + PAI-specific) ---
 
 const PAI_MODULES: Record<string, AnalyzerFunction> = {
@@ -564,6 +648,7 @@ const PAI_MODULES: Record<string, AnalyzerFunction> = {
     toolIntegration: analyzeToolIntegration,
     workflowPatterns: analyzeWorkflowPatterns,
     tddCompliancePAI: analyzeTddCompliancePAI,
+    modeSystem: analyzeModeSystem,
 };
 
 // --- Main ---
@@ -590,6 +675,7 @@ export {
     analyzeToolIntegration,
     analyzeWorkflowPatterns,
     analyzeTddCompliancePAI,
+    analyzeModeSystem,
     PAI_MODULES,
 };
 
