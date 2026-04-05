@@ -30,6 +30,8 @@ env:
 
 ## Workflow Routing (SYSTEM PROMPT)
 
+**Precedence:** When an execution mode (drive/cruise/turbo) is active, mode-specific workflows override CORE routing. The keyword-router hook activates modes before CORE routing is evaluated.
+
 **When user says "update the Qara repo", "push these changes", "commit and push", "sync repo":**
 → **READ:** `${PAI_DIR}/skills/CORE/workflows/git-update-repo.md`
 
@@ -56,6 +58,9 @@ env:
 
 **When user says "drive:", "drive mode", "cruise:", "cruise mode", "turbo:", "turbo mode":**
 → **Handled by keyword-router hook** (auto-activates mode + injects skill)
+
+**When user says "stop mode", "exit mode", "mode off", "cancel mode":**
+→ **Handled by keyword-router hook** (deactivates active mode, stops continuation loop)
 
 ---
 
@@ -103,6 +108,8 @@ env:
 - `grill-me` skill → stress-test plans and designs
 - `edit-article` skill → article editing, structural analysis, prose tightening
 - `humaniser` skill → remove AI writing patterns
+
+**Execution modes** (drive, cruise, turbo) compose these skills — e.g., drive uses tdd-qa, critic, and verifier. Modes are activated via keyword triggers, not listed here.
 
 ---
 

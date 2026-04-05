@@ -1,18 +1,18 @@
 {
   "drive": {
-    "patterns": ["\\bdrive\\b", "\\bdrive mode\\b", "\\bdrive:\\s"],
+    "patterns": ["\\bdrive mode\\b", "\\bdrive:\\s", "\\bdrive this\\b"],
     "skill": "drive",
     "activatesMode": true,
     "modeDefaults": { "maxIterations": 50, "maxTokensBudget": 0 }
   },
   "cruise": {
-    "patterns": ["\\bcruise\\b", "\\bcruise mode\\b", "\\bcruise:\\s"],
+    "patterns": ["\\bcruise mode\\b", "\\bcruise:\\s", "\\bcruise this\\b"],
     "skill": "cruise",
     "activatesMode": true,
     "modeDefaults": { "maxIterations": 20, "maxTokensBudget": 0 }
   },
   "turbo": {
-    "patterns": ["\\bturbo\\b", "\\bturbo mode\\b", "\\bturbo:\\s"],
+    "patterns": ["\\bturbo mode\\b", "\\bturbo:\\s", "\\bturbo this\\b"],
     "skill": "turbo",
     "activatesMode": true,
     "modeDefaults": { "maxIterations": 30, "maxTokensBudget": 0 }

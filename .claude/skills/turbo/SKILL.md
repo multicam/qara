@@ -7,54 +7,70 @@ argument-hint: "<task description>"
 
 # Turbo Mode
 
-Parallel agent dispatch that decomposes a task into independent subtasks, runs them concurrently via subagents, and synthesizes results. Maximizes throughput for tasks with natural parallelism.
+Parallel agent dispatch. Decompose → Dispatch → Collect → Synthesize → Verify. Default: 30 max iterations.
 
-## Activation
+## 1. Decompose
 
-Activated by keyword "turbo" in prompt (via keyword-router hook). Default: 30 max iterations.
+Break task into 2-5 independent subtasks. Write to `decisions.md`:
 
-## Workflow
+```
+Subtask {n}: {title}
+  Agent: {engineer|codebase-analyzer|reviewer}
+  Input files: {list}
+  Output files: {list}
+  Acceptance: {criterion}
+```
 
-### 1. Decompose
-Analyze the task and identify independent subtasks that can run in parallel.
-- Each subtask must be self-contained (no dependency on other subtasks' output)
-- Aim for 3-5 parallel subtasks (diminishing returns beyond that)
-- Document the decomposition in `decisions.md`
+Independence check: IF any two subtasks share an output file, they are NOT independent. Merge or sequence them.
 
-### 2. Dispatch
-Spawn parallel agents using the Agent tool with appropriate `subagent_type`:
-- `engineer` for implementation subtasks
-- `codebase-analyzer` for research subtasks
-- `reviewer` for review subtasks
-- Launch all independent agents in a single message (parallel execution)
+IF task yields <2 subtasks: fall back to cruise mode. Deactivate turbo, activate cruise with same task.
+IF task yields >5 subtasks: group related ones until count is 2-5.
 
-SubagentStart/Stop hooks track active agents and deliverables.
+## 2. Dispatch
 
-### 3. Collect
-Wait for all agents to complete. Review each deliverable:
-- Does it meet the subtask's requirements?
-- Are there conflicts between agent outputs? (e.g., both modified the same file)
-- Are there gaps? (subtask missed, edge case uncovered)
+Spawn ALL agents in a single message (parallel execution) using the Agent tool:
+- `engineer` for implementation
+- `codebase-analyzer` for research
+- `reviewer` for review
 
-### 4. Synthesize
-Merge results into a coherent whole:
-- Resolve any conflicts (prefer the more conservative/correct approach)
-- Run full test suite to verify integration
-- Type check: `bunx tsc --noEmit`
+Each agent prompt MUST include: the subtask description, input files, expected output, and acceptance criterion.
 
-### 5. Verify
-- Run `bun test` — all tests must pass
-- Review for coherence — changes should feel like one person wrote them
-- If issues found → fix and re-verify
+## 3. Collect
 
-## Completion
+For each completed agent:
+1. IF output contains "FAIL" or "Error" at the start: mark subtask as failed.
+2. Extract file paths from output (after "Created:", "Modified:", or file paths in code blocks).
+3. Build file-to-subtask map. IF any file appears in 2+ subtask outputs: flag as CONFLICT.
+4. Check acceptance criterion against output. IF unmet: mark as gap.
 
-When synthesis passes verification → deactivate mode with reason `complete`.
+IF subtask failed:
+1. Read failure output. Write to `problems.md`.
+2. Re-dispatch same agent type with additional context from the failure.
+3. MAX 2 re-dispatches per subtask. After 2: mark as permanently failed, handle in main thread.
+
+## 4. Synthesize
+
+IF conflicts detected:
+1. Read both versions of conflicting file.
+2. IF one is strictly additive (only adds lines): prefer it.
+3. IF both modify existing lines: run `bun test` with each version. Keep the one that passes.
+4. IF neither passes: merge manually, take the smaller diff.
+
+Run `bun test` after merge. Run `bunx tsc --noEmit`.
+
+## 5. Verify
+
+- `bun test` — all tests must pass.
+- `bunx tsc --noEmit` — zero type errors.
+- IF issues found: fix and re-verify. MAX 3 verify loops.
+- IF still failing after 3: deactivate with reason "turbo-verify-failed", escalate to JM.
+
+IF all pass: deactivate with reason "complete".
 
 ## Working Memory
 
-Session-scoped 4-file memory (decisions, learnings, problems, issues) in `.claude/state/sessions/{session_id}/memory/`. Survives compression via Stop hook re-injection. Write after decomposition, after each agent completes, and during synthesis.
+4-file memory (decisions, learnings, problems, issues) in `STATE_DIR/sessions/{session_id}/memory/`. Survives compression via Stop hook re-injection. Write after decomposition, after each agent completes, and during synthesis.
 
 ## Error Recovery
 
-If a subagent fails: re-dispatch with adjusted parameters or different agent type. If synthesis fails repeatedly: fall back to sequential execution (cruise mode pattern).
+IF synthesis fails 2 times: deactivate with reason "turbo-fallback". Activate cruise mode with same task. Do NOT re-attempt turbo decomposition.

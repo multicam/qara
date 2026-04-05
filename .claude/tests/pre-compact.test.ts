@@ -12,7 +12,7 @@ import { tmpdir } from "os";
 
 const TEST_PAI_DIR = join(tmpdir(), `pre-compact-test-${process.pid}`);
 const TEST_STATE_DIR = join(TEST_PAI_DIR, "state");
-const TEST_SESSIONS_DIR = join(tmpdir(), `pre-compact-omx-${process.pid}`);
+const TEST_SESSIONS_DIR = join(tmpdir(), `pre-compact-sessions-${process.pid}`);
 const HOOK_SCRIPT = join(import.meta.dir, "..", "hooks", "pre-compact.ts");
 
 async function runHook(

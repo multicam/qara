@@ -7,96 +7,98 @@ argument-hint: "<task description>"
 
 # Drive Mode
 
-Persistent execution mode that works through PRD stories until all pass. Loop via Stop hook continuation — Claude does not stop until acceptance criteria are met or max iterations reached.
+Persistent execution. Iterates `prd.json` stories until all pass. Stop hook injects continuation — you do NOT stop until criteria met or max iterations (50) reached.
 
-## Activation
+## Bootstrap
 
-Activated by keyword "drive" in prompt (via keyword-router hook). Default: 50 max iterations. Mode state written to `STATE_DIR/mode-state.json`. Stop hook reads this state and injects continuation messages.
+1. Read `prd.json` at project root via `prd-utils.ts`.
+2. IF missing: scaffold from task description. Create `prd.json` with stories derived from the prompt. Each story MUST have `id`, `title`, `description`, `acceptance_criteria[]`, `passes: false`, `scenario_file: null`.
+3. IF malformed: fix and rewrite.
+4. Pick first story where `passes == false`.
 
 ## Per-Story Loop
 
-For each story in `prd.json` where `passes: false`:
+### 1. Critic Gate
 
-### 1. Critic Gate (Pre-Implementation)
-Spawn `critic` agent with the story's acceptance criteria and your proposed approach.
-- Critic checks: scenario coverage, criteria alignment, risks, scope creep
-- If `verdict: revise` → adjust approach, re-submit (max 2 revisions)
-- If `verdict: proceed` → continue
+Write a PROPOSED APPROACH:
+- Files to create/modify (list paths)
+- Strategy per file (1-3 sentences)
+- Test strategy (which scenarios)
+
+Spawn `critic` agent with prompt containing the acceptance criteria AND proposed approach.
+
+Parse critic response:
+- IF contains "proceed": continue to step 2.
+- IF contains "revise": extract issues, modify approach, re-spawn critic.
+- IF 2 revisions exhausted AND still "revise": write to `problems.md` "Critic rejected 3x for story {id}". Ask JM. STOP.
 
 ### 2. Scenario Check
-Verify scenarios exist — check story's `scenario_file` field in prd.json, or `specs/{story-id}.md`.
-- If missing: follow `tdd-qa/workflows/write-scenarios.md`
-- Wait for JM to review scenarios before proceeding
+
+Check story's `scenario_file` field in prd.json, OR `specs/{story-id}.md`.
+- IF file exists AND contains "Given" or "When" or "Then" AND is >50 bytes: proceed.
+- IF missing or empty: follow `tdd-qa/workflows/write-scenarios.md` to generate scenarios. Deactivate mode with reason "awaiting-scenario-review". STOP.
 
 ### 3. TDD Cycle
-Activate TDD enforcement:
+
 ```bash
 bun .claude/hooks/lib/tdd-state.ts activate --feature {story-id} --phase RED
 ```
 
 For each scenario in the spec file:
-- **RED:** Write a failing test. Hook blocks source file edits.
-- **GREEN:** Write minimal code to pass. `bun .claude/hooks/lib/tdd-state.ts phase GREEN`
-- **REFACTOR:** Clean up. `bun .claude/hooks/lib/tdd-state.ts phase REFACTOR`
-- Back to RED for next scenario.
+- **RED:** Write a failing test. Source edits blocked by hook.
+- **GREEN:** `bun .claude/hooks/lib/tdd-state.ts phase GREEN`. Write minimal code to pass.
+- **REFACTOR:** `bun .claude/hooks/lib/tdd-state.ts phase REFACTOR`. Clean up.
 
-Deactivate when all scenarios covered:
+After all scenarios:
 ```bash
 bun .claude/hooks/lib/tdd-state.ts clear
 ```
 
-### 4. Verifier Gate (Post-Implementation)
-Spawn `verifier` agent with acceptance criteria.
-- Verifier runs quality gates: bun test (JUnit + lcov), test-report.ts compare, tsc --noEmit
-- If FAIL: fix failing criteria, re-verify (max 3 attempts)
-- If PASS: update test baselines, continue
+IF any `bun test` run crashes (non-zero exit, no output): read stderr. IF import error: fix import. IF syntax error: fix syntax. IF still crashing after 3 attempts: write to `problems.md` and ask JM.
+
+### 4. Verifier Gate
+
+Spawn `verifier` agent with the story's acceptance criteria.
+
+Parse verifier response:
+- IF contains "PASS": continue to step 5.
+- IF contains "FAIL": extract failing criteria, fix each, re-spawn verifier.
+- MAX 3 verification attempts. After 3: write to `problems.md`, ask JM. STOP.
 
 ### 5. Simplify Pass
-Run the `simplify` skill on all code changes from this story. Anti-slop enforcement.
+
+Run `git diff --name-only HEAD~1 -- '*.ts' '*.tsx'` to get changed files.
+For each file: invoke the `simplify` skill.
+IF simplify produces changes: run `bun test`. IF tests fail: revert simplify changes for that file.
 
 ### 6. Mark Story Passing
-Update `prd.json`: set `passes: true`, `verified_at`, `verified_by: "verifier"`.
 
-### 7. Continue to Next Story
-Stop hook injects continuation message with next story context.
+```typescript
+markStoryPassing(prd, story.id, "verifier")
+writePRD(projectDir, prd)
+```
+
+### 7. Continue
+
+Stop hook injects continuation with next story.
 
 ## Completion
 
-When all stories have `passes: true`:
-- **Full regression pass:** Re-verify ALL stories (not just the latest). Any regression → mark as failing, loop back.
-- If regression pass clean → deactivate mode with reason `complete`.
+When `allStoriesPassing(prd) == true`:
+- Full regression: for each story, spawn `verifier` agent.
+- IF any verifier returns FAIL: `markStoryFailing(prd, story.id)`, `writePRD(projectDir, prd)`, loop back.
+- MAX 3 regression cycles. After 3: deactivate with reason "regression-loop", escalate to JM.
+- IF all pass: deactivate with reason "complete".
 
 ## Working Memory
 
-Session-scoped 4-file memory (decisions, learnings, problems, issues) in `.claude/state/sessions/{session_id}/memory/`. Survives compression via Stop hook re-injection. Write at decision points, surprises, blockers, and bug discoveries.
+4-file memory (decisions, learnings, problems, issues) in `STATE_DIR/sessions/{session_id}/memory/`. Survives compression via Stop hook re-injection. Write at decision points, surprises, blockers, and bug discoveries.
 
 ## Error Recovery
 
-If the same error occurs 3+ times:
-- Stop retrying the same approach
-- Escalate: try a fundamentally different strategy
-- If still stuck after 5 attempts: pause and ask JM for guidance
-
-## PRD Format
-
-Expected at project root as `prd.json`:
-```json
-{
-  "name": "Feature Name",
-  "created_at": "2026-04-06T00:00:00Z",
-  "stories": [
-    {
-      "id": "1",
-      "title": "Story title",
-      "description": "What to build",
-      "acceptance_criteria": ["Criterion 1", "Criterion 2"],
-      "passes": false,
-      "verified_at": null,
-      "verified_by": null,
-      "scenario_file": null
-    }
-  ]
-}
-```
-
-If `prd.json` does not exist, ask JM to create one or offer to scaffold it from the task description.
+IF same error message (>50 char substring match) appears 3 consecutive times:
+1. Write to `problems.md`: "Stuck on: {error}. Attempts: {count}"
+2. IF import/module error: grep codebase for the symbol.
+3. IF type error: read the type definition file.
+4. IF test assertion: re-read scenario and acceptance criteria.
+5. IF still failing after 5 total attempts: deactivate with reason "stuck". Output problem summary.
