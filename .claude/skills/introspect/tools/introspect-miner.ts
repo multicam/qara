@@ -11,7 +11,7 @@
  *   bun introspect-miner.ts --mode monthly
  */
 
-import { readFileSync, readdirSync, statSync, existsSync } from 'fs';
+import { readFileSync, readdirSync, statSync, existsSync, lstatSync } from 'fs';
 import { join } from 'path';
 import { execSync } from 'child_process';
 
@@ -75,6 +75,54 @@ import {
     type TDDMetrics,
 } from './miner-trace-lib';
 
+// Infrastructure drift detection — compares filesystem to known baselines
+interface InfrastructureDrift {
+    hooks: { expected: number; actual: number; drifted: boolean };
+    libs: { expected: number; actual: number; drifted: boolean };
+    agents: { expected: number; actual: number; drifted: boolean };
+    skills: { expected: number; actual: number; drifted: boolean };
+    drifted: boolean;
+}
+
+function detectInfrastructureDrift(paiDir: string): InfrastructureDrift {
+    // Known baselines (updated when Qara evolves — this IS the canary)
+    const EXPECTED = { hooks: 13, libs: 11, agents: 13, skills: 50 };
+
+    const hooksDir = join(paiDir, 'hooks');
+    const libDir = join(hooksDir, 'lib');
+    const agentsDir = join(paiDir, 'agents');
+    const skillsDir = join(paiDir, 'skills');
+
+    const countFiles = (dir: string, ext: string[]) => {
+        if (!existsSync(dir)) return 0;
+        return readdirSync(dir).filter(f => {
+            const full = join(dir, f);
+            if (!lstatSync(full).isFile() && !lstatSync(full).isSymbolicLink()) return false;
+            return ext.some(e => f.endsWith(e));
+        }).length;
+    };
+
+    const countDirs = (dir: string) => {
+        if (!existsSync(dir)) return 0;
+        return readdirSync(dir).filter(f => {
+            const full = join(dir, f);
+            try { return statSync(full).isDirectory(); } catch { return false; }
+        }).length;
+    };
+
+    const actualHooks = countFiles(hooksDir, ['.ts', '.sh']);
+    const actualLibs = countFiles(libDir, ['.ts', '.json']) - 1; // subtract test-macros.ts
+    const actualAgents = countFiles(agentsDir, ['.md']);
+    const actualSkills = countDirs(skillsDir);
+
+    const hooks = { expected: EXPECTED.hooks, actual: actualHooks, drifted: actualHooks !== EXPECTED.hooks };
+    const libs = { expected: EXPECTED.libs, actual: actualLibs, drifted: actualLibs !== EXPECTED.libs };
+    const agents = { expected: EXPECTED.agents, actual: actualAgents, drifted: actualAgents !== EXPECTED.agents };
+    const skills = { expected: EXPECTED.skills, actual: actualSkills, drifted: actualSkills !== EXPECTED.skills };
+
+    return { hooks, libs, agents, skills, drifted: hooks.drifted || libs.drifted || agents.drifted || skills.drifted };
+}
+
 // Extend the base DailyReport with trace-lib and hint-lib fields
 type DailyReport = DailyReportBase & {
     session_traces: SessionTrace[];
@@ -86,6 +134,7 @@ type DailyReport = DailyReportBase & {
     mode_sessions: ModeSession[];
     mode_metrics: ModeMetrics;
     tdd_metrics: TDDMetrics;
+    infrastructure_drift: InfrastructureDrift;
 };
 
 // ---------------------------------------------------------------------------
@@ -165,6 +214,10 @@ function runDaily(targetDate: string): DailyReport {
         .filter(e => isTimestampOnDate(e.timestamp, targetDate));
     const tdd_metrics = computeTDDMetrics(allTDDEntries);
 
+    // Infrastructure drift (compares filesystem to hardcoded baselines)
+    const paiDir = join(PROJECT_DIR, '..', '..');  // PROJECT_DIR is ~/.claude/projects/..., PAI_DIR is ~/.claude
+    const infrastructure_drift = detectInfrastructureDrift(paiDir);
+
     return {
         mode: 'daily',
         date: targetDate,
@@ -199,6 +252,7 @@ function runDaily(targetDate: string): DailyReport {
         mode_sessions,
         mode_metrics,
         tdd_metrics,
+        infrastructure_drift,
     };
 }
 

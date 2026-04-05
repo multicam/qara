@@ -43,9 +43,21 @@ Examples: "hook not working", "debug hooks", "hook troubleshooting"
 **When:** Claude completes a response (not user)
 **Use Cases:** Extract completion info, update tab titles, capture work
 
+### PostToolUseFailure
+**When:** A tool call fails
+**Use Cases:** Error tracking, consecutive failure escalation, retry strategy
+
+### SubagentStart
+**When:** A subagent (Agent tool) is spawned
+**Use Cases:** Delegation tracking, mode state updates
+
 ### SubagentStop
-**When:** A subagent (Task) completes
-**Use Cases:** Agent tracking, result capture, coordination
+**When:** A subagent completes
+**Use Cases:** Deliverable recording, mode state updates, result capture
+
+### PreCompact
+**When:** Before CC compresses the context window
+**Use Cases:** State checkpoint, working memory snapshot
 
 ### ConfigChange
 **When:** Settings or config files change
@@ -55,7 +67,7 @@ Examples: "hook not working", "debug hooks", "hook troubleshooting"
 
 ## Hook Configuration
 
-**Location:** `${PAI_DIR}/.claude/settings.json` or `~/.claude/settings.json`
+**Location:** `${PAI_DIR}/settings.json` (symlinked from `~/.claude/settings.json`)
 
 ```json
 {
@@ -121,23 +133,30 @@ const sessionFile = `${PAI_DIR}/state/sessions/${input.session_id}.json`;
 
 | Hook | Event | Purpose |
 |------|-------|---------|
-| `session-start.ts` | SessionStart | Load CORE skill, initialize session |
-| `pre-tool-use-security.ts` | PreToolUse | Block dangerous Bash commands |
-| `post-tool-use.ts` | PostToolUse | JSONL tool usage logging |
+| `session-start.ts` | SessionStart | Load CORE skill, hints, crash recovery |
 | `update-tab-titles.ts` | UserPromptSubmit | Set terminal tab titles |
-| `stop-hook.ts` | Stop | Checkpoint logging, tab update |
-| `pre-tool-use-tdd.ts` | PreToolUse | TDD discipline enforcement (Write/Edit/MultiEdit) |
+| `keyword-router.ts` | UserPromptSubmit | Mode activation, skill injection |
+| `rtk-rewrite.sh` | PreToolUse:Bash | RTK token reduction |
+| `pre-tool-use-security.ts` | PreToolUse:Bash | Block dangerous Bash commands |
+| `pre-tool-use-tdd.ts` | PreToolUse:Write,Edit,MultiEdit | TDD discipline enforcement |
+| `post-tool-use.ts` | PostToolUse | JSONL tool usage logging |
+| `post-tool-failure.ts` | PostToolUseFailure | Consecutive failure tracking |
+| `subagent-start.ts` | SubagentStart | Delegation logging, mode state |
+| `subagent-stop.ts` | SubagentStop | Deliverable recording, mode state |
+| `pre-compact.ts` | PreCompact | State checkpoint before compression |
+| `stop-hook.ts` | Stop | Mode continuation, memory injection, tab update |
 | `config-change.ts` | ConfigChange | Settings sync validation |
 
 ---
 
 ## Hook Best Practices
 
-1. **Fail gracefully** - Hooks should never block Claude
-2. **Timeout protection** - Use timeouts for external calls
-3. **Async by default** - Don't block the main process
-4. **TypeScript preferred** - Use Bun for execution
-5. **Log errors** - Don't fail silently
+1. **NEVER exit(1)** — Always `exit(0)`, even on error. Exit(1) = CC shows error to user
+2. **readFileSync(0, 'utf-8')** for stdin — NEVER Bun.stdin.stream()
+3. **chmod +x** — CC runs hooks directly via shebang, not via `bun run`
+4. **Use getSessionId()** from pai-paths.ts — not inline env var chains
+5. **Timeout-aware** — PostToolUse/Stop/SubagentStop/PreCompact need 2000ms, others 500ms
+6. **Log errors to stderr** — console.error, not console.log (stdout is for hook output)
 
 ---
 

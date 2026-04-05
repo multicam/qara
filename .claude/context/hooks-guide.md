@@ -2,7 +2,7 @@
 
 Claude Code hooks in `.claude/hooks/`. All hooks are Bun TypeScript.
 
-## Active Hooks (12 scripts, 10 CC events)
+## Active Hooks (13 scripts, 10 CC events)
 
 | Hook | Event | Purpose |
 |------|-------|---------|

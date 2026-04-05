@@ -121,6 +121,19 @@ If `denied_in_red` > 5, flag as `[tdd-enforcement][anomaly]`:
 If `green_first_pass_rate` < 60%, flag as `[tdd-enforcement]`:
 > "GREEN first-pass rate at [X]% — tests may be too complex or implementation too fragmented"
 
+**Infrastructure Drift** (`infrastructure_drift` section):
+
+IF `infrastructure_drift.drifted == true`, create a `[staleness]` observation:
+> "Infrastructure drift detected: {category} expected {expected}, actual {actual}. Run cc-upgrade-pai to update audit tools and documentation."
+
+Record in YAML frontmatter:
+```yaml
+infrastructure_drift: true
+drift_details: "hooks: 13→14, skills: 50→52"
+```
+
+This closes the loop: when Qara evolves, the miner flags the drift, the synthesizer promotes it to a hint, and the next session reminds the agent to update audit docs.
+
 ### 4. Compose Observation File
 
 Write to `~/qara/thoughts/shared/introspection/observations/YYYY-MM-DD.md`
