@@ -1,7 +1,7 @@
 ---
 name: thoughts-analyzer
 description: Deep-dives into thoughts/ documents to extract high-value insights, decisions, and actionable information. The research equivalent of codebase-analyzer. Use when you need to mine existing research or planning docs.
-tools: Read, Grep, Glob, Bash
+tools: [Read, Grep, Glob, Bash]
 model: sonnet
 ---
 

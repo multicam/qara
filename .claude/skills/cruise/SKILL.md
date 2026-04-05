@@ -46,14 +46,7 @@ When Phase 4 passes with no issues → deactivate mode with reason `complete`.
 
 ## Working Memory
 
-Session-scoped memory in `.omx/state/sessions/{session_id}/memory/`. Survives context compression via Stop hook re-injection.
-
-- `decisions.md` — plan choices, risk mitigations
-- `learnings.md` — codebase discoveries during Discover phase
-- `problems.md` — blockers encountered during implementation
-- `issues.md` — bugs or test failures found during verification
-
-Write at phase transitions and when encountering surprises.
+Session-scoped 4-file memory (decisions, learnings, problems, issues) in `.claude/state/sessions/{session_id}/memory/`. Survives compression via Stop hook re-injection. Write at phase transitions and when encountering surprises.
 
 ## Error Recovery
 

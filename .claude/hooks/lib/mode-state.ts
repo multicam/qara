@@ -185,6 +185,30 @@ export function deactivateWithReason(reason: string): void {
 }
 
 /**
+ * Adjust activeSubagents counter by delta (+1 or -1). Clamps to 0.
+ */
+export function updateActiveSubagents(delta: number): void {
+  const raw = readRaw();
+  if (!raw) return;
+  raw.activeSubagents = Math.max(0, (raw.activeSubagents || 0) + delta);
+  atomicWriteState(raw);
+}
+
+/**
+ * Append a completed subagent ID. Caps at 50 entries.
+ */
+export function appendCompletedSubagent(id: string): void {
+  const raw = readRaw();
+  if (!raw) return;
+  if (!Array.isArray(raw.completedSubagents)) raw.completedSubagents = [];
+  raw.completedSubagents.push(id);
+  if (raw.completedSubagents.length > 50) {
+    raw.completedSubagents = raw.completedSubagents.slice(-50);
+  }
+  atomicWriteState(raw);
+}
+
+/**
  * Clear mode state entirely (removes file).
  */
 export function clearModeState(): void {

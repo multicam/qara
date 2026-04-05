@@ -15,13 +15,13 @@
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
-import { SKILLS_DIR, QARA_DIR } from './lib/pai-paths';
+import { SKILLS_DIR, QARA_DIR, getSessionId } from './lib/pai-paths';
 import { setTerminalTabTitle } from './lib/tab-titles';
 import { readTDDStateRaw, clearTDDState, isStateValid } from './lib/tdd-state';
 import { loadCheckpoint, clearCheckpoint, formatCheckpointSummary } from './lib/compact-checkpoint';
 
 const DEBOUNCE_MS = 2000;
-const sessionId = process.env.CLAUDE_SESSION_ID || process.env.SESSION_ID || 'default';
+const sessionId = getSessionId();
 const LOCKFILE = join(tmpdir(), `pai-session-start-${sessionId}.lock`);
 
 /**

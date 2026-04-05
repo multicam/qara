@@ -12,7 +12,7 @@
 
 import { readFileSync, existsSync } from "fs";
 import { join } from "path";
-import { SKILLS_DIR, STATE_DIR } from "./lib/pai-paths";
+import { SKILLS_DIR, STATE_DIR, getSessionId } from "./lib/pai-paths";
 import { writeModeState, clearModeState, readModeState } from "./lib/mode-state";
 import type { ModeName } from "./lib/mode-state";
 import { appendJsonl } from "./lib/jsonl-utils";
@@ -120,17 +120,19 @@ async function main() {
               mode: priorState.mode,
               reason: "cancelled",
               iterations: priorState.iteration,
-              session_id: process.env.CLAUDE_SESSION_ID || "unknown",
+              session_id: getSessionId(),
             });
           }
           process.exit(0);
         }
 
-        // Handle activation
-        if (route.activatesMode && route.skill) {
-          const skillPath = join(SKILLS_DIR, route.skill, "SKILL.md");
+        // Resolve skill path once
+        const skillPath = route.skill
+          ? join(SKILLS_DIR, route.skill, "SKILL.md")
+          : null;
 
-          // Extract task context from the prompt (everything after the keyword match)
+        // Handle activation
+        if (route.activatesMode && skillPath) {
           const taskContext = prompt.substring(prompt.toLowerCase().indexOf(routeName) + routeName.length).replace(/^[\s:]+/, "").trim() || prompt.trim();
 
           writeModeState({
@@ -147,20 +149,16 @@ async function main() {
             event: "activated",
             mode: routeName,
             task_context: taskContext.substring(0, 200),
-            session_id: process.env.CLAUDE_SESSION_ID || "unknown",
+            session_id: getSessionId(),
           });
         }
 
         // Inject skill content if available
-        if (route.skill) {
-          const skillPath = join(SKILLS_DIR, route.skill, "SKILL.md");
-          if (existsSync(skillPath)) {
-            const skillContent = readFileSync(skillPath, "utf-8");
-            const result = JSON.stringify({
-              result: `<system-reminder>\n${skillContent}\n</system-reminder>`,
-            });
-            process.stdout.write(result);
-          }
+        if (skillPath && existsSync(skillPath)) {
+          const skillContent = readFileSync(skillPath, "utf-8");
+          process.stdout.write(JSON.stringify({
+            result: `<system-reminder>\n${skillContent}\n</system-reminder>`,
+          }));
         }
 
         process.exit(0);

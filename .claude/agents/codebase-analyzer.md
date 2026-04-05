@@ -1,7 +1,7 @@
 ---
 name: codebase-analyzer
 description: Analyzes implementation details, traces data flow, and explains how code works with precise file:line references. Use when you need deep understanding of specific components.
-tools: Read, Grep, Glob, Bash
+tools: [Read, Grep, Glob, Bash]
 model: sonnet
 ---
 

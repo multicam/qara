@@ -6,22 +6,15 @@
  * before CC compresses the context window. Session-start can recover
  * from crashes by loading the latest checkpoint.
  *
- * Storage: .omx/state/sessions/{sessionId}/compact-checkpoint.json
+ * Storage: STATE_DIR/sessions/{sessionId}/compact-checkpoint.json
  */
 
-import { existsSync, readFileSync, writeFileSync, unlinkSync, mkdirSync, renameSync } from "fs";
-import { join, resolve } from "path";
-import { homedir } from "os";
-
-// ─── Path resolution ───────────────────────────────────────────────────────
-
-const OMX_STATE_DIR = resolve(
-  process.env.OMX_STATE_DIR || join(homedir(), "qara", ".omx", "state")
-);
-const SESSIONS_DIR = join(OMX_STATE_DIR, "sessions");
+import { existsSync, readFileSync, writeFileSync, unlinkSync, mkdirSync } from "fs";
+import { join } from "path";
+import { getSessionsDir, atomicWriteJson } from "./pai-paths";
 
 function checkpointPath(sessionId: string): string {
-  const dir = join(SESSIONS_DIR, sessionId);
+  const dir = join(getSessionsDir(), sessionId);
   mkdirSync(dir, { recursive: true });
   return join(dir, "compact-checkpoint.json");
 }
@@ -136,11 +129,7 @@ export function saveCheckpoint(sessionId: string): CompactCheckpoint {
     }
   } catch { /* non-critical */ }
 
-  // Atomic write
-  const path = checkpointPath(sessionId);
-  const tmp = path + ".tmp";
-  writeFileSync(tmp, JSON.stringify(checkpoint, null, 2));
-  renameSync(tmp, path);
+  atomicWriteJson(checkpointPath(sessionId), checkpoint);
 
   return checkpoint;
 }
@@ -152,7 +141,7 @@ export function saveCheckpoint(sessionId: string): CompactCheckpoint {
  */
 export function loadCheckpoint(sessionId: string): CompactCheckpoint | null {
   try {
-    const path = join(SESSIONS_DIR, sessionId, "compact-checkpoint.json");
+    const path = join(getSessionsDir(), sessionId, "compact-checkpoint.json");
     if (!existsSync(path)) return null;
     const content = readFileSync(path, "utf-8");
     const checkpoint = JSON.parse(content) as CompactCheckpoint;
@@ -170,7 +159,7 @@ export function loadCheckpoint(sessionId: string): CompactCheckpoint | null {
  */
 export function clearCheckpoint(sessionId: string): void {
   try {
-    const path = join(SESSIONS_DIR, sessionId, "compact-checkpoint.json");
+    const path = join(getSessionsDir(), sessionId, "compact-checkpoint.json");
     if (existsSync(path)) unlinkSync(path);
   } catch { /* ignore */ }
 }

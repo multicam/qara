@@ -26,12 +26,12 @@ Before querying, ensure the API key is available:
 ```bash
 # Source from PAI .env if not already in environment
 if [ -z "$PERPLEXITY_API_KEY" ]; then
-  source "${PAI_DIR}/.env" 2>/dev/null || true
+  source "~/.claude/.env" 2>/dev/null || true
 fi
 
 # Verify key exists
 if [ -z "$PERPLEXITY_API_KEY" ]; then
-  echo "ERROR: PERPLEXITY_API_KEY not found in environment or ${PAI_DIR}/.env"
+  echo "ERROR: PERPLEXITY_API_KEY not found in environment or ~/.claude/.env"
   exit 0
 fi
 ```
@@ -61,7 +61,7 @@ Parse the response to extract the answer text and any cited URLs from the `citat
 
 ## Process
 
-1. **Check API key** — Source `${PAI_DIR}/.env` if needed; abort with a clear message if missing
+1. **Check API key** — Source `~/.claude/.env` if needed; abort with a clear message if missing
 2. **Run the query** — POST to Perplexity API with the research question
 3. **Evaluate the response** — Check if findings are substantive and citations are present
 4. **Follow up once** — If the first response is thin or unclear, run ONE refined follow-up query

@@ -10,7 +10,7 @@
 
 import { homedir } from 'os';
 import { resolve, join } from 'path';
-import { existsSync, mkdirSync, readFileSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync, renameSync } from 'fs';
 
 /**
  * Smart PAI_DIR detection with fallback
@@ -36,6 +36,13 @@ export const STATE_DIR = join(PAI_DIR, 'state');
 export const QARA_DIR = resolve(homedir(), 'qara');
 export const THOUGHTS_DIR = join(QARA_DIR, 'thoughts');
 export const MEMORY_DIR = join(THOUGHTS_DIR, 'memory');
+
+// Session directories (working memory, checkpoints)
+// Function, not constant — tests override SESSIONS_STATE_DIR per-file via env.
+export function getSessionsDir(): string {
+    if (process.env.SESSIONS_STATE_DIR) return join(process.env.SESSIONS_STATE_DIR, 'sessions');
+    return join(STATE_DIR, 'sessions');
+}
 
 /**
  * Validate PAI directory structure on first import.
@@ -75,6 +82,26 @@ export function getHistoryFilePath(subdir: string, filename: string): string {
  */
 export function ensureDir(dir: string): void {
     mkdirSync(dir, { recursive: true });
+}
+
+/**
+ * Get the current session ID with consistent fallback chain.
+ * Single source of truth — all hooks should use this instead of
+ * inlining `process.env.CLAUDE_SESSION_ID || process.env.SESSION_ID || "unknown"`.
+ */
+export function getSessionId(): string {
+    return process.env.CLAUDE_SESSION_ID || process.env.SESSION_ID || 'unknown';
+}
+
+/**
+ * Atomic JSON write: write to temp file then rename (POSIX atomic).
+ * Prevents parallel hook invocations from reading partial JSON.
+ */
+export function atomicWriteJson(filepath: string, data: object): void {
+    ensureDir(join(filepath, '..'));
+    const tmp = filepath + '.tmp';
+    writeFileSync(tmp, JSON.stringify(data, null, 2));
+    renameSync(tmp, filepath);
 }
 
 /**

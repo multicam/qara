@@ -9,6 +9,7 @@ When to delegate to agents and how to use them effectively.
 | How does code X work? | `codebase-analyzer` | sonnet | Traces data flow, gives file:line refs |
 | Design review / UI polish | `designer` | opus | Loads frontend-design skill |
 | PRD / system design | `architect` | opus | Loads research skill |
+| Break down task into phases | `planner` | opus | Dependency graphs, vertical slices |
 | Implement from spec | `engineer` | sonnet | Code, tests, debugging |
 | Review code quality | `reviewer` | opus | Security, perf, correctness |
 | Review plan before impl | `critic` | opus | Scenario coverage, scope, risks |
@@ -58,8 +59,6 @@ Launch independent agents in a **single message** with multiple `Task` tool call
 7. **Research needed** → `claude-researcher` first, then `gemini-researcher` or `perplexity-researcher` as fallback
 
 ## Task Packaging
-
-Use `templates/delegation-task.md` for complex delegations. For simple tasks, a clear prompt is enough — don't over-template.
 
 **Minimum viable task:**
 - What to do (objective)

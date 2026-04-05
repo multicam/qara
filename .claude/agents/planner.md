@@ -1,7 +1,7 @@
 ---
 name: planner
 description: Implementation planning specialist. Breaks ambiguous problems into dependency graphs, identifies load-bearing decisions, and produces phased vertical-slice plans. Use when you need to decompose a task before building it.
-tools: Read, Grep, Glob, Bash, WebSearch, WebFetch
+tools: [Read, Grep, Glob, Bash, WebSearch, WebFetch]
 model: opus
 ---
 

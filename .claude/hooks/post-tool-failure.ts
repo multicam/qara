@@ -11,7 +11,7 @@
 
 import { readFileSync, existsSync, writeFileSync } from 'fs';
 import { join } from 'path';
-import { STATE_DIR, ensureDir } from './lib/pai-paths';
+import { STATE_DIR, ensureDir, getSessionId } from './lib/pai-paths';
 import { appendJsonl } from './lib/jsonl-utils';
 import { getISOTimestamp } from './lib/datetime-utils';
 
@@ -71,7 +71,7 @@ async function main() {
       tool: toolName,
       error: errorStr,
       consecutive,
-      session_id: process.env.CLAUDE_SESSION_ID || 'unknown',
+      session_id: getSessionId(),
     });
 
     // Escalate at threshold

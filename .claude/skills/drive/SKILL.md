@@ -11,7 +11,7 @@ Persistent execution mode that works through PRD stories until all pass. Loop vi
 
 ## Activation
 
-Activated by keyword "drive" in prompt (via keyword-router hook). Mode state written to `STATE_DIR/mode-state.json`. Stop hook reads this state and injects continuation messages.
+Activated by keyword "drive" in prompt (via keyword-router hook). Default: 50 max iterations. Mode state written to `STATE_DIR/mode-state.json`. Stop hook reads this state and injects continuation messages.
 
 ## Per-Story Loop
 
@@ -24,25 +24,25 @@ Spawn `critic` agent with the story's acceptance criteria and your proposed appr
 - If `verdict: proceed` → continue
 
 ### 2. Scenario Check
-Verify `specs/{story-id}.md` exists with Given/When/Then scenarios.
-- If missing: run the `write-scenarios` workflow from tdd-qa skill
+Verify scenarios exist — check story's `scenario_file` field in prd.json, or `specs/{story-id}.md`.
+- If missing: follow `tdd-qa/workflows/write-scenarios.md`
 - Wait for JM to review scenarios before proceeding
 
 ### 3. TDD Cycle
 Activate TDD enforcement:
 ```bash
-bun ${PAI_DIR}/hooks/lib/tdd-state.ts activate --feature {story-id} --phase RED
+bun .claude/hooks/lib/tdd-state.ts activate --feature {story-id} --phase RED
 ```
 
 For each scenario in the spec file:
 - **RED:** Write a failing test. Hook blocks source file edits.
-- **GREEN:** Write minimal code to pass. `bun ${PAI_DIR}/hooks/lib/tdd-state.ts phase GREEN`
-- **REFACTOR:** Clean up. `bun ${PAI_DIR}/hooks/lib/tdd-state.ts phase REFACTOR`
+- **GREEN:** Write minimal code to pass. `bun .claude/hooks/lib/tdd-state.ts phase GREEN`
+- **REFACTOR:** Clean up. `bun .claude/hooks/lib/tdd-state.ts phase REFACTOR`
 - Back to RED for next scenario.
 
 Deactivate when all scenarios covered:
 ```bash
-bun ${PAI_DIR}/hooks/lib/tdd-state.ts clear
+bun .claude/hooks/lib/tdd-state.ts clear
 ```
 
 ### 4. Verifier Gate (Post-Implementation)
@@ -68,19 +68,7 @@ When all stories have `passes: true`:
 
 ## Working Memory
 
-Session-scoped memory stored in `.omx/state/sessions/{session_id}/memory/`. Survives context compression via Stop hook re-injection.
-
-Use the working-memory library (`bun .claude/hooks/lib/working-memory.ts`) or write directly:
-- `decisions.md` — architectural or approach choices (and why)
-- `learnings.md` — unexpected discoveries, surprising behaviors
-- `problems.md` — blockers, open questions
-- `issues.md` — bugs found, concerns raised
-
-Write at these moments:
-- Before implementing: record the chosen approach in `decisions.md`
-- When something surprises you: record in `learnings.md`
-- When blocked: record in `problems.md` before trying alternatives
-- When a bug surfaces: record in `issues.md`
+Session-scoped 4-file memory (decisions, learnings, problems, issues) in `.claude/state/sessions/{session_id}/memory/`. Survives compression via Stop hook re-injection. Write at decision points, surprises, blockers, and bug discoveries.
 
 ## Error Recovery
 
@@ -95,6 +83,7 @@ Expected at project root as `prd.json`:
 ```json
 {
   "name": "Feature Name",
+  "created_at": "2026-04-06T00:00:00Z",
   "stories": [
     {
       "id": "1",
@@ -103,7 +92,8 @@ Expected at project root as `prd.json`:
       "acceptance_criteria": ["Criterion 1", "Criterion 2"],
       "passes": false,
       "verified_at": null,
-      "verified_by": null
+      "verified_by": null,
+      "scenario_file": null
     }
   ]
 }

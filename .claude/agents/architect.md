@@ -1,7 +1,7 @@
 ---
 name: architect
 description: System architecture and PRD creation specialist. Use for comprehensive product requirements documents, technical specifications, feature breakdowns, and implementation checklists that can be distributed to multiple development agents.
-tools: Read, Grep, Glob, WebSearch, WebFetch
+tools: [Read, Grep, Glob, WebSearch, WebFetch]
 model: opus
 skills:
   - research

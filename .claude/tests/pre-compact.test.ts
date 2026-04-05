@@ -12,7 +12,7 @@ import { tmpdir } from "os";
 
 const TEST_PAI_DIR = join(tmpdir(), `pre-compact-test-${process.pid}`);
 const TEST_STATE_DIR = join(TEST_PAI_DIR, "state");
-const TEST_OMX_DIR = join(tmpdir(), `pre-compact-omx-${process.pid}`);
+const TEST_SESSIONS_DIR = join(tmpdir(), `pre-compact-omx-${process.pid}`);
 const HOOK_SCRIPT = join(import.meta.dir, "..", "hooks", "pre-compact.ts");
 
 async function runHook(
@@ -26,7 +26,7 @@ async function runHook(
     env: {
       ...process.env,
       PAI_DIR: TEST_PAI_DIR,
-      OMX_STATE_DIR: TEST_OMX_DIR,
+      SESSIONS_STATE_DIR: TEST_SESSIONS_DIR,
       CLAUDE_SESSION_ID: "pre-compact-test-session",
       ...extraEnv,
     },
@@ -43,7 +43,7 @@ async function runHook(
 
 describe("PreCompact Hook", () => {
   beforeEach(() => {
-    for (const dir of [TEST_PAI_DIR, TEST_OMX_DIR]) {
+    for (const dir of [TEST_PAI_DIR, TEST_SESSIONS_DIR]) {
       if (existsSync(dir)) rmSync(dir, { recursive: true });
     }
     mkdirSync(TEST_STATE_DIR, { recursive: true });
@@ -51,7 +51,7 @@ describe("PreCompact Hook", () => {
   });
 
   afterEach(() => {
-    for (const dir of [TEST_PAI_DIR, TEST_OMX_DIR]) {
+    for (const dir of [TEST_PAI_DIR, TEST_SESSIONS_DIR]) {
       if (existsSync(dir)) rmSync(dir, { recursive: true });
     }
   });
@@ -69,7 +69,7 @@ describe("PreCompact Hook", () => {
   it("should create checkpoint file", async () => {
     await runHook({ session_id: "pre-compact-test-session" });
     const cpPath = join(
-      TEST_OMX_DIR,
+      TEST_SESSIONS_DIR,
       "sessions",
       "pre-compact-test-session",
       "compact-checkpoint.json"
@@ -85,7 +85,7 @@ describe("PreCompact Hook", () => {
 
   it("should emit reminder when working memory exists", async () => {
     // Create working memory for the session
-    const memDir = join(TEST_OMX_DIR, "sessions", "pre-compact-test-session", "memory");
+    const memDir = join(TEST_SESSIONS_DIR, "sessions", "pre-compact-test-session", "memory");
     mkdirSync(memDir, { recursive: true });
     writeFileSync(join(memDir, "decisions.md"), "# Decisions\n\n- use TDD\n");
 

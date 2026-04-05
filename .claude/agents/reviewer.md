@@ -1,7 +1,7 @@
 ---
 name: reviewer
 description: Code review specialist. Use for reviewing PRs, diffs, or implementations for correctness, security, performance, and maintainability. Returns structured feedback with severity levels.
-tools: Read, Grep, Glob, Bash
+tools: [Read, Grep, Glob, Bash]
 model: opus
 ---
 

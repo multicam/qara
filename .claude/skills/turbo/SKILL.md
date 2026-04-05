@@ -53,14 +53,7 @@ When synthesis passes verification → deactivate mode with reason `complete`.
 
 ## Working Memory
 
-Session-scoped memory in `.omx/state/sessions/{session_id}/memory/`. Survives context compression via Stop hook re-injection.
-
-- `decisions.md` — decomposition rationale, conflict resolutions
-- `learnings.md` — what worked in parallel, what didn't
-- `problems.md` — synthesis failures, agent coordination issues
-- `issues.md` — conflicts between agent outputs, integration problems
-
-Write at these moments: after decomposition, after each agent completes, during synthesis.
+Session-scoped 4-file memory (decisions, learnings, problems, issues) in `.claude/state/sessions/{session_id}/memory/`. Survives compression via Stop hook re-injection. Write after decomposition, after each agent completes, and during synthesis.
 
 ## Error Recovery
 

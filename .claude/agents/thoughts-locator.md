@@ -1,7 +1,7 @@
-    ---
+---
 name: thoughts-locator
 description: Discovers relevant documents in thoughts/ directory. Use when researching whether existing notes, plans, tickets, or research docs exist for a topic. The thoughts/ equivalent of the Explore agent.
-tools: Grep, Glob, Bash
+tools: [Grep, Glob, Bash]
 model: haiku
 ---
 

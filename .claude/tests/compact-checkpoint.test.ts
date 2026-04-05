@@ -10,8 +10,8 @@ import { mkdirSync, existsSync, readFileSync, rmSync, writeFileSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 
-const TEST_OMX_DIR = join(tmpdir(), `checkpoint-test-${process.pid}`);
-process.env.OMX_STATE_DIR = TEST_OMX_DIR;
+const TEST_SESSIONS_DIR = join(tmpdir(), `checkpoint-test-${process.pid}`);
+process.env.SESSIONS_STATE_DIR = TEST_SESSIONS_DIR;
 
 // Dynamic import after env setup
 const { saveCheckpoint, loadCheckpoint, clearCheckpoint, formatCheckpointSummary } =
@@ -19,12 +19,12 @@ const { saveCheckpoint, loadCheckpoint, clearCheckpoint, formatCheckpointSummary
 
 describe("Compact Checkpoint", () => {
   beforeEach(() => {
-    if (existsSync(TEST_OMX_DIR)) rmSync(TEST_OMX_DIR, { recursive: true });
-    mkdirSync(TEST_OMX_DIR, { recursive: true });
+    if (existsSync(TEST_SESSIONS_DIR)) rmSync(TEST_SESSIONS_DIR, { recursive: true });
+    mkdirSync(TEST_SESSIONS_DIR, { recursive: true });
   });
 
   afterEach(() => {
-    if (existsSync(TEST_OMX_DIR)) rmSync(TEST_OMX_DIR, { recursive: true });
+    if (existsSync(TEST_SESSIONS_DIR)) rmSync(TEST_SESSIONS_DIR, { recursive: true });
   });
 
   // ─── saveCheckpoint ─────────────────────────────────────────────────────
@@ -35,7 +35,7 @@ describe("Compact Checkpoint", () => {
       expect(cp.sessionId).toBe("save-test-1");
       expect(cp.savedAt).toBeTruthy();
 
-      const path = join(TEST_OMX_DIR, "sessions", "save-test-1", "compact-checkpoint.json");
+      const path = join(TEST_SESSIONS_DIR, "sessions", "save-test-1", "compact-checkpoint.json");
       expect(existsSync(path)).toBe(true);
     });
 
@@ -51,7 +51,7 @@ describe("Compact Checkpoint", () => {
 
     it("should produce valid JSON checkpoint file", () => {
       saveCheckpoint("json-test");
-      const path = join(TEST_OMX_DIR, "sessions", "json-test", "compact-checkpoint.json");
+      const path = join(TEST_SESSIONS_DIR, "sessions", "json-test", "compact-checkpoint.json");
       const content = readFileSync(path, "utf-8");
       const parsed = JSON.parse(content);
       expect(parsed.sessionId).toBe("json-test");
@@ -78,14 +78,14 @@ describe("Compact Checkpoint", () => {
     });
 
     it("should return null for malformed JSON", () => {
-      const dir = join(TEST_OMX_DIR, "sessions", "malformed");
+      const dir = join(TEST_SESSIONS_DIR, "sessions", "malformed");
       mkdirSync(dir, { recursive: true });
       writeFileSync(join(dir, "compact-checkpoint.json"), "not json");
       expect(loadCheckpoint("malformed")).toBeNull();
     });
 
     it("should return null for missing required fields", () => {
-      const dir = join(TEST_OMX_DIR, "sessions", "incomplete");
+      const dir = join(TEST_SESSIONS_DIR, "sessions", "incomplete");
       mkdirSync(dir, { recursive: true });
       writeFileSync(join(dir, "compact-checkpoint.json"), '{"foo": "bar"}');
       expect(loadCheckpoint("incomplete")).toBeNull();
@@ -97,7 +97,7 @@ describe("Compact Checkpoint", () => {
   describe("clearCheckpoint", () => {
     it("should remove checkpoint file", () => {
       saveCheckpoint("clear-test-1");
-      const path = join(TEST_OMX_DIR, "sessions", "clear-test-1", "compact-checkpoint.json");
+      const path = join(TEST_SESSIONS_DIR, "sessions", "clear-test-1", "compact-checkpoint.json");
       expect(existsSync(path)).toBe(true);
 
       clearCheckpoint("clear-test-1");

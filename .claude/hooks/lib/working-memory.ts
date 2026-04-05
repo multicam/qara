@@ -7,21 +7,14 @@
  * - issues.md     — bugs found, concerns raised
  * - problems.md   — blockers, open questions
  *
- * Storage: .omx/state/sessions/{sessionId}/memory/
+ * Storage: STATE_DIR/sessions/{sessionId}/memory/
  * Injected into continuation messages by the Stop hook so critical
  * context survives context compression.
  */
 
-import { existsSync, readFileSync, writeFileSync, mkdirSync, renameSync, readdirSync } from "fs";
-import { join, resolve } from "path";
-import { homedir } from "os";
-
-// ─── Constants ─────────────────────────────────────────────────────────────
-
-const OMX_STATE_DIR = resolve(
-  process.env.OMX_STATE_DIR || join(homedir(), "qara", ".omx", "state")
-);
-const SESSIONS_DIR = join(OMX_STATE_DIR, "sessions");
+import { existsSync, readFileSync, writeFileSync, mkdirSync, renameSync } from "fs";
+import { join } from "path";
+import { getSessionsDir, getSessionId as _getSessionId } from "./pai-paths";
 const MEMORY_FILES = ["learnings.md", "decisions.md", "issues.md", "problems.md"] as const;
 type MemoryFile = (typeof MEMORY_FILES)[number];
 type MemoryCategory = "learning" | "decision" | "issue" | "problem";
@@ -36,7 +29,7 @@ const CATEGORY_TO_FILE: Record<MemoryCategory, MemoryFile> = {
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
 function getSessionId(): string {
-  return process.env.CLAUDE_SESSION_ID || process.env.SESSION_ID || "unknown";
+  return _getSessionId();
 }
 
 function getTimestamp(): string {
@@ -62,7 +55,7 @@ function getTimestamp(): string {
  */
 export function getMemoryDir(sessionId?: string): string {
   const id = sessionId || getSessionId();
-  const dir = join(SESSIONS_DIR, id, "memory");
+  const dir = join(getSessionsDir(), id, "memory");
   mkdirSync(dir, { recursive: true });
   return dir;
 }
@@ -148,10 +141,10 @@ export function formatMemoryForInjection(sessionId?: string): string {
  */
 export function archiveMemory(sessionId?: string): void {
   const id = sessionId || getSessionId();
-  const memDir = join(SESSIONS_DIR, id, "memory");
+  const memDir = join(getSessionsDir(), id, "memory");
   if (!existsSync(memDir)) return;
 
-  const archiveDir = join(SESSIONS_DIR, id, "archive");
+  const archiveDir = join(getSessionsDir(), id, "archive");
   mkdirSync(archiveDir, { recursive: true });
 
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);

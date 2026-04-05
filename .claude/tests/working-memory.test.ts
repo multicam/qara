@@ -10,9 +10,9 @@ import { mkdirSync, existsSync, readFileSync, rmSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 
-// We need to set OMX_STATE_DIR before importing the module
-const TEST_OMX_DIR = join(tmpdir(), `working-memory-test-${process.pid}`);
-process.env.OMX_STATE_DIR = TEST_OMX_DIR;
+// We need to set SESSIONS_STATE_DIR before importing the module
+const TEST_SESSIONS_DIR = join(tmpdir(), `working-memory-test-${process.pid}`);
+process.env.SESSIONS_STATE_DIR = TEST_SESSIONS_DIR;
 process.env.CLAUDE_SESSION_ID = "test-session-wm";
 
 // Dynamic import after env setup
@@ -30,15 +30,15 @@ const {
 describe("Working Memory", () => {
   beforeEach(() => {
     // Clean slate
-    if (existsSync(TEST_OMX_DIR)) {
-      rmSync(TEST_OMX_DIR, { recursive: true });
+    if (existsSync(TEST_SESSIONS_DIR)) {
+      rmSync(TEST_SESSIONS_DIR, { recursive: true });
     }
-    mkdirSync(TEST_OMX_DIR, { recursive: true });
+    mkdirSync(TEST_SESSIONS_DIR, { recursive: true });
   });
 
   afterEach(() => {
-    if (existsSync(TEST_OMX_DIR)) {
-      rmSync(TEST_OMX_DIR, { recursive: true });
+    if (existsSync(TEST_SESSIONS_DIR)) {
+      rmSync(TEST_SESSIONS_DIR, { recursive: true });
     }
   });
 
@@ -163,7 +163,7 @@ describe("Working Memory", () => {
       expect(existsSync(memDir)).toBe(false);
 
       // Archive dir should exist
-      const archiveDir = join(TEST_OMX_DIR, "sessions", "archive-test-1", "archive");
+      const archiveDir = join(TEST_SESSIONS_DIR, "sessions", "archive-test-1", "archive");
       expect(existsSync(archiveDir)).toBe(true);
     });
 
