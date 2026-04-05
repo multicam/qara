@@ -48,6 +48,15 @@ env:
 **When user says "ask diderot", "diderot search", "check my notes", "what do I know about", "vault search", "in my knowledge base":**
 → **INVOKE SKILL:** diderot
 
+**When user says "review this plan", "is this approach right?", "check my plan", "critique this":**
+→ **SPAWN AGENT:** `critic` (pre-implementation plan review)
+
+**When user says "verify this works", "check acceptance criteria", "run verification", "did this pass?":**
+→ **SPAWN AGENT:** `verifier` (post-implementation acceptance verification + quality gates)
+
+**When user says "drive:", "drive mode", "cruise:", "cruise mode", "turbo:", "turbo mode":**
+→ **Handled by keyword-router hook** (auto-activates mode + injects skill)
+
 ---
 
 ## 📚 Documentation Index
@@ -151,6 +160,8 @@ Use via `Task` tool with `subagent_type`:
 | `architect` | opus | PRD creation, system design, technical specifications (loads research skill) |
 | `engineer` | sonnet | Code implementation, debugging, optimization, testing from PRDs |
 | `reviewer` | opus | Code review for correctness, security, performance, maintainability |
+| `critic` | opus | Pre-implementation plan review: scenario coverage, scope, risks, criteria alignment |
+| `verifier` | opus | Post-implementation verification: fresh evidence per criterion + quality gates (regression, coverage, types) |
 | `thoughts-analyzer` | sonnet | Extracting decisions and insights from thoughts/ documents |
 | `thoughts-locator` | haiku | Finding relevant docs in thoughts/ directory |
 | `gemini-researcher` | haiku | Fallback when WebSearch fails — uses Gemini CLI for independent web access |

@@ -4,17 +4,22 @@
  * stop-hook.ts
  *
  * Stop event hook - triggered when Qara completes a response.
- * Sets terminal tab title based on the assistant's last message.
- * Uses CC 2.1.x `last_assistant_message` field (no transcript parsing needed).
+ * 1. Sets terminal tab title based on the assistant's last message
+ * 2. Persists session checkpoint for resume capability
+ * 3. Mode continuation: if an execution mode is active, injects continuation
+ *    message to prevent Claude from stopping until task is complete
  */
 
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { generateTabTitle, setTerminalTabTitle } from './lib/tab-titles';
 import { STATE_DIR } from './lib/pai-paths';
 import { appendJsonl } from './lib/jsonl-utils';
 import { getISOTimestamp } from './lib/datetime-utils';
 import { classifyTopic } from './lib/trace-utils';
+import { readModeState, isModeActive, incrementIteration, deactivateWithReason } from './lib/mode-state';
+import type { ModeState } from './lib/mode-state';
+import { formatMemoryForInjection } from './lib/working-memory';
 
 async function main() {
   try {
@@ -50,6 +55,70 @@ async function main() {
       transcript_path: process.env.CLAUDE_TRANSCRIPT_PATH || '',
       project_dir: process.env.CLAUDE_PROJECT_DIR || '',
     });
+
+    // ─── Mode Continuation ─────────────────────────────────────────────
+    // If an execution mode is active, inject continuation to keep working.
+    // Safety valves: max iterations, max token budget, deactivation reason.
+    try {
+      const modeState = readModeState();
+      if (modeState && isModeActive(modeState)) {
+        // Check safety valves
+        if (modeState.iteration >= modeState.maxIterations) {
+          deactivateWithReason('max-iterations');
+          appendJsonl(join(STATE_DIR, 'mode-changes.jsonl'), {
+            timestamp: getISOTimestamp(),
+            event: 'deactivated',
+            mode: modeState.mode,
+            reason: 'max-iterations',
+            iterations: modeState.iteration,
+          });
+        } else if (modeState.maxTokensBudget > 0 && modeState.tokensUsed >= modeState.maxTokensBudget) {
+          deactivateWithReason('max-tokens');
+          appendJsonl(join(STATE_DIR, 'mode-changes.jsonl'), {
+            timestamp: getISOTimestamp(),
+            event: 'deactivated',
+            mode: modeState.mode,
+            reason: 'max-tokens',
+            tokensUsed: modeState.tokensUsed,
+          });
+        } else {
+          // Continue: increment iteration, inject skill content
+          incrementIteration();
+
+          let skillContent = '';
+          if (modeState.skillPath && existsSync(modeState.skillPath)) {
+            skillContent = readFileSync(modeState.skillPath, 'utf-8');
+          }
+
+          // Build anti-slop instruction if story just completed
+          let antislopNote = '';
+          if (modeState.lastCompletedStory) {
+            antislopNote = `\n\nMANDATORY SIMPLIFICATION PASS: Before starting the next story, run the simplify workflow on all code changes from story "${modeState.lastCompletedStory}". Only proceed to the next story after simplification is complete.`;
+          }
+
+          // Inject working memory so critical context survives compression
+          let memorySection = '';
+          try {
+            const mem = formatMemoryForInjection();
+            if (mem) memorySection = `\n\n${mem}`;
+          } catch { /* non-critical */ }
+
+          const continuation = JSON.stringify({
+            result: `<system-reminder>MODE CONTINUATION — ${modeState.mode} iteration ${modeState.iteration + 1}/${modeState.maxIterations}\n\nTask: ${modeState.taskContext}\nCriteria: ${modeState.acceptanceCriteria}${antislopNote}${memorySection}\n\n${skillContent}\n\nCONTINUE WORKING.</system-reminder>`,
+          });
+          process.stdout.write(continuation);
+
+          appendJsonl(join(STATE_DIR, 'mode-changes.jsonl'), {
+            timestamp: getISOTimestamp(),
+            event: 'continuation',
+            mode: modeState.mode,
+            iteration: modeState.iteration + 1,
+          });
+        }
+      }
+    } catch {
+      // Mode continuation failure must not block normal stop behavior
+    }
   } catch {
     process.exit(0);
   }

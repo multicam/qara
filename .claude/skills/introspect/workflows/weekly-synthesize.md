@@ -68,6 +68,30 @@ Process `[recovery]` and `[repeated-failure]` observations from the week's obser
 - When creating new patterns from recovery/failure observations, use `patterns/error-recovery.md` as the target file (create it if it does not exist, following `pattern-format.md`).
 - Cross-reference with `patterns/tool-usage.md` for tool-specific patterns that correlate with recovery events (e.g. if a tool has high error_rate and also appears frequently in recovery chains).
 
+### Mode + TDD Metrics Analysis
+
+Process `mode_metrics` and `tdd_metrics` from each day's miner output:
+
+**Mode session patterns:**
+- Look for `[mode-session]` observations from the week. If mode sessions average >10 iterations: create pattern "Mode sessions running long — consider breaking tasks into smaller stories"
+- If completion rate <50% for any mode type: flag as `[mode-session][anomaly]` — "Low completion rate may indicate overly ambitious task scoping or unclear acceptance criteria"
+- If critic rejection rate (verifier failures ÷ total stories) >50%: create pattern "Spend more time on approach before implementing"
+- Track deactivation reasons: `max-iterations` and `cancelled` warrant investigation
+
+**TDD discipline patterns:**
+- If `green_first_pass_rate` <60%: create pattern "Write simpler tests. Each test should verify ONE behavior."
+- If `denied_in_red` >5 per session: create pattern "Agent trying to write source in RED phase. Reinforce: tests first."
+- If `cycle_count` is 0 when TDD entries exist: flag "TDD hook active but no complete RED→GREEN→REFACTOR cycles detected"
+- Compare `denied_in_red` trend week-over-week: decreasing = agent learning discipline, increasing = enforcement working but agent not adapting
+
+**Mode + TDD hint generation (for session-hints.md):**
+- Mode hints only at 'established' confidence (same rules as other hints)
+- TDD hints only at 'established' confidence
+- Examples:
+  - "Drive mode sessions average 15 iterations — break stories into smaller acceptance criteria"
+  - "GREEN first-pass rate is 45% — write tests that verify one behavior each"
+  - "5+ denied edits per RED phase — write the failing test completely before switching to implementation"
+
 ### 4. Detect Trends
 
 Compare this week's observation distribution against prior observations (if available):

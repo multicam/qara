@@ -18,6 +18,7 @@ import { tmpdir } from 'os';
 import { SKILLS_DIR, QARA_DIR } from './lib/pai-paths';
 import { setTerminalTabTitle } from './lib/tab-titles';
 import { readTDDStateRaw, clearTDDState, isStateValid } from './lib/tdd-state';
+import { loadCheckpoint, clearCheckpoint, formatCheckpointSummary } from './lib/compact-checkpoint';
 
 const DEBOUNCE_MS = 2000;
 const sessionId = process.env.CLAUDE_SESSION_ID || process.env.SESSION_ID || 'default';
@@ -119,6 +120,18 @@ async function main() {
       }
     } catch {
       // Non-critical — don't let cleanup failure block session start
+    }
+
+    // Check for crash recovery: checkpoint from a previous session with active mode
+    try {
+      const checkpoint = loadCheckpoint(sessionId);
+      if (checkpoint && checkpoint.mode?.active) {
+        const summary = formatCheckpointSummary(checkpoint);
+        console.log(`<system-reminder>CRASH RECOVERY: Found checkpoint from ${checkpoint.savedAt}.\n\n${summary}\n\nA previous session had an active ${checkpoint.mode.name} mode. Review the state above and decide whether to resume or start fresh.</system-reminder>`);
+        clearCheckpoint(sessionId);
+      }
+    } catch {
+      // Non-critical — don't let recovery check block session start
     }
 
     // Load core context (outputs to stdout)

@@ -11,6 +11,8 @@ When to delegate to agents and how to use them effectively.
 | PRD / system design | `architect` | opus | Loads research skill |
 | Implement from spec | `engineer` | sonnet | Code, tests, debugging |
 | Review code quality | `reviewer` | opus | Security, perf, correctness |
+| Review plan before impl | `critic` | opus | Scenario coverage, scope, risks |
+| Verify impl meets criteria | `verifier` | opus | Fresh evidence, quality gates |
 | Mine thoughts/ docs | `thoughts-analyzer` | sonnet | Extracts decisions & insights |
 | Find relevant thought | `thoughts-locator` | haiku | Fast doc discovery |
 | Web research (primary) | `claude-researcher` | haiku | First-line web research via WebSearch |
@@ -37,14 +39,23 @@ Launch independent agents in a **single message** with multiple `Task` tool call
 - `engineer` → then `reviewer` (need the code first)
 - `thoughts-locator` → then `thoughts-analyzer` (need to know which doc)
 
+## Review Agent Disambiguation
+
+| Agent | When | What it checks |
+|-------|------|----------------|
+| `reviewer` | "Review this code", "check for issues" | General code review: correctness, security, performance, maintainability |
+| `critic` | "Review this plan", "is this approach right?" | Pre-implementation: approach vs criteria, scenario coverage, scope creep, risks |
+| `verifier` | "Verify this works", "check acceptance criteria" | Post-implementation: fresh evidence per criterion, quality gates (regression, coverage, types) |
+
 ## Escalation Paths
 
 1. **Simple question** → Answer directly, no agent needed
 2. **Code understanding** → `codebase-analyzer`
 3. **Multi-file implementation** → `engineer` (or multiple in worktrees)
 4. **Complex implementation** → `architect` first, then `engineer`(s)
-5. **Quality gate** → `reviewer` after implementation
-6. **Research needed** → `claude-researcher` first, then `gemini-researcher` or `perplexity-researcher` as fallback
+5. **Pre-impl review** → `critic` before starting work
+6. **Quality gate** → `verifier` after implementation (acceptance + test gates), then `reviewer` for code quality
+7. **Research needed** → `claude-researcher` first, then `gemini-researcher` or `perplexity-researcher` as fallback
 
 ## Task Packaging
 

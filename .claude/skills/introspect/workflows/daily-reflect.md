@@ -88,6 +88,39 @@ If any hint compliance metric has shifted notably from the 7-day baseline, note 
 
 This enables measuring whether session hints are changing actual behavior over time.
 
+**Mode Sessions** (`mode_sessions` and `mode_metrics` sections):
+
+If `mode_sessions` is non-empty, create a `[mode-session]` observation per session:
+> "Mode [mode] session: [iterations] iterations, [duration] min, [completed/incomplete] — deactivation: [reason]"
+
+Summarize the day's mode usage as a `[mode-session]` observation:
+> "Mode metrics: [total] sessions — [by_mode breakdown: count, avg iterations, completion rate per mode type]"
+
+If any mode session used >10 iterations, flag as `[mode-session][anomaly]`:
+> "Drive mode session ran [N] iterations — task may need smaller stories"
+
+**TDD Enforcement** (`tdd_metrics` section):
+
+If `tdd_metrics.total_entries` > 0, create `[tdd-enforcement]` observations:
+> "TDD enforcement: [total_entries] checks, [denied_in_red] denied in RED, [cycle_count] complete cycles"
+
+Record in the observation's YAML frontmatter:
+```yaml
+tdd_metrics:
+  denied_in_red: 3
+  green_first_pass_rate: 85.0
+  cycle_count: 4
+mode_metrics:
+  total_sessions: 1
+  drive_completion_rate: 100
+```
+
+If `denied_in_red` > 5, flag as `[tdd-enforcement][anomaly]`:
+> "Agent attempted [N] source edits during RED phase — TDD discipline needs reinforcement"
+
+If `green_first_pass_rate` < 60%, flag as `[tdd-enforcement]`:
+> "GREEN first-pass rate at [X]% — tests may be too complex or implementation too fragmented"
+
 ### 4. Compose Observation File
 
 Write to `~/qara/thoughts/shared/introspection/observations/YYYY-MM-DD.md`

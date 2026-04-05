@@ -55,6 +55,61 @@ interface SessionProfile {
     dominant_activity: 'reading' | 'writing' | 'testing' | 'searching' | 'mixed';
 }
 
+// ─── Mode + TDD Types ──────────────────────────────────────────────────────
+
+interface ModeChangeEntry {
+    timestamp: string;
+    event: 'activated' | 'continuation' | 'deactivated';
+    mode: string;
+    reason?: string;
+    iterations?: number;
+    task_context?: string;
+    session_id?: string;
+    tokensUsed?: number;
+    iteration?: number;
+}
+
+interface ModeSession {
+    mode: string;
+    started_at: string;
+    ended_at: string | null;
+    duration_ms: number;
+    iterations: number;
+    completed: boolean;
+    deactivation_reason: string | null;
+    session_id: string;
+}
+
+interface ModeMetrics {
+    total_sessions: number;
+    by_mode: Record<string, {
+        count: number;
+        avg_iterations: number;
+        avg_duration_minutes: number;
+        completion_rate: number;
+    }>;
+}
+
+interface TDDEnforcementEntry {
+    timestamp: string;
+    file_path: string;
+    phase: 'RED' | 'GREEN' | 'REFACTOR';
+    is_test_file: boolean;
+    decision: 'allow' | 'deny';
+    reason: string;
+    session_id: string;
+}
+
+interface TDDMetrics {
+    total_entries: number;
+    denied_in_red: number;
+    phases: Record<string, number>;
+    /** Fraction of GREEN-phase source edits that succeed on first attempt */
+    green_first_pass_rate: number;
+    /** Distinct RED→GREEN→REFACTOR cycle transitions observed */
+    cycle_count: number;
+}
+
 // ---------------------------------------------------------------------------
 // Related tool pairs for recovery detection
 // ---------------------------------------------------------------------------
@@ -478,6 +533,205 @@ function computeSessionProfile(trace: SessionTrace): SessionProfile {
 }
 
 // ---------------------------------------------------------------------------
+// parseModeChanges
+// ---------------------------------------------------------------------------
+
+/**
+ * Groups ModeChangeEntry records into per-activation ModeSession summaries.
+ *
+ * A session starts with an 'activated' event and ends with a 'deactivated'
+ * event. Continuations between them provide iteration counts. An activated
+ * event without a matching deactivation is reported as incomplete (ended_at
+ * null, completed false).
+ */
+function parseModeChanges(entries: ModeChangeEntry[]): ModeSession[] {
+    if (entries.length === 0) return [];
+
+    const sorted = [...entries].sort(
+        (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+    );
+
+    const sessions: ModeSession[] = [];
+    let current: {
+        mode: string;
+        started_at: string;
+        maxIteration: number;
+        session_id: string;
+    } | null = null;
+
+    for (const entry of sorted) {
+        if (entry.event === 'activated') {
+            // Close any prior unclosed session
+            if (current) {
+                sessions.push({
+                    mode: current.mode,
+                    started_at: current.started_at,
+                    ended_at: null,
+                    duration_ms: 0,
+                    iterations: current.maxIteration,
+                    completed: false,
+                    deactivation_reason: null,
+                    session_id: current.session_id,
+                });
+            }
+            current = {
+                mode: entry.mode,
+                started_at: entry.timestamp,
+                maxIteration: 0,
+                session_id: entry.session_id || 'unknown',
+            };
+        } else if (entry.event === 'continuation' && current) {
+            const iter = entry.iteration ?? 0;
+            if (iter > current.maxIteration) current.maxIteration = iter;
+        } else if (entry.event === 'deactivated') {
+            const startedAt = current?.started_at ?? entry.timestamp;
+            const iterations = entry.iterations ?? current?.maxIteration ?? 0;
+            sessions.push({
+                mode: entry.mode,
+                started_at: startedAt,
+                ended_at: entry.timestamp,
+                duration_ms: new Date(entry.timestamp).getTime() - new Date(startedAt).getTime(),
+                iterations,
+                completed: entry.reason === 'complete',
+                deactivation_reason: entry.reason || null,
+                session_id: current?.session_id || entry.session_id || 'unknown',
+            });
+            current = null;
+        }
+    }
+
+    // Close any trailing unclosed session
+    if (current) {
+        sessions.push({
+            mode: current.mode,
+            started_at: current.started_at,
+            ended_at: null,
+            duration_ms: 0,
+            iterations: current.maxIteration,
+            completed: false,
+            deactivation_reason: null,
+            session_id: current.session_id,
+        });
+    }
+
+    return sessions;
+}
+
+// ---------------------------------------------------------------------------
+// computeModeMetrics
+// ---------------------------------------------------------------------------
+
+/**
+ * Aggregates ModeSession[] into per-mode averages: iterations, duration,
+ * completion rate.
+ */
+function computeModeMetrics(sessions: ModeSession[]): ModeMetrics {
+    if (sessions.length === 0) {
+        return { total_sessions: 0, by_mode: {} };
+    }
+
+    const byMode = new Map<string, ModeSession[]>();
+    for (const s of sessions) {
+        const group = byMode.get(s.mode) ?? [];
+        group.push(s);
+        byMode.set(s.mode, group);
+    }
+
+    const result: ModeMetrics['by_mode'] = {};
+    for (const [mode, group] of byMode) {
+        const completedCount = group.filter(s => s.completed).length;
+        const totalIter = group.reduce((sum, s) => sum + s.iterations, 0);
+        const totalDur = group.reduce((sum, s) => sum + s.duration_ms, 0);
+        result[mode] = {
+            count: group.length,
+            avg_iterations: group.length > 0 ? Math.round((totalIter / group.length) * 10) / 10 : 0,
+            avg_duration_minutes: group.length > 0 ? Math.round((totalDur / group.length / 60000) * 10) / 10 : 0,
+            completion_rate: group.length > 0 ? Math.round((completedCount / group.length) * 1000) / 10 : 0,
+        };
+    }
+
+    return { total_sessions: sessions.length, by_mode: result };
+}
+
+// ---------------------------------------------------------------------------
+// parseTDDEnforcement
+// ---------------------------------------------------------------------------
+
+/**
+ * Filters TDDEnforcementEntry[] to a target date and returns them sorted.
+ * If no date filter needed, pass all entries directly.
+ */
+function parseTDDEnforcement(entries: TDDEnforcementEntry[]): TDDEnforcementEntry[] {
+    return [...entries].sort(
+        (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+    );
+}
+
+// ---------------------------------------------------------------------------
+// computeTDDMetrics
+// ---------------------------------------------------------------------------
+
+/**
+ * Computes TDD discipline metrics from enforcement log entries:
+ * - denied_in_red: source edits blocked during RED phase (agent discipline)
+ * - phases: count of entries per phase
+ * - green_first_pass_rate: fraction of GREEN source edits allowed (vs retries)
+ * - cycle_count: distinct RED→GREEN→REFACTOR transitions
+ */
+function computeTDDMetrics(entries: TDDEnforcementEntry[]): TDDMetrics {
+    if (entries.length === 0) {
+        return { total_entries: 0, denied_in_red: 0, phases: {}, green_first_pass_rate: 0, cycle_count: 0 };
+    }
+
+    const sorted = parseTDDEnforcement(entries);
+
+    let deniedInRed = 0;
+    const phases: Record<string, number> = {};
+    let greenSourceTotal = 0;
+    let greenSourceAllowed = 0;
+
+    for (const entry of sorted) {
+        phases[entry.phase] = (phases[entry.phase] || 0) + 1;
+
+        if (entry.phase === 'RED' && entry.decision === 'deny') {
+            deniedInRed++;
+        }
+
+        if (entry.phase === 'GREEN' && !entry.is_test_file) {
+            greenSourceTotal++;
+            if (entry.decision === 'allow') greenSourceAllowed++;
+        }
+    }
+
+    // Count cycles: look for RED → GREEN → REFACTOR transitions
+    let cycleCount = 0;
+    let lastPhase = '';
+    let seenGreenAfterRed = false;
+
+    for (const entry of sorted) {
+        if (entry.phase === 'RED' && lastPhase !== 'RED') {
+            seenGreenAfterRed = false;
+        } else if (entry.phase === 'GREEN' && lastPhase === 'RED') {
+            seenGreenAfterRed = true;
+        } else if (entry.phase === 'REFACTOR' && seenGreenAfterRed) {
+            cycleCount++;
+            seenGreenAfterRed = false;
+        }
+        lastPhase = entry.phase;
+    }
+
+    return {
+        total_entries: sorted.length,
+        denied_in_red: deniedInRed,
+        phases,
+        green_first_pass_rate: greenSourceTotal > 0
+            ? Math.round((greenSourceAllowed / greenSourceTotal) * 1000) / 10
+            : 0,
+        cycle_count: cycleCount,
+    };
+}
+
+// ---------------------------------------------------------------------------
 // Exports
 // ---------------------------------------------------------------------------
 
@@ -486,8 +740,17 @@ export {
     detectRecoveryPatterns,
     detectRepeatedFailures,
     computeSessionProfile,
+    parseModeChanges,
+    computeModeMetrics,
+    parseTDDEnforcement,
+    computeTDDMetrics,
     type SessionTrace,
     type RecoveryPattern,
     type RepeatedFailure,
     type SessionProfile,
+    type ModeChangeEntry,
+    type ModeSession,
+    type ModeMetrics,
+    type TDDEnforcementEntry,
+    type TDDMetrics,
 };

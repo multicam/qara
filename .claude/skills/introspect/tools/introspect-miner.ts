@@ -24,6 +24,7 @@ import {
     readJsonlFile,
     getSydneyDate,
     getDateRange,
+    isTimestampOnDate,
     // Collection
     collectToolUsage,
     collectCheckpoints,
@@ -59,10 +60,19 @@ import {
     detectRecoveryPatterns,
     detectRepeatedFailures,
     computeSessionProfile,
+    parseModeChanges,
+    computeModeMetrics,
+    parseTDDEnforcement,
+    computeTDDMetrics,
     type SessionTrace,
     type RecoveryPattern,
     type RepeatedFailure,
     type SessionProfile,
+    type ModeChangeEntry,
+    type ModeSession,
+    type ModeMetrics,
+    type TDDEnforcementEntry,
+    type TDDMetrics,
 } from './miner-trace-lib';
 
 // Extend the base DailyReport with trace-lib and hint-lib fields
@@ -73,6 +83,9 @@ type DailyReport = DailyReportBase & {
     session_profiles: SessionProfile[];
     hint_compliance: HintCompliance;
     hints_loaded: string[];
+    mode_sessions: ModeSession[];
+    mode_metrics: ModeMetrics;
+    tdd_metrics: TDDMetrics;
 };
 
 // ---------------------------------------------------------------------------
@@ -141,6 +154,17 @@ function runDaily(targetDate: string): DailyReport {
     const hint_compliance = computeHintCompliance(tools);
     const hints_loaded = readActiveHintsFromFile(INTROSPECTION_DIR);
 
+    // Mode sessions (from mode-changes.jsonl)
+    const allModeEntries = readJsonlFile<ModeChangeEntry>(join(STATE_DIR, 'mode-changes.jsonl'))
+        .filter(e => isTimestampOnDate(e.timestamp, targetDate));
+    const mode_sessions = parseModeChanges(allModeEntries);
+    const mode_metrics = computeModeMetrics(mode_sessions);
+
+    // TDD enforcement (from tdd-enforcement.jsonl)
+    const allTDDEntries = readJsonlFile<TDDEnforcementEntry>(join(STATE_DIR, 'tdd-enforcement.jsonl'))
+        .filter(e => isTimestampOnDate(e.timestamp, targetDate));
+    const tdd_metrics = computeTDDMetrics(allTDDEntries);
+
     return {
         mode: 'daily',
         date: targetDate,
@@ -172,6 +196,9 @@ function runDaily(targetDate: string): DailyReport {
         session_profiles,
         hint_compliance,
         hints_loaded,
+        mode_sessions,
+        mode_metrics,
+        tdd_metrics,
     };
 }
 
@@ -417,6 +444,10 @@ export {
     detectRecoveryPatterns,
     detectRepeatedFailures,
     computeSessionProfile,
+    parseModeChanges,
+    computeModeMetrics,
+    parseTDDEnforcement,
+    computeTDDMetrics,
 } from './miner-trace-lib';
 
 export {
@@ -440,6 +471,11 @@ export {
     type RecoveryPattern,
     type RepeatedFailure,
     type SessionProfile,
+    type ModeChangeEntry,
+    type ModeSession,
+    type ModeMetrics,
+    type TDDEnforcementEntry,
+    type TDDMetrics,
 };
 
 // Run if executed directly
