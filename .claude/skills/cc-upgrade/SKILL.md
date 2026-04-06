@@ -84,8 +84,9 @@ Execute in order:
 2. **Skills System Audit** - SKILL.md format, context types, invocability
 3. **Hooks Configuration** - settings.json hooks, lifecycle events
 4. **Context Engineering** - UFC patterns, progressive disclosure, file sizes
-5. **12-Factor Compliance** - Agent principles audit
-6. **Upgrade Recommendations** - Prioritized improvements
+5. **TDD Compliance** - Test infrastructure, coverage, scenario specs
+6. **12-Factor Compliance** - Agent principles audit
+7. **Upgrade Recommendations** - Prioritized improvements
 
 ## Analysis Modules
 

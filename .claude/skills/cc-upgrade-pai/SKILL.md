@@ -283,10 +283,9 @@ In addition to the base cc-upgrade code review, perform these PAI-specific check
 
 #### CLAUDE.md Compliance
 Read the global CLAUDE.md and verify:
-- Severity levels present (MUST / SHOULD / RECOMMENDED structure)
-- Structured escalation format defined (Problem/Tried/Hypothesis/Need)
-- Two-attempt debug rule has concrete trigger
-- Refactoring isolation rule present
+- Minimal pointer to CORE (avoids token duplication with CC system prompt)
+- Delegation guidance present (agent dispatch thresholds)
+- No rules that duplicate CC's built-in system prompt behavior
 
 #### DECISIONS.md Health
 Check root `DECISIONS.md`:
@@ -315,7 +314,7 @@ Extend the base gap analysis matrix with PAI-specific rows:
 ```markdown
 | PAI Capability | Expected | Actual | Gap | Priority |
 |----------------|----------|--------|-----|----------|
-| CLAUDE.md severity levels | MUST/SHOULD/RECOMMENDED | ? | | |
+| CLAUDE.md minimal + delegation | Pointer to CORE, no duplication | ? | | |
 | Decision log | DECISIONS.md exists | ? | | |
 | Hook lib coverage | All 11 libs present | ? | | |
 | Hook event coverage | 10 CC events configured | ? | | |
