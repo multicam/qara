@@ -62,6 +62,7 @@ Run `bun test` after merge. Run `bunx tsc --noEmit`.
 
 - `bun test` — all tests must pass.
 - `bunx tsc --noEmit` — zero type errors.
+- Quality sniff test: would "un-smell, un-slop, un-stale, refactor for DRY" find anything? If yes, fix.
 - IF issues found: fix and re-verify. MAX 3 verify loops.
 - IF still failing after 3: deactivate with reason "turbo-verify-failed", escalate to JM.
 

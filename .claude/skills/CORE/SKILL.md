@@ -26,6 +26,7 @@ env:
 - **Prompts Wrap Code:** Prompts orchestrate deterministic components
 - **Solve the Real Problem:** Not just the stated one — understand intent, not just instructions
 - **Simplify Ruthlessly:** Elegance is achieved not when there's nothing left to add, but when there's nothing left to take away
+- **Quality Sniff Test:** Before declaring work complete, ask: would "un-smell, un-slop, un-stale, refactor for DRY" find anything to fix? If yes, fix it first.
 - See `.claude/skills/CORE/CONSTITUTION.md` for full philosophy
 
 ## Workflow Routing (SYSTEM PROMPT)

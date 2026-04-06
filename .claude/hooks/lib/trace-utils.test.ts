@@ -3,6 +3,7 @@ import {
     extractInputSummary,
     classifyTopic,
     extractErrorDetail,
+    classifySessionPhase,
 } from './trace-utils';
 
 // ---------------------------------------------------------------------------
@@ -211,6 +212,52 @@ describe('extractErrorDetail', () => {
         const result = extractErrorDetail(`Error: key=${key} invalid`);
         expect(result).not.toContain(key);
         expect(result).toContain('[REDACTED_KEY]');
+    });
+});
+
+// ---------------------------------------------------------------------------
+// classifySessionPhase
+// ---------------------------------------------------------------------------
+
+describe('classifySessionPhase', () => {
+    test('exploring: Read-heavy, WebSearch present, minimal Edit', () => {
+        expect(classifySessionPhase({
+            Read: 500, WebSearch: 40, Grep: 50, Bash: 100, Edit: 10, Write: 5,
+        })).toBe('exploring');
+    });
+
+    test('implementing: Edit/Write-heavy with substantial Bash', () => {
+        expect(classifySessionPhase({
+            Bash: 400, Edit: 80, Write: 50, Read: 200, Grep: 20,
+        })).toBe('implementing');
+    });
+
+    test('testing: Bash-dominant with test-related summaries', () => {
+        const summaries = [
+            'command: bun test .claude/',
+            'command: bun test --timeout 10000',
+            'command: bun test specific.test.ts',
+            'file: /tmp/results.json',
+        ];
+        expect(classifySessionPhase(
+            { Bash: 600, Read: 100, Edit: 20, Write: 10 },
+            summaries,
+        )).toBe('testing');
+    });
+
+    test('mixed: no dominant pattern', () => {
+        expect(classifySessionPhase({
+            Read: 100, Edit: 50, Bash: 100, Write: 50, Grep: 50,
+        })).toBe('mixed');
+    });
+
+    test('empty tool counts return mixed', () => {
+        expect(classifySessionPhase({})).toBe('mixed');
+    });
+
+    test('testing requires summaries to confirm', () => {
+        // Bash-heavy but no summaries → not classified as testing
+        expect(classifySessionPhase({ Bash: 600, Read: 100 })).not.toBe('testing');
     });
 });
 

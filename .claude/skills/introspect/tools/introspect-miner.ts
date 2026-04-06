@@ -6,9 +6,9 @@
  * and outputs structured JSON for skill workflows to interpret.
  *
  * Usage:
- *   bun introspect-miner.ts --mode daily  [--date YYYY-MM-DD]
- *   bun introspect-miner.ts --mode weekly [--date-range YYYY-MM-DD:YYYY-MM-DD]
- *   bun introspect-miner.ts --mode monthly
+ *   bun introspect-miner.ts --mode daily  [--date YYYY-MM-DD] [--project NAME]
+ *   bun introspect-miner.ts --mode weekly [--date-range YYYY-MM-DD:YYYY-MM-DD] [--project NAME]
+ *   bun introspect-miner.ts --mode monthly [--project NAME]
  */
 
 import { readFileSync, readdirSync, statSync, existsSync, lstatSync } from 'fs';
@@ -20,6 +20,7 @@ import {
     STATE_DIR,
     INTROSPECTION_DIR,
     PROJECT_DIR,
+    setProjectDir,
     // JSONL / dates
     readJsonlFile,
     getSydneyDate,
@@ -441,6 +442,10 @@ function main() {
     const args = process.argv.slice(2);
     const modeIdx = args.indexOf('--mode');
     const mode = modeIdx >= 0 ? (args[modeIdx + 1] || 'daily') : 'daily';
+    const projectIdx = args.indexOf('--project');
+    if (projectIdx >= 0 && args[projectIdx + 1]) {
+        setProjectDir(args[projectIdx + 1]);
+    }
     const today = getSydneyDate();
 
     let result: DailyReport | WeeklyReport | MonthlyReport;

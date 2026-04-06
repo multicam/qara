@@ -61,7 +61,8 @@ Output checkpoint: `IMPLEMENT COMPLETE: {files changed}, {tests passing}`
 1. `bun test` — all tests must pass.
 2. `bunx tsc --noEmit` — zero type errors.
 3. Read each modified file. Verify it addresses the task description.
-4. IF a file was supposed to change but didn't: flag as gap.
+4. Quality sniff test: would "un-smell, un-slop, un-stale, refactor for DRY" find anything? If yes, fix before proceeding.
+5. IF a file was supposed to change but didn't: flag as gap.
 
 IF issues found: loop back to Phase 3. MAX Phase 3↔4 loops: 3. After 3: deactivate with reason "verify-loop", escalate to JM.
 

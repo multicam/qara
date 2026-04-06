@@ -26,6 +26,12 @@ When to delegate to agents and how to use them effectively.
 - **sonnet** — Implementation work (coding, analysis, tracing)
 - **opus** — Judgment calls (design, architecture, review)
 
+**Per-task overrides:** Agent frontmatter defines the default model, but the `model` parameter on the Agent/Task tool overrides it. Use overrides when the task complexity doesn't match the agent's default:
+- Override `engineer` to haiku for simple file renames or trivial edits
+- Override `codebase-analyzer` to opus for security-sensitive trace analysis
+- Override `reviewer` to sonnet for quick pass/fail checks on small diffs
+- Never override researchers — they're already haiku (cheapest tier)
+
 ## Parallel Execution
 
 Launch independent agents in a **single message** with multiple `Task` tool calls.

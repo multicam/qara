@@ -135,6 +135,45 @@ function extractErrorDetail(toolOutput: string | undefined, maxLen: number = 300
 }
 
 // ---------------------------------------------------------------------------
+// Session phase classification (Wave 1b)
+// ---------------------------------------------------------------------------
+
+type SessionPhase = 'exploring' | 'implementing' | 'testing' | 'mixed';
+
+interface ToolDistribution {
+    [tool: string]: number; // percentage (0-100)
+}
+
+function classifySessionPhase(toolCounts: Record<string, number>, inputSummaries?: string[]): SessionPhase {
+    const total = Object.values(toolCounts).reduce((a, b) => a + b, 0);
+    if (total === 0) return 'mixed';
+
+    const pct = (tool: string) => ((toolCounts[tool] || 0) / total) * 100;
+
+    const readPct = pct('Read');
+    const webSearchPct = pct('WebSearch');
+    const editPct = pct('Edit');
+    const writePct = pct('Write');
+    const bashPct = pct('Bash');
+
+    // Testing: Bash-heavy with test-related input summaries
+    if (bashPct > 40 && inputSummaries) {
+        const testRelated = inputSummaries.filter(s =>
+            /\btest\b|\bbun test\b|\bspec\b|\bjest\b/i.test(s)
+        ).length;
+        if (testRelated / inputSummaries.length > 0.3) return 'testing';
+    }
+
+    // Exploring: Read-heavy, search-heavy, minimal edits
+    if (readPct > 45 && webSearchPct > 3 && editPct < 3) return 'exploring';
+
+    // Implementing: Edit/Write-heavy with substantial Bash
+    if (editPct > 5 && writePct > 3 && bashPct > 35) return 'implementing';
+
+    return 'mixed';
+}
+
+// ---------------------------------------------------------------------------
 // Exports
 // ---------------------------------------------------------------------------
 
@@ -142,4 +181,5 @@ export {
     extractInputSummary,
     classifyTopic,
     extractErrorDetail,
+    classifySessionPhase,
 };

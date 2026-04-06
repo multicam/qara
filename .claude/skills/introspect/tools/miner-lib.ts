@@ -13,7 +13,11 @@ const HOME = process.env.HOME || require('os').homedir();
 const PAI_DIR = process.env.PAI_DIR || join(HOME, '.claude');
 const STATE_DIR = join(PAI_DIR, 'state');
 const ARCHIVE_DIR = join(STATE_DIR, 'archive');
-const PROJECT_DIR = join(PAI_DIR, 'projects', '-home-jean-marc-qara');
+let PROJECT_DIR = join(PAI_DIR, 'projects', '-home-jean-marc-qara');
+
+function setProjectDir(projectName: string): void {
+    PROJECT_DIR = join(PAI_DIR, 'projects', projectName);
+}
 const QARA_DIR = join(HOME, 'qara');
 const INTROSPECTION_DIR = join(QARA_DIR, 'thoughts', 'shared', 'introspection');
 const TIMEZONE = 'Australia/Sydney';
@@ -560,6 +564,7 @@ export {
     STATE_DIR,
     ARCHIVE_DIR,
     PROJECT_DIR,
+    setProjectDir,
     QARA_DIR,
     INTROSPECTION_DIR,
     SESSION_GAP_MS,

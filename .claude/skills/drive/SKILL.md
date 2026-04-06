@@ -65,11 +65,11 @@ Parse verifier response:
 - IF contains "FAIL": extract failing criteria, fix each, re-spawn verifier.
 - MAX 3 verification attempts. After 3: write to `problems.md`, ask JM. STOP.
 
-### 5. Simplify Pass
+### 5. Quality Pass
 
 Run `git diff --name-only HEAD~1 -- '*.ts' '*.tsx'` to get changed files.
-For each file: invoke the `simplify` skill.
-IF simplify produces changes: run `bun test`. IF tests fail: revert simplify changes for that file.
+For each file: quality sniff test — would "un-smell, un-slop, un-stale, refactor for DRY" find anything? If yes, fix it.
+After changes: run `bun test`. IF tests fail: revert quality-pass changes for that file.
 
 ### 6. Mark Story Passing
 
