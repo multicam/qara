@@ -79,7 +79,7 @@ describe("pre-tool-use-quality hook", () => {
     expect(result.stdout).toBe("");
   });
 
-  test("handles Edit tool (checks new_string)", () => {
+  test("handles Edit tool with duplicate blocks in new_string", () => {
     const block = "  if (a) {\n    doSomething();\n    logResult();\n    cleanup();\n    return;\n  }\n";
     const result = runHook({
       tool_name: "Edit",
@@ -90,7 +90,11 @@ describe("pre-tool-use-quality hook", () => {
       },
     });
     expect(result.exitCode).toBe(0);
-    // May or may not detect depending on block size — just verify no crash
+    // Block is 6 lines x2 + gap = 13 lines (>10), duplicate detected
+    if (result.stdout) {
+      const parsed = JSON.parse(result.stdout);
+      expect(parsed.hookSpecificOutput.permissionDecision).toBe("allow");
+    }
   });
 
   test("exits 0 silently on malformed input (fail-open)", () => {

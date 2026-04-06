@@ -19,8 +19,7 @@ import {
     // Constants
     STATE_DIR,
     INTROSPECTION_DIR,
-    PROJECT_DIR,
-    setProjectDir,
+    DEFAULT_PROJECT_DIR,
     // JSONL / dates
     readJsonlFile,
     getSydneyDate,
@@ -141,7 +140,7 @@ type DailyReport = DailyReportBase & {
 // ---------------------------------------------------------------------------
 // Mode: Daily
 // ---------------------------------------------------------------------------
-function runDaily(targetDate: string): DailyReport {
+function runDaily(targetDate: string, projectDir?: string): DailyReport {
     // Tool usage
     const tools = collectToolUsage(targetDate);
     const byTool: Record<string, { count: number; errors: number; error_rate: number }> = {};
@@ -176,7 +175,7 @@ function runDaily(targetDate: string): DailyReport {
     }
 
     // Corrections from transcripts
-    const transcripts = findTranscriptsForDate(targetDate);
+    const transcripts = findTranscriptsForDate(targetDate, projectDir);
     const corrections = extractCorrections(transcripts, targetDate);
     const ccVersion = extractCCVersion(transcripts);
 
@@ -443,9 +442,9 @@ function main() {
     const modeIdx = args.indexOf('--mode');
     const mode = modeIdx >= 0 ? (args[modeIdx + 1] || 'daily') : 'daily';
     const projectIdx = args.indexOf('--project');
-    if (projectIdx >= 0 && args[projectIdx + 1]) {
-        setProjectDir(args[projectIdx + 1]);
-    }
+    const projectDir = projectIdx >= 0 && args[projectIdx + 1]
+        ? join(STATE_DIR, '..', 'projects', args[projectIdx + 1])
+        : undefined;
     const today = getSydneyDate();
 
     let result: DailyReport | WeeklyReport | MonthlyReport;
@@ -454,7 +453,7 @@ function main() {
         case 'daily': {
             const dateIdx = args.indexOf('--date');
             const targetDate = (dateIdx >= 0 && args[dateIdx + 1]) ? args[dateIdx + 1] : today;
-            result = runDaily(targetDate);
+            result = runDaily(targetDate, projectDir);
             break;
         }
         case 'weekly': {

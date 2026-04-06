@@ -20,6 +20,10 @@ interface HookInput {
   tool_input: Record<string, unknown>;
 }
 
+const MIN_DUPLICATE_LINES = 5;
+const MIN_BLOCK_CONTENT_LENGTH = 20;
+const MAX_FILE_LINES = 2000;
+
 function warn(context: string): void {
   console.log(
     JSON.stringify({
@@ -32,15 +36,15 @@ function warn(context: string): void {
   );
 }
 
-function findDuplicateBlocks(content: string, minLines: number = 5): string[] {
+function findDuplicateBlocks(content: string, minLines: number = MIN_DUPLICATE_LINES): string[] {
   const lines = content.split("\n");
+  if (lines.length > MAX_FILE_LINES) return [];
   const duplicates: string[] = [];
   const seen = new Map<string, number>();
 
   for (let i = 0; i <= lines.length - minLines; i++) {
     const block = lines.slice(i, i + minLines).join("\n").trim();
-    // Skip empty/whitespace-only blocks
-    if (block.replace(/\s/g, "").length < 20) continue;
+    if (block.replace(/\s/g, "").length < MIN_BLOCK_CONTENT_LENGTH) continue;
 
     const prev = seen.get(block);
     if (prev !== undefined && i - prev >= minLines) {

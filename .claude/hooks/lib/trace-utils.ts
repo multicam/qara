@@ -135,14 +135,21 @@ function extractErrorDetail(toolOutput: string | undefined, maxLen: number = 300
 }
 
 // ---------------------------------------------------------------------------
-// Session phase classification (Wave 1b)
+// Session phase classification
 // ---------------------------------------------------------------------------
 
 type SessionPhase = 'exploring' | 'implementing' | 'testing' | 'mixed';
 
-interface ToolDistribution {
-    [tool: string]: number; // percentage (0-100)
-}
+const PHASE_THRESHOLDS = {
+    readHeavy: 45,
+    bashTesting: 40,
+    testSummaryRatio: 0.3,
+    webSearchPresent: 3,
+    editMinimal: 3,
+    editHeavy: 5,
+    writeHeavy: 3,
+    bashImpl: 35,
+} as const;
 
 function classifySessionPhase(toolCounts: Record<string, number>, inputSummaries?: string[]): SessionPhase {
     const total = Object.values(toolCounts).reduce((a, b) => a + b, 0);
@@ -156,19 +163,16 @@ function classifySessionPhase(toolCounts: Record<string, number>, inputSummaries
     const writePct = pct('Write');
     const bashPct = pct('Bash');
 
-    // Testing: Bash-heavy with test-related input summaries
-    if (bashPct > 40 && inputSummaries) {
+    if (bashPct > PHASE_THRESHOLDS.bashTesting && inputSummaries) {
         const testRelated = inputSummaries.filter(s =>
             /\btest\b|\bbun test\b|\bspec\b|\bjest\b/i.test(s)
         ).length;
-        if (testRelated / inputSummaries.length > 0.3) return 'testing';
+        if (testRelated / inputSummaries.length > PHASE_THRESHOLDS.testSummaryRatio) return 'testing';
     }
 
-    // Exploring: Read-heavy, search-heavy, minimal edits
-    if (readPct > 45 && webSearchPct > 3 && editPct < 3) return 'exploring';
+    if (readPct > PHASE_THRESHOLDS.readHeavy && webSearchPct > PHASE_THRESHOLDS.webSearchPresent && editPct < PHASE_THRESHOLDS.editMinimal) return 'exploring';
 
-    // Implementing: Edit/Write-heavy with substantial Bash
-    if (editPct > 5 && writePct > 3 && bashPct > 35) return 'implementing';
+    if (editPct > PHASE_THRESHOLDS.editHeavy && writePct > PHASE_THRESHOLDS.writeHeavy && bashPct > PHASE_THRESHOLDS.bashImpl) return 'implementing';
 
     return 'mixed';
 }

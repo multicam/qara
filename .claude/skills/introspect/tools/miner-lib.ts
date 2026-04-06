@@ -13,11 +13,7 @@ const HOME = process.env.HOME || require('os').homedir();
 const PAI_DIR = process.env.PAI_DIR || join(HOME, '.claude');
 const STATE_DIR = join(PAI_DIR, 'state');
 const ARCHIVE_DIR = join(STATE_DIR, 'archive');
-let PROJECT_DIR = join(PAI_DIR, 'projects', '-home-jean-marc-qara');
-
-function setProjectDir(projectName: string): void {
-    PROJECT_DIR = join(PAI_DIR, 'projects', projectName);
-}
+const DEFAULT_PROJECT_DIR = join(PAI_DIR, 'projects', '-home-jean-marc-qara');
 const QARA_DIR = join(HOME, 'qara');
 const INTROSPECTION_DIR = join(QARA_DIR, 'thoughts', 'shared', 'introspection');
 const TIMEZONE = 'Australia/Sydney';
@@ -308,25 +304,23 @@ function assistantHadCodeOrPath(assistantSnippet: string): boolean {
 // ---------------------------------------------------------------------------
 // Log collection with archive fallback
 // ---------------------------------------------------------------------------
-function collectToolUsage(targetDate: string): ToolUsageEntry[] {
-    const current = readJsonlFile<ToolUsageEntry>(join(STATE_DIR, 'tool-usage.jsonl'))
+function collectJsonl<T extends { timestamp: string }>(filename: string, targetDate: string): T[] {
+    const current = readJsonlFile<T>(join(STATE_DIR, filename))
         .filter(e => isTimestampOnDate(e.timestamp, targetDate));
-    const archived = readArchivedJsonl<ToolUsageEntry>('tool-usage', targetDate);
+    const archived = readArchivedJsonl<T>(filename.replace('.jsonl', ''), targetDate);
     return [...current, ...archived];
+}
+
+function collectToolUsage(targetDate: string): ToolUsageEntry[] {
+    return collectJsonl<ToolUsageEntry>('tool-usage.jsonl', targetDate);
 }
 
 function collectCheckpoints(targetDate: string): SessionCheckpoint[] {
-    const current = readJsonlFile<SessionCheckpoint>(join(STATE_DIR, 'session-checkpoints.jsonl'))
-        .filter(e => isTimestampOnDate(e.timestamp, targetDate));
-    const archived = readArchivedJsonl<SessionCheckpoint>('session-checkpoints', targetDate);
-    return [...current, ...archived];
+    return collectJsonl<SessionCheckpoint>('session-checkpoints.jsonl', targetDate);
 }
 
 function collectSecurity(targetDate: string): SecurityCheck[] {
-    const current = readJsonlFile<SecurityCheck>(join(STATE_DIR, 'security-checks.jsonl'))
-        .filter(e => isTimestampOnDate(e.timestamp, targetDate));
-    const archived = readArchivedJsonl<SecurityCheck>('security-checks', targetDate);
-    return filterTestNoise([...current, ...archived]);
+    return filterTestNoise(collectJsonl<SecurityCheck>('security-checks.jsonl', targetDate));
 }
 
 function collectCheckpointEvents(targetDate: string): CheckpointEventSummary {
@@ -356,11 +350,11 @@ function filterTestNoise(entries: SecurityCheck[]): SecurityCheck[] {
 // ---------------------------------------------------------------------------
 // Session transcript mining
 // ---------------------------------------------------------------------------
-function findTranscriptsForDate(targetDate: string): string[] {
-    if (!existsSync(PROJECT_DIR)) return [];
-    return readdirSync(PROJECT_DIR)
+function findTranscriptsForDate(targetDate: string, projectDir: string = DEFAULT_PROJECT_DIR): string[] {
+    if (!existsSync(projectDir)) return [];
+    return readdirSync(projectDir)
         .filter(f => f.endsWith('.jsonl'))
-        .map(f => join(PROJECT_DIR, f))
+        .map(f => join(projectDir, f))
         .filter(f => {
             try {
                 const stat = statSync(f);
@@ -563,8 +557,7 @@ export {
     // Constants
     STATE_DIR,
     ARCHIVE_DIR,
-    PROJECT_DIR,
-    setProjectDir,
+    DEFAULT_PROJECT_DIR,
     QARA_DIR,
     INTROSPECTION_DIR,
     SESSION_GAP_MS,

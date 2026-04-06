@@ -172,8 +172,10 @@ export function analyzeHooksConfiguration(paiPath: string): AnalysisResult {
 
                 if (hookEvents.includes('Setup')) {
                     results.findings.push('OK: Setup hook configured (--init automation, Factor 6)');
+                } else if (hookEvents.includes('SessionStart')) {
+                    results.findings.push('OK: SessionStart covers initialization (Setup hook optional for single-dev repos)');
                 } else {
-                    results.recommendations.push('Add Setup hook for repository initialization (CC 2.1.13, Factor 6)');
+                    results.recommendations.push('Add Setup or SessionStart hook for initialization (CC 2.1.13, Factor 6)');
                 }
 
                 if (hookEvents.includes('PreToolUse')) {

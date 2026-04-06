@@ -51,6 +51,11 @@ export interface CLIResult {
   stderr: string;
 }
 
+function getArg(args: string[], flag: string): string | undefined {
+  const idx = args.indexOf(flag);
+  return idx !== -1 ? args[idx + 1] : undefined;
+}
+
 export function runCLI(args: string[]): CLIResult {
   const command = args[0];
 
@@ -59,48 +64,35 @@ export function runCLI(args: string[]): CLIResult {
   }
 
   if (command === "parse") {
-    const fileIdx = args.indexOf("--file");
-    if (fileIdx === -1 || !args[fileIdx + 1]) {
+    const file = getArg(args, "--file");
+    if (!file) {
       return { exitCode: 1, stdout: "", stderr: "Error: --file is required for parse command" };
     }
-    const xml = readFileSync(args[fileIdx + 1], "utf-8");
+    const xml = readFileSync(file, "utf-8");
     const summary = parseJUnitXML(xml);
     const msg = `Tests: ${summary.total} total, ${summary.passed} pass, ${summary.failed} fail, ${summary.skipped} skip`;
     return { exitCode: summary.failed > 0 ? 1 : 0, stdout: msg, stderr: "" };
   }
 
   if (command === "compare") {
-    const baselineIdx = args.indexOf("--baseline");
-    const currentIdx = args.indexOf("--current");
+    const baselinePath = getArg(args, "--baseline");
+    const currentPath = getArg(args, "--current");
 
-    if (
-      baselineIdx === -1 ||
-      !args[baselineIdx + 1] ||
-      currentIdx === -1 ||
-      !args[currentIdx + 1]
-    ) {
+    if (!baselinePath || !currentPath) {
       return { exitCode: 1, stdout: "", stderr: "Error: --baseline and --current are required for compare" };
     }
 
-    const baselineXml = readFileSync(args[baselineIdx + 1], "utf-8");
-    const currentXml = readFileSync(args[currentIdx + 1], "utf-8");
-
-    const baseline = parseJUnitXML(baselineXml);
-    const current = parseJUnitXML(currentXml);
+    const baseline = parseJUnitXML(readFileSync(baselinePath, "utf-8"));
+    const current = parseJUnitXML(readFileSync(currentPath, "utf-8"));
 
     let covBaseline: CoverageSummary | undefined;
     let covCurrent: CoverageSummary | undefined;
 
-    const covBaseIdx = args.indexOf("--coverage-baseline");
-    const covCurrIdx = args.indexOf("--coverage-current");
-    if (
-      covBaseIdx !== -1 &&
-      args[covBaseIdx + 1] &&
-      covCurrIdx !== -1 &&
-      args[covCurrIdx + 1]
-    ) {
-      covBaseline = parseLcov(readFileSync(args[covBaseIdx + 1], "utf-8"));
-      covCurrent = parseLcov(readFileSync(args[covCurrIdx + 1], "utf-8"));
+    const covBasePath = getArg(args, "--coverage-baseline");
+    const covCurrPath = getArg(args, "--coverage-current");
+    if (covBasePath && covCurrPath) {
+      covBaseline = parseLcov(readFileSync(covBasePath, "utf-8"));
+      covCurrent = parseLcov(readFileSync(covCurrPath, "utf-8"));
     }
 
     const result = compare(baseline, current, covBaseline, covCurrent);
@@ -108,11 +100,11 @@ export function runCLI(args: string[]): CLIResult {
   }
 
   if (command === "affected") {
-    const filesIdx = args.indexOf("--files");
-    if (filesIdx === -1 || !args[filesIdx + 1]) {
+    const filesArg = getArg(args, "--files");
+    if (!filesArg) {
       return { exitCode: 1, stdout: "", stderr: "Error: --files is required for affected command" };
     }
-    const files = args[filesIdx + 1].split(",").map((f) => f.trim()).filter(Boolean);
+    const files = filesArg.split(",").map((f) => f.trim()).filter(Boolean);
     const result = findAffectedTests(files);
 
     if (result.affectedTests.length === 0) {
@@ -130,15 +122,12 @@ export function runCLI(args: string[]): CLIResult {
   }
 
   if (command === "scenario-coverage") {
-    const specsIdx = args.indexOf("--specs");
-    const resultsIdx = args.indexOf("--results");
+    const specsPath = getArg(args, "--specs");
+    const resultsPath = getArg(args, "--results");
 
-    if (specsIdx === -1 || !args[specsIdx + 1] || resultsIdx === -1 || !args[resultsIdx + 1]) {
+    if (!specsPath || !resultsPath) {
       return { exitCode: 1, stdout: "", stderr: "Error: --specs and --results are required for scenario-coverage" };
     }
-
-    const specsPath = args[specsIdx + 1];
-    const resultsPath = args[resultsIdx + 1];
 
     let manifests: ScenarioManifest[];
     try {

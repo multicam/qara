@@ -45,9 +45,17 @@ Gather a brief issue description. Minimal questioning — get the what, not the 
 
 In batch mode: capture one problem at a time. Don't try to gather all issues upfront.
 
-### Phase 2: Code Exploration
+### Phase 2: Reproduce + Explore
 
-Use the codebase-analyzer agent or direct exploration to investigate:
+**Reproduce first.** Before exploring code, attempt to reproduce the reported behavior:
+- Run relevant tests (`bun test` with targeted file/pattern)
+- Execute the reported command/workflow
+- Check if the error is consistent or intermittent
+- Document reproduction steps and actual output
+
+If reproduction fails (can't trigger the bug), note this — it changes the investigation from "why does X happen" to "under what conditions does X happen."
+
+**Then explore** using codebase-analyzer or direct investigation:
 - Source files related to the reported behavior
 - Existing tests (passing and failing)
 - Git history for recent changes in the affected area
