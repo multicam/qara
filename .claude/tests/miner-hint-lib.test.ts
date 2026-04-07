@@ -1,5 +1,6 @@
 import { describe, test, expect } from 'bun:test';
-import { computeHintCompliance, readActiveHints } from '../skills/introspect/tools/miner-hint-lib';
+import { computeHintCompliance, readActiveHints, computeQualityMetrics } from '../skills/introspect/tools/miner-hint-lib';
+import type { ToolEntryWithSummary } from '../skills/introspect/tools/miner-hint-lib';
 
 // ---------------------------------------------------------------------------
 // computeHintCompliance
@@ -97,5 +98,85 @@ The weekly-synthesize workflow updates this file.`;
     test('no Active Hints section → empty array', () => {
         const hints = readActiveHints('# Some other content\n\nNo hints here.');
         expect(hints).toHaveLength(0);
+    });
+});
+
+// ---------------------------------------------------------------------------
+// computeQualityMetrics (#42796 defense)
+// ---------------------------------------------------------------------------
+
+function entry(tool: string, summary: string, session = 's1', ts = '2026-04-01T10:00:00Z'): ToolEntryWithSummary {
+    return { tool, error: false, timestamp: ts, input_summary: summary, session_id: session };
+}
+
+describe('computeQualityMetrics', () => {
+    test('healthy session: read before every edit → ratio high, 0% blind edits', () => {
+        const entries: ToolEntryWithSummary[] = [
+            entry('Read', 'file: /src/a.ts', 's1', '2026-04-01T10:00:00Z'),
+            entry('Read', 'file: /src/b.ts', 's1', '2026-04-01T10:01:00Z'),
+            entry('Edit', 'file: /src/a.ts', 's1', '2026-04-01T10:02:00Z'),
+            entry('Read', 'file: /src/c.ts', 's1', '2026-04-01T10:03:00Z'),
+            entry('Write', 'file: /src/b.ts', 's1', '2026-04-01T10:04:00Z'),
+            entry('Edit', 'file: /src/c.ts', 's1', '2026-04-01T10:05:00Z'),
+        ];
+        const m = computeQualityMetrics(entries);
+        expect(m.read_edit_ratio).toBe(1); // 3 reads / 3 edits = 1.0
+        expect(m.edits_without_read_pct).toBe(0); // all files were read first
+    });
+
+    test('degraded session: edits without reads → high blind edit %', () => {
+        const entries: ToolEntryWithSummary[] = [
+            entry('Read', 'file: /src/a.ts', 's1', '2026-04-01T10:00:00Z'),
+            entry('Edit', 'file: /src/a.ts', 's1', '2026-04-01T10:01:00Z'),
+            entry('Edit', 'file: /src/b.ts', 's1', '2026-04-01T10:02:00Z'), // blind
+            entry('Write', 'file: /src/c.ts', 's1', '2026-04-01T10:03:00Z'), // blind
+        ];
+        const m = computeQualityMetrics(entries);
+        expect(m.read_edit_ratio).toBeCloseTo(0.3, 1); // 1 read / 3 edits
+        // 2 out of 3 edits were blind
+        expect(m.edits_without_read_pct).toBeCloseTo(66.7, 0);
+    });
+
+    test('empty entries → zeroes', () => {
+        const m = computeQualityMetrics([]);
+        expect(m.read_edit_ratio).toBe(0);
+        expect(m.edits_without_read_pct).toBe(0);
+    });
+
+    test('read-only session (no edits) → ratio 0, 0% blind', () => {
+        const entries: ToolEntryWithSummary[] = [
+            entry('Read', 'file: /src/a.ts'),
+            entry('Read', 'file: /src/b.ts'),
+            entry('Grep', 'pattern: foo'),
+        ];
+        const m = computeQualityMetrics(entries);
+        expect(m.read_edit_ratio).toBe(0); // no edits = 0 ratio (avoid div by zero)
+        expect(m.edits_without_read_pct).toBe(0);
+    });
+
+    test('multi-session: tracks read sets independently per session', () => {
+        const entries: ToolEntryWithSummary[] = [
+            // Session 1: reads a.ts, edits a.ts — ok
+            entry('Read', 'file: /src/a.ts', 's1', '2026-04-01T10:00:00Z'),
+            entry('Edit', 'file: /src/a.ts', 's1', '2026-04-01T10:01:00Z'),
+            // Session 2: edits a.ts WITHOUT reading it — blind
+            entry('Edit', 'file: /src/a.ts', 's2', '2026-04-01T11:00:00Z'),
+        ];
+        const m = computeQualityMetrics(entries);
+        // 1 read / 2 edits = 0.5
+        expect(m.read_edit_ratio).toBe(0.5);
+        // 1 out of 2 edits was blind (s2's edit)
+        expect(m.edits_without_read_pct).toBe(50);
+    });
+
+    test('non-file tools are ignored for read:edit tracking', () => {
+        const entries: ToolEntryWithSummary[] = [
+            entry('Bash', 'command: ls', 's1', '2026-04-01T10:00:00Z'),
+            entry('Grep', 'pattern: foo', 's1', '2026-04-01T10:01:00Z'),
+            entry('Glob', 'pattern: *.ts', 's1', '2026-04-01T10:02:00Z'),
+        ];
+        const m = computeQualityMetrics(entries);
+        expect(m.read_edit_ratio).toBe(0);
+        expect(m.edits_without_read_pct).toBe(0);
     });
 });

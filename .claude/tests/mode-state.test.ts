@@ -25,6 +25,7 @@ import {
   incrementIteration,
   markStoryComplete,
   deactivateWithReason,
+  extendIterations,
   clearModeState,
   getStateFilePath,
   runCLI,
@@ -388,6 +389,55 @@ describe("Mode State Management", () => {
     it("should accept --max flag", () => {
       runCLI(["activate", "--mode", "drive", "--task", "test", "--criteria", "done", "--skill", "/tmp/d.md", "--max", "25"]);
       expect(readModeState()!.maxIterations).toBe(25);
+    });
+  });
+
+  // ─── extendIterations (Ralph-style hardening) ─────────────────────────────
+
+  describe("extendIterations", () => {
+    function activateDrive(maxIterations = 50) {
+      writeModeState({ mode: "drive", taskContext: "test", acceptanceCriteria: "done", skillPath: "/tmp/d.md", maxIterations });
+    }
+
+    it("should extend maxIterations when extensions available", () => {
+      activateDrive();
+      const result = extendIterations("verification-failing");
+      expect(result.extended).toBe(true);
+      expect(result.newMax).toBe(60); // 50 + default extensionSize 10
+      const state = readModeState();
+      expect(state!.maxIterations).toBe(60);
+      expect(state!.extensionsUsed).toBe(1);
+    });
+
+    it("should refuse extension when maxExtensions exhausted", () => {
+      activateDrive();
+      extendIterations("try-1");
+      extendIterations("try-2");
+      const result = extendIterations("try-3"); // drive maxExtensions=2
+      expect(result.extended).toBe(false);
+      expect(result.newMax).toBe(70); // stays at 50+10+10
+    });
+
+    it("should log extension in extensionHistory", () => {
+      activateDrive();
+      extendIterations("verification-failing");
+      const raw = JSON.parse(readFileSync(getStateFilePath(), "utf-8"));
+      expect(raw.extensionHistory).toHaveLength(1);
+      expect(raw.extensionHistory[0].previousMax).toBe(50);
+      expect(raw.extensionHistory[0].newMax).toBe(60);
+      expect(raw.extensionHistory[0].reason).toBe("verification-failing");
+    });
+
+    it("should return extended=false when no active mode", () => {
+      const result = extendIterations("no-mode");
+      expect(result.extended).toBe(false);
+      expect(result.newMax).toBe(0);
+    });
+
+    it("should use mode-specific defaults (cruise: maxExtensions=1, extensionSize=5)", () => {
+      writeModeState({ mode: "cruise", taskContext: "test", acceptanceCriteria: "done", skillPath: "/tmp/c.md", maxIterations: 20 });
+      expect(extendIterations("try-1")).toEqual(expect.objectContaining({ extended: true, newMax: 25 }));
+      expect(extendIterations("try-2")).toEqual(expect.objectContaining({ extended: false }));
     });
   });
 });

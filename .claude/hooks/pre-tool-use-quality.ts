@@ -12,7 +12,9 @@
  * Matcher: Write, Edit (registered in settings.json)
  */
 
-import { readFileSync } from "fs";
+import { readFileSync, existsSync } from "fs";
+import { join } from "path";
+import { getSessionsDir, getSessionId } from "./lib/pai-paths";
 import { readTDDState } from "./lib/tdd-state";
 
 interface HookInput {
@@ -61,6 +63,16 @@ function findDuplicateBlocks(content: string, minLines: number = MIN_DUPLICATE_L
   return duplicates;
 }
 
+/** Check if a file path is exempt from read-before-edit enforcement */
+function isReadExempt(filePath: string): boolean {
+  // Test files — often written from scratch
+  if (/\.(test|spec)\.(ts|tsx|js|jsx)$/.test(filePath)) return true;
+  // Generated/config files
+  if (/\.(gitkeep|lock)$/.test(filePath)) return true;
+  if (filePath.endsWith('package-lock.json')) return true;
+  return false;
+}
+
 function main(): void {
   try {
     const input = readFileSync(0, "utf-8");
@@ -69,6 +81,35 @@ function main(): void {
     // TDD-phase aware: skip during GREEN (focus on making tests pass)
     const tddState = readTDDState();
     if (tddState?.phase === "GREEN") return;
+
+    // Read-before-edit enforcement (anthropics/claude-code#42796)
+    // Checks if the target file was Read in this session before being edited.
+    // Decision: "ask" (not block) — forces conscious override, not hard denial.
+    const filePath = hookData.tool_input.file_path as string | undefined;
+    if (filePath && existsSync(filePath) && !isReadExempt(filePath)) {
+      try {
+        const ledgerPath = join(getSessionsDir(), getSessionId(), 'files-read.json');
+        let wasRead = true; // fail open
+        if (existsSync(ledgerPath)) {
+          const files = new Set<string>(JSON.parse(readFileSync(ledgerPath, 'utf-8')));
+          wasRead = files.has(filePath);
+        } else {
+          wasRead = false; // no ledger = nothing has been read yet
+        }
+        if (!wasRead) {
+          console.log(JSON.stringify({
+            hookSpecificOutput: {
+              hookEventName: "PreToolUse",
+              permissionDecision: "ask",
+              userMessage: `This file has not been Read in this session. Read it first to understand context before editing.\nFile: ${filePath}`,
+            },
+          }));
+          return;
+        }
+      } catch {
+        // fail open — don't block edits if ledger read fails
+      }
+    }
 
     // Extract content to check
     let content: string | undefined;

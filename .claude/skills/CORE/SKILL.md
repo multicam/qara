@@ -82,6 +82,7 @@ env:
 | Security | `.claude/skills/CORE/security-protocols.md` | "API keys", "repo safety", "secrets management" |
 | Tool preferences | `.claude/skills/CORE/TOOLS.md` | "which CLI tool for", "fd vs find", "bat vs cat" |
 | Delegation | `.claude/context/delegation-guide.md` | "which agent", "delegate", "parallel agents", "escalation" |
+| Routing cheatsheet | `.claude/context/routing-cheatsheet.md` | "routing keywords", "what triggers X", "all routes", "activation keywords" |
 | Context analysis | `.claude/hooks/lib/context-graph/cli.ts` | "orphan files", "impact analysis", "context graph", "skill dependencies" |
 | PAI visual aesthetic | `.claude/skills/CORE/aesthetic.md` | "visual design", "PAI aesthetics", "color palette", "diagram style" |
 | Skill architecture | `.claude/skills/CORE/skill-structure.md` | "skill archetypes", "skill structure", "routing hierarchy" |

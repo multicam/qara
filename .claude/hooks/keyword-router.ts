@@ -79,6 +79,19 @@ function isInformational(prompt: string, matchIndex: number): boolean {
   return INFORMATIONAL_PATTERNS.some((p) => p.test(context));
 }
 
+// ─── Auto-Mode Suggestion ──────────────────────────────────────────────
+
+const TURBO_SIGNALS = /\bparallel\b|\bindependent\b|\b[3-9]\+?\s*tasks?\b|\bsimultaneous/i;
+const CRUISE_SIGNALS = /\bstep by step\b|\bphased?\b|\bdiscover then\b|\bplan then implement/i;
+const DRIVE_SIGNALS = /\bPRD\b|\bacceptance criteria\b|\buser stor(?:y|ies)\b|\bspec(?:ification)?s?\b/i;
+
+function suggestMode(prompt: string): string | null {
+  if (TURBO_SIGNALS.test(prompt)) return "turbo";
+  if (DRIVE_SIGNALS.test(prompt)) return "drive";
+  if (CRUISE_SIGNALS.test(prompt)) return "cruise";
+  return null;
+}
+
 // ─── Main ───────────────────────────────────────────────────────────────────
 
 async function main() {
@@ -165,7 +178,16 @@ async function main() {
       }
     }
 
-    // No match — silent exit
+    // No keyword match — try auto-mode suggestion for long actionable prompts
+    if (sanitized.length > 200 && !readModeState()) {
+      const suggestion = suggestMode(sanitized);
+      if (suggestion) {
+        process.stdout.write(JSON.stringify({
+          result: `<system-reminder>This task might benefit from \`${suggestion} mode\`. Say \`${suggestion}: [your task]\` to activate.</system-reminder>`,
+        }));
+      }
+    }
+
     process.exit(0);
   } catch {
     // Never exit(1) from a hook

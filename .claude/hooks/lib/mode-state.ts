@@ -27,6 +27,13 @@ import { STATE_DIR, ensureDir } from "./pai-paths";
 
 export type ModeName = "drive" | "cruise" | "turbo";
 
+export interface ExtensionEvent {
+  timestamp: string;
+  previousMax: number;
+  newMax: number;
+  reason: string;
+}
+
 export interface ModeState {
   active: boolean;
   mode: ModeName;
@@ -45,7 +52,18 @@ export interface ModeState {
   activeSubagents: number;
   completedSubagents: string[];
   deactivationReason: string | null;
+  extensionsUsed: number;
+  maxExtensions: number;
+  extensionSize: number;
+  extensionHistory: ExtensionEvent[];
 }
+
+/** Per-mode defaults for extension hardening */
+const EXTENSION_DEFAULTS: Record<ModeName, { maxExtensions: number; extensionSize: number }> = {
+  drive:  { maxExtensions: 2, extensionSize: 10 },
+  cruise: { maxExtensions: 1, extensionSize: 5 },
+  turbo:  { maxExtensions: 1, extensionSize: 5 },
+};
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
@@ -143,6 +161,10 @@ export function writeModeState(params: {
     activeSubagents: 0,
     completedSubagents: [],
     deactivationReason: null,
+    extensionsUsed: 0,
+    maxExtensions: EXTENSION_DEFAULTS[params.mode].maxExtensions,
+    extensionSize: EXTENSION_DEFAULTS[params.mode].extensionSize,
+    extensionHistory: [],
   };
   atomicWriteState(state);
 }
@@ -182,6 +204,36 @@ export function deactivateWithReason(reason: string): void {
   if (!raw) return;
   raw.deactivationReason = reason;
   atomicWriteState(raw);
+}
+
+/**
+ * Try to extend maxIterations (Ralph-style hardening).
+ * Returns whether the extension was granted and the new max.
+ * Uses per-mode defaults if extensionsUsed/maxExtensions not yet set (backward compat).
+ */
+export function extendIterations(reason: string): { extended: boolean; newMax: number } {
+  const state = readRaw();
+  if (!state || !state.active) return { extended: false, newMax: 0 };
+
+  const defaults = EXTENSION_DEFAULTS[state.mode] || EXTENSION_DEFAULTS.drive;
+  const maxExt = state.maxExtensions ?? defaults.maxExtensions;
+  const extSize = state.extensionSize ?? defaults.extensionSize;
+  const used = state.extensionsUsed ?? 0;
+
+  if (used >= maxExt) return { extended: false, newMax: state.maxIterations };
+
+  const previousMax = state.maxIterations;
+  state.maxIterations += extSize;
+  state.extensionsUsed = used + 1;
+  if (!Array.isArray(state.extensionHistory)) state.extensionHistory = [];
+  state.extensionHistory.push({
+    timestamp: new Date().toISOString(),
+    previousMax,
+    newMax: state.maxIterations,
+    reason,
+  });
+  atomicWriteState(state);
+  return { extended: true, newMax: state.maxIterations };
 }
 
 /**

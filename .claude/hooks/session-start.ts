@@ -12,10 +12,10 @@
  * 4. Sets initial terminal tab title
  */
 
-import { existsSync, readFileSync, writeFileSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync, readdirSync, statSync, unlinkSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
-import { SKILLS_DIR, QARA_DIR, getSessionId } from './lib/pai-paths';
+import { SKILLS_DIR, QARA_DIR, getSessionId, getSessionsDir } from './lib/pai-paths';
 import { setTerminalTabTitle } from './lib/tab-titles';
 import { readTDDStateRaw, clearTDDState, isStateValid } from './lib/tdd-state';
 import { loadCheckpoint, clearCheckpoint, formatCheckpointSummary } from './lib/compact-checkpoint';
@@ -121,6 +121,20 @@ async function main() {
     } catch {
       // Non-critical — don't let cleanup failure block session start
     }
+
+    // Clean up stale read ledgers (>24h) from previous sessions
+    try {
+      const sessionsDir = getSessionsDir();
+      if (existsSync(sessionsDir)) {
+        const now = Date.now();
+        for (const dir of readdirSync(sessionsDir)) {
+          const ledger = join(sessionsDir, dir, 'files-read.json');
+          if (existsSync(ledger) && now - statSync(ledger).mtimeMs > 86400000) {
+            unlinkSync(ledger);
+          }
+        }
+      }
+    } catch { /* non-critical */ }
 
     // Check for crash recovery: checkpoint from a previous session with active mode
     try {

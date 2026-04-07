@@ -14,6 +14,7 @@ import { join } from 'path';
 import { STATE_DIR, ensureDir, getSessionId } from './lib/pai-paths';
 import { appendJsonl } from './lib/jsonl-utils';
 import { getISOTimestamp } from './lib/datetime-utils';
+import { saveCheckpoint } from './lib/compact-checkpoint';
 
 const FAILURE_STATE_FILE = join(STATE_DIR, 'tool-failure-tracking.json');
 const ESCALATION_THRESHOLD = 5;
@@ -48,6 +49,27 @@ async function main() {
     const toolName = parsed.tool_name || 'unknown';
     const error = parsed.error || parsed.tool_error || '';
     const errorStr = typeof error === 'string' ? error.substring(0, 500) : JSON.stringify(error).substring(0, 500);
+
+    // Rate limit early detection — immediate, no threshold wait (#42796 defense)
+    const rateLimitPattern = /\b429\b|rate.?limit|quota.?exceed|too many requests|insufficient balance|throttl/i;
+    if (rateLimitPattern.test(errorStr)) {
+      try {
+        saveCheckpoint(getSessionId());
+        appendJsonl(join(STATE_DIR, 'checkpoint-events.jsonl'), {
+          timestamp: getISOTimestamp(),
+          event_type: 'rate_limit_detected',
+          session_id: getSessionId(),
+          tool: toolName,
+        });
+      } catch { /* checkpoint failure non-critical */ }
+
+      console.error(`[PAI] Rate limit detected on ${toolName}. Checkpoint saved.`);
+      const result = JSON.stringify({
+        result: `<system-reminder>RATE LIMIT DETECTED on ${toolName}. Checkpoint saved.\n\nSTOP making API calls immediately. Wait 60 seconds before retrying.\nIf persistent, reduce parallel operations or check quota/billing.\n\nYour mode state, working memory, and TDD state are checkpointed.</system-reminder>`,
+      });
+      process.stdout.write(result);
+      process.exit(0);
+    }
 
     // Track consecutive failures
     const current = readTracking();

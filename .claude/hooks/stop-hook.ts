@@ -17,9 +17,43 @@ import { STATE_DIR } from './lib/pai-paths';
 import { appendJsonl } from './lib/jsonl-utils';
 import { getISOTimestamp } from './lib/datetime-utils';
 import { classifyTopic } from './lib/trace-utils';
-import { readModeState, isModeActive, incrementIteration, deactivateWithReason } from './lib/mode-state';
+import { readModeState, isModeActive, incrementIteration, deactivateWithReason, extendIterations } from './lib/mode-state';
 import type { ModeState } from './lib/mode-state';
 import { formatMemoryForInjection } from './lib/working-memory';
+
+function emitContinuation(modeState: ModeState): void {
+  let skillContent = '';
+  if (modeState.skillPath && existsSync(modeState.skillPath)) {
+    skillContent = readFileSync(modeState.skillPath, 'utf-8');
+  }
+
+  let antislopNote = '';
+  if (modeState.lastCompletedStory) {
+    antislopNote = `\n\nMANDATORY SIMPLIFICATION PASS: Before starting the next story, run the simplify workflow on all code changes from story "${modeState.lastCompletedStory}". Only proceed to the next story after simplification is complete.`;
+  }
+
+  const extensionNote = (modeState.extensionsUsed ?? 0) > 0
+    ? `\nEXTENSION ${modeState.extensionsUsed}/${modeState.maxExtensions}: Iterations extended — focus on completing verification.`
+    : '';
+
+  let memorySection = '';
+  try {
+    const mem = formatMemoryForInjection();
+    if (mem) memorySection = `\n\n${mem}`;
+  } catch { /* non-critical */ }
+
+  const continuation = JSON.stringify({
+    result: `<system-reminder>MODE CONTINUATION — ${modeState.mode} iteration ${modeState.iteration + 1}/${modeState.maxIterations}${extensionNote}\n\nTask: ${modeState.taskContext}\nCriteria: ${modeState.acceptanceCriteria}${antislopNote}${memorySection}\n\n${skillContent}\n\nCONTINUE WORKING.</system-reminder>`,
+  });
+  process.stdout.write(continuation);
+
+  appendJsonl(join(STATE_DIR, 'mode-changes.jsonl'), {
+    timestamp: getISOTimestamp(),
+    event: 'continuation',
+    mode: modeState.mode,
+    iteration: modeState.iteration + 1,
+  });
+}
 
 async function main() {
   try {
@@ -62,17 +96,8 @@ async function main() {
     try {
       const modeState = readModeState();
       if (modeState && isModeActive(modeState)) {
-        // Check safety valves
-        if (modeState.iteration >= modeState.maxIterations) {
-          deactivateWithReason('max-iterations');
-          appendJsonl(join(STATE_DIR, 'mode-changes.jsonl'), {
-            timestamp: getISOTimestamp(),
-            event: 'deactivated',
-            mode: modeState.mode,
-            reason: 'max-iterations',
-            iterations: modeState.iteration,
-          });
-        } else if (modeState.maxTokensBudget > 0 && modeState.tokensUsed >= modeState.maxTokensBudget) {
+        // Safety valve: max token budget → deactivate (no extension)
+        if (modeState.maxTokensBudget > 0 && modeState.tokensUsed >= modeState.maxTokensBudget) {
           deactivateWithReason('max-tokens');
           appendJsonl(join(STATE_DIR, 'mode-changes.jsonl'), {
             timestamp: getISOTimestamp(),
@@ -81,39 +106,42 @@ async function main() {
             reason: 'max-tokens',
             tokensUsed: modeState.tokensUsed,
           });
+        } else if (modeState.iteration >= modeState.maxIterations) {
+          // Ralph-style hardening: try to extend before deactivating.
+          // Gate on deactivationReason: 'stuck'/'regression-loop' = don't extend.
+          const reason = modeState.deactivationReason;
+          const shouldExtend = reason !== 'stuck' && reason !== 'regression-loop';
+          const { extended, newMax } = shouldExtend ? extendIterations('max-iterations-reached') : { extended: false, newMax: 0 };
+
+          if (!extended) {
+            deactivateWithReason('max-iterations');
+            appendJsonl(join(STATE_DIR, 'mode-changes.jsonl'), {
+              timestamp: getISOTimestamp(),
+              event: 'deactivated',
+              mode: modeState.mode,
+              reason: 'max-iterations',
+              iterations: modeState.iteration,
+            });
+          } else {
+            // Extension granted — log and fall through to continuation
+            appendJsonl(join(STATE_DIR, 'mode-changes.jsonl'), {
+              timestamp: getISOTimestamp(),
+              event: 'extended',
+              mode: modeState.mode,
+              reason: 'max-iterations-reached',
+              newMax,
+            });
+            // Re-read state after extension bumped maxIterations
+            const updated = readModeState();
+            if (updated) {
+              incrementIteration();
+              emitContinuation(updated);
+            }
+          }
         } else {
-          // Continue: increment iteration, inject skill content
+          // Normal continuation: increment iteration, inject skill content
           incrementIteration();
-
-          let skillContent = '';
-          if (modeState.skillPath && existsSync(modeState.skillPath)) {
-            skillContent = readFileSync(modeState.skillPath, 'utf-8');
-          }
-
-          // Build anti-slop instruction if story just completed
-          let antislopNote = '';
-          if (modeState.lastCompletedStory) {
-            antislopNote = `\n\nMANDATORY SIMPLIFICATION PASS: Before starting the next story, run the simplify workflow on all code changes from story "${modeState.lastCompletedStory}". Only proceed to the next story after simplification is complete.`;
-          }
-
-          // Inject working memory so critical context survives compression
-          let memorySection = '';
-          try {
-            const mem = formatMemoryForInjection();
-            if (mem) memorySection = `\n\n${mem}`;
-          } catch { /* non-critical */ }
-
-          const continuation = JSON.stringify({
-            result: `<system-reminder>MODE CONTINUATION — ${modeState.mode} iteration ${modeState.iteration + 1}/${modeState.maxIterations}\n\nTask: ${modeState.taskContext}\nCriteria: ${modeState.acceptanceCriteria}${antislopNote}${memorySection}\n\n${skillContent}\n\nCONTINUE WORKING.</system-reminder>`,
-          });
-          process.stdout.write(continuation);
-
-          appendJsonl(join(STATE_DIR, 'mode-changes.jsonl'), {
-            timestamp: getISOTimestamp(),
-            event: 'continuation',
-            mode: modeState.mode,
-            iteration: modeState.iteration + 1,
-          });
+          emitContinuation(modeState);
         }
       }
     } catch {

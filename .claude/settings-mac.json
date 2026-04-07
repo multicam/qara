@@ -100,6 +100,11 @@
             "type": "command",
             "command": "${PAI_DIR}/hooks/pre-tool-use-tdd.ts",
             "timeout": 1000
+          },
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/pre-tool-use-quality.ts",
+            "timeout": 1000
           }
         ]
       },
@@ -110,6 +115,11 @@
             "type": "command",
             "command": "${PAI_DIR}/hooks/pre-tool-use-tdd.ts",
             "timeout": 1000
+          },
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/pre-tool-use-quality.ts",
+            "timeout": 1000
           }
         ]
       },
@@ -119,6 +129,11 @@
           {
             "type": "command",
             "command": "${PAI_DIR}/hooks/pre-tool-use-tdd.ts",
+            "timeout": 1000
+          },
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/pre-tool-use-quality.ts",
             "timeout": 1000
           }
         ]
@@ -131,6 +146,11 @@
             "type": "command",
             "command": "${PAI_DIR}/hooks/update-tab-titles.ts",
             "timeout": 500
+          },
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/keyword-router.ts",
+            "timeout": 500
           }
         ]
       }
@@ -142,6 +162,51 @@
           {
             "type": "command",
             "command": "${PAI_DIR}/hooks/post-tool-use.ts",
+            "timeout": 2000
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/post-tool-failure.ts",
+            "timeout": 1000
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/subagent-start.ts",
+            "timeout": 500
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/subagent-stop.ts",
+            "timeout": 2000
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/pre-compact.ts",
             "timeout": 2000
           }
         ]

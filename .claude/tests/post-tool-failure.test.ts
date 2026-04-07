@@ -105,4 +105,57 @@ describe("PostToolUseFailure Hook", () => {
     proc.stdin.end();
     expect(await proc.exited).toBe(0);
   });
+
+  // Rate limit detection (#42796 defense)
+  describe("rate limit detection", () => {
+    async function expectRateLimitDetected(tool: string, error: string) {
+      const result = await runHook({ tool_name: tool, error });
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("RATE LIMIT DETECTED");
+      expect(result.stdout).toContain("system-reminder");
+      return result;
+    }
+
+    async function expectNoRateLimitDetected(tool: string, error: string) {
+      const result = await runHook({ tool_name: tool, error });
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).not.toContain("RATE LIMIT DETECTED");
+      return result;
+    }
+
+    it("should detect all rate limit patterns on first occurrence", async () => {
+      const cases: [string, string][] = [
+        ["WebFetch", '429 {"error":{"code":"1113","message":"Insufficient balance"}}'],
+        ["Bash", "Error: API rate limit exceeded, please try again later"],
+        ["WebSearch", "quota exceeded for this billing period"],
+        ["Bash", "HTTP 429: Too Many Requests"],
+        ["Bash", "Insufficient balance to complete this request"],
+        ["WebFetch", "Request throttled by upstream"],
+      ];
+      for (const [tool, error] of cases) {
+        await expectRateLimitDetected(tool, error);
+      }
+    });
+
+    it("should include tool name in rate limit guidance", async () => {
+      const result = await expectRateLimitDetected("WebFetch", "429 rate limited");
+      expect(result.stdout).toContain("WebFetch");
+    });
+
+    it("should skip rate limit on normal non-429 errors", async () => {
+      await expectNoRateLimitDetected("Bash", "command not found: foobar");
+      await expectNoRateLimitDetected("Read", "File not found: /tmp/file429.ts at line429");
+    });
+
+    it("should log rate limit event to checkpoint-events.jsonl", async () => {
+      await runHook({ tool_name: "WebFetch", error: "429 rate limited" });
+      const eventsFile = join(TEST_STATE_DIR, "checkpoint-events.jsonl");
+      if (existsSync(eventsFile)) {
+        const lastLine = readFileSync(eventsFile, "utf-8").trim().split("\n").pop()!;
+        const event = JSON.parse(lastLine);
+        expect(event.event_type).toBe("rate_limit_detected");
+        expect(event.tool).toBe("WebFetch");
+      }
+    });
+  });
 });

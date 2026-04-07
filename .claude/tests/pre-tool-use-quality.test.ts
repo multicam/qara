@@ -1,21 +1,38 @@
-import { describe, test, expect } from "bun:test";
+import { describe, test, expect, beforeEach, afterEach } from "bun:test";
 import { join } from "path";
-import { readFileSync } from "fs";
+import { readFileSync, writeFileSync, mkdirSync, rmSync, existsSync } from "fs";
+import { tmpdir } from "os";
 
 const HOOK_PATH = join(__dirname, "../hooks/pre-tool-use-quality.ts");
+const TEST_SESSION_ID = `quality-test-${process.pid}`;
+const TEST_STATE_DIR = join(tmpdir(), `quality-hook-test-${process.pid}`);
+const TEST_SESSIONS_DIR = join(TEST_STATE_DIR, "sessions");
+const TEST_LEDGER_DIR = join(TEST_SESSIONS_DIR, TEST_SESSION_ID);
+const TEST_LEDGER_PATH = join(TEST_LEDGER_DIR, "files-read.json");
 
-function runHook(input: object): { stdout: string; exitCode: number } {
+function runHook(input: object, opts?: { sessionId?: string }): { stdout: string; exitCode: number } {
   const proc = Bun.spawnSync({
     cmd: ["bun", "run", HOOK_PATH],
     stdin: Buffer.from(JSON.stringify(input)),
     stdout: "pipe",
     stderr: "pipe",
-    env: { ...process.env, HOME: process.env.HOME },
+    env: {
+      ...process.env,
+      HOME: process.env.HOME,
+      CLAUDE_SESSION_ID: opts?.sessionId ?? TEST_SESSION_ID,
+      SESSIONS_STATE_DIR: TEST_STATE_DIR,
+    },
   });
   return {
     stdout: proc.stdout.toString().trim(),
     exitCode: proc.exitCode,
   };
+}
+
+/** Write a mock ledger with the given file paths as "already read" */
+function seedLedger(paths: string[]): void {
+  mkdirSync(TEST_LEDGER_DIR, { recursive: true });
+  writeFileSync(TEST_LEDGER_PATH, JSON.stringify(paths));
 }
 
 describe("pre-tool-use-quality hook", () => {
@@ -149,5 +166,60 @@ describe("pre-tool-use-quality hook", () => {
     });
     expect(result.exitCode).toBe(0);
     // Overlapping windows should not produce a duplicate warning
+  });
+});
+
+describe("read-before-edit enforcement (#42796)", () => {
+  const editInput = (filePath: string) => ({
+    tool_name: "Edit" as const,
+    tool_input: { file_path: filePath, old_string: "x", new_string: "y" },
+  });
+
+  function expectDecision(result: { stdout: string; exitCode: number }, expected: "ask" | "not-ask") {
+    expect(result.exitCode).toBe(0);
+    if (expected === "ask") {
+      const parsed = JSON.parse(result.stdout);
+      expect(parsed.hookSpecificOutput.permissionDecision).toBe("ask");
+      expect(parsed.hookSpecificOutput.userMessage).toContain("not been Read");
+    } else if (result.stdout) {
+      const parsed = JSON.parse(result.stdout);
+      expect(parsed.hookSpecificOutput.permissionDecision).not.toBe("ask");
+    }
+  }
+
+  beforeEach(() => {
+    mkdirSync(TEST_LEDGER_DIR, { recursive: true });
+    if (existsSync(TEST_LEDGER_PATH)) rmSync(TEST_LEDGER_PATH);
+  });
+
+  afterEach(() => {
+    if (existsSync(TEST_STATE_DIR)) rmSync(TEST_STATE_DIR, { recursive: true });
+  });
+
+  test("asks when editing an existing file that was NOT read", () => {
+    expectDecision(runHook(editInput(HOOK_PATH)), "ask");
+  });
+
+  test("allows editing a file that WAS read (in ledger)", () => {
+    seedLedger([HOOK_PATH]);
+    expectDecision(runHook(editInput(HOOK_PATH)), "not-ask");
+  });
+
+  test("allows writing a NEW file (non-existent path)", () => {
+    const result = runHook({
+      tool_name: "Write",
+      tool_input: { file_path: "/tmp/brand-new-file-that-does-not-exist.ts", content: "hello" },
+    });
+    expectDecision(result, "not-ask");
+  });
+
+  test("exempts test files from read-before-edit", () => {
+    expectDecision(runHook(editInput(join(__dirname, "pre-tool-use-quality.test.ts"))), "not-ask");
+  });
+
+  test("fails open on corrupt ledger", () => {
+    mkdirSync(TEST_LEDGER_DIR, { recursive: true });
+    writeFileSync(TEST_LEDGER_PATH, "not valid json{{{");
+    expect(runHook(editInput(HOOK_PATH)).exitCode).toBe(0);
   });
 });
