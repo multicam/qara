@@ -19,7 +19,7 @@ import {
     // Constants
     STATE_DIR,
     INTROSPECTION_DIR,
-    DEFAULT_PROJECT_DIR,
+    DEFAULT_DEFAULT_PROJECT_DIR,
     // JSONL / dates
     readJsonlFile,
     getSydneyDate,
@@ -215,7 +215,7 @@ function runDaily(targetDate: string, projectDir?: string): DailyReport {
     const tdd_metrics = computeTDDMetrics(allTDDEntries);
 
     // Infrastructure drift (compares filesystem to hardcoded baselines)
-    const paiDir = join(PROJECT_DIR, '..', '..');  // PROJECT_DIR is ~/.claude/projects/..., PAI_DIR is ~/.claude
+    const paiDir = join(STATE_DIR, '..');  // STATE_DIR is ~/.claude/state, PAI_DIR is ~/.claude
     const infrastructure_drift = detectInfrastructureDrift(paiDir);
 
     return {
@@ -317,10 +317,10 @@ function runMonthly(): MonthlyReport {
     // --- CC version history ---
     const versionHistory: Array<{ date: string; version: string }> = [];
     const seenVersions = new Set<string>();
-    if (existsSync(PROJECT_DIR)) {
-        const transcripts = readdirSync(PROJECT_DIR)
+    if (existsSync(DEFAULT_PROJECT_DIR)) {
+        const transcripts = readdirSync(DEFAULT_PROJECT_DIR)
             .filter(f => f.endsWith('.jsonl'))
-            .map(f => join(PROJECT_DIR, f))
+            .map(f => join(DEFAULT_PROJECT_DIR, f))
             .sort((a, b) => statSync(b).mtimeMs - statSync(a).mtimeMs)
             .slice(0, 20);
         for (const filepath of transcripts) {

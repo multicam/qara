@@ -232,75 +232,22 @@ function getDateRange(startStr: string, endStr: string): string[] {
 }
 
 // ---------------------------------------------------------------------------
-// Correction detection
+// Re-export transcript/correction/security functions from miner-transcript-lib
 // ---------------------------------------------------------------------------
-const NEGATION_PATTERNS: Array<[RegExp, string]> = [
-    [/^no[,.\s!]/i, 'negation-no'],
-    [/^nope/i, 'negation-nope'],
-    [/^wrong/i, 'negation-wrong'],
-    [/^that'?s wrong/i, 'negation-thats-wrong'],
-    [/^that'?s not/i, 'negation-thats-not'],
-    [/^not that\b/i, 'negation-not-that'],
-    [/^not what i/i, 'negation-not-what-i'],
-    [/^stop/i, 'negation-stop'],
-    [/^don'?t/i, 'negation-dont'],
-    [/^wait[,.\s!]/i, 'negation-wait'],
-    [/^hold on/i, 'negation-hold-on'],
-    [/^undo/i, 'negation-undo'],
-    [/^go back/i, 'negation-go-back'],
-    [/^start over/i, 'negation-start-over'],
-    [/^try again/i, 'negation-try-again'],
-    [/^revert/i, 'negation-revert'],
-];
+export {
+    isCorrection,
+    detectCorrectionPattern,
+    assistantHadCodeOrPath,
+    IMPERATIVE_VERBS,
+    NEGATION_WORDS,
+    filterTestNoise,
+    findTranscriptsForDate,
+    extractCorrections,
+    extractCCVersion,
+} from './miner-transcript-lib';
 
-const REDIRECTION_PATTERNS: Array<[RegExp, string]> = [
-    [/^actually[,\s]/i, 'redirect-actually'],
-    [/^instead[,\s]/i, 'redirect-instead'],
-    [/\bi meant\b/i, 'redirect-i-meant'],
-    [/\bi wanted\b/i, 'redirect-i-wanted'],
-    [/\bi said\b/i, 'redirect-i-said'],
-    [/\bi asked\b/i, 'redirect-i-asked'],
-    [/\bthe other\b/i, 'redirect-the-other'],
-];
-
-const FRUSTRATION_PATTERNS: Array<[RegExp, string]> = [
-    [/\b(fuck|shit|damn|crap|wtf|ffs)\b/i, 'frustration'],
-];
-
-const ALL_CORRECTION_PATTERNS = [
-    ...NEGATION_PATTERNS,
-    ...REDIRECTION_PATTERNS,
-    ...FRUSTRATION_PATTERNS,
-];
-
-/** Returns the pattern name if the text matches a known correction pattern, otherwise null. */
-function detectCorrectionPattern(text: string): string | null {
-    if (!text || text.length > 200 || text.length < 2) return null;
-    if (text.startsWith('<') || text.startsWith('/')) return null;
-    for (const [regex, name] of ALL_CORRECTION_PATTERNS) {
-        if (regex.test(text)) return name;
-    }
-    return null;
-}
-
-/** Backward-compatible boolean check used by external callers. */
-function isCorrection(text: string): boolean {
-    return detectCorrectionPattern(text) !== null;
-}
-
-// Contextual heuristic: imperative verbs that commonly open short redirect messages
-const IMPERATIVE_VERBS = /^(use|try|change|make|do|run|add|remove|delete|move|put|fix|update|set|check)\b/i;
-// Negation words that signal disagreement mid-message
-const NEGATION_WORDS = /\b(not|don't|doesn't|isn't|won't|can't|shouldn't|instead|rather|actually|but)\b/i;
-
-/**
- * Returns true if the assistant message looks like it contained a code block or a file path —
- * i.e. the context in which a short follow-up is likely to be a redirect.
- */
-function assistantHadCodeOrPath(assistantSnippet: string): boolean {
-    return assistantSnippet.includes('```') || /[/\\][a-zA-Z0-9._-]/.test(assistantSnippet);
-}
-
+// Import for internal use by collectSecurity
+import { filterTestNoise as _filterTestNoise } from './miner-transcript-lib';
 // ---------------------------------------------------------------------------
 // Log collection with archive fallback
 // ---------------------------------------------------------------------------
@@ -320,7 +267,7 @@ function collectCheckpoints(targetDate: string): SessionCheckpoint[] {
 }
 
 function collectSecurity(targetDate: string): SecurityCheck[] {
-    return filterTestNoise(collectJsonl<SecurityCheck>('security-checks.jsonl', targetDate));
+    return _filterTestNoise(collectJsonl<SecurityCheck>('security-checks.jsonl', targetDate));
 }
 
 function collectCheckpointEvents(targetDate: string): CheckpointEventSummary {
@@ -333,111 +280,9 @@ function collectCheckpointEvents(targetDate: string): CheckpointEventSummary {
     return { total: entries.length, by_type };
 }
 
-// Filter security test noise: >3 BLOCKED entries in the same second = test vectors
-function filterTestNoise(entries: SecurityCheck[]): SecurityCheck[] {
-    const bySecond = new Map<string, SecurityCheck[]>();
-    for (const e of entries) {
-        const sec = e.timestamp.slice(0, 19);
-        const group = bySecond.get(sec) || [];
-        group.push(e);
-        bySecond.set(sec, group);
-    }
-    return [...bySecond.values()]
-        .filter(group => group.filter(e => e.decision === 'BLOCKED').length <= 3)
-        .flat();
-}
+// filterTestNoise, findTranscriptsForDate, extractCorrections, extractCCVersion
+// → extracted to miner-transcript-lib.ts, re-exported above
 
-// ---------------------------------------------------------------------------
-// Session transcript mining
-// ---------------------------------------------------------------------------
-function findTranscriptsForDate(targetDate: string, projectDir: string = DEFAULT_PROJECT_DIR): string[] {
-    if (!existsSync(projectDir)) return [];
-    return readdirSync(projectDir)
-        .filter(f => f.endsWith('.jsonl'))
-        .map(f => join(projectDir, f))
-        .filter(f => {
-            try {
-                const stat = statSync(f);
-                const modDate = getSydneyDate(stat.mtime);
-                const nextDay = getNextDay(targetDate);
-                return modDate === targetDate || modDate === nextDay;
-            } catch { return false; }
-        });
-}
-
-function extractCorrections(transcripts: string[], targetDate: string): CorrectionCandidate[] {
-    const candidates: CorrectionCandidate[] = [];
-
-    for (const filepath of transcripts) {
-        const messages = readJsonlFile<TranscriptMessage>(filepath);
-        let lastAssistant = '';
-
-        for (const msg of messages) {
-            // Track the most recent assistant message (store enough to detect code blocks / paths)
-            if (msg.type === 'assistant' && msg.message?.content) {
-                const raw = msg.message.content;
-                const text = typeof raw === 'string' ? raw
-                    : Array.isArray(raw) ? raw.filter(b => b.type === 'text').map(b => b.text ?? '').join(' ').trim()
-                    : '';
-                // Keep 500 chars so code-block fences (```) are reliably captured
-                lastAssistant = text.slice(0, 500);
-            }
-
-            if (msg.type === 'user' && msg.userType === 'external' && !msg.isMeta) {
-                const content = typeof msg.message?.content === 'string'
-                    ? msg.message.content : '';
-                if (!content || !isTimestampOnDate(msg.timestamp, targetDate)) continue;
-
-                // --- Pass 1: high-confidence regex patterns ---
-                const patternName = detectCorrectionPattern(content);
-                if (patternName) {
-                    candidates.push({
-                        timestamp: msg.timestamp,
-                        session_id: msg.sessionId || 'unknown',
-                        user_message: content.slice(0, 200),
-                        preceding_assistant: lastAssistant.slice(0, 200),
-                        pattern: patternName,
-                        confidence: 'high',
-                    });
-                    continue; // already captured — skip contextual pass for this message
-                }
-
-                // --- Pass 2: contextual redirect heuristic (low confidence) ---
-                // Only fires when the assistant just produced code or a file path
-                if (assistantHadCodeOrPath(lastAssistant)) {
-                    const words = content.trim().split(/\s+/);
-                    if (words.length < 30) {
-                        const hasQuestion = content.includes('?');
-                        const hasImperative = IMPERATIVE_VERBS.test(content.trimStart());
-                        const hasNegationWord = NEGATION_WORDS.test(content);
-                        if (hasQuestion || hasImperative || hasNegationWord) {
-                            candidates.push({
-                                timestamp: msg.timestamp,
-                                session_id: msg.sessionId || 'unknown',
-                                user_message: content.slice(0, 200),
-                                preceding_assistant: lastAssistant.slice(0, 200),
-                                pattern: 'contextual-redirect',
-                                confidence: 'low',
-                            });
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    return candidates;
-}
-
-function extractCCVersion(transcripts: string[]): string | null {
-    for (const filepath of [...transcripts].reverse()) {
-        const messages = readJsonlFile<TranscriptMessage>(filepath);
-        for (const msg of messages) {
-            if (msg.version) return msg.version;
-        }
-    }
-    return null;
-}
 
 // ---------------------------------------------------------------------------
 // Git activity
@@ -569,21 +414,11 @@ export {
     isTimestampOnDate,
     isTimestampInRange,
     getDateRange,
-    // Correction detection
-    isCorrection,
-    detectCorrectionPattern,
-    assistantHadCodeOrPath,
-    IMPERATIVE_VERBS,
-    NEGATION_WORDS,
     // Log collection
     collectToolUsage,
     collectCheckpoints,
     collectSecurity,
     collectCheckpointEvents,
-    // Transcript mining
-    findTranscriptsForDate,
-    extractCorrections,
-    extractCCVersion,
     // Git
     getGitActivity,
     // Session detection
