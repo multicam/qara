@@ -125,3 +125,13 @@ Append-only record of architectural and design decisions. Memory files capture *
 **Why:** Meta-Harness ablation study (Lee et al., arXiv 2603.28052) showed full traces at 50.0% median vs scores-only at 34.6%. Qara was at "scores only" tier. Enriched traces enable Phase 2 causal reasoning (recovery patterns, repeated failure detection) without logging sensitive content.
 **Trade-offs:** ~3x storage increase per entry (91→300 bytes). Acceptable — gzip compression and existing rotation handle it. All new fields optional for backward compat.
 **Revisit if:** Storage growth becomes a concern (monitor via `wc -l` on state files), or CC adds native trace logging.
+
+---
+
+## 2026-04-07 — Gemma 4 local LLM via Ollama adopted across stack
+
+**Chosen:** Gemma 4 E4B (8B params, Q4_K_M) via Ollama for local inference — daily introspect reflect, Diderot reasoning, TGDS code review, MCP server for Claude Code, vision-based screenshot analysis.
+**Alternatives:** Keep all AI on cloud APIs (status quo, ~$50/year for daily reflect alone); use Qwen 3 14B (stronger code but no vision/audio); use Llama 3.1 (already in Diderot, weaker than Gemma 4).
+**Why:** Zero marginal cost, <1sec latency, privacy (code never leaves machine), vision capability, Apache 2.0 license. Gemma 4 E4B outperforms Llama 3.1 8B on reasoning (MMLU Pro 69.4% vs ~55%) at same VRAM. RTX 3090 handles it comfortably.
+**Trade-offs:** 8B model can't match Claude for complex synthesis — weekly/monthly introspection stays on Claude. Vision works but misses subtle pixel-level differences (semantic, not pixel-perfect). Audio not yet supported by Ollama transport layer.
+**Revisit if:** Ollama adds audio support (re-evaluate 5C), Gemma 5 releases, or a stronger local model appears that fits in 24GB VRAM.
