@@ -9,6 +9,24 @@ argument-hint: "<task description>"
 
 Parallel agent dispatch. Decompose → Dispatch → Collect → Synthesize → Verify. Default: 30 max iterations.
 
+## Plan-Aware Entry
+
+Before starting Decompose, check: was this mode activated with a reference to an existing plan file (e.g., `turbo: implement thoughts/shared/plans/domain--feature-v1.md`)?
+
+IF a plan file path was mentioned in the activation prompt:
+1. Read the plan file fully.
+2. Check if the plan's phases are independent (no phase references output from another phase).
+3. IF phases are independent:
+   - Use the plan's phases as the subtask decomposition directly.
+   - Map each phase to an agent type (engineer for implementation phases, codebase-analyzer for research phases).
+   - Write decomposition to `decisions.md` sourced from plan.
+   - Skip to Dispatch (step 2).
+   - Output checkpoint: `PLAN DECOMPOSED: {subtask count} independent subtasks from {plan file}.`
+4. IF phases are sequential/dependent:
+   - Fall back to cruise mode (deactivate turbo, activate cruise with plan reference).
+   - Output: `PLAN IS SEQUENTIAL: falling back to cruise with plan reference.`
+5. IF <2 phases: fall back to cruise (existing behavior).
+
 ## 1. Decompose
 
 Break task into 2-5 independent subtasks. Write to `decisions.md`:

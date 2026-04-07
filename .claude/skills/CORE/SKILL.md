@@ -57,6 +57,15 @@ env:
 **When user says "verify this works", "check acceptance criteria", "run verification", "did this pass?":**
 → **SPAWN AGENT:** `verifier` (post-implementation acceptance verification + quality gates)
 
+**When user says "is this plan ready", "check plan readiness", "assess this plan", "ready to implement?", "accept and implement", "implement this plan", "ready to build":**
+→ **READ:** `${PAI_DIR}/skills/CORE/workflows/plan-readiness-assessment.md`
+→ Apply assessment to the plan file in context, present verdict + routing recommendation
+
+**When ultraplan completes (plan teleported back to terminal):**
+→ Treat as a new plan entry point. Apply readiness assessment (READ `${PAI_DIR}/skills/CORE/workflows/plan-readiness-assessment.md`).
+→ Suggest rename to `domain--feature-vN.md` if needed.
+→ **Ultraplan policy:** Always teleport back to local terminal. Do not use "Approve and execute on web". Local quality gates (grill-me, readiness assessment, mode infrastructure) must be in the loop.
+
 **When user says "drive:", "drive mode", "cruise:", "cruise mode", "turbo:", "turbo mode":**
 → **Handled by keyword-router hook** (auto-activates mode + injects skill)
 

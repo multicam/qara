@@ -200,14 +200,16 @@ Once aligned on approach:
 
 After structure approval:
 
-1. **Write the plan** to `thoughts/shared/plans/YYYY-MM-DD-ENG-XXXX-description.md`
-   - Format: `YYYY-MM-DD-ENG-XXXX-description.md` where:
-     - YYYY-MM-DD is today's date
-     - ENG-XXXX is the ticket number (omit if no ticket)
-     - description is a brief kebab-case description
+1. **Write the plan** to `thoughts/shared/plans/domain--specific-feature-vN.md`
+   - Format: `{domain}--{specific-feature}-v{N}.md` where:
+     - domain is the broad area in kebab-case (e.g., planning-ux, tdd-qa, auth, infra)
+     - specific-feature is what this plan addresses in kebab-case
+     - vN is the version number, starting at v1 (bump only for major reworks)
    - Examples:
-     - With ticket: `2025-01-08-ENG-1478-parent-child-tracking.md`
-     - Without ticket: `2025-01-08-improve-error-handling.md`
+     - `planning-ux--unified-lifecycle-v1.md`
+     - `tdd-qa--coverage-gaps-v1.md`
+     - `auth--session-token-compliance-v1.md`
+   - Old versions move to `thoughts/shared/plans/archive/`
 
 2. **Use the standard template structure**:
    READ: .claude/skills/CORE/workflows/plan-template.md
@@ -217,7 +219,7 @@ After structure approval:
 1. **Present the draft plan location**:
    ```
    I've created the initial implementation plan at:
-   `thoughts/shared/plans/YYYY-MM-DD-ENG-XXXX-description.md`
+   `thoughts/shared/plans/domain--specific-feature-vN.md`
 
    Please review it and let me know:
    - Are the phases properly scoped?

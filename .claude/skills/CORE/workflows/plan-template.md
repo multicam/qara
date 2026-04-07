@@ -1,5 +1,15 @@
 # Implementation Plan Template
 
+## Naming Convention
+
+File name: `{domain}--{specific-feature}-v{N}.md`
+- domain: broad area in kebab-case (planning-ux, auth, infra, tdd-qa)
+- specific-feature: what this plan addresses in kebab-case
+- vN: major version only (bump on fundamental reworks). Old versions move to `archive/`.
+- Examples: `planning-ux--unified-lifecycle-v1.md`, `auth--session-token-compliance-v1.md`
+
+## Template Structure
+
 Use this template structure when writing implementation plans:
 
 ````markdown

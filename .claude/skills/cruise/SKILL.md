@@ -9,6 +9,22 @@ argument-hint: "<task description>"
 
 Phased autonomous execution. 4 phases, checkpoints between each. Default: 20 max iterations. Phase budgets: Discover 3, Plan 2, Implement 10, Verify 5.
 
+## Plan-Aware Entry
+
+Before starting Phase 1, check: was this mode activated with a reference to an existing plan file (e.g., `cruise: implement thoughts/shared/plans/domain--feature-v1.md`)?
+
+IF a plan file path was mentioned in the activation prompt:
+1. Read the plan file fully.
+2. Verify it has implementation phases with success criteria (not just an outline).
+3. IF valid plan with phases:
+   - Populate `decisions.md` with the plan's key discoveries, constraints, and implementation approach.
+   - Skip Phase 1 (Discover) and Phase 2 (Plan).
+   - Enter Phase 3 (Implement) directly, using the plan's phases as the step-by-step guide.
+   - Output checkpoint: `PLAN IMPORTED: {phase count} phases from {plan file}. Skipping Discover+Plan.`
+4. IF plan is just an outline (no file paths, no code examples):
+   - Proceed with normal Phase 1 (Discover), using the plan as initial context.
+   - Output: `PLAN OUTLINE LOADED: using as research seed, running full discovery.`
+
 ## Phase 1: Discover (max 3 iterations)
 
 1. Extract key nouns from task description (module names, file names, feature names).

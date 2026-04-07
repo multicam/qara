@@ -71,6 +71,18 @@ The goal is **shared understanding**, not winning an argument:
 - Track resolved vs open questions
 - End with a summary: decisions made, open items, and any risks JM explicitly accepted
 
+### 6. Readiness Verdict
+
+After all branches are resolved and a plan file exists:
+1. Read the plan file that was being grilled
+2. Apply the plan-readiness assessment: **READ** `.claude/skills/CORE/workflows/plan-readiness-assessment.md`
+3. Present the verdict to JM
+4. If **READY**: recommend executor via AskUserQuestion (options based on routing recommendation)
+5. If **NEEDS WORK**: list specific gaps. Ask JM if they want to address now or defer.
+6. If **UNDERCOOKED**: recommend escalating to `/create_plan` for deeper research.
+
+Skip this step if: the grill target was not an implementation plan (e.g., a design concept, architecture discussion, or PRD-level review).
+
 ## Rules
 
 - **One question at a time.** Let JM think and respond before the next probe.

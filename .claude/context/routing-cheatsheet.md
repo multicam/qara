@@ -32,6 +32,7 @@ Evaluated after keyword-router. Mode-specific workflows override these when a mo
 | "rewind", "checkpoint", "rollback", "recover", "undo changes" | READ `skills/CORE/workflows/checkpoint-protocol.md` |
 | "ask diderot", "diderot search", "check my notes", "what do I know about", "vault search", "in my knowledge base" | INVOKE SKILL: diderot |
 | "review this plan", "is this approach right?", "check my plan", "critique this" | SPAWN AGENT: critic |
+| "is this plan ready", "check plan readiness", "assess this plan", "ready to implement?", "accept and implement", "ready to build" | READ `skills/CORE/workflows/plan-readiness-assessment.md` — verdict + routing |
 | "verify this works", "check acceptance criteria", "run verification", "did this pass?" | SPAWN AGENT: verifier |
 
 ---
@@ -57,6 +58,27 @@ These phrases invoke the named skill when spoken naturally.
 | `system-create-skill` | "create skill", "new skill", "build skill", "make skill", "skill for X", "Create-A-Skill" |
 | `ubiquitous-language` | "define terms", "glossary", "ubiquitous language", "domain terminology", "what do we call X", "clarify naming", "DDD" |
 | `cc-upgrade` | "audit this CC setup", "check CC compatibility", "optimize .claude/ folder" |
+
+---
+
+## 3a. Planning Lifecycle (hub-and-spoke)
+
+Entry points (any planning tool produces a plan file):
+- **Plan mode** (Shift+Tab) → lightweight scoping → `thoughts/shared/plans/`
+- **Ultraplan** (`/ultraplan`) → cloud planning → **always teleport back** to local terminal
+- **`/create_plan`** → deep interactive planning with research agents
+
+Quality hub:
+- **`/grill-me`** → stress-tests plan, ends with readiness verdict (invokes assessment)
+- **"is this plan ready?"** → standalone readiness assessment → verdict + routing
+
+Execution dispatch (recommended by readiness assessment):
+- 1-2 phases, simple → `/implement_plan`
+- 3+ sequential phases → `cruise: implement {plan-file}`
+- 3+ independent phases → `turbo: implement {plan-file}`
+- PRD with user stories → `drive:` (separate track, not plan-consuming)
+
+Plan naming: `domain--specific-feature-vN.md` (e.g., `planning-ux--unified-lifecycle-v1.md`)
 
 ---
 
