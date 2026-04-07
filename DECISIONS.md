@@ -135,3 +135,13 @@ Append-only record of architectural and design decisions. Memory files capture *
 **Why:** Zero marginal cost, <1sec latency, privacy (code never leaves machine), vision capability, Apache 2.0 license. Gemma 4 E4B outperforms Llama 3.1 8B on reasoning (MMLU Pro 69.4% vs ~55%) at same VRAM. RTX 3090 handles it comfortably.
 **Trade-offs:** 8B model can't match Claude for complex synthesis — weekly/monthly introspection stays on Claude. Vision works but misses subtle pixel-level differences (semantic, not pixel-perfect). Audio not yet supported by Ollama transport layer.
 **Revisit if:** Ollama adds audio support (re-evaluate 5C), Gemma 5 releases, or a stronger local model appears that fits in 24GB VRAM.
+
+---
+
+## 2026-04-08 — ~/.claude/state symlinked to qara/.claude/state
+
+**Chosen:** `~/.claude/state` → symlink to `qara/.claude/state` (canonical in qara, same as settings.json and .env)
+**Alternatives:** Keep separate directories (status quo); only symlink individual files
+**Why:** Post-mortem discovered split-brain: post-tool-use hook was writing to `~/.claude/state/tool-usage.jsonl` (14k entries) while `qara/.claude/state/tool-usage.jsonl` (6.8k entries) was stale since April 3. The introspection miner was reading from the correct file (`~/.claude/state/` via pai-paths.ts default), but the split caused confusion during debugging and the qara copy was dead weight. Merged both JSONL files (deduped: 20,871 tool-usage + 10,179 security-checks), moved all subdirs (agents, archive, digests, errors, sessions) and remaining state files to qara.
+**Trade-offs:** State files are now in the git repo (risk of accidental commits of large JSONL). Mitigated by `.gitignore` awareness — state files should be gitignored.
+**Revisit if:** State files grow too large for the repo, or CC gains native state directory configuration.

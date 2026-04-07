@@ -1,7 +1,7 @@
 # Feature: Hook System
 
 ## Context
-7 hooks manage session lifecycle, security enforcement, TDD discipline, logging, tab titles, and config tracking. Each hook is individually tested — these scenarios cover cross-hook behavior and edge cases.
+14 hooks manage session lifecycle, security enforcement, TDD discipline, quality checks, logging, tab titles, subagent tracking, context compaction, and config tracking. Each hook is individually tested — these scenarios cover cross-hook behavior and edge cases.
 
 ## Scenarios
 

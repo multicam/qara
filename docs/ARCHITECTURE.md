@@ -67,6 +67,6 @@ Launch N agents (each with full context)
 
 ## Current System
 
-- 15 skills, 7 custom agents, 6 hooks
+- 50 skills, 13 custom agents, 14 hooks
 - CORE skill auto-loads at session start
 - See CORE SKILL.md Documentation Index for reference files

@@ -102,6 +102,13 @@ ln -sf $PAI_DIR/.claude/settings.json ~/.claude/settings.json
 
 # Link .env (API keys)
 ln -sf $PAI_DIR/.claude/.env ~/.claude/.env
+
+# Link state directory (tool-usage logs, security checks, session data)
+rm -rf ~/.claude/state 2>/dev/null
+ln -sf $PAI_DIR/.claude/state ~/.claude/state
+
+# Link RTK context
+ln -sf $PAI_DIR/.claude/RTK.md ~/.claude/RTK.md
 ```
 
 ### 3. Install Dependencies
@@ -210,9 +217,12 @@ ls -la ~/.claude/hooks
 ### Reset symlinks
 
 ```bash
-rm -f ~/.claude/{settings.json,.env}
+rm -f ~/.claude/{settings.json,.env,RTK.md}
+rm -rf ~/.claude/state 2>/dev/null
 ln -sf $PAI_DIR/.claude/settings.json ~/.claude/settings.json
 ln -sf $PAI_DIR/.claude/.env ~/.claude/.env
+ln -sf $PAI_DIR/.claude/state ~/.claude/state
+ln -sf $PAI_DIR/.claude/RTK.md ~/.claude/RTK.md
 ```
 
 ### Missing CLI tools

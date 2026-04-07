@@ -26,10 +26,16 @@ ${PAI_DIR}/
 - `session-start.ts` - Loads CORE context at session start
 - `pre-tool-use-security.ts` - Blocks dangerous Bash commands
 - `pre-tool-use-tdd.ts` - TDD discipline enforcement (Write/Edit/MultiEdit)
+- `pre-tool-use-quality.ts` - Advisory duplicate code detection (Write/Edit)
 - `post-tool-use.ts` - Logs all tool usage to JSONL
+- `post-tool-failure.ts` - Tracks tool failure patterns
 - `update-tab-titles.ts` - Sets terminal tab titles on prompt submit
+- `keyword-router.ts` - Activates execution modes (drive/cruise/turbo)
 - `stop-hook.ts` - Checkpoint logging, tab update on completion
+- `subagent-start.ts` / `subagent-stop.ts` - Subagent lifecycle tracking
+- `pre-compact.ts` - Context preservation before compaction
 - `config-change.ts` - Settings sync validation
+- `rtk-rewrite.sh` - RTK token reduction for Bash output
 
 ### 4. Settings Configuration
 - `settings.json` defines hooks and permissions
@@ -50,7 +56,7 @@ cd $PAI_DIR && bun run test
 
 Verify key symlinks:
 ```bash
-for item in settings.json .env; do
+for item in settings.json .env state RTK.md; do
   [ -L "$HOME/.claude/$item" ] && echo "$item: OK ($(readlink $HOME/.claude/$item))" || echo "$item: NOT LINKED"
 done
 ```

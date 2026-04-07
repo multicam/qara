@@ -7,7 +7,11 @@
 | Base | `settings.json` | gitignored | Main configuration (symlink chain) |
 | Local | `settings.local.json` | gitignored | Machine-specific overrides |
 
-Symlink: `~/.claude/settings.json` -> `qara/.claude/settings.json` (one canonical file, direct symlink).
+Symlinks (canonical in qara, symlinked from ~/.claude/):
+- `~/.claude/settings.json` -> `qara/.claude/settings.json`
+- `~/.claude/.env` -> `qara/.claude/.env`
+- `~/.claude/state` -> `qara/.claude/state`
+- `~/.claude/RTK.md` -> `qara/.claude/RTK.md`
 
 ## Environment Variables (settings.json)
 
