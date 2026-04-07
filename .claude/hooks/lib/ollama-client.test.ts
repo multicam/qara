@@ -27,7 +27,7 @@ describe('ollama-client', () => {
         });
         expect(typeof response).toBe('string');
         expect(response.length).toBeGreaterThan(0);
-    });
+    }, 20_000); // bun test timeout must exceed chat timeout (cold model load)
 
     test('chat throws on bad endpoint', async () => {
         await expect(

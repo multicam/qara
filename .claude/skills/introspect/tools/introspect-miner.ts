@@ -86,16 +86,19 @@ interface InfrastructureDrift {
 
 function detectInfrastructureDrift(paiDir: string): InfrastructureDrift {
     // Known baselines (updated when Qara evolves — this IS the canary)
-    const EXPECTED = { hooks: 13, libs: 11, agents: 13, skills: 50 };
+    const EXPECTED = { hooks: 14, libs: 13, agents: 13, skills: 50 };
 
     const hooksDir = join(paiDir, 'hooks');
     const libDir = join(hooksDir, 'lib');
     const agentsDir = join(paiDir, 'agents');
     const skillsDir = join(paiDir, 'skills');
 
-    const countFiles = (dir: string, ext: string[]) => {
+    const isTestFile = (f: string) => f.includes('.test.') || f.includes('-test-helper.');
+
+    const countFiles = (dir: string, ext: string[], excludeTests = false) => {
         if (!existsSync(dir)) return 0;
         return readdirSync(dir).filter(f => {
+            if (excludeTests && isTestFile(f)) return false;
             const full = join(dir, f);
             if (!lstatSync(full).isFile() && !lstatSync(full).isSymbolicLink()) return false;
             return ext.some(e => f.endsWith(e));
@@ -110,8 +113,8 @@ function detectInfrastructureDrift(paiDir: string): InfrastructureDrift {
         }).length;
     };
 
-    const actualHooks = countFiles(hooksDir, ['.ts', '.sh']);
-    const actualLibs = countFiles(libDir, ['.ts', '.json']) - 1; // subtract test-macros.ts
+    const actualHooks = countFiles(hooksDir, ['.ts', '.sh'], true);
+    const actualLibs = countFiles(libDir, ['.ts', '.json'], true);
     const actualAgents = countFiles(agentsDir, ['.md']);
     const actualSkills = countDirs(skillsDir);
 

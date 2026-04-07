@@ -176,7 +176,7 @@ function readJsonlFile<T>(filepath: string): T[] {
     return entries;
 }
 
-function readArchivedJsonl<T>(pattern: string, dateStr: string): T[] {
+function readArchivedJsonl<T extends { timestamp: string }>(pattern: string, dateStr: string): T[] {
     if (!existsSync(ARCHIVE_DIR)) return [];
     const archiveFile = join(ARCHIVE_DIR, `${pattern}_${dateStr}.jsonl.gz`);
     if (!existsSync(archiveFile)) return [];
@@ -188,7 +188,8 @@ function readArchivedJsonl<T>(pattern: string, dateStr: string): T[] {
             if (!trimmed) continue;
             try { entries.push(JSON.parse(trimmed) as T); } catch { /* skip */ }
         }
-        return entries;
+        // Safety net: filter by date even for archives (guards against mis-dated archive files)
+        return entries.filter(e => isTimestampOnDate(e.timestamp, dateStr));
     } catch { return []; }
 }
 

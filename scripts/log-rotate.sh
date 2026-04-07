@@ -36,15 +36,21 @@ for f in "$STATE_DIR"/*.jsonl; do
 
     # Separate old entries (before cutoff) from recent entries
     # Expects JSONL with a "timestamp" field — if not present, keeps the line
-    archive_file="$ARCHIVE_DIR/${name}_${TODAY}.jsonl.gz"
+    # Archives are grouped by ENTRY date (not rotation date) so the miner
+    # can load the correct archive file for any given target date.
     tmp_recent=$(mktemp)
 
-    # jq filters: keep lines with timestamp >= cutoff, archive the rest
+    # jq filters: keep lines with timestamp >= cutoff, archive the rest by entry date
     if command -v jq &>/dev/null; then
         jq -c "select(.timestamp >= \"$CUTOFF\")" "$f" > "$tmp_recent" 2>/dev/null || cp "$f" "$tmp_recent"
-        jq -c "select(.timestamp < \"$CUTOFF\")" "$f" 2>/dev/null | gzip >> "$archive_file" || true
+        # Group old entries by their actual date and archive each separately
+        jq -rc "select(.timestamp < \"$CUTOFF\") | .timestamp[:10]" "$f" 2>/dev/null | sort -u | while read -r entry_date; do
+            archive_file="$ARCHIVE_DIR/${name}_${entry_date}.jsonl.gz"
+            jq -c "select(.timestamp >= \"${entry_date}T00:00:00\" and .timestamp < \"${entry_date}T24:00:00\")" "$f" 2>/dev/null | gzip >> "$archive_file" || true
+        done
     else
         # Fallback: no jq — just compress files over threshold
+        archive_file="$ARCHIVE_DIR/${name}_${TODAY}.jsonl.gz"
         gzip -c "$f" > "$archive_file"
         : > "$tmp_recent"
     fi

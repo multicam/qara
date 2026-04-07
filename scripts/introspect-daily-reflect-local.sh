@@ -49,27 +49,54 @@ if [ "$TOOLS_TOTAL" -eq 0 ]; then
     exit 0
 fi
 
-# Truncate JSON for Gemma 4 context (keep under 4K chars for reliable processing)
+# Load yesterday's key metrics for cross-day comparison
+YESTERDAY=$(TZ=Australia/Sydney date -d "$DATE - 1 day" +%Y-%m-%d 2>/dev/null || TZ=Australia/Sydney date -v-1d -j -f "%Y-%m-%d" "$DATE" +%Y-%m-%d)
+YESTERDAY_OBS="$OBS_DIR/$YESTERDAY.md"
+YESTERDAY_CONTEXT=""
+if [ -f "$YESTERDAY_OBS" ]; then
+    YESTERDAY_TOOLS=$(grep -oP 'tools_total: \K\d+' "$YESTERDAY_OBS" || echo "?")
+    YESTERDAY_SESSIONS=$(grep -oP 'sessions: \K\d+' "$YESTERDAY_OBS" || echo "?")
+    YESTERDAY_ERRORS=$(grep -oP 'errors_total: \K\d+' "$YESTERDAY_OBS" || echo "?")
+    YESTERDAY_CONTEXT="Yesterday ($YESTERDAY): $YESTERDAY_TOOLS tools, $YESTERDAY_SESSIONS sessions, $YESTERDAY_ERRORS errors."
+fi
+
+# Truncate JSON for Gemma 4 context (keep under 6K chars for rich analysis)
 MINER_TRUNCATED=$(echo "$MINER_JSON" | jq '{
     tool_usage: {total: .tool_usage.total, by_tool: .tool_usage.by_tool, overall_error_rate: .tool_usage.overall_error_rate, anomalies: .tool_usage.anomalies},
     sessions: .sessions,
     security: {total: .security.total, by_decision: .security.by_decision},
-    corrections: (.corrections | length),
+    corrections: .corrections,
     git: .git,
-    cc_version: .cc_version
+    cc_version: .cc_version,
+    hint_compliance: .hint_compliance,
+    infrastructure_drift: .infrastructure_drift,
+    session_traces: (.session_traces // [] | map({session_id, tool_count, error_count, duration_min: ((.duration_ms // 0) / 60000 | floor), tools: (.tools_used // [] | .[:5])}) | sort_by(-.tool_count) | .[:8]),
+    recovery_patterns: (.recovery_patterns // [] | length),
+    repeated_failures: (.repeated_failures // [] | length),
+    mode_metrics: .mode_metrics,
+    tdd_metrics: .tdd_metrics
 }' 2>/dev/null)
 
-SYSTEM_PROMPT="You are a development analytics observer for the Qara PAI system. Given daily miner JSON, produce 5-12 concise tagged observation bullets. Each observation is one line starting with a tag from: [tool-usage], [session-quality], [security], [anomaly], [git-activity], [user-correction], [harness-change]. Include percentages where relevant. No preamble, no explanation — just the bullet list."
+SYSTEM_PROMPT="You are a development analytics observer for the Qara PAI system. Given daily miner JSON, produce 10-18 concise tagged observation bullets. Rules:
+- Each line starts with a tag: [tool-usage], [session-quality], [security], [anomaly], [git-activity], [user-correction], [harness-change], [staleness], [hint-compliance]
+- Include PERCENTAGES and NUMBERS — raw counts, rates, comparisons
+- For [session-quality]: describe the 3-5 largest sessions (tool count, duration, dominant tools, likely activity)
+- For [tool-usage]: compute top-3 tool percentages, agent delegation %, Bash %
+- For [hint-compliance]: report bash_pct, agent_delegation_pct, bash_retry_rate if present
+- For [staleness]: report infrastructure drift if present (expected vs actual counts)
+- No preamble, no explanation, no markdown headers — ONLY the bullet list
+- Compare to yesterday's metrics when provided — note increases/decreases
+- Be SPECIFIC, not generic. 'Read was most used at 31.6%' not 'Read tool was utilized frequently'"
 
 # Call Ollama
 echo "$LOG_PREFIX Calling Gemma 4 for interpretation..."
 RESPONSE=$(curl -s "$OLLAMA_URL" \
     -H "Content-Type: application/json" \
-    -d "$(jq -n --arg sys "$SYSTEM_PROMPT" --arg json "$MINER_TRUNCATED" '{
+    -d "$(jq -n --arg sys "$SYSTEM_PROMPT" --arg json "$MINER_TRUNCATED" --arg yesterday "$YESTERDAY_CONTEXT" '{
         model: "'"$MODEL"'",
         messages: [
             {role: "system", content: $sys},
-            {role: "user", content: ("Daily miner output for '"$DATE"':\n\n" + $json)}
+            {role: "user", content: ("Daily miner output for '"$DATE"':\n" + (if $yesterday != "" then "Context: " + $yesterday + "\n\n" else "\n" end) + $json)}
         ],
         stream: false,
         options: {temperature: 0.3}
