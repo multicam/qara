@@ -416,6 +416,7 @@ export {
     isTimestampInRange,
     getDateRange,
     // Log collection
+    collectJsonl,
     collectToolUsage,
     collectCheckpoints,
     collectSecurity,
