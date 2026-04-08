@@ -56,19 +56,13 @@ EXIT: When plan written. IF 2 iterations without plan: escalate.
 
 Execute the plan step by step.
 
-IF task involves new functions or behavior changes: activate TDD.
-```bash
-bun .claude/hooks/lib/tdd-state.ts activate --feature {task-slug} --phase RED
-```
+**Test runner:** Follow `tdd-qa/references/detect-runner.md` (authoritative 4-step detection). Set `$TEST_CMD` for the session.
 
-After EVERY Write/Edit on `.ts`/`.tsx` file: run `bun test`.
+IF task involves new functions or behavior changes: follow `tdd-qa/workflows/tdd-cycle.md` for RED→GREEN→REFACTOR enforcement. Use `{task-slug}` as the feature name.
+
+After EVERY Write/Edit on `.ts`/`.tsx` file: run `$TEST_CMD`.
 - IF exit code != 0: read error output, fix before proceeding.
 - IF same test fails 3 times: write to `problems.md`, try different approach.
-
-After completing implementation:
-```bash
-bun .claude/hooks/lib/tdd-state.ts clear
-```
 
 Output checkpoint: `IMPLEMENT COMPLETE: {files changed}, {tests passing}`
 

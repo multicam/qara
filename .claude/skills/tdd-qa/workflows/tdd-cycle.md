@@ -169,13 +169,14 @@ Return to step 1 with the next scenario. Each cycle responds to what was learned
 
 Write scenario completion to working memory for compression resilience. When PreCompact fires mid-cycle, the agent recovers from checkpoint + files on disk, not compressed conversation.
 
-```bash
-# Via working-memory.ts
-echo '{"scenario":"{name}","status":"complete","test":"{test-path}","impl":"{impl-path}"}' | \
-  bun ${PAI_DIR}/hooks/lib/working-memory.ts write tdd-checkpoint
+Use the working-memory library functions (appendLearning, appendDecision) from within the session:
+```typescript
+// In-process: import and call directly
+import { appendLearning } from './lib/working-memory';
+appendLearning(`TDD scenario "${name}" complete: test=${testPath}, impl=${implPath}`);
 ```
 
-Skip if: working-memory.ts unavailable.
+Skip if: not in a mode session with working memory.
 
 ## After All Scenarios
 

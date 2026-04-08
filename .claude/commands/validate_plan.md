@@ -1,6 +1,6 @@
 ---
 description: Validate implementation against plan, verify success criteria, identify issues
-model: haiku
+model: sonnet
 ---
 
 # Validate Plan
@@ -153,6 +153,29 @@ Always verify:
 - [ ] Error handling is robust
 - [ ] Documentation updated if needed
 - [ ] Manual test steps are clear
+
+## Post-Mortem: Plan vs Reality
+
+After generating the validation report, record what the plan got wrong. This feeds future
+plan quality. Add a section to the validation report:
+
+```markdown
+### Plan Deviations Log
+
+| Category | Detail |
+|----------|--------|
+| Underscoped phases | [Phase N needed to be split because...] |
+| Missing phases | [Had to add X because plan didn't account for...] |
+| Wrong file paths | [Plan said X, actual was Y] |
+| Vague criteria | [Criterion "works correctly" → should have been "returns 200 on GET /api/..."] |
+| Unnecessary work | [Phase N was not needed because...] |
+```
+
+IF 3+ deviations in a single category: flag it as a pattern. Example: "Plans from this
+domain consistently underestimate the number of phases — consider adding a buffer phase."
+
+This log is informational. It stays in the validation report for future `/create_plan`
+sessions to learn from (thoughts-analyzer will find it).
 
 ## Relationship to Other Commands
 

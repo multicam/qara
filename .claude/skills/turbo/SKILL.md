@@ -78,8 +78,10 @@ Run `bun test` after merge. Run `bunx tsc --noEmit`.
 
 ## 5. Verify
 
-- `bun test` — all tests must pass.
-- `bunx tsc --noEmit` — zero type errors.
+**Test runner:** Follow `tdd-qa/references/detect-runner.md` if `$TEST_CMD` not yet set.
+
+- `$TEST_CMD` — all tests must pass.
+- `bunx tsc --noEmit` — zero type errors (TypeScript projects only).
 - Quality sniff test: would "un-smell, un-slop, un-stale, refactor for DRY" find anything? If yes, fix.
 - IF issues found: fix and re-verify. MAX 3 verify loops.
 - IF still failing after 3: deactivate with reason "turbo-verify-failed", escalate to JM.

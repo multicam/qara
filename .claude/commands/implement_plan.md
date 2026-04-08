@@ -31,28 +31,17 @@ When things don't match the plan exactly, think about why and communicate clearl
 
 ## TDD Enforcement
 
-When a phase creates or modifies `.ts`/`.tsx`/`.js`/`.jsx`/`.svelte` source files (not configs, not docs, not test files):
+When a phase creates or modifies `.ts`/`.tsx`/`.js`/`.jsx`/`.svelte` source files (not configs, not docs, not test files), and the changes are behavioral (not renames, type-only, or formatting):
 
-1. Activate TDD enforcement before implementation:
-   ```bash
-   bun ${PAI_DIR}/hooks/lib/tdd-state.ts activate --feature {phase-slug} --phase RED
-   ```
-
-2. Derive scenarios from the phase's success criteria. Each behavioral criterion
-   becomes a RED→GREEN→REFACTOR cycle.
-
-3. Follow the tdd-cycle workflow (READ: `${PAI_DIR}/skills/tdd-qa/workflows/tdd-cycle.md`)
-   for each scenario within the phase.
-
-4. After all scenarios complete, clear enforcement:
-   ```bash
-   bun ${PAI_DIR}/hooks/lib/tdd-state.ts clear
-   ```
-
-5. Run full test suite before pausing for human verification.
+1. Detect test runner: **READ** `${PAI_DIR}/skills/tdd-qa/references/detect-runner.md`
+2. Follow the TDD cycle workflow: **READ** `${PAI_DIR}/skills/tdd-qa/workflows/tdd-cycle.md`
+   - Derive scenarios from the phase's success criteria
+   - Each behavioral criterion becomes a RED→GREEN→REFACTOR cycle
+   - The workflow handles activation, phase transitions, and cleanup
 
 Skip TDD for: documentation-only phases, config changes, workflow/markdown edits,
-phases with no behavioral success criteria.
+phases with no behavioral success criteria, trivial source edits (renames, type
+annotations, string typos) that don't change behavior.
 
 If you encounter a mismatch:
 - STOP and think deeply about why the plan can't be followed
@@ -69,7 +58,7 @@ If you encounter a mismatch:
 ## Verification Approach
 
 After implementing a phase:
-- Run the success criteria checks (usually `bun run test` covers everything)
+- Run ALL automated success criteria checks from the plan (not just tests — includes type checks, linting, etc.)
 - Fix any issues before proceeding
 - Update your progress in both the plan and your todos
 - Check off completed items in the plan file itself using Edit
