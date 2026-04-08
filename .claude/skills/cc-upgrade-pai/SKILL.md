@@ -328,6 +328,8 @@ Extend the base gap analysis matrix with PAI-specific rows:
 | Compact checkpoint | PreCompact + crash recovery | ? | | |
 | Quality gates | critic + verifier agents | ? | | |
 | Keyword routing | No false positives, colon/mode patterns | ? | | |
+| Diderot CLI sync | Skill routes all available subcommands | ? | | |
+| Diderot schema sync | Skill uses current frontmatter fields | ? | | |
 ```
 
 ## PAI Compliance Report Format

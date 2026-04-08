@@ -12,16 +12,24 @@ description: |
 ## Workflow Routing (SYSTEM PROMPT)
 
 **When user asks diderot a knowledge question:**
-Examples: "ask diderot about color theory", "what does diderot say about design systems", "check diderot for typography notes"
--> **EXECUTE:** Full retrieval workflow (search + read + synthesize)
+Examples: "ask diderot about color theory", "what does diderot say about design systems"
+-> **EXECUTE:** Full retrieval workflow (discover + search + advise)
 
 **When user wants a quick vault search (list matches only):**
-Examples: "diderot search for AI agents", "find notes about trading", "grep vault for responsive design"
+Examples: "diderot search for AI agents", "find notes about trading"
 -> **EXECUTE:** Search-only mode — return matching note paths and titles without synthesis
 
 **When user wants deep synthesis across many notes:**
-Examples: "deep diderot search on web accessibility", "comprehensive vault review of design education", "synthesize everything I know about AI"
--> **EXECUTE:** Extended retrieval — read more notes, produce longer synthesis
+Examples: "deep diderot search on web accessibility", "synthesize everything I know about AI"
+-> **EXECUTE:** Extended retrieval — search with higher topk, use `advise --pattern synthesis`
+
+**When user wants a recommendation or challenge:**
+Examples: "diderot, what should I read next about design?", "challenge my thinking on X using my notes"
+-> **EXECUTE:** Use `advise --pattern recommendation` or `advise --pattern challenge`
+
+**When user wants a digest of recent vault activity:**
+Examples: "diderot digest", "what's new in my vault", "weekly digest"
+-> **EXECUTE:** Run `diderot digest show --period weekly`
 
 ## When to Activate This Skill
 
@@ -34,30 +42,59 @@ Examples: "deep diderot search on web accessibility", "comprehensive vault revie
 7. **Result-Oriented** - "find notes about X", "what notes mention X", "show me vault notes on X"
 8. **Tool/Method Specific** - "semantic search vault", "grep vault for X", "vector search diderot"
 
-## Retrieval Process
+## Phase 0: Discover (runs once per activation)
 
-### Phase 1: Search (Parallel)
+The diderot CLI and vault schema evolve independently of this skill. **Always discover the current interface before acting.**
 
-Run these searches in parallel against `/home/jean-marc/diderot/`:
+### 0a. CLI Discovery
 
-**A. Keyword Search**
-- Extract key terms from the query
-- Grep `*.md` files across ALL vault folders
+```bash
+cd /home/jean-marc/diderot && uv run diderot --help
+```
+
+Note available subcommands. Key ones to use:
+- `search` — semantic + keyword retrieval
+- `advise` — synthesis, recommendation, challenge, discovery, review patterns
+- `digest` — periodic vault summaries
+- `status` — vault health
+
+If new subcommands appear that weren't expected, mention them to JM.
+
+### 0b. Frontmatter Schema Discovery
+
+Read one recent note to discover the current frontmatter fields:
+
+```bash
+# Find a recently modified analyzed note
+fd -e md -t f --changed-within 7d . /home/jean-marc/diderot/knowledge/ | head -1
+```
+
+Read the first ~30 lines. Note all frontmatter fields — the schema may have evolved since this skill was last updated. Use discovered fields to make better retrieval decisions (e.g., filter by `leverage: high`, prefer `signal_vs_noise: signal`, use `relevance` to match project context).
+
+**Only hardcoded principle:** JM's annotations (`My Notes` section) are more valuable than AI-generated summaries. Everything else, reason from what you discover.
+
+## Phase 1: Search
+
+Run searches in parallel against `/home/jean-marc/diderot/`:
+
+**A. Semantic Search (primary)**
+```bash
+cd /home/jean-marc/diderot && uv run diderot --format json search "<query>" --topk 10
+```
+
+Use flags discovered in Phase 0 (e.g., `--tag`, `--status`, `--type`, `--include-content`) when the query context makes them relevant.
+
+**B. Keyword Search (parallel, catches what vectors miss)**
+- Grep `*.md` files across ALL vault folders for key terms
 - Also search filenames via Glob `**/*{term}*.md`
 - Exclude: `.git/`, `.zvec/`, `node_modules/`, `__pycache__/`
 
-**B. Semantic Search**
-- Run: `cd /home/jean-marc/diderot && uv run diderot --format json search "<query>" --topk 10`
-- Uses the zvec vector index for embedding-based similarity
-- If the command fails (e.g., ollama not running), fall back to keyword-only mode gracefully
-
-**C. Tag Search**
+**C. Tag Search (parallel)**
 - Grep frontmatter `tags:` lines for query-relevant terms
-- Pattern: search YAML frontmatter blocks for keyword matches
 
 Deduplicate results across all three strategies.
 
-### Phase 2: Read (Top Matches)
+## Phase 2: Read (Top Matches)
 
 From the combined results:
 
@@ -69,29 +106,37 @@ From the combined results:
 
 For each note, read with the Read tool:
 - First ~80 lines (frontmatter + My Notes + Summary sections)
-- Extract: title, tags, summary, key insight from My Notes
-- Prioritize notes with high `leverage` and `signal` in `signal_vs_noise` frontmatter fields
+- Use the frontmatter schema discovered in Phase 0 to prioritize: `leverage`, `signal_vs_noise`, `relevance`, `maturity`, and any new fields
+- **My Notes first** — JM's annotations are more valuable than AI-generated content
 
-### Phase 3: Synthesize
+## Phase 3: Synthesize (delegate to diderot advise)
 
-Compose a response grounded in the retrieved notes:
+For standard and deep queries, use the native `advise` subcommand:
 
-1. **Answer the question** using information from the notes
-2. **Highlight connections** between notes when they reinforce or contrast each other
-3. **Quote directly** when a note makes a specific, well-stated point
-4. **Flag gaps** — if the vault doesn't cover an aspect of the query, say so explicitly
-5. **Cite sources** at the end
+```bash
+cd /home/jean-marc/diderot && uv run diderot advise "<query>"
+```
+
+Available patterns (use `--pattern` when the intent is clear):
+- `synthesis` — combine insights across notes (default for "what do I know about X")
+- `recommendation` — suggest what to read/explore next
+- `challenge` — push back on assumptions using vault evidence
+- `discovery` — find unexpected connections
+- `review` — evaluate a body of notes on a topic
+
+Add `--persist` when JM explicitly asks to save the synthesis back to the vault.
+
+**After advise returns:** Supplement with your own observations from the notes you read in Phase 2 — the CLI synthesis may miss connections you noticed. Cite specific note paths.
 
 ### Response Format
 
 ```
-[Synthesized answer grounded in vault notes]
+[Synthesis from advise + your supplementary observations]
 
 ---
 **Sources** (open in Obsidian):
 - `knowledge/design/a_design_turn.md` — "A Design Turn"
 - `knowledge/typography/variable-fonts.md` — "Variable Fonts Guide"
-- `wip/TGDS/design-education.md` — TGDS project notes
 ```
 
 ## Vault Structure
@@ -110,21 +155,12 @@ Compose a response grounded in the retrieved notes:
 └── @Visuals/        # Visual references
 ```
 
-## Note Structure
-
-Notes follow this template:
-- **Frontmatter**: title, tags, domain, status, signal_vs_noise, leverage, relevance
-- **My Notes**: JM's personal annotations (highest value — prioritize these)
-- **Summary**: AI-generated summary
-- **Analysis**: Deep analysis with hype_check, leverage assessment
-- **Full Content**: Original article text (read only if Summary is insufficient)
-
 ## Rules
 
-1. **Read-only** — NEVER create, modify, or delete vault notes
+1. **Read-only** — NEVER create, modify, or delete vault notes (unless `--persist` explicitly requested)
 2. **Search ALL folders** — not just knowledge/. Ideas, wip, and Clippings often have relevant content
 3. **Cite everything** — every claim must trace back to a specific note path
-4. **Graceful degradation** — if semantic search fails, keyword search alone is sufficient
-5. **Respect signal_vs_noise** — prefer notes marked `signal` over `noise`
-6. **Respect leverage** — prefer `high` leverage notes when multiple matches exist
-7. **My Notes first** — JM's annotations are more valuable than AI-generated summaries
+4. **Graceful degradation** — if semantic search fails (ollama down), keyword search alone is sufficient
+5. **Discover before assuming** — run Phase 0 on every activation. The CLI evolves.
+6. **My Notes first** — JM's annotations are more valuable than AI-generated summaries
+7. **Use native tools** — delegate synthesis to `diderot advise` rather than reimplementing
