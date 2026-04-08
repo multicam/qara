@@ -7,7 +7,7 @@
  */
 
 import { join } from 'path';
-import { readFileSync, existsSync, writeFileSync } from 'fs';
+import { readFileSync, existsSync, appendFileSync } from 'fs';
 import { STATE_DIR, getSessionsDir, ensureDir, getSessionId } from './lib/pai-paths';
 import { appendJsonl } from './lib/jsonl-utils';
 import { getISOTimestamp } from './lib/datetime-utils';
@@ -43,19 +43,16 @@ async function main(): Promise<void> {
     });
 
     // Maintain session read ledger for read-before-edit enforcement (#42796)
+    // Append-only format (one path per line) avoids read-modify-write races
+    // when concurrent Read tool calls fire in parallel.
     if (tool_name === 'Read' && !was_error) {
       const filePath = (tool_input || {}).file_path as string;
       if (filePath) {
         try {
           const sessionDir = join(getSessionsDir(), getSessionId());
           ensureDir(sessionDir);
-          const ledgerPath = join(sessionDir, 'files-read.json');
-          const existing: string[] = existsSync(ledgerPath)
-            ? JSON.parse(readFileSync(ledgerPath, 'utf-8'))
-            : [];
-          const asSet = new Set(existing);
-          asSet.add(filePath);
-          writeFileSync(ledgerPath, JSON.stringify([...asSet]));
+          const ledgerPath = join(sessionDir, 'files-read.txt');
+          appendFileSync(ledgerPath, filePath + '\n');
         } catch { /* non-critical — don't block on ledger failure */ }
       }
     }

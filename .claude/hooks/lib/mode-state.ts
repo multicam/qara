@@ -201,7 +201,9 @@ export function deactivateWithReason(reason: string): void {
 /**
  * Try to extend maxIterations (Ralph-style hardening).
  * Returns whether the extension was granted and the new max.
- * Uses per-mode defaults if extensionsUsed/maxExtensions not yet set (backward compat).
+ * Uses readRaw() intentionally — the caller (stop hook) has already validated
+ * via readModeState(), and we need raw access to update extension fields.
+ * Extension count is capped by maxExtensions (per-mode defaults).
  */
 export function extendIterations(reason: string): { extended: boolean; newMax: number } {
   const state = readRaw();

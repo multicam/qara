@@ -94,7 +94,7 @@ function suggestMode(prompt: string): string | null {
 
 // ─── Main ───────────────────────────────────────────────────────────────────
 
-async function main() {
+function main() {
   try {
     const input = readFileSync(0, "utf-8");
     if (!input.trim()) process.exit(0);
@@ -146,13 +146,21 @@ async function main() {
 
         // Handle activation
         if (route.activatesMode && skillPath) {
-          const taskContext = prompt.substring(prompt.toLowerCase().indexOf(routeName) + routeName.length).replace(/^[\s:]+/, "").trim() || prompt.trim();
+          // Extract task context from original prompt using word-boundary regex
+          // (not indexOf, which could match inside a URL/path that sanitization removed)
+          const origRegex = new RegExp(`\\b${routeName}\\b`, "i");
+          const origMatch = origRegex.exec(prompt);
+          const afterKeyword = origMatch
+            ? prompt.substring(origMatch.index + origMatch[0].length)
+            : prompt;
+          const taskContext = afterKeyword.replace(/^[\s:]+/, "").trim() || prompt.trim();
 
           writeModeState({
             mode: routeName as ModeName,
             taskContext,
             acceptanceCriteria: "task complete",
             skillPath,
+            prdPath: join(process.cwd(), "prd.json"),
             maxIterations: route.modeDefaults?.maxIterations ?? 50,
             maxTokensBudget: route.modeDefaults?.maxTokensBudget ?? 0,
           });

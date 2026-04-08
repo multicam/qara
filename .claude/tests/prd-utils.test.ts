@@ -108,7 +108,7 @@ describe("PRD Utilities", () => {
     });
 
     it("should return null for JSON with empty stories array", () => {
-      writeFileSync(PRD_FILE, JSON.stringify({ name: "Test", stories: [] }));
+      writeFileSync(PRD_FILE, JSON.stringify({ name: "Test", created_at: "2026-04-09T00:00:00Z", stories: [] }));
       // Empty stories is valid — it's a PRD with no work yet
       const prd = readPRD(TEST_PROJECT_DIR);
       expect(prd).not.toBeNull();
@@ -131,6 +131,21 @@ describe("PRD Utilities", () => {
 
     it("should reject PRD without stories array", () => {
       writeFileSync(PRD_FILE, JSON.stringify({ name: "Test" }));
+      expect(readPRD(TEST_PROJECT_DIR)).toBeNull();
+    });
+
+    it("should reject PRD without created_at", () => {
+      writeFileSync(PRD_FILE, JSON.stringify({ name: "Test", stories: [] }));
+      expect(readPRD(TEST_PROJECT_DIR)).toBeNull();
+    });
+
+    it("should reject story missing id", () => {
+      writeFileSync(PRD_FILE, JSON.stringify({ name: "Test", created_at: "2026-04-09", stories: [{ passes: false }] }));
+      expect(readPRD(TEST_PROJECT_DIR)).toBeNull();
+    });
+
+    it("should reject story missing passes", () => {
+      writeFileSync(PRD_FILE, JSON.stringify({ name: "Test", created_at: "2026-04-09", stories: [{ id: "1" }] }));
       expect(readPRD(TEST_PROJECT_DIR)).toBeNull();
     });
   });
@@ -189,8 +204,8 @@ describe("PRD Utilities", () => {
   describe("markStoryPassing", () => {
     it("should set passes=true and verified fields", () => {
       const prd = samplePRD();
-      const updated = markStoryPassing(prd, "1", "verifier");
-      const story = updated.stories.find((s) => s.id === "1")!;
+      markStoryPassing(prd, "1", "verifier");
+      const story = prd.stories.find((s) => s.id === "1")!;
       expect(story.passes).toBe(true);
       expect(story.verified_by).toBe("verifier");
       expect(story.verified_at).toBeDefined();
@@ -199,8 +214,8 @@ describe("PRD Utilities", () => {
 
     it("should not modify other stories", () => {
       const prd = samplePRD();
-      const updated = markStoryPassing(prd, "1", "verifier");
-      expect(updated.stories.find((s) => s.id === "2")!.passes).toBe(false);
+      markStoryPassing(prd, "1", "verifier");
+      expect(prd.stories.find((s) => s.id === "2")!.passes).toBe(false);
     });
 
     it("should throw for unknown story id", () => {
@@ -211,8 +226,8 @@ describe("PRD Utilities", () => {
   describe("markStoryFailing", () => {
     it("should set passes=false and clear verified fields", () => {
       const prd = samplePRD();
-      const updated = markStoryFailing(prd, "3");
-      const story = updated.stories.find((s) => s.id === "3")!;
+      markStoryFailing(prd, "3");
+      const story = prd.stories.find((s) => s.id === "3")!;
       expect(story.passes).toBe(false);
       expect(story.verified_at).toBeNull();
       expect(story.verified_by).toBeNull();

@@ -12,7 +12,7 @@
  * context survives context compression.
  */
 
-import { existsSync, readFileSync, writeFileSync, mkdirSync, renameSync } from "fs";
+import { existsSync, readFileSync, writeFileSync, appendFileSync, mkdirSync, renameSync } from "fs";
 import { join } from "path";
 import { getSessionsDir, getSessionId as _getSessionId } from "./pai-paths";
 const MEMORY_FILES = ["learnings.md", "decisions.md", "issues.md", "problems.md"] as const;
@@ -69,13 +69,11 @@ function appendToFile(category: MemoryCategory, content: string, sessionId?: str
   const timestamp = getTimestamp();
   const entry = `\n- [${timestamp}] ${content.trim()}\n`;
 
-  if (existsSync(file)) {
-    const existing = readFileSync(file, "utf-8");
-    writeFileSync(file, existing + entry);
-  } else {
+  if (!existsSync(file)) {
     const header = `# ${category.charAt(0).toUpperCase() + category.slice(1)}s\n`;
-    writeFileSync(file, header + entry);
+    writeFileSync(file, header);
   }
+  appendFileSync(file, entry);
 }
 
 export function appendLearning(content: string, sessionId?: string): void {

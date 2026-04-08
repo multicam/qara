@@ -1,0 +1,65 @@
+{
+  "title": "TDD Consolidated Plan: Activation + Process Improvements",
+  "description": "Embed TDD enforcement in /implement_plan, simplify tdd-qa skill, add mutation-guided test generation, add structured checkpoints + async Gemma review",
+  "source": "thoughts/shared/plans/tdd--implement-plan-activation-v1.md",
+  "stories": [
+    {
+      "id": "phase-1-embed-tdd",
+      "title": "Embed TDD in implement_plan",
+      "description": "Add TDD enforcement section to implement_plan.md so that phases touching .ts/.tsx source files auto-activate TDD enforcement",
+      "acceptance_criteria": [
+        "implement_plan.md has a 'TDD Enforcement' section after 'Implementation Philosophy'",
+        "Section instructs to activate TDD enforcement via tdd-state.ts for phases with .ts/.tsx changes",
+        "Section instructs to derive scenarios from phase success criteria",
+        "Section instructs to clear enforcement after scenarios complete",
+        "Section lists skip conditions: docs-only, config, workflow/markdown, no behavioral criteria",
+        "bun run test passes"
+      ],
+      "passes": true,
+      "scenario_file": null
+    },
+    {
+      "id": "phase-2-simplify-skill",
+      "title": "Simplify tdd-qa skill",
+      "description": "Remove dead Trace-Informed RED step 0.5 from tdd-cycle.md, demote Bombadil in SKILL.md routing",
+      "acceptance_criteria": [
+        "tdd-cycle.md has no step 0.5 (Trace-Informed RED)",
+        "SKILL.md does not route to bombadil by default in Workflow Routing section",
+        "SKILL.md notes Bombadil as experimental, invoke explicitly",
+        "explore-bombadil.md still exists (not deleted)",
+        "bun run test passes"
+      ],
+      "passes": true,
+      "scenario_file": null
+    },
+    {
+      "id": "phase-3-mutation-bonus",
+      "title": "Mutation-guided test generation (Bonus Round)",
+      "description": "Add step 8.5 to tdd-cycle.md for mutation bonus round after all planned scenarios, update mutation-check.md with integration reference",
+      "acceptance_criteria": [
+        "tdd-cycle.md has step 8.5 (Mutation Bonus Round) between step 8 and step 9",
+        "Step 8.5 runs after all planned scenarios complete, not after each",
+        "Max 5 surviving mutants processed (bounded)",
+        "mutation-check.md references the tdd-cycle integration",
+        "bun run test passes"
+      ],
+      "passes": true,
+      "scenario_file": null
+    },
+    {
+      "id": "phase-4-checkpoints-review",
+      "title": "Structured checkpoints + async Gemma review",
+      "description": "Add scenario boundary checkpoints (step 9.5) and post-loop async Gemma 4 review to tdd-cycle.md",
+      "acceptance_criteria": [
+        "tdd-cycle.md has step 9.5 (Checkpoint) after step 9",
+        "Checkpoint uses existing working-memory.ts",
+        "tdd-cycle.md has post-loop Uncorrelated Review section after Deactivate TDD Enforcement",
+        "Gemma review uses existing ollama-client.ts",
+        "Both steps gracefully skip when prerequisites unavailable",
+        "bun run test passes"
+      ],
+      "passes": true,
+      "scenario_file": null
+    }
+  ]
+}

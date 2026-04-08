@@ -84,26 +84,21 @@ function main(): void {
 
     // Read-before-edit enforcement (anthropics/claude-code#42796)
     // Checks if the target file was Read in this session before being edited.
-    // Decision: "ask" (not block) — forces conscious override, not hard denial.
+    // Decision: "allow" + additionalContext (advisory) — respects "accept edits" permission mode.
     const filePath = hookData.tool_input.file_path as string | undefined;
     if (filePath && existsSync(filePath) && !isReadExempt(filePath)) {
       try {
-        const ledgerPath = join(getSessionsDir(), getSessionId(), 'files-read.json');
+        const ledgerPath = join(getSessionsDir(), getSessionId(), 'files-read.txt');
         let wasRead = true; // fail open
         if (existsSync(ledgerPath)) {
-          const files = new Set<string>(JSON.parse(readFileSync(ledgerPath, 'utf-8')));
+          const lines = readFileSync(ledgerPath, 'utf-8').split('\n');
+          const files = new Set(lines.filter(Boolean));
           wasRead = files.has(filePath);
         } else {
           wasRead = false; // no ledger = nothing has been read yet
         }
         if (!wasRead) {
-          console.log(JSON.stringify({
-            hookSpecificOutput: {
-              hookEventName: "PreToolUse",
-              permissionDecision: "ask",
-              userMessage: `This file has not been Read in this session. Read it first to understand context before editing.\nFile: ${filePath}`,
-            },
-          }));
+          warn(`Read-before-edit: ${filePath} has not been Read in this session. Read it first to understand context before editing.`);
           return;
         }
       } catch {

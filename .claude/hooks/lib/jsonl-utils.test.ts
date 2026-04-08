@@ -73,15 +73,22 @@ describe('truncate', () => {
     expect(truncate('hello')).toBe('hello');
   });
 
-  it('should truncate long strings', () => {
+  it('should truncate long strings within maxLen budget', () => {
     const long = 'a'.repeat(600);
     const result = truncate(long, 500);
-    expect(result.length).toBeLessThan(600);
+    expect(result.length).toBeLessThanOrEqual(500);
     expect(result).toContain('...[truncated]');
   });
 
-  it('should respect custom maxLen', () => {
+  it('should respect custom maxLen (hard truncate when too small for suffix)', () => {
     const result = truncate('hello world', 5);
-    expect(result).toBe('hello...[truncated]');
+    expect(result).toBe('hello');
+    expect(result.length).toBeLessThanOrEqual(5);
+  });
+
+  it('should include suffix when maxLen has room', () => {
+    const result = truncate('a'.repeat(100), 30);
+    expect(result.length).toBeLessThanOrEqual(30);
+    expect(result).toContain('...[truncated]');
   });
 });

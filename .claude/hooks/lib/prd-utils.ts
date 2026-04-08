@@ -36,7 +36,15 @@ function isValidPRD(data: unknown): data is PRD {
   if (!data || typeof data !== "object") return false;
   const d = data as Record<string, unknown>;
   if (typeof d.name !== "string") return false;
+  if (typeof d.created_at !== "string") return false;
   if (!Array.isArray(d.stories)) return false;
+  // Validate each story has required fields
+  for (const story of d.stories) {
+    if (!story || typeof story !== "object") return false;
+    const s = story as Record<string, unknown>;
+    if (typeof s.id !== "string") return false;
+    if (typeof s.passes !== "boolean") return false;
+  }
   return true;
 }
 
@@ -92,26 +100,24 @@ export function getRegressionCandidates(prd: PRD): Story[] {
 
 /**
  * Mark a story as passing. Sets verified_at and verified_by.
- * Returns updated PRD (does not write to disk — caller decides).
+ * Mutates the PRD in place (does not write to disk — caller decides).
  */
-export function markStoryPassing(prd: PRD, storyId: string, verifiedBy: string): PRD {
+export function markStoryPassing(prd: PRD, storyId: string, verifiedBy: string): void {
   const story = prd.stories.find((s) => s.id === storyId);
   if (!story) throw new Error(`Story not found: ${storyId}`);
   story.passes = true;
   story.verified_at = new Date().toISOString();
   story.verified_by = verifiedBy as Story["verified_by"];
-  return prd;
 }
 
 /**
  * Mark a story as failing (for regression). Clears verified fields.
- * Returns updated PRD (does not write to disk — caller decides).
+ * Mutates the PRD in place (does not write to disk — caller decides).
  */
-export function markStoryFailing(prd: PRD, storyId: string): PRD {
+export function markStoryFailing(prd: PRD, storyId: string): void {
   const story = prd.stories.find((s) => s.id === storyId);
   if (!story) throw new Error(`Story not found: ${storyId}`);
   story.passes = false;
   story.verified_at = null;
   story.verified_by = null;
-  return prd;
 }

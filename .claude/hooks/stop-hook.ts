@@ -42,8 +42,10 @@ function emitContinuation(modeState: ModeState): void {
     if (mem) memorySection = `\n\n${mem}`;
   } catch { /* non-critical */ }
 
+  const prdNote = modeState.prdPath ? `\nPRD: ${modeState.prdPath}` : '';
+
   const continuation = JSON.stringify({
-    result: `<system-reminder>MODE CONTINUATION — ${modeState.mode} iteration ${modeState.iteration + 1}/${modeState.maxIterations}${extensionNote}\n\nTask: ${modeState.taskContext}\nCriteria: ${modeState.acceptanceCriteria}${antislopNote}${memorySection}\n\n${skillContent}\n\nCONTINUE WORKING.</system-reminder>`,
+    result: `<system-reminder>MODE CONTINUATION — ${modeState.mode} iteration ${modeState.iteration + 1}/${modeState.maxIterations}${extensionNote}\n\nTask: ${modeState.taskContext}\nCriteria: ${modeState.acceptanceCriteria}${prdNote}${antislopNote}${memorySection}\n\n${skillContent}\n\nCONTINUE WORKING.</system-reminder>`,
   });
   process.stdout.write(continuation);
 
@@ -108,10 +110,10 @@ async function main() {
           });
         } else if (modeState.iteration >= modeState.maxIterations) {
           // Ralph-style hardening: try to extend before deactivating.
-          // Gate on deactivationReason: 'stuck'/'regression-loop' = don't extend.
-          const reason = modeState.deactivationReason;
-          const shouldExtend = reason !== 'stuck' && reason !== 'regression-loop';
-          const { extended, newMax } = shouldExtend ? extendIterations('max-iterations-reached') : { extended: false, newMax: 0 };
+          // Note: deactivationReason is always null here (readModeState filters
+          // deactivated states), so extension gating relies solely on maxExtensions
+          // cap inside extendIterations().
+          const { extended, newMax } = extendIterations('max-iterations-reached');
 
           if (!extended) {
             deactivateWithReason('max-iterations');

@@ -5,13 +5,11 @@
  * produce structured trace metadata for the introspection pipeline.
  */
 
+import { truncate } from './jsonl-utils';
+
 // ---------------------------------------------------------------------------
 // Input summary extraction (per-tool, deterministic, privacy-safe)
 // ---------------------------------------------------------------------------
-
-function truncate(s: string, maxLen: number): string {
-    return s.length <= maxLen ? s : s.slice(0, maxLen);
-}
 
 function extractInputSummary(toolName: string, toolInput: Record<string, unknown>): string {
     switch (toolName) {

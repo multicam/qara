@@ -3,19 +3,19 @@
     "patterns": ["\\bdrive mode\\b", "\\bdrive:\\s", "\\bdrive this\\b"],
     "skill": "drive",
     "activatesMode": true,
-    "modeDefaults": { "maxIterations": 50, "maxTokensBudget": 0, "maxExtensions": 2, "extensionSize": 10 }
+    "modeDefaults": { "maxIterations": 50, "maxTokensBudget": 0 }
   },
   "cruise": {
     "patterns": ["\\bcruise mode\\b", "\\bcruise:\\s", "\\bcruise this\\b"],
     "skill": "cruise",
     "activatesMode": true,
-    "modeDefaults": { "maxIterations": 20, "maxTokensBudget": 0, "maxExtensions": 1, "extensionSize": 5 }
+    "modeDefaults": { "maxIterations": 20, "maxTokensBudget": 0 }
   },
   "turbo": {
     "patterns": ["\\bturbo mode\\b", "\\bturbo:\\s", "\\bturbo this\\b"],
     "skill": "turbo",
     "activatesMode": true,
-    "modeDefaults": { "maxIterations": 30, "maxTokensBudget": 0, "maxExtensions": 1, "extensionSize": 5 }
+    "modeDefaults": { "maxIterations": 30, "maxTokensBudget": 0 }
   },
   "stop-mode": {
     "patterns": ["\\bstop mode\\b", "\\bexit mode\\b", "\\bmode off\\b", "\\bcancel mode\\b"],

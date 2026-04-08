@@ -21,13 +21,18 @@ export function appendJsonl(filepath: string, entry: object): void {
     appendFileSync(filepath, JSON.stringify(entry) + '\n');
 }
 
+const TRUNCATION_SUFFIX = '...[truncated]';
+
 /**
- * Truncate a string to a maximum length with ellipsis indicator
+ * Truncate a string to a maximum length with ellipsis indicator.
+ * Total output (including suffix) never exceeds maxLen.
  * @param str String to truncate
- * @param maxLen Maximum length (default 500)
- * @returns Truncated string with "[truncated]" suffix if needed
+ * @param maxLen Maximum total length (default 500)
+ * @returns Truncated string with suffix if room, hard-truncated otherwise
  */
 export function truncate(str: string | undefined, maxLen: number = 500): string {
     if (!str) return '';
-    return str.length > maxLen ? str.substring(0, maxLen) + '...[truncated]' : str;
+    if (str.length <= maxLen) return str;
+    if (maxLen <= TRUNCATION_SUFFIX.length) return str.substring(0, maxLen);
+    return str.substring(0, maxLen - TRUNCATION_SUFFIX.length) + TRUNCATION_SUFFIX;
 }

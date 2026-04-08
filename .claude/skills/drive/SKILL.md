@@ -11,13 +11,10 @@ Persistent execution. Iterates `prd.json` stories until all pass. Stop hook inje
 
 ## Bootstrap
 
-1. Read `prd.json` at project root via `prd-utils.ts`.
-2. IF missing: scaffold from task description. Create `prd.json` with stories derived from the prompt. Each story MUST have `id`, `title`, `description`, `acceptance_criteria[]`, `passes: false`, `scenario_file: null`.
+1. The PRD path is injected by the mode system (check the continuation message for `PRD: /path/to/prd.json`). If not present, use `prd.json` in the current working directory.
+2. Read the PRD file. IF missing: scaffold from task description. **Write `prd.json` to the project root** (the repo you're working in, NOT ~/.claude/). Each story MUST have `id`, `title`, `description`, `acceptance_criteria[]`, `passes: false`, `scenario_file: null`.
 3. IF malformed: fix and rewrite.
-4. **Detect test runner** (see `tdd-qa/references/detect-runner.md`):
-   - If `pyproject.toml` with pytest config exists: `$TEST_CMD = uv run pytest`, `$FILE_EXT = *.py`
-   - If `bunfig.toml` or `package.json` exists: `$TEST_CMD = bun test`, `$FILE_EXT = *.ts *.tsx`
-   - Set these for the entire session.
+4. **Detect test runner:** Follow `tdd-qa/references/detect-runner.md` (authoritative 4-step detection: pytest → Vitest → Bun → package.json fallback). Set `$TEST_CMD` and `$FILE_EXT` for the entire session.
 5. Pick first story where `passes == false`.
 
 ## Per-Story Loop
@@ -44,27 +41,15 @@ Check story's `scenario_file` field in prd.json, OR `specs/{story-id}.md`.
 
 ### 3. TDD Cycle
 
-```bash
-bun .claude/hooks/lib/tdd-state.ts activate --feature {story-id} --phase RED
-```
+Follow `tdd-qa/workflows/tdd-cycle.md` (authoritative RED→GREEN→REFACTOR blueprint).
+Use `{story-id}` as the feature name for TDD activation.
 
-For each scenario in the spec file:
-- **RED:** Write a failing test. Source edits blocked by hook.
-- **GREEN:** `bun .claude/hooks/lib/tdd-state.ts phase GREEN`. Write minimal code to pass.
-- **REFACTOR:** `bun .claude/hooks/lib/tdd-state.ts phase REFACTOR`. Clean up.
+For each scenario in the spec file, the workflow handles: activation, phase transitions,
+verification, mutation bonus round, and cleanup.
 
-**Running tests:**
-```bash
-$TEST_CMD                           # Full suite
-$TEST_CMD path/to/test_file         # Single file
-# Python: uv run pytest tests/test_foo.py
-# TypeScript: bun test path/to/file.test.ts
-```
-
-After all scenarios:
-```bash
-bun .claude/hooks/lib/tdd-state.ts clear
-```
+**Note:** TDD enforcement is cleared after the cycle completes. The subsequent verifier
+gate and quality pass (steps 4-5) operate without TDD enforcement — this is intentional,
+as existing tests from the TDD cycle provide the safety net for quality-pass refactoring.
 
 IF any test run crashes (non-zero exit, no output): read stderr. IF import error: fix import. IF syntax error: fix syntax. IF still crashing after 3 attempts: write to `problems.md` and ask JM.
 

@@ -53,6 +53,10 @@ function writeRawState(overrides: Partial<ModeState>): void {
     activeSubagents: 0,
     completedSubagents: [],
     deactivationReason: null,
+    extensionsUsed: 0,
+    maxExtensions: 2,
+    extensionSize: 10,
+    extensionHistory: [],
     ...overrides,
   };
   const stateFile = getStateFilePath();

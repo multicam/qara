@@ -128,7 +128,7 @@ async function main() {
       if (existsSync(sessionsDir)) {
         const now = Date.now();
         for (const dir of readdirSync(sessionsDir)) {
-          const ledger = join(sessionsDir, dir, 'files-read.json');
+          const ledger = join(sessionsDir, dir, 'files-read.txt');
           if (existsSync(ledger) && now - statSync(ledger).mtimeMs > 86400000) {
             unlinkSync(ledger);
           }

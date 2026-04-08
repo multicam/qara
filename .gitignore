@@ -16,9 +16,4 @@ thoughts/
 
 .venv
 
-# TDD baselines and mutation testing (machine-local)
-.test-baseline.xml
-.test-current.xml
-.coverage-baseline/
-.coverage-current/
-.stryker-tmp/
+# TDD baselines and mutation testing → global gitignore (~/.gitignore_global)

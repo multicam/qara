@@ -117,7 +117,7 @@ function extractFilePaths(hookData: HookInput): string[] {
 
 // ─── Main ───────────────────────────────────────────────────────────────────
 
-async function main(): Promise<void> {
+function main(): void {
   try {
     const input = readFileSync(0, "utf-8");
     const hookData: HookInput = JSON.parse(input);

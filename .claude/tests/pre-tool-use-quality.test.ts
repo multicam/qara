@@ -8,7 +8,7 @@ const TEST_SESSION_ID = `quality-test-${process.pid}`;
 const TEST_STATE_DIR = join(tmpdir(), `quality-hook-test-${process.pid}`);
 const TEST_SESSIONS_DIR = join(TEST_STATE_DIR, "sessions");
 const TEST_LEDGER_DIR = join(TEST_SESSIONS_DIR, TEST_SESSION_ID);
-const TEST_LEDGER_PATH = join(TEST_LEDGER_DIR, "files-read.json");
+const TEST_LEDGER_PATH = join(TEST_LEDGER_DIR, "files-read.txt");
 
 function runHook(input: object, opts?: { sessionId?: string }): { stdout: string; exitCode: number } {
   const proc = Bun.spawnSync({
@@ -32,7 +32,7 @@ function runHook(input: object, opts?: { sessionId?: string }): { stdout: string
 /** Write a mock ledger with the given file paths as "already read" */
 function seedLedger(paths: string[]): void {
   mkdirSync(TEST_LEDGER_DIR, { recursive: true });
-  writeFileSync(TEST_LEDGER_PATH, JSON.stringify(paths));
+  writeFileSync(TEST_LEDGER_PATH, paths.join('\n') + '\n');
 }
 
 describe("pre-tool-use-quality hook", () => {
@@ -175,15 +175,18 @@ describe("read-before-edit enforcement (#42796)", () => {
     tool_input: { file_path: filePath, old_string: "x", new_string: "y" },
   });
 
-  function expectDecision(result: { stdout: string; exitCode: number }, expected: "ask" | "not-ask") {
+  function expectDecision(result: { stdout: string; exitCode: number }, expected: "warn" | "no-warn") {
     expect(result.exitCode).toBe(0);
-    if (expected === "ask") {
+    if (expected === "warn") {
       const parsed = JSON.parse(result.stdout);
-      expect(parsed.hookSpecificOutput.permissionDecision).toBe("ask");
-      expect(parsed.hookSpecificOutput.userMessage).toContain("not been Read");
+      expect(parsed.hookSpecificOutput.permissionDecision).toBe("allow");
+      expect(parsed.hookSpecificOutput.additionalContext).toContain("Read-before-edit");
     } else if (result.stdout) {
       const parsed = JSON.parse(result.stdout);
-      expect(parsed.hookSpecificOutput.permissionDecision).not.toBe("ask");
+      // Should not have read-before-edit warning
+      if (parsed.hookSpecificOutput?.additionalContext) {
+        expect(parsed.hookSpecificOutput.additionalContext).not.toContain("Read-before-edit");
+      }
     }
   }
 
@@ -196,13 +199,13 @@ describe("read-before-edit enforcement (#42796)", () => {
     if (existsSync(TEST_STATE_DIR)) rmSync(TEST_STATE_DIR, { recursive: true });
   });
 
-  test("asks when editing an existing file that was NOT read", () => {
-    expectDecision(runHook(editInput(HOOK_PATH)), "ask");
+  test("warns when editing an existing file that was NOT read", () => {
+    expectDecision(runHook(editInput(HOOK_PATH)), "warn");
   });
 
   test("allows editing a file that WAS read (in ledger)", () => {
     seedLedger([HOOK_PATH]);
-    expectDecision(runHook(editInput(HOOK_PATH)), "not-ask");
+    expectDecision(runHook(editInput(HOOK_PATH)), "no-warn");
   });
 
   test("allows writing a NEW file (non-existent path)", () => {
@@ -210,11 +213,11 @@ describe("read-before-edit enforcement (#42796)", () => {
       tool_name: "Write",
       tool_input: { file_path: "/tmp/brand-new-file-that-does-not-exist.ts", content: "hello" },
     });
-    expectDecision(result, "not-ask");
+    expectDecision(result, "no-warn");
   });
 
   test("exempts test files from read-before-edit", () => {
-    expectDecision(runHook(editInput(join(__dirname, "pre-tool-use-quality.test.ts"))), "not-ask");
+    expectDecision(runHook(editInput(join(__dirname, "pre-tool-use-quality.test.ts"))), "no-warn");
   });
 
   test("fails open on corrupt ledger", () => {
