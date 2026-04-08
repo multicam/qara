@@ -49,7 +49,7 @@ Document your reasoning inline (the user should see it) — this prevents anchor
    Identify the critical path.
 
 4. **Information gaps** — What do I need to know that I don't yet? Which gaps can I
-   fill with tools (codebase-analyzer, thoughts-locator) vs. which require asking JM?
+   fill with tools (codebase-analyzer, thoughts-analyzer) vs. which require asking JM?
    Don't ask what you can look up.
 
 5. **Inhibition check** — Am I ready to act, or am I about to jump to a conclusion?
@@ -74,7 +74,7 @@ Only after completing this reasoning should you move to Step 1.
    Before asking the user any questions, use specialized agents to research in parallel:
 
    **ALWAYS spawn these agents first (historical context is critical):**
-   - Use the **thoughts-locator** agent to find existing research, plans, decisions, and historical context
+   - Use the **thoughts-analyzer** agent to find existing research, plans, decisions, and historical context
    - Use the **codebase-analyzer** agent to find all files related to the task and understand how the current implementation works
 
    **Historical context from thoughts/ often contains:**
@@ -149,7 +149,7 @@ After getting initial clarifications:
    - **codebase-analyzer** - To find specific files, understand implementation details, and find similar features we can model after
 
    **For historical context (CRITICAL - don't skip this):**
-   - **thoughts-locator** - FIRST: Find all related research, plans, decisions, and learnings
+   - **thoughts-analyzer** - FIRST: Find all related research, plans, decisions, and learnings
    - **thoughts-analyzer** - THEN: Extract detailed insights from the 2-3 most relevant documents found
 
    READ: .claude/skills/CORE/workflows/plan-common-patterns.md (for sub-task spawning best practices)

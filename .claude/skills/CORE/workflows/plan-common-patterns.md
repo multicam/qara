@@ -119,7 +119,7 @@ Research agents can fail or return thin results. How you respond matters:
 
 **On empty results:**
 - Reformulate the search — different keywords, broader directory scope
-- Try a different agent type (e.g., codebase-analyzer instead of thoughts-locator)
+- Try a different agent type (e.g., codebase-analyzer instead of thoughts-analyzer)
 - Don't conclude "nothing exists" from a single failed search
 
 **On ambiguous or contradictory results:**

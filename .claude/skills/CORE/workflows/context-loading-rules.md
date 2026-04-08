@@ -54,7 +54,7 @@ The patterns below are EXAMPLES to guide semantic understanding, NOT exact strin
 - "tell me about X", "what's new with Y"
 - "I need to understand Z"
 
-**Agent to use:** claude-researcher (primary), gemini-researcher (fallback), perplexity-researcher (fallback)
+**Agent to use:** claude-researcher (primary), gemini-researcher (fallback)
 
 ---
 

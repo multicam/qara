@@ -1,16 +1,18 @@
 # Qara Project Configuration
 
-## Planning
+## Planning (3 tiers — system suggests, you don't need to memorize)
 
-Plan mode is for quick scoping. For complex, multi-phase work use `/create_plan` — it has a structured reasoning protocol, parallel research agents, and pre-flight validation.
+| Complexity | Approach | When |
+|-----------|----------|------|
+| Simple | Direct execution | Single-file change, clear task |
+| Medium | Plan mode → `/implement_plan` | Multi-file, clear scope |
+| Complex | `/create_plan` → mode execution | Multi-phase, unclear scope, needs research |
 
-## After Plan Approval
-
-When a plan is approved via ExitPlanMode, follow the `/implement_plan` workflow on the plan file — phase tracking, TDD enforcement for source files, human verification pauses. Do NOT implement ad-hoc. Read `.claude/commands/implement_plan.md` and execute it against the plan file path.
+After plan approval: follow `/implement_plan` workflow — phase tracking, TDD enforcement, human verification pauses. Do NOT implement ad-hoc.
 
 ## Delegation
 
-When you identify 3+ independent subtasks (e.g., reading 3 unrelated files, running 3 parallel searches, or researching 3 different topics), prefer spawning Agent tools in parallel rather than running them sequentially. Data shows delegation at ~2% of tool calls regardless of workload — this should scale with session complexity.
+When you identify 3+ independent subtasks, spawn Agent tools in parallel. Delegation should scale with session complexity.
 
 ## Guides
 

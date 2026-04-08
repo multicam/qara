@@ -136,19 +136,16 @@ Use via `Task` tool with `subagent_type`. Parallelize when tasks are independent
 
 | Agent | Model | Typical trigger |
 |-------|-------|----------------|
-| `architect` | opus | PRD creation, system design, technical specs |
-| `planner` | opus | Break ambiguous problem into phased plan |
+| `architect` | opus | PRD creation, system design, technical specs, implementation planning |
 | `critic` | opus | Pre-implementation plan review, risk check |
 | `verifier` | opus | Post-implementation acceptance, quality gates |
 | `reviewer` | opus | Code review: correctness, security, perf, maintainability |
 | `designer` | opus | UX/UI, typography, visual polish (loads frontend-design skill) |
 | `engineer` | sonnet | Code implementation, debugging, optimization, testing |
 | `codebase-analyzer` | sonnet | Trace data flow, explain components with file:line refs |
-| `thoughts-analyzer` | sonnet | Mine thoughts/ docs for insights and decisions |
+| `thoughts-analyzer` | sonnet | Find + analyze thoughts/ docs for insights and decisions |
 | `claude-researcher` | haiku | Primary web research (always try first) |
 | `gemini-researcher` | haiku | Fallback when WebSearch fails or returns stale results |
-| `perplexity-researcher` | haiku | Fallback with strong citation support (needs API key) |
-| `thoughts-locator` | haiku | Find relevant docs in thoughts/ directory |
 
 ---
 

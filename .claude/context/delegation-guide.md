@@ -8,17 +8,14 @@ When to delegate to agents and how to use them effectively.
 |------|-------|-------|-----------|
 | How does code X work? | `codebase-analyzer` | sonnet | Traces data flow, gives file:line refs |
 | Design review / UI polish | `designer` | opus | Loads frontend-design skill |
-| PRD / system design | `architect` | opus | Loads research skill |
-| Break down task into phases | `planner` | opus | Dependency graphs, vertical slices |
+| PRD / system design / planning | `architect` | opus | Loads research skill, reasoning protocol, dependency graphs |
 | Implement from spec | `engineer` | sonnet | Code, tests, debugging |
 | Review code quality | `reviewer` | opus | Security, perf, correctness |
 | Review plan before impl | `critic` | opus | Scenario coverage, scope, risks |
 | Verify impl meets criteria | `verifier` | opus | Fresh evidence, quality gates |
-| Mine thoughts/ docs | `thoughts-analyzer` | sonnet | Extracts decisions & insights |
-| Find relevant thought | `thoughts-locator` | haiku | Fast doc discovery |
+| Find + analyze thoughts/ docs | `thoughts-analyzer` | sonnet | Discovery + insight extraction |
 | Web research (primary) | `claude-researcher` | haiku | First-line web research via WebSearch |
 | Web research fallback | `gemini-researcher` | haiku | When WebSearch fails |
-| Web research fallback | `perplexity-researcher` | haiku | When WebSearch fails — strong citations |
 
 ## Model Tier Strategy
 
@@ -37,14 +34,13 @@ When to delegate to agents and how to use them effectively.
 Launch independent agents in a **single message** with multiple `Task` tool calls.
 
 **Good parallel combos:**
-- `codebase-analyzer` + `thoughts-locator` — understand code while finding related docs
+- `codebase-analyzer` + `thoughts-analyzer` — understand code while finding related docs
 - Multiple `engineer` agents on independent files (use `isolation: "worktree"`)
 - `architect` for design + `gemini-researcher` for prior art
 
 **Must be sequential:**
 - `architect` → then `engineer` (need the spec first)
 - `engineer` → then `reviewer` (need the code first)
-- `thoughts-locator` → then `thoughts-analyzer` (need to know which doc)
 
 ## Review Agent Disambiguation
 
@@ -62,7 +58,7 @@ Launch independent agents in a **single message** with multiple `Task` tool call
 4. **Complex implementation** → `architect` first, then `engineer`(s)
 5. **Pre-impl review** → `critic` before starting work
 6. **Quality gate** → `verifier` after implementation (acceptance + test gates), then `reviewer` for code quality
-7. **Research needed** → `claude-researcher` first, then `gemini-researcher` or `perplexity-researcher` as fallback
+7. **Research needed** → `claude-researcher` first, then `gemini-researcher` as fallback
 
 ## Task Packaging
 

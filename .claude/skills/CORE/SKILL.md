@@ -174,17 +174,14 @@ Use via `Task` tool with `subagent_type`:
 |-------|-------|----------|
 | `codebase-analyzer` | sonnet | Deep-diving into how code works, tracing data flow, finding reusable patterns |
 | `designer` | opus | Design review, UX/UI, typography, visual polish (loads frontend-design skill) |
-| `planner` | opus | Breaking ambiguous problems into dependency graphs, phased vertical-slice plans |
-| `architect` | opus | PRD creation, system design, technical specifications (loads research skill) |
+| `architect` | opus | PRD creation, system design, technical specs, implementation planning (loads research skill) |
 | `engineer` | sonnet | Code implementation, debugging, optimization, testing from PRDs |
 | `reviewer` | opus | Code review for correctness, security, performance, maintainability |
 | `critic` | opus | Pre-implementation plan review: scenario coverage, scope, risks, criteria alignment |
 | `verifier` | opus | Post-implementation verification: fresh evidence per criterion + quality gates (regression, coverage, types) |
-| `thoughts-analyzer` | sonnet | Extracting decisions and insights from thoughts/ documents |
-| `thoughts-locator` | haiku | Finding relevant docs in thoughts/ directory |
+| `thoughts-analyzer` | sonnet | Finding + analyzing documents in thoughts/ directory |
+| `claude-researcher` | haiku | Primary web researcher — use before gemini fallback |
 | `gemini-researcher` | haiku | Fallback when WebSearch fails — uses Gemini CLI for independent web access |
-| `claude-researcher` | haiku | Primary web researcher — use before gemini/perplexity fallbacks |
-| `perplexity-researcher` | haiku | Fallback web researcher via Perplexity API — strong citation support |
 
 Parallelize when possible — launch multiple agents in a single message.
 

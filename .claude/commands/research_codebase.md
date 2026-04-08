@@ -54,8 +54,7 @@ Then wait for the user's research query.
    **IMPORTANT**: All agents are documentarians, not critics. They will describe what exists without suggesting improvements or identifying issues.
 
    **For thoughts directory (ALWAYS include - historical context enriches research):**
-   - Use the **thoughts-locator** agent FIRST to discover what documents exist about the topic
-   - Use the **thoughts-analyzer** agent to extract key insights from the 2-3 most relevant documents found
+   - Use the **thoughts-analyzer** agent to discover what documents exist about the topic and extract key insights from the most relevant ones
 
    **Why thoughts/ matters for codebase research:**
    - Explains WHY code is structured a certain way (decisions often documented)

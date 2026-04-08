@@ -113,7 +113,7 @@ Examples: "extract knowledge from X", "get insights from this"
 
 - `claude-researcher` - Primary researcher using Claude's native WebSearch/WebFetch (use first)
 - `gemini-researcher` - Fallback using Gemini CLI when WebSearch fails (requires GOOGLE_API_KEY)
-- `perplexity-researcher` - Fallback using Perplexity API with strong citation support
+- ~~`perplexity-researcher`~~ Removed (no API key; gemini covers fallback)
 
 ### Speed Benefits
 
