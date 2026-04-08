@@ -3,7 +3,7 @@
 Comprehensive documentation of all externally-installed skills in the PAI ecosystem.
 Maintained as part of `cc-upgrade-pai`. Updated during each external skills deep analysis.
 
-Last reviewed: 2026-04-03
+Last reviewed: 2026-04-09
 
 ---
 
@@ -121,10 +121,10 @@ skills but track upstream for improvements.
 | `grill-me` | `grill-me/SKILL.md` | Expanded methodology, probe patterns, PAI structure |
 | `design-it-twice` | `design-an-interface/SKILL.md` | Broadened to architecture + data models, uses `architect` agents |
 | `edit-article` | `edit-article/SKILL.md` | Added Phase 3 humaniser pass, expanded to docs/specs |
-| `refactor-plan` | `request-refactor-plan/SKILL.md` | PAI conventions, codebase-analyzer integration, JM-addressed |
+| ~~`refactor-plan`~~ | `request-refactor-plan/SKILL.md` | **RETIRED** — subsumed by cruise mode. Skill removed. |
 | `triage-issue` | `triage-issue/SKILL.md` + `qa/SKILL.md` | PAI conventions, codebase-analyzer integration, TDD fix plans, batch mode with blocking relationships (from qa) |
 | `ubiquitous-language` | `ubiquitous-language/SKILL.md` | PAI conventions, DDD glossary extraction |
-| `prd-to-plan` | `prd-to-plan/SKILL.md` | PAI conventions, vertical slice tracer bullets |
+| ~~`prd-to-plan`~~ | `prd-to-plan/SKILL.md` | **RETIRED** — subsumed by drive mode + product-shaping Phase 4. Skill removed. |
 | `CORE/testing-guide.md` | `tdd/SKILL.md` + `tdd/tests.md` | Merged TDD into existing testing guide |
 | `CORE/references/deep-modules.md` | `tdd/deep-modules.md` | Extracted as shared cross-cutting reference |
 | `CORE/references/mocking-guidelines.md` | `tdd/mocking.md` + `improve-codebase-architecture/REFERENCE.md` | Combined mocking rules + dependency classification |
@@ -206,3 +206,4 @@ All upstream skills evaluated. Redundant entries (write-a-prd, prd-to-issues, gi
 | 2026-04-03 | Routine deep analysis. **mattpocock:** No new commits since `651eab0` (2026-04-01). 21 entries (19 skills + LICENSE + README). All PAI adaptations current. **visual-explainer:** v0.6.3 confirmed current (last commit `9a97a58` 2026-03-29, lock hash `339a338e9e2`). Stars: 7,127 (+27). 22 sub-skills installed, all symlinks intact. **Context graph:** 189 nodes, 195 edges, 0 broken local refs, 1 cosmetic upstream ref persists (line 334 `slide-patterns.md` without `references/` prefix). 15 unreferenced files (visual-explainer commands + cc-upgrade refs — by design). 27 local + 22 symlinked = 49 skills. 11 agents. **Tests:** 1,218 pass (45 files, -7 from prior count — likely test consolidation). **anthropics/skills:** `claude-api` auto-synced 2026-03-25, no new activity. **awesome-agent-skills:** 2 commits since last audit (`91aa397` link updates 2026-04-02, `23f7569` ru-text skill 2026-04-01) — no PAI-relevant additions. | cc-upgrade-pai deep analysis |
 | 2026-04-03 | Cherry-picked 2 patterns from mattpocock `github-triage` into PAI `triage-issue`: (1) Agent brief template added as Phase 4.5 — durable behavioral specs for agent-ready issues. (2) `.out-of-scope/` KB pattern integrated into Phase 3.5 (wontfix check) and Phase 5 (record creation). Registry status updated from "Not adopted" to "Cherry-picked". MEMORY.md test count corrected 1225→1218. | Post-audit implementation |
 | 2026-04-06 | Unified plan (qara-evolution-unified.md) all 5 phases implemented. 13 agents (+2: critic, verifier). 12 hook scripts (+5: keyword-router, post-tool-failure, subagent-start, subagent-stop, pre-compact). 10 CC hook events used (+4: PostToolUseFailure, SubagentStart, SubagentStop, PreCompact). 3 mode skills (drive, cruise, turbo). 11 new hook libs (mode-state, keyword-routes.json, working-memory, compact-checkpoint, prd-utils). 52 skills (+3 mode skills). 1368 tests pass (55 files, +150 tests, +10 files). | Post-implementation audit |
+| 2026-04-09 | Routine deep analysis. **mattpocock:** No new commits since `651eab0` (2026-04-01). 21 entries (19 skills + LICENSE + README). All PAI adaptations current. Registry updated: `refactor-plan` and `prd-to-plan` now marked RETIRED (were missing strikethrough). **visual-explainer:** v0.6.3 confirmed current (last commit `9a97a58` 2026-03-29, lock hash `339a338e9e2`). Stars: 7,376 (+249). Forks: 501. 22 sub-skills installed, all symlinks intact. **OMC:** v4.11.2 (2026-04-08), active development — installer dedup fix, setup regression tests, worktree project identifier fix, HUD plugin root env var. No new patterns relevant to PAI. **Context graph:** 0 broken local refs, 0 circular deps. 1 cosmetic upstream ref persists (`slide-patterns.md` without `references/` prefix). **Infrastructure:** 14 hook scripts, 14 hook libs + context-graph/, 10 CC hook events, 15 agents, 28 local + 22 symlinked = 50 skills. MEMORY.md skill count corrected 51→50 (28 local + 22 symlinked). **Tests:** 1,461 pass (61 files, +93 tests, +6 files since 2026-04-06). **awesome-agent-skills:** 3 new PRs since last audit (Qdrant, Resend, Courier skills) — no PAI-relevant additions. No action items. | cc-upgrade-pai deep analysis |

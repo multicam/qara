@@ -84,7 +84,7 @@ PAI requires explicit delegation guidance:
 
 ### 4. Hook Library Analysis
 
-PAI hooks (12 scripts, 10 CC events, 11 libs):
+PAI hooks (14 scripts, 10 CC events, 14 libs + context-graph/):
 
 ```
 .claude/hooks/
@@ -100,6 +100,9 @@ PAI hooks (12 scripts, 10 CC events, 11 libs):
 │   ├── working-memory.ts     # Session-scoped 4-file memory
 │   ├── compact-checkpoint.ts # State snapshot before compression
 │   ├── prd-utils.ts          # PRD read/write, story tracking
+│   ├── test-macros.ts        # Reusable test patterns
+│   ├── ollama-client.ts      # Local Gemma 4 via Ollama
+│   ├── file-patterns.ts      # File classification patterns
 │   └── context-graph/        # Static context analyzer
 ├── session-start.ts          # SessionStart: CORE, hints, crash recovery
 ├── update-tab-titles.ts      # UserPromptSubmit: processing indicator
@@ -107,6 +110,7 @@ PAI hooks (12 scripts, 10 CC events, 11 libs):
 ├── rtk-rewrite.sh            # PreToolUse:Bash: RTK token reduction
 ├── pre-tool-use-security.ts  # PreToolUse:Bash: dangerous pattern detection
 ├── pre-tool-use-tdd.ts       # PreToolUse:Write,Edit: TDD enforcement
+├── pre-tool-use-quality.ts   # PreToolUse:Write,Edit,MultiEdit: read-before-edit
 ├── post-tool-use.ts          # PostToolUse: telemetry logging
 ├── post-tool-failure.ts      # PostToolUseFailure: consecutive failure tracking
 ├── subagent-start.ts         # SubagentStart: delegation logging
