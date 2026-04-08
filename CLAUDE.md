@@ -6,6 +6,10 @@ PATH includes: ~/.local/bin:~/.cargo/bin:~/.bun/bin:~/.local/share/mise/shims:/u
 
 Plan mode is for quick scoping. For complex, multi-phase work use `/create_plan` — it has a structured reasoning protocol, parallel research agents, and pre-flight validation.
 
+## After Plan Approval
+
+When a plan is approved via ExitPlanMode, follow the `/implement_plan` workflow on the plan file — phase tracking, TDD enforcement for source files, human verification pauses. Do NOT implement ad-hoc. Read `.claude/commands/implement_plan.md` and execute it against the plan file path.
+
 ## Delegation
 
 When you identify 3+ independent subtasks (e.g., reading 3 unrelated files, running 3 parallel searches, or researching 3 different topics), prefer spawning Agent tools in parallel rather than running them sequentially. Data shows delegation at ~2% of tool calls regardless of workload — this should scale with session complexity.

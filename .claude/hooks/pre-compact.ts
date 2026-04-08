@@ -10,12 +10,13 @@
 
 import { readFileSync } from "fs";
 import { saveCheckpoint, formatCheckpointSummary } from "./lib/compact-checkpoint";
+import { getSessionId } from "./lib/pai-paths";
 
 async function main() {
   try {
     // PreCompact provides: session_id, transcript_path
     const input = readFileSync(0, "utf-8");
-    let sessionId = process.env.CLAUDE_SESSION_ID || process.env.SESSION_ID || "unknown";
+    let sessionId = getSessionId();
 
     if (input.trim()) {
       try {

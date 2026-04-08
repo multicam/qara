@@ -19,9 +19,9 @@
  *   bun mode-state.ts clear
  */
 
-import { existsSync, readFileSync, writeFileSync, unlinkSync, renameSync } from "fs";
+import { existsSync, readFileSync, unlinkSync } from "fs";
 import { join } from "path";
-import { STATE_DIR, ensureDir } from "./pai-paths";
+import { STATE_DIR, getSessionId, atomicWriteJson } from "./pai-paths";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -74,10 +74,7 @@ const VALID_MODES: ModeName[] = ["drive", "cruise", "turbo"];
 // ─── Core Functions ─────────────────────────────────────────────────────────
 
 function atomicWriteState(state: ModeState): void {
-  ensureDir(STATE_DIR);
-  const tmp = STATE_FILE + ".tmp";
-  writeFileSync(tmp, JSON.stringify(state, null, 2));
-  renameSync(tmp, STATE_FILE);
+  atomicWriteJson(STATE_FILE, state);
 }
 
 function readRaw(): ModeState | null {
@@ -97,8 +94,7 @@ function isValid(state: ModeState): boolean {
   const expires = new Date(state.expiresAt).getTime();
   if (Date.now() > expires) return false;
 
-  const currentSession =
-    process.env.CLAUDE_SESSION_ID || process.env.SESSION_ID || "unknown";
+  const currentSession = getSessionId();
   if (state.sessionId !== currentSession && state.sessionId !== "unknown")
     return false;
 
@@ -142,11 +138,7 @@ export function writeModeState(params: {
   const state: ModeState = {
     active: true,
     mode: params.mode,
-    sessionId:
-      params.sessionId ||
-      process.env.CLAUDE_SESSION_ID ||
-      process.env.SESSION_ID ||
-      "unknown",
+    sessionId: params.sessionId || getSessionId(),
     iteration: 0,
     maxIterations: params.maxIterations ?? 50,
     maxTokensBudget: params.maxTokensBudget ?? 0,

@@ -8,7 +8,7 @@
 
 import { readFileSync } from "fs";
 import { join } from "path";
-import { STATE_DIR } from './lib/pai-paths';
+import { STATE_DIR, getSessionId } from './lib/pai-paths';
 import { appendJsonl } from './lib/jsonl-utils';
 import { getISOTimestamp } from './lib/datetime-utils';
 
@@ -82,7 +82,7 @@ function logSecurityCheck(
       pattern_matched: pattern,
       risk,
       decision,
-      session_id: process.env.CLAUDE_SESSION_ID || process.env.SESSION_ID || 'unknown',
+      session_id: getSessionId(),
     });
   } catch {
     // Non-critical — don't let logging failure block execution

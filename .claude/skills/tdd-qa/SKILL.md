@@ -42,11 +42,6 @@ Examples: "verify E2E", "browser test", "e2e scenarios", "smoke test the UI"
 -> **READ:** `${PAI_DIR}/skills/tdd-qa/workflows/e2e-verify.md`
 -> **EXECUTE:** Run scenarios via devtools-mcp, auto-draft .spec.ts
 
-**When user wants autonomous UI exploration (Bombadil):**
-Examples: "explore with bombadil", "property-based UI test", "find bugs I didn't think of", "chaos test the UI"
--> **READ:** `${PAI_DIR}/skills/tdd-qa/workflows/explore-bombadil.md`
--> **EXECUTE:** Write property specs, run Bombadil exploration, analyze violations
-
 **When user wants mutation testing:**
 Examples: "run mutation tests", "check mutation score", "how good are my tests"
 -> **READ:** `${PAI_DIR}/skills/tdd-qa/workflows/mutation-check.md`
@@ -66,9 +61,9 @@ Examples: "run mutation tests", "check mutation score", "how good are my tests"
 | Bug fix | triage-issue -> fix -> backtest |
 | Confidence | backtest or run-pyramid |
 | New project | init-project (once) |
-| Chaos | explore-bombadil |
-
 All workflow steps are typed as **deterministic** or **agentic** (Stripe Minions pattern). See `references/blueprint-pattern.md`.
+
+> **Bombadil (v0.3.2)** is experimental — invoke explicitly if needed (`explore-bombadil`), not routed by default.
 
 ## Lifecycle Completion
 
@@ -86,7 +81,6 @@ When backtest passes with zero regressions and baseline updated, the minimum cyc
 |-----------|----------------|--------------|
 | `mutation-check` | After backtest passes, for critical code paths | StrykerJS installed |
 | `e2e-verify` | When feature has a browser UI | devtools-mcp available |
-| `explore-bombadil` | When feature has complex state/UI interactions | Playwright available |
 | `run-pyramid` | Before merging a PR, as a final confidence check | Tests exist at multiple layers |
 
 ### System-Level "Done"

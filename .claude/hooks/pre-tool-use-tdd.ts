@@ -16,7 +16,7 @@
 
 import { readFileSync } from "fs";
 import { join } from "path";
-import { STATE_DIR } from "./lib/pai-paths";
+import { STATE_DIR, getSessionId } from "./lib/pai-paths";
 import { readTDDState, isTestFile } from "./lib/tdd-state";
 import { appendJsonl } from "./lib/jsonl-utils";
 import { getISOTimestamp } from "./lib/datetime-utils";
@@ -57,13 +57,25 @@ function deny(reason: string): void {
   );
 }
 
+function ask(message: string): void {
+  console.log(
+    JSON.stringify({
+      hookSpecificOutput: {
+        hookEventName: "PreToolUse",
+        permissionDecision: "ask",
+        userMessage: message,
+      },
+    })
+  );
+}
+
 // ─── Logging ────────────────────────────────────────────────────────────────
 
 function logDecision(
   filePath: string,
   phase: string,
   isTest: boolean,
-  decision: "allow" | "deny",
+  decision: "allow" | "deny" | "ask",
   reason: string
 ): void {
   try {
@@ -74,10 +86,7 @@ function logDecision(
       is_test_file: isTest,
       decision,
       reason,
-      session_id:
-        process.env.CLAUDE_SESSION_ID ||
-        process.env.SESSION_ID ||
-        "unknown",
+      session_id: getSessionId(),
     });
   } catch {
     // Non-critical — don't let logging failure affect enforcement
@@ -143,8 +152,20 @@ async function main(): Promise<void> {
         // RED phase + test file → allow (correct behavior)
         logDecision(filePath, state.phase, isTest, "allow", "test file edit during RED");
       } else if (state.phase === "GREEN") {
-        // GREEN: both allowed, advisory context for test edits
+        // GREEN: both allowed, but detect test shrinking (Kent Beck 2026:
+        // agents delete tests to make them pass)
         if (isTest) {
+          if (hookData.tool_name === "Edit") {
+            const oldStr = (hookData.tool_input.old_string as string) || "";
+            const newStr = (hookData.tool_input.new_string as string) || "";
+            const oldLines = oldStr.split("\n").length;
+            const newLines = newStr.split("\n").length;
+            if (oldLines > newLines + 2) {
+              logDecision(filePath, state.phase, isTest, "ask", "test shrinking detected during GREEN");
+              ask(`This edit removes ${oldLines - newLines} lines from a test file during GREEN phase. Verify you are not weakening tests to make them pass.\nFile: ${filePath}`);
+              return;
+            }
+          }
           logDecision(filePath, state.phase, isTest, "allow", "test file edit during GREEN (advisory)");
           advisoryContext = "TDD: Phase is GREEN. Minimal test changes only — focus on implementation.";
         } else {

@@ -29,6 +29,31 @@ Plans are carefully designed, but reality can be messy. Your job is to:
 
 When things don't match the plan exactly, think about why and communicate clearly. The plan is your guide, but your judgment matters too.
 
+## TDD Enforcement
+
+When a phase creates or modifies `.ts`/`.tsx`/`.js`/`.jsx`/`.svelte` source files (not configs, not docs, not test files):
+
+1. Activate TDD enforcement before implementation:
+   ```bash
+   bun ${PAI_DIR}/hooks/lib/tdd-state.ts activate --feature {phase-slug} --phase RED
+   ```
+
+2. Derive scenarios from the phase's success criteria. Each behavioral criterion
+   becomes a RED→GREEN→REFACTOR cycle.
+
+3. Follow the tdd-cycle workflow (READ: `${PAI_DIR}/skills/tdd-qa/workflows/tdd-cycle.md`)
+   for each scenario within the phase.
+
+4. After all scenarios complete, clear enforcement:
+   ```bash
+   bun ${PAI_DIR}/hooks/lib/tdd-state.ts clear
+   ```
+
+5. Run full test suite before pausing for human verification.
+
+Skip TDD for: documentation-only phases, config changes, workflow/markdown edits,
+phases with no behavioral success criteria.
+
 If you encounter a mismatch:
 - STOP and think deeply about why the plan can't be followed
 - Present the issue clearly:

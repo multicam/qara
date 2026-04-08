@@ -83,9 +83,13 @@ Useful for checking mutation score on recently changed files only.
 | Run mutation | Deterministic |
 | Report | Deterministic |
 
+## Integration with TDD Cycle
+
+This workflow can be invoked standalone OR as part of `tdd-cycle.md` step 8.5 (Mutation Bonus Round). When integrated into the TDD cycle, it runs automatically after all planned scenarios complete, targeting only files touched during that cycle. Surviving mutants become bonus RED→GREEN scenarios.
+
 ## When to Use
 
-- After completing a tdd-cycle (check test effectiveness)
+- After completing a tdd-cycle (check test effectiveness) — or automatically via step 8.5
 - Before releasing (confidence in test quality)
 - When coverage is high but you suspect weak assertions
 - As optional top layer of the test pyramid

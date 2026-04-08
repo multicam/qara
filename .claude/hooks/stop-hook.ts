@@ -13,7 +13,7 @@
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { generateTabTitle, setTerminalTabTitle } from './lib/tab-titles';
-import { STATE_DIR } from './lib/pai-paths';
+import { STATE_DIR, getSessionId } from './lib/pai-paths';
 import { appendJsonl } from './lib/jsonl-utils';
 import { getISOTimestamp } from './lib/datetime-utils';
 import { classifyTopic } from './lib/trace-utils';
@@ -80,7 +80,7 @@ async function main() {
     // Persist session checkpoint for resume capability (Factor 6)
     appendJsonl(join(STATE_DIR, 'session-checkpoints.jsonl'), {
       timestamp: getISOTimestamp(),
-      session_id: process.env.CLAUDE_SESSION_ID || process.env.SESSION_ID || 'unknown',
+      session_id: getSessionId(),
       stop_reason: stopReason,
       summary: title || lastMessage.substring(0, 200),
       message_len: lastMessage.length,

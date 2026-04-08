@@ -29,18 +29,6 @@ This enables the PreToolUse hook to enforce phase discipline:
 
 For each scenario in priority order (critical first):
 
-### 0.5. Trace-Informed RED [DETERMINISTIC] (Optional)
-
-Before writing scenarios from scratch, check if the introspection pipeline has data on repeated failures in the target area:
-
-```bash
-bun ${PAI_DIR}/skills/introspect/tools/introspect-miner.ts --mode daily | jq '.repeated_failures'
-```
-
-Each repeated failure is a candidate scenario — the system is working around a bug instead of testing for it. If `repeated_failures` contains entries matching the target module, write a test for that failure pattern FIRST. This is the Meta-Harness insight: traces reveal untested behaviors.
-
-> **Skip this step** if: no introspection data exists, or the miner returns empty `repeated_failures`, or the target module has no trace history.
-
 ### 1. RED — Write Failing Test [AGENTIC]
 
 Read the scenario's Given/When/Then and write a test that:
@@ -134,6 +122,23 @@ bun test path/to/file.test.ts
 
 All tests must still pass. If any fail, undo the refactor.
 
+### 8.5. Mutation Bonus Round [DETERMINISTIC + AGENTIC] (after all planned scenarios)
+
+After the **last** planned scenario's REFACTOR completes (not after each scenario), run targeted mutation testing on files touched during this TDD cycle:
+
+```bash
+npx stryker run --mutate "src/touched-file-1.ts,src/touched-file-2.ts"
+```
+
+For each surviving mutant (max 5, prioritized by line proximity to changes):
+- **RED:** Write a test that fails when the mutation is applied
+- **GREEN:** Verify the test passes against the original code
+- No REFACTOR needed (these are surgical single-assertion tests)
+
+Skip this step if: StrykerJS not installed, no surviving mutants, or cycle was interrupted/escalated.
+
+See also: `${PAI_DIR}/skills/tdd-qa/workflows/mutation-check.md` for standalone mutation testing.
+
 ### 9. Next Scenario [DETERMINISTIC]
 
 Transition back to RED for the next scenario:
@@ -144,6 +149,18 @@ bun ${PAI_DIR}/hooks/lib/tdd-state.ts phase RED
 
 Return to step 1 with the next scenario. Each cycle responds to what was learned from the previous one.
 
+### 9.5. Checkpoint [DETERMINISTIC]
+
+Write scenario completion to working memory for compression resilience. When PreCompact fires mid-cycle, the agent recovers from checkpoint + files on disk, not compressed conversation.
+
+```bash
+# Via working-memory.ts
+echo '{"scenario":"{name}","status":"complete","test":"{test-path}","impl":"{impl-path}"}' | \
+  bun ${PAI_DIR}/hooks/lib/working-memory.ts write tdd-checkpoint
+```
+
+Skip if: working-memory.ts unavailable.
+
 ## After All Scenarios
 
 ### Deactivate TDD Enforcement [DETERMINISTIC]
@@ -151,6 +168,19 @@ Return to step 1 with the next scenario. Each cycle responds to what was learned
 ```bash
 bun ${PAI_DIR}/hooks/lib/tdd-state.ts clear
 ```
+
+### Uncorrelated Review [DETERMINISTIC] (optional)
+
+If Ollama is available, send the cycle's diff for independent review to catch correlated blindness (test + impl wrong in the same systematic way):
+
+```bash
+git diff HEAD~{n} -- '*.ts' '*.tsx' | \
+  bun ${PAI_DIR}/hooks/lib/ollama-client.ts chat \
+  "Review this diff for logical errors, missed edge cases, and security issues. Be specific."
+```
+
+Log findings to tdd-enforcement.jsonl. Advisory only — does not block.
+Skip if: Ollama unavailable, diff empty, or cycle was interrupted.
 
 ### Type Check [DETERMINISTIC]
 
@@ -197,7 +227,10 @@ If JM cancels mid-cycle or the session ends unexpectedly:
 | Transition to REFACTOR | Deterministic | 0 |
 | REFACTOR | Agentic | — |
 | VERIFY REFACTOR | Deterministic | 0 (undo on fail) |
+| Mutation bonus round | Deterministic + Agentic | 0 (after last scenario only) |
 | Transition to RED (next) | Deterministic | 0 |
+| Checkpoint | Deterministic | 0 |
 | Deactivate enforcement | Deterministic | 0 |
+| Uncorrelated review | Deterministic | 0 (advisory, optional) |
 | Type check | Deterministic | 0 |
 | Full suite | Deterministic | 0 |

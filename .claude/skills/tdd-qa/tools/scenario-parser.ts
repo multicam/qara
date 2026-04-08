@@ -65,6 +65,13 @@ export function parseScenarioFile(
   let currentScenario: Scenario | null = null;
   const contextLines: string[] = [];
 
+  function flushScenario(): void {
+    if (currentScenario) {
+      scenarios.push(currentScenario);
+      currentScenario = null;
+    }
+  }
+
   for (const line of lines) {
     const trimmed = line.trim();
 
@@ -78,11 +85,7 @@ export function parseScenarioFile(
     // H2 section headers
     const h2Match = trimmed.match(H2_RE);
     if (h2Match) {
-      // Flush any pending scenario
-      if (currentScenario) {
-        scenarios.push(currentScenario);
-        currentScenario = null;
-      }
+      flushScenario();
 
       const sectionName = h2Match[1].trim().toLowerCase();
       if (sectionName === "context") {
@@ -102,9 +105,7 @@ export function parseScenarioFile(
     // H3 scenario header (only within scenarios section)
     const scenarioMatch = trimmed.match(H3_SCENARIO_RE);
     if (scenarioMatch && currentSection === "scenarios") {
-      if (currentScenario) {
-        scenarios.push(currentScenario);
-      }
+      flushScenario();
       currentScenario = {
         name: scenarioMatch[1].trim(),
         steps: [],
@@ -158,10 +159,7 @@ export function parseScenarioFile(
     }
   }
 
-  // Flush last scenario
-  if (currentScenario) {
-    scenarios.push(currentScenario);
-  }
+  flushScenario();
 
   context = contextLines.join(" ");
 

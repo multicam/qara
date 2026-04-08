@@ -186,6 +186,12 @@ export function compare(
     );
   }
 
+  if (removed.length > 0) {
+    gateFailures.push(
+      `REMOVED: ${removed.length} test(s) deleted. Verify this was intentional.`
+    );
+  }
+
   return {
     regressions,
     fixed,

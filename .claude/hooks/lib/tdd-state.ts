@@ -20,9 +20,10 @@
  *   bun tdd-state.ts status
  */
 
-import { existsSync, readFileSync, writeFileSync, unlinkSync, renameSync } from "fs";
-import { join, basename } from "path";
-import { STATE_DIR, ensureDir } from "./pai-paths";
+import { existsSync, readFileSync, unlinkSync } from "fs";
+import { join } from "path";
+import { STATE_DIR, getSessionId, atomicWriteJson } from "./pai-paths";
+export { isTestFile } from "./file-patterns";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -41,18 +42,6 @@ export interface TDDState {
 
 const STATE_FILE = join(STATE_DIR, "tdd-mode.json");
 const TTL_MS = 2 * 60 * 60 * 1000; // 2 hours
-
-// Test file patterns — basename matching
-const TEST_FILE_PATTERNS = [
-  /\.test\.ts$/,
-  /\.test\.js$/,
-  /\.spec\.ts$/,
-  /\.spec\.js$/,
-  /\.integration\.test\.ts$/,
-  /\.integration\.test\.js$/,
-  /\.draft\.spec\.ts$/,
-  /\.bombadil\.ts$/,
-];
 
 // ─── Core Functions ─────────────────────────────────────────────────────────
 
@@ -84,15 +73,8 @@ export function readTDDState(): TDDState | null {
   return state;
 }
 
-/**
- * Atomic write: write to temp file then rename (POSIX atomic).
- * Prevents parallel hook invocations from reading partial JSON.
- */
 function atomicWriteState(state: TDDState): void {
-  ensureDir(STATE_DIR);
-  const tmp = STATE_FILE + ".tmp";
-  writeFileSync(tmp, JSON.stringify(state, null, 2));
-  renameSync(tmp, STATE_FILE);
+  atomicWriteJson(STATE_FILE, state);
 }
 
 /**
@@ -109,11 +91,7 @@ export function writeTDDState(params: {
     active: true,
     feature: params.feature,
     phase: params.phase,
-    sessionId:
-      params.sessionId ||
-      process.env.CLAUDE_SESSION_ID ||
-      process.env.SESSION_ID ||
-      "unknown",
+    sessionId: params.sessionId || getSessionId(),
     startedAt: now.toISOString(),
     expiresAt: new Date(now.getTime() + TTL_MS).toISOString(),
   };
@@ -148,14 +126,6 @@ export function clearTDDState(): void {
 }
 
 /**
- * Check if a file path is a test file.
- */
-export function isTestFile(filePath: string): boolean {
-  const name = basename(filePath);
-  return TEST_FILE_PATTERNS.some((pattern) => pattern.test(name));
-}
-
-/**
  * Validate state: checks TTL and session match.
  */
 export function isStateValid(state: TDDState): boolean {
@@ -164,8 +134,7 @@ export function isStateValid(state: TDDState): boolean {
   if (Date.now() > expires) return false;
 
   // Check session
-  const currentSession =
-    process.env.CLAUDE_SESSION_ID || process.env.SESSION_ID || "unknown";
+  const currentSession = getSessionId();
   if (state.sessionId !== currentSession && state.sessionId !== "unknown")
     return false;
 

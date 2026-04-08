@@ -203,7 +203,8 @@ describe("compare", () => {
     const current = makeSummary(pass("a"));
     const result = compare(baseline, current);
     expect(result.removed).toHaveLength(1);
-    expect(result.gatesPassed).toBe(true); // Removal alone doesn't fail gate
+    expect(result.gatesPassed).toBe(false); // Removed tests now fail gate (agent-deletes-tests defense)
+    expect(result.gateFailures[0]).toContain("REMOVED");
   });
 
   it("passes gate with no changes", () => {

@@ -431,7 +431,8 @@ describe("compare", () => {
     const result = compare(baseline, current);
     expect(result.removed).toHaveLength(1);
     expect(result.removed[0]).toContain("removeMe");
-    expect(result.gatesPassed).toBe(true); // removing tests is not a gate failure
+    expect(result.gatesPassed).toBe(false); // removed tests now fail gate (Kent Beck 2026: agents delete tests to pass)
+    expect(result.gateFailures[0]).toContain("REMOVED");
   });
 
   it("should detect coverage decrease", () => {

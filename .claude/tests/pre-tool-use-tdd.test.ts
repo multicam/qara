@@ -180,6 +180,33 @@ describe("Pre-Tool-Use TDD Enforcement Hook", () => {
       expect(decision.decision).toBe("allow");
       expect(decision.context).toContain("GREEN");
     });
+
+    it("should ASK when Edit shrinks a test file", async () => {
+      const result = await runHook({
+        tool_name: "Edit",
+        tool_input: {
+          file_path: "/src/auth.test.ts",
+          old_string: "line1\nline2\nline3\nline4\nline5\nline6",
+          new_string: "line1\nline2",
+        },
+      });
+      const decision = parseDecision(result.stdout);
+      expect(decision.decision).toBe("ask");
+    });
+
+    it("should ALLOW small Edit to test file without ask", async () => {
+      const result = await runHook({
+        tool_name: "Edit",
+        tool_input: {
+          file_path: "/src/auth.test.ts",
+          old_string: "line1\nline2\nline3",
+          new_string: "line1\nline2",
+        },
+      });
+      const decision = parseDecision(result.stdout);
+      // Net deletion of 1 line (below threshold of 3) — should allow with advisory, not ask
+      expect(decision.decision).toBe("allow");
+    });
   });
 
   // ─── REFACTOR Phase ──────────────────────────────────────────────────────
