@@ -87,7 +87,7 @@ env:
 | Hooks reference | `.claude/context/hooks-guide.md` | "which hooks exist", "hook events", "hook utilities" |
 | Testing | `.claude/skills/CORE/testing-guide.md` | "write tests", "run tests", "test patterns", "Playwright" |
 | Contacts | `.claude/skills/CORE/contacts.md` | "who is X", "contact info", "email for" |
-| Definitions | `.claude/skills/CORE/MY_DEFINITIONS.md` | "JM's definition of X", "what does JM mean by" |
+| Definitions | `.claude/skills/CORE/CONSTITUTION.md` (Key Definitions section) | "JM's definition of X", "what does JM mean by" |
 | Security | `.claude/skills/CORE/security-protocols.md` | "API keys", "repo safety", "secrets management" |
 | Tool preferences (detail) | `.claude/skills/CORE/TOOLS.md` | "which CLI tool for", "fd vs find", "bat vs cat" (enforcement in global `~/.claude/CLAUDE.md`) |
 | Delegation | `.claude/context/delegation-guide.md` | "which agent", "delegate", "parallel agents", "escalation" |

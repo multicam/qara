@@ -194,9 +194,16 @@ async function main(): Promise<void> {
     outputResult(result.status, additionalContext, result.risk);
 
   } catch (error) {
-    // On error, fail open
+    // On parse/processing error, fail closed — ask rather than auto-allow.
+    // Malformed input should not bypass security checks.
     console.error("Security hook error:", error);
-    outputResult("APPROVED");
+    console.log(JSON.stringify({
+      hookSpecificOutput: {
+        hookEventName: "PreToolUse",
+        permissionDecision: "ask",
+        permissionDecisionReason: "Security hook encountered an error processing this command. Please review manually.",
+      }
+    }));
   }
 }
 

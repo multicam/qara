@@ -2,15 +2,15 @@
   "mcpServers": {
     "brave-devtools": {
       "command": "npx",
-      "args": ["chrome-devtools-mcp-for-brave@latest"]
+      "args": ["chrome-devtools-mcp-for-brave@0.4.2"]
     },
     "context7": {
       "command": "npx",
-      "args": ["-y", "@upstash/context7-mcp@latest"]
+      "args": ["-y", "@upstash/context7-mcp@2.1.7"]
     },
     "mattermost": {
       "command": "npx",
-      "args": ["@dakatan/mcp-mattermost"],
+      "args": ["@dakatan/mcp-mattermost@0.0.5"],
       "env": {
         "MCP_MATTERMOST_URL": "${MCP_MATTERMOST_URL}",
         "MCP_MATTERMOST_TOKEN": "${MCP_MATTERMOST_TOKEN}",

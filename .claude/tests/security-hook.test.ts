@@ -100,9 +100,9 @@ describe('Security Hook Structure', () => {
     expect(content).toContain('console.log');
   });
 
-  it('should fail open on error', () => {
-    expect(content).toContain('// On error, fail open');
-    expect(content).toContain('outputResult("APPROVED")');
+  it('should fail closed on error (ask for manual review)', () => {
+    expect(content).toContain('permissionDecision: "ask"');
+    expect(content).toContain('Security hook encountered an error');
   });
 });
 
@@ -213,9 +213,10 @@ describe('Security Hook Runtime', () => {
     expect(output.continue).toBe(true);
   });
 
-  it('should handle malformed input gracefully (fail open)', async () => {
+  it('should handle unexpected input gracefully (non-Bash = approve)', async () => {
     const result = await runSecurityHook({ garbage: true });
     const output = parseOutput(result.stdout);
+    // { garbage: true } is valid JSON but not a Bash tool — approved
     expect(output.continue).toBe(true);
   });
 });

@@ -170,11 +170,11 @@ describe("pre-tool-use-security.ts", () => {
   });
 
   describe("error resilience", () => {
-    it("should fail open on malformed JSON", async () => {
+    it("should fail closed on malformed JSON (ask for review)", async () => {
       const result = await runHook("garbage input");
       expect(result.exitCode).toBe(0);
       const { decision } = parseHookDecision(result.stdout);
-      expect(decision).toBe("allow");
+      expect(decision).toBe("ask");
     });
 
     it("should fail open with empty command", async () => {

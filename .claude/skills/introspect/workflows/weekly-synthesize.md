@@ -129,7 +129,15 @@ Count files in `observations/`:
 
 After updating pattern files, regenerate `~/qara/thoughts/shared/introspection/session-hints.md`.
 
-For each pattern at 'established' or 'confirmed' confidence, write one actionable hint — a single sentence that tells Qara what to do differently based on what the pattern reveals. Good hints are specific and behavioral (e.g., "When a Bash command fails, read the full error output before retrying rather than issuing the same command again."). Avoid generic advice.
+For each pattern at 'established' or 'confirmed' confidence, write one **prescriptive** hint — a single sentence that tells Qara what to DO, not what IS. Hints must change behavior, not describe it.
+
+**Good (prescriptive):** "When a Bash command fails, read the full error output before retrying rather than issuing the same command again."
+**Good (prescriptive):** "Use Grep instead of `rg` via Bash for content searches — it's faster and the user prefers native tools."
+**Bad (descriptive):** "Bash usage is at ~33%." (describes state, changes nothing)
+**Bad (descriptive):** "Agent delegation is at ~1.8%." (observation, not directive)
+
+Each hint should follow the pattern: **When [trigger], do [action] instead of [default].**
+If a pattern doesn't imply a behavioral change, don't generate a hint for it — not every pattern needs one.
 
 Remove hints for patterns that have been demoted below 'established' or flagged as stale.
 

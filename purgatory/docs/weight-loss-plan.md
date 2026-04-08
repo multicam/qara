@@ -130,13 +130,25 @@ mv .claude/skills/CORE/approval-patterns.md        purgatory/skills/CORE/
 mv .claude/skills/CORE/TOOLS.md                    purgatory/skills/CORE/
 ```
 
-**Purged:** 24 of 47 CORE files.
+### 4h. CLI-First Documentation Files (consolidated into cli-first-guide.md)
+
+**Consolidated:** 5 files into 1 comprehensive guide.
+
+```bash
+rm .claude/skills/CORE/cli-first-patterns.md
+rm .claude/skills/CORE/cli-first-design.md
+rm .claude/skills/CORE/cli-first-api.md
+rm .claude/skills/CORE/cli-first-prompting.md
+# Keep only: cli-first-guide.md (all content merged, ~500 lines)
+```
+
+**Purged:** 24 of 47 CORE files (then consolidated CLI-first files: 5 → 1).
 
 **Keep in CORE:**
 - `SKILL.md` (slimmed — see Phase 6)
 - `CONSTITUTION.md`, `contacts.md`, `MY_DEFINITIONS.md`
 - `stack-preferences.md`, `testing-guide.md`, `security-protocols.md`
-- `cli-first-guide.md`, `cli-first-patterns.md`, `cli-first-api.md`, `cli-first-design.md`, `cli-first-prompting.md`
+- `cli-first-guide.md` (consolidated, see Phase 4g)
 - `aesthetic.md`, `prompting.md`, `terminal-tabs.md`, `macos-fixes.md`
 - `history-system.md`
 - `workflows/git-update-repo.md`, `workflows/merge-conflict-resolution.md`
@@ -216,7 +228,7 @@ After living with the cuts for 2-4 weeks:
 1. **cc-upgrade / cc-upgrade-pai** — One-time migration tools? If unused, purge to purgatory/skills/.
 2. **example-skill** — Teaching tool. Purge if not onboarding anyone.
 3. **Stop hook complexity** — If simplified to just tab titles, consider whether it's worth keeping as a hook at all.
-4. **CLI-first files** — 5 files (guide, patterns, api, design, prompting). Are all 5 triggered, or can they consolidate?
+4. ~~**CLI-first files**~~ — **DONE (2026-04-09):** Consolidated 5 files (patterns, api, design, prompting) into single `cli-first-guide.md` with all content merged (~500 lines).
 5. **Plan commands** (`/create_plan`, `/implement_plan`, `/validate_plan`) — If humanlayer sync is unused, replace with CC's native plan mode.
 
 ---

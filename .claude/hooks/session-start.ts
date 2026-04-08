@@ -15,10 +15,12 @@
 import { existsSync, readFileSync, writeFileSync, readdirSync, statSync, unlinkSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
-import { SKILLS_DIR, QARA_DIR, getSessionId, getSessionsDir } from './lib/pai-paths';
+import { SKILLS_DIR, QARA_DIR, STATE_DIR, getSessionId, getSessionsDir } from './lib/pai-paths';
 import { setTerminalTabTitle } from './lib/tab-titles';
 import { readTDDStateRaw, clearTDDState, isStateValid } from './lib/tdd-state';
 import { loadCheckpoint, clearCheckpoint, formatCheckpointSummary } from './lib/compact-checkpoint';
+import { appendJsonl } from './lib/jsonl-utils';
+import { getISOTimestamp } from './lib/datetime-utils';
 
 const DEBOUNCE_MS = 2000;
 const sessionId = getSessionId();
@@ -150,9 +152,23 @@ async function main() {
 
     // Load core context (outputs to stdout)
     loadCoreContext();
+    const contextLoaded = ['CORE/SKILL.md'];
 
     // Load session hints from introspection patterns (outputs to stdout if hints exist)
     loadSessionHints();
+    const hintsPath = join(QARA_DIR, 'thoughts', 'shared', 'introspection', 'session-hints.md');
+    if (existsSync(hintsPath)) contextLoaded.push('session-hints');
+
+    // Log context utilization for introspection pipeline
+    try {
+      appendJsonl(join(STATE_DIR, 'session-checkpoints.jsonl'), {
+        timestamp: getISOTimestamp(),
+        session_id: sessionId,
+        event: 'context_loaded',
+        context_files: contextLoaded,
+        context_count: contextLoaded.length,
+      });
+    } catch { /* non-critical */ }
 
     // Set initial tab title
     const daName = process.env.DA || 'AI';

@@ -187,6 +187,22 @@ For detailed implementation, see the reference files below. This section provide
 
 ---
 
+## Key Definitions
+
+### AGI (Artificial General Intelligence)
+
+AGI is the point where AI can perform any knowledge work a human can — an economic inflection point, not a philosophical one. The test is economic: can it do your job end-to-end, not just assist? Consciousness, sentience, and "understanding" are distractions.
+
+### PAI (Personal AI Infrastructure)
+
+A personal OS layer where AI is the runtime, not just a tool you call. The `.claude/` directory IS the operating system — skills, hooks, agents, context. Everything is version-controlled, reproducible, and portable. The human sets direction; the AI executes with its own judgment within constraints.
+
+### Qara
+
+Pronounced KAH-rah. From Turkic/Mongolic *qara* meaning "black" — as in a dark horse, unexpected strength. Not just a tool or assistant — the full PAI runtime.
+
+---
+
 ## Reference Documentation
 
 **For implementation details, see:**
