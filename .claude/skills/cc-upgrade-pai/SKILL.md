@@ -51,7 +51,7 @@ $PAI_DIR/
 │   ├── hooks/             # TypeScript hooks
 │   │   └── lib/           # Hook libraries
 │   └── settings.json
-├── CLAUDE.md              # Root context
+├── CLAUDE.md              # Project-specific context (global config in ~/.claude/CLAUDE.md via symlink from .claude/CLAUDE.md)
 ├── .claude/skills/CORE/CONSTITUTION.md  # Philosophy doc
 └── DECISIONS.md           # Decision log (append-only)
 ```

@@ -2,11 +2,13 @@
 
 ## Naming Convention
 
-File name: `{domain}--{specific-feature}-v{N}.md`
+**Enforced globally in `~/.claude/CLAUDE.md` — NEVER use CC-generated random names.**
+
+File name: `{domain}--{specific-feature}-v{N}.md` or `YYYY-MM-DD-descriptive-name.md`
 - domain: broad area in kebab-case (planning-ux, auth, infra, tdd-qa)
 - specific-feature: what this plan addresses in kebab-case
 - vN: major version only (bump on fundamental reworks). Old versions move to `archive/`.
-- Examples: `planning-ux--unified-lifecycle-v1.md`, `auth--session-token-compliance-v1.md`
+- Examples: `planning-ux--unified-lifecycle-v1.md`, `2026-04-06-tdd-qa-and-pai-optimization.md`
 
 ## Template Structure
 

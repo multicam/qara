@@ -1,6 +1,7 @@
 # PAI Tool Preferences
 
-**PAI-specific tool choices. Claude knows how to use these tools intrinsically.**
+> **Enforcement is in `~/.claude/CLAUDE.md` (global, all repos).**
+> This file is the detailed reference — installation commands, categories, verification.
 
 ---
 

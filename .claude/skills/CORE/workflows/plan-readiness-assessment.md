@@ -83,11 +83,12 @@ Routing logic:
 
 ## Naming Check
 
-If the plan file doesn't follow `domain--feature-vN.md`:
-- Suggest a rename with the recommended name
-- CC plan mode random names (e.g., `dancing-pebble.md`): always suggest rename
-- Date-based names (e.g., `2026-04-06-...`): suggest migration to new convention
-- Ask JM before renaming: "Rename `{current}` to `{suggested}`?"
+**Enforced globally in `~/.claude/CLAUDE.md` — NEVER use CC-generated random names.**
+
+If the plan file doesn't follow `domain--feature-vN.md` or `YYYY-MM-DD-descriptive-name.md`:
+- Rename immediately (don't ask — the convention is non-negotiable)
+- CC plan mode random names (e.g., `dancing-pebble.md`): rename before writing content
+- Use category prefix when domain is clear: `introspection--`, `quality--`, `tdd--`, `llm--`
 
 ## Accept & Implement (when READY)
 

@@ -215,6 +215,22 @@ describe("TDD State Management", () => {
       ["foo.integration.test.js", true],
       ["foo.draft.spec.ts", true],
       ["foo.bombadil.ts", true],
+      // Python test files
+      ["test_vault.py", true],
+      ["test_processor.py", true],
+      ["vault_test.py", true],
+      ["conftest.py", true],
+      ["tests/test_cli.py", true],
+      ["tests/conftest.py", true],
+      ["src/diderot/tests/test_index.py", true],
+      // Python source files — NOT test files
+      ["src/diderot/cli.py", false],
+      ["src/diderot/processor.py", false],
+      ["setup.py", false],
+      // Python files in test directories
+      ["tests/helpers.py", true],
+      ["tests/fixtures.py", true],
+      ["test/utils.py", true],
       // Source files — NOT test files
       ["foo.ts", false],
       ["foo.js", false],

@@ -14,7 +14,11 @@ Persistent execution. Iterates `prd.json` stories until all pass. Stop hook inje
 1. Read `prd.json` at project root via `prd-utils.ts`.
 2. IF missing: scaffold from task description. Create `prd.json` with stories derived from the prompt. Each story MUST have `id`, `title`, `description`, `acceptance_criteria[]`, `passes: false`, `scenario_file: null`.
 3. IF malformed: fix and rewrite.
-4. Pick first story where `passes == false`.
+4. **Detect test runner** (see `tdd-qa/references/detect-runner.md`):
+   - If `pyproject.toml` with pytest config exists: `$TEST_CMD = uv run pytest`, `$FILE_EXT = *.py`
+   - If `bunfig.toml` or `package.json` exists: `$TEST_CMD = bun test`, `$FILE_EXT = *.ts *.tsx`
+   - Set these for the entire session.
+5. Pick first story where `passes == false`.
 
 ## Per-Story Loop
 
@@ -49,12 +53,20 @@ For each scenario in the spec file:
 - **GREEN:** `bun .claude/hooks/lib/tdd-state.ts phase GREEN`. Write minimal code to pass.
 - **REFACTOR:** `bun .claude/hooks/lib/tdd-state.ts phase REFACTOR`. Clean up.
 
+**Running tests:**
+```bash
+$TEST_CMD                           # Full suite
+$TEST_CMD path/to/test_file         # Single file
+# Python: uv run pytest tests/test_foo.py
+# TypeScript: bun test path/to/file.test.ts
+```
+
 After all scenarios:
 ```bash
 bun .claude/hooks/lib/tdd-state.ts clear
 ```
 
-IF any `bun test` run crashes (non-zero exit, no output): read stderr. IF import error: fix import. IF syntax error: fix syntax. IF still crashing after 3 attempts: write to `problems.md` and ask JM.
+IF any test run crashes (non-zero exit, no output): read stderr. IF import error: fix import. IF syntax error: fix syntax. IF still crashing after 3 attempts: write to `problems.md` and ask JM.
 
 ### 4. Verifier Gate
 
@@ -67,9 +79,9 @@ Parse verifier response:
 
 ### 5. Quality Pass
 
-Run `git diff --name-only HEAD~1 -- '*.ts' '*.tsx'` to get changed files.
+Run `git diff --name-only HEAD~1 -- $FILE_EXT` to get changed files.
 For each file: quality sniff test — would "un-smell, un-slop, un-stale, refactor for DRY" find anything? If yes, fix it.
-After changes: run `bun test`. IF tests fail: revert quality-pass changes for that file.
+After changes: run `$TEST_CMD`. IF tests fail: revert quality-pass changes for that file.
 
 ### 6. Mark Story Passing
 

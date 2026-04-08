@@ -89,7 +89,7 @@ env:
 | Contacts | `.claude/skills/CORE/contacts.md` | "who is X", "contact info", "email for" |
 | Definitions | `.claude/skills/CORE/MY_DEFINITIONS.md` | "JM's definition of X", "what does JM mean by" |
 | Security | `.claude/skills/CORE/security-protocols.md` | "API keys", "repo safety", "secrets management" |
-| Tool preferences | `.claude/skills/CORE/TOOLS.md` | "which CLI tool for", "fd vs find", "bat vs cat" |
+| Tool preferences (detail) | `.claude/skills/CORE/TOOLS.md` | "which CLI tool for", "fd vs find", "bat vs cat" (enforcement in global `~/.claude/CLAUDE.md`) |
 | Delegation | `.claude/context/delegation-guide.md` | "which agent", "delegate", "parallel agents", "escalation" |
 | Routing cheatsheet | `.claude/context/routing-cheatsheet.md` | "routing keywords", "what triggers X", "all routes", "activation keywords" |
 | Context analysis | `.claude/hooks/lib/context-graph/cli.ts` | "orphan files", "impact analysis", "context graph", "skill dependencies" |

@@ -11,6 +11,7 @@ RED-GREEN-VERIFY-REFACTOR loop driven by scenario specs. This is the core bluepr
 ### Detect Test Runner [DETERMINISTIC]
 
 -> **READ:** `../references/detect-runner.md` for test runner detection heuristic
+-> Set `$TEST_CMD` for the rest of this workflow (e.g. `uv run pytest` or `bun test`)
 
 ### Activate TDD Enforcement [DETERMINISTIC]
 
@@ -37,26 +38,40 @@ Read the scenario's Given/When/Then and write a test that:
 - Would survive an internal refactor
 - Follows AAA pattern (Arrange/Act/Assert)
 
+**TypeScript example:**
 ```typescript
 // From specs/user-auth.md → Scenario: successful login
 it('Scenario: successful login with valid credentials', async () => {
   // Given a registered user
   const user = await createUser({ email: 'test@example.com', password: 'valid' });
-
   // When they submit login
   const result = await login({ email: 'test@example.com', password: 'valid' });
-
   // Then they receive an auth token
   expect(result.token).toBeDefined();
 });
 ```
 
-**File placement:** Co-locate with source as `*.test.ts` (unit/integration) or in `tests/e2e/*.spec.ts` (E2E).
+**Python example:**
+```python
+# From specs/user-auth.md → Scenario: successful login
+def test_successful_login_with_valid_credentials(self):
+    """Scenario: successful login with valid credentials"""
+    # Given a registered user
+    user = create_user(email="test@example.com", password="valid")
+    # When they submit login
+    result = login(email="test@example.com", password="valid")
+    # Then they receive an auth token
+    assert result.token is not None
+```
+
+**File placement:**
+- TypeScript: co-locate with source as `*.test.ts` (unit/integration) or in `tests/e2e/*.spec.ts` (E2E)
+- Python: `tests/test_*.py` (pytest convention)
 
 ### 2. VERIFY RED [DETERMINISTIC]
 
 ```bash
-bun test path/to/file.test.ts
+$TEST_CMD path/to/test_file
 ```
 
 The test MUST fail. If it passes, either:
@@ -82,7 +97,7 @@ Write the minimum code to make the test pass. Nothing more.
 ### 5. VERIFY GREEN [DETERMINISTIC]
 
 ```bash
-bun test path/to/file.test.ts
+$TEST_CMD path/to/test_file
 ```
 
 The test MUST pass. If it fails:
@@ -117,7 +132,7 @@ Only when GREEN. Clean up:
 ### 8. VERIFY REFACTOR [DETERMINISTIC]
 
 ```bash
-bun test path/to/file.test.ts
+$TEST_CMD path/to/test_file
 ```
 
 All tests must still pass. If any fail, undo the refactor.
@@ -127,7 +142,8 @@ All tests must still pass. If any fail, undo the refactor.
 After the **last** planned scenario's REFACTOR completes (not after each scenario), run targeted mutation testing on files touched during this TDD cycle:
 
 ```bash
-npx stryker run --mutate "src/touched-file-1.ts,src/touched-file-2.ts"
+# TypeScript: npx stryker run --mutate "src/touched-file-1.ts,src/touched-file-2.ts"
+# Python: uv run mutmut run --paths-to-mutate src/touched_file_1.py,src/touched_file_2.py
 ```
 
 For each surviving mutant (max 5, prioritized by line proximity to changes):
@@ -174,7 +190,9 @@ bun ${PAI_DIR}/hooks/lib/tdd-state.ts clear
 If Ollama is available, send the cycle's diff for independent review to catch correlated blindness (test + impl wrong in the same systematic way):
 
 ```bash
-git diff HEAD~{n} -- '*.ts' '*.tsx' | \
+# TypeScript: git diff HEAD~{n} -- '*.ts' '*.tsx'
+# Python: git diff HEAD~{n} -- '*.py'
+git diff HEAD~{n} -- '*.py' '*.ts' '*.tsx' | \
   bun ${PAI_DIR}/hooks/lib/ollama-client.ts chat \
   "Review this diff for logical errors, missed edge cases, and security issues. Be specific."
 ```
@@ -185,13 +203,14 @@ Skip if: Ollama unavailable, diff empty, or cycle was interrupted.
 ### Type Check [DETERMINISTIC]
 
 ```bash
-bunx tsc --noEmit
+# TypeScript: bunx tsc --noEmit
+# Python: uv run ruff check src/ tests/ (or uv run mypy src/ if typed)
 ```
 
 ### Full Test Suite [DETERMINISTIC]
 
 ```bash
-bun test
+$TEST_CMD
 ```
 
 Verify no regressions in existing tests.
