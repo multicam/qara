@@ -24,117 +24,25 @@ When you can predict what will happen, you can:
 - Scale it
 - Fix it when it breaks
 
-This is why Qara emphasizes:
-- CLI tools over ad-hoc prompting
-- Code before prompts
-- Specifications before implementation
-- Tests before features
+This is why Qara emphasizes: CLI tools over ad-hoc prompting, code before prompts, specifications before implementation, tests before features.
 
 ---
 
-## The Eight Founding Principles
+## The Nine Commandments
 
-### 1. Scaffolding > Model
+1. **Command Line First** — Build CLI tools before AI wrappers. If there's no CLI, you can't script or test it.
+2. **Deterministic Code First** — Same input always produces same output. Behavior defined by code, not prompts.
+3. **Prompts Wrap Code** — AI orchestrates tools, doesn't replace them. Code is cheaper, faster, and more reliable.
+4. **Progressive Disclosure** — Load context only when needed. Three tiers: skill description (always) → SKILL.md (on-demand) → references (just-in-time).
+5. **Skills-as-Containers** — Package expertise with routing, workflows, and assets. Self-activating, composable, evolvable.
+6. **System Prompt Routing** — Natural language triggers automatic skill activation. No manual context loading.
+7. **The Three Primitives** — Skills (domain expertise), Commands (task workflows), Agents (autonomous executors). Everything maps to one of these.
+8. **Test-Driven Development** — Define behavior before implementation. Spec → Test → Code → Refactor.
+9. **Quality Gates** — Never skip validation. If you can't verify it, don't ship it.
 
-**The system architecture matters more than the underlying AI model.**
+**The development pipeline:** Goal → Understand Requirements → Write Deterministic Code → Wrap as CLI → Add AI Prompting. Skip a layer, get a shaky system.
 
-A well-structured system with good scaffolding will outperform a more powerful model with poor structure. Qara's value comes from:
-
-- Organized workflows that guide AI execution
-- Routing systems that activate the right context
-- Quality gates that verify outputs
-- History systems that enable learning
-
-**Key Takeaway:** Build the scaffolding first, then add the AI.
-
-### 2. As Deterministic as Possible
-
-**Favor predictable, repeatable outcomes over flexibility.**
-
-In production systems, consistency beats creativity:
-
-- Same input → Same output (always)
-- No reliance on prompt variations
-- No dependence on model mood
-- Behavior defined by code, not prompts
-- Version control tracks explicit changes
-
-**Key Takeaway:** If it can be made deterministic, make it deterministic.
-
-### 3. Code Before Prompts
-
-**Write code to solve problems, use prompts to orchestrate code.**
-
-Prompts should never replicate functionality that code can provide:
-
-❌ **Bad:** Prompt AI to parse JSON, transform data, format output
-✅ **Good:** Write TypeScript to parse/transform/format, prompt AI to call it
-
-**Key Takeaway:** Code is cheaper, faster, and more reliable than prompts.
-
-### 4. CLI as Interface
-
-**Every operation should be accessible via command line.**
-
-Command line interfaces provide:
-- Discoverability (--help shows all commands)
-- Scriptability (commands can be automated)
-- Testability (test CLI independently of AI)
-- Flexibility (use with or without AI)
-- Transparency (see exactly what was executed)
-
-**Key Takeaway:** If there's no CLI command for it, you can't script it or test it reliably.
-
-### 5. Goal → Code → CLI → Prompts
-
-**The proper development pipeline for any new feature.**
-
-```
-User Goal
-    ↓
-Understand Requirements (what needs to happen)
-    ↓
-Write Deterministic Code (how it happens)
-    ↓
-Wrap as CLI Tool (make it accessible)
-    ↓
-Add AI Prompting (make it easy to use)
-```
-
-**Key Takeaway:** Each layer builds on the previous. Skip a layer, get a shaky system.
-
-### 6. Spec/Test/Evals First
-
-**Define expected behavior before writing implementation.**
-
-- Write test before implementation
-- Test should fail initially
-- Implement until test passes
-- Refactor while tests pass
-
-**Key Takeaway:** If you can't specify it, you can't test it. If you can't test it, you can't trust it.
-
-### 7. Meta/Self Updates
-
-**The system should be able to improve itself.**
-
-Qara can update its own documentation, modify skill files, add new workflows, create new tools, and deploy changes to itself.
-
-**Key Takeaway:** A system that can't update itself will stagnate. Build the capability to evolve.
-
-### 8. Custom Skill Management
-
-**Skills are the organizational unit for all domain expertise.**
-
-Skills are more than documentation - they are active orchestrators:
-
-- **Self-activating:** Trigger automatically based on user request
-- **Self-contained:** Package all context, workflows, and assets
-- **Composable:** Can call other skills and agents
-- **Evolvable:** Easy to add, modify, or deprecate
-- **Discoverable:** Natural language routing to right skill
-
-**Key Takeaway:** Skills are how Qara scales - each new domain gets its own skill, maintaining organization as the system grows.
+**Self-improvement:** Qara can update its own docs, skills, workflows, and tools. A system that can't evolve will stagnate.
 
 ---
 

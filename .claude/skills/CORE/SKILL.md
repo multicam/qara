@@ -74,53 +74,11 @@ env:
 
 ---
 
-## 📚 Documentation Index
+## Documentation & Skills
 
-**Read these files when needed (just-in-time loading):**
+**READ** `.claude/context/routing-cheatsheet.md` for all routing triggers, documentation paths, skill triggers, and agent selection.
 
-| Topic | File | Example triggers |
-|-------|------|----------|
-| Architecture & philosophy | `.claude/skills/CORE/CONSTITUTION.md` | "Qara architecture", "why is it built this way", "design principles" |
-| CLI-First patterns | `.claude/skills/CORE/cli-first-guide.md` | "build CLI tool", "API integration", "CLI-first approach" |
-| Stack preferences | `.claude/skills/CORE/stack-preferences.md` | "what stack should I use", "TypeScript vs Python", "which framework" |
-| Bun usage | `.claude/context/bun-guide.md` | "bun test", "bun build", "how to run tests", "bun API" |
-| Hooks reference | `.claude/context/hooks-guide.md` | "which hooks exist", "hook events", "hook utilities" |
-| Testing | `.claude/skills/CORE/testing-guide.md` | "write tests", "run tests", "test patterns", "Playwright" |
-| Contacts | `.claude/skills/CORE/contacts.md` | "who is X", "contact info", "email for" |
-| Definitions | `.claude/skills/CORE/CONSTITUTION.md` (Key Definitions section) | "JM's definition of X", "what does JM mean by" |
-| Security | `.claude/skills/CORE/security-protocols.md` | "API keys", "repo safety", "secrets management" |
-| Tool preferences (detail) | `.claude/skills/CORE/TOOLS.md` | "which CLI tool for", "fd vs find", "bat vs cat" (enforcement in global `~/.claude/CLAUDE.md`) |
-| Delegation | `.claude/context/delegation-guide.md` | "which agent", "delegate", "parallel agents", "escalation" |
-| Routing cheatsheet | `.claude/context/routing-cheatsheet.md` | "routing keywords", "what triggers X", "all routes", "activation keywords" |
-| Context analysis | `.claude/hooks/lib/context-graph/cli.ts` | "orphan files", "impact analysis", "context graph", "skill dependencies" |
-| PAI visual aesthetic | `.claude/skills/CORE/aesthetic.md` | "visual design", "PAI aesthetics", "color palette", "diagram style" |
-| Skill architecture | `.claude/skills/CORE/skill-structure.md` | "skill archetypes", "skill structure", "routing hierarchy" |
-| Terminal tabs | `.claude/skills/CORE/terminal-tabs.md` | "tab titles", "terminal tabs", "tab naming", "stop hook tabs" |
-| File organization | `.claude/skills/CORE/workflows/file-organization-detailed.md` | "where to save", "file organization", "history vs scratchpad" |
-| Context loading rules | `.claude/skills/CORE/workflows/context-loading-rules.md` | "which context to load", "semantic routing", "context categories" |
-| Session state | `.claude/context/working/README.md` | "session files", "working directory", "transient state" |
-| Image generation | `.claude/skills/image/SKILL.md` | "generate image", "create graphic", "hero image", "stock photo", "unsplash" |
-| TGDS aesthetic | `.claude/skills/image/references/tgds-aesthetic.md` | "TGDS brand", "design school style", "TGDS colors" |
-| Diderot vault | `.claude/skills/diderot/SKILL.md` | "ask diderot", "vault search", "check my notes" |
-| Introspection | `.claude/skills/introspect/SKILL.md` | "daily reflect", "introspect", "mine logs", "weekly synthesize", "monthly evolve" |
-| Visual canvas | `.claude/skills/csf-view/SKILL.md` | "csf-view", "open canvas", "visual shaping", "tldraw" |
-
-**Skills (on-demand):**
-- `hook-authoring` skill → hook creation
-- `system-create-skill` skill → skill creation
-- `image` skill → image generation, stock photos, visual content
-- `introspect` skill → session mining, pattern synthesis, self-improvement
-- `tdd-qa` skill → test-driven development, QA blueprints
-- `csf-view` skill → visual canvas (tldraw), visual thinking for any workflow
-- `research` skill → web research, content extraction, deep analysis
-- `product-shaping` skill → product specs, feature scoping, competitor research
-- `cc-upgrade` / `cc-upgrade-pai` skill → CC setup audit, 12-factor compliance
-- `triage-issue` skill → bug investigation, GitHub issue creation
-- `grill-me` skill → stress-test plans and designs
-- `edit-article` skill → article editing, structural analysis, prose tightening
-- `humaniser` skill → remove AI writing patterns
-
-**Execution modes** (drive, cruise, turbo) compose these skills — e.g., drive uses tdd-qa, critic, and verifier. Modes are activated via keyword triggers, not listed here.
+Execution modes (drive, cruise, turbo) compose skills — e.g., drive uses tdd-qa, critic, and verifier. Modes are activated via keyword triggers.
 
 ---
 
@@ -166,25 +124,12 @@ Default to **Micro** or **Standard**. Scale up only when complexity demands it.
 
 ---
 
-## 🤖 Custom Agents
+## Custom Agents
 
-Use via `Task` tool with `subagent_type`:
-
-| Agent | Model | Use when |
-|-------|-------|----------|
-| `codebase-analyzer` | sonnet | Deep-diving into how code works, tracing data flow, finding reusable patterns |
-| `designer` | opus | Design review, UX/UI, typography, visual polish (loads frontend-design skill) |
-| `architect` | opus | PRD creation, system design, technical specs, implementation planning (loads research skill) |
-| `engineer` | sonnet | Code implementation, debugging, optimization, testing from PRDs |
-| `reviewer` | opus | Code review for correctness, security, performance, maintainability |
-| `critic` | opus | Pre-implementation plan review: scenario coverage, scope, risks, criteria alignment |
-| `verifier` | opus | Post-implementation verification: fresh evidence per criterion + quality gates (regression, coverage, types) |
-| `thoughts-analyzer` | sonnet | Finding + analyzing documents in thoughts/ directory |
-| `claude-researcher` | haiku | Primary web researcher — use before gemini fallback |
-| `gemini-researcher` | haiku | Fallback when WebSearch fails — uses Gemini CLI for independent web access |
+**READ** `.claude/context/delegation-guide.md` for agent selection matrix, model tiers, and escalation paths.
 
 Parallelize when possible — launch multiple agents in a single message.
 
 ---
 
-**End of CORE skill. Additional context in documentation files above.**
+**End of CORE skill.**

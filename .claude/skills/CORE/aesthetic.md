@@ -99,17 +99,17 @@ Muted Stone     oklch(0.50 0.01 60)     #7A7470   — Secondary text on dark
 
 ## Spacing System
 
-**8px baseline grid.** All spacing derives from multiples of 8.
+**0.5rem baseline grid.** All spacing derives from multiples of 0.5rem (8px at default 16px base). Use rem for all spacing tokens — scales with user font-size preferences. px only for breakpoints, touch targets, and 1-2px optical adjustments.
 
 ```
-4px   — Tight: icon-to-label, related items
-8px   — Base: default gap between inline elements
-16px  — Comfortable: paragraph spacing, list gaps
-24px  — Section element spacing
-32px  — Subsection separation
-48px  — Section separation
-64px  — Major section breaks
-96px  — Page-level breathing room
+0.25rem (4px)  — Tight: icon-to-label, related items
+0.5rem  (8px)  — Base: default gap between inline elements
+1rem    (16px) — Comfortable: paragraph spacing, list gaps
+1.5rem  (24px) — Section element spacing
+2rem    (32px) — Subsection separation
+3rem    (48px) — Section separation
+4rem    (64px) — Major section breaks
+6rem    (96px) — Page-level breathing room
 ```
 
 **Principle:** When in doubt, add more space, not less. Generous whitespace signals quality.
@@ -121,8 +121,8 @@ Muted Stone     oklch(0.50 0.01 60)     #7A7470   — Secondary text on dark
 ### Grid
 - **Max content width:** 65ch for body text (readability optimal)
 - **Layout grid:** 12-column with generous gutters
-- **Section padding:** Minimum 48px vertical between sections
-- **Edge margins:** 4-8vw horizontal (fluid, never less than 16px)
+- **Section padding:** Minimum 3rem vertical between sections
+- **Edge margins:** 4-8vw horizontal (fluid, never less than 1rem)
 
 ### Hierarchy Rules
 1. **One focal point per section.** Everything else supports it.

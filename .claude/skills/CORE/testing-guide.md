@@ -66,61 +66,11 @@ describe('feature', () => {
 
 ## TDD Methodology
 
-### Philosophy
+**Core principle:** Tests verify behavior through public interfaces, not implementation. Good tests survive refactors. Bad tests break when internals change but behavior doesn't.
 
-**Core principle:** Tests verify behavior through public interfaces, not implementation details. Code can change entirely; tests shouldn't.
+**Vertical slices, not horizontal:** One test at a time. RED→GREEN→REFACTOR per scenario. Never write all tests first then all implementation.
 
-**Good tests** are integration-style: they exercise real code paths through public APIs. They read like specifications — "user can checkout with valid cart" tells you exactly what capability exists. They survive refactors because they don't care about internal structure.
-
-**Bad tests** are coupled to implementation: they mock internal collaborators, test private methods, or verify through external means. Warning sign: test breaks when you refactor, but behavior hasn't changed.
-
-```typescript
-// GOOD: Tests observable behavior through the interface
-test("createUser makes user retrievable", async () => {
-  const user = await createUser({ name: "Alice" });
-  const retrieved = await getUser(user.id);
-  expect(retrieved.name).toBe("Alice");
-});
-
-// BAD: Bypasses interface, tests implementation
-test("createUser saves to database", async () => {
-  await createUser({ name: "Alice" });
-  const row = await db.query("SELECT * FROM users WHERE name = ?", ["Alice"]);
-  expect(row).toBeDefined();
-});
-```
-
-### Vertical Slices, Not Horizontal
-
-**DO NOT write all tests first, then all implementation.** That's horizontal slicing — it produces tests that verify imagined behavior, not actual behavior.
-
-```
-WRONG (horizontal):
-  RED:   test1, test2, test3, test4, test5
-  GREEN: impl1, impl2, impl3, impl4, impl5
-
-RIGHT (vertical — tracer bullets):
-  RED→GREEN: test1→impl1
-  RED→GREEN: test2→impl2
-  RED→GREEN: test3→impl3
-```
-
-Each cycle responds to what you learned from the previous one.
-
-### TDD Workflow
-
-1. **Plan** — Confirm interface shape and which behaviors to test. Design for depth (see references below). You can't test everything — prioritize critical paths.
-2. **Tracer bullet** — ONE test proving ONE thing end-to-end. RED → GREEN.
-3. **Incremental loop** — One test at a time. Only enough code to pass. Don't anticipate future tests.
-4. **Refactor** — After all tests GREEN. Never refactor while RED.
-
-### Checklist Per Cycle
-
-- [ ] Test describes behavior, not implementation
-- [ ] Test uses public interface only
-- [ ] Test would survive internal refactor
-- [ ] Code is minimal for this test
-- [ ] No speculative features added
+For the full TDD workflow (activation, phase enforcement, mutation testing, escalation): invoke the `tdd-qa` skill or **READ** `tdd-qa/workflows/tdd-cycle.md`.
 
 ---
 

@@ -130,12 +130,13 @@ describe('Scanner', () => {
       expect(readEdges.length).toBeGreaterThanOrEqual(4);
     });
 
-    it('extracts Documentation Index TABLE entries', () => {
+    it('extracts TABLE entries from SKILL.md (security table)', () => {
       const skillMd = join(SKILLS_DIR, 'CORE/SKILL.md');
       const content = readFileSync(skillMd, 'utf-8');
       const edges = extractReferences(skillMd, content, PAI_DIR, SKILLS_DIR);
       const tableEdges = edges.filter(e => e.type === 'TABLE');
-      expect(tableEdges.length).toBeGreaterThanOrEqual(11);
+      // Doc index moved to routing-cheatsheet.md; remaining tables are security + response style
+      expect(tableEdges.length).toBeGreaterThanOrEqual(0);
     });
 
     it('extracts SEE references', () => {

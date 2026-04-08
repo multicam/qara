@@ -26,8 +26,6 @@
 ## Code Style & Conventions
 
 ### General Principles
-- Deterministic Code First (from CONSTITUTION.md)
-- CLI-First Architecture (from CONSTITUTION.md)
 - Explicit over implicit, readable over clever, boring over exciting
 
 ### Naming Conventions
