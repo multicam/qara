@@ -2,6 +2,8 @@
 name: cruise
 description: Phased autonomous execution mode. Discover → Plan → Implement → Verify with checkpoints between phases.
 context: fork
+effort: high
+keep-coding-instructions: true
 argument-hint: "<task description>"
 ---
 

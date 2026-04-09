@@ -1,6 +1,7 @@
 ---
 name: triage-issue
 context: fork
+effort: low
 description: |
   Investigate reported problems, identify root causes, and create GitHub issues
   with TDD-based fix plans. Supports single bugs and batch sessions with

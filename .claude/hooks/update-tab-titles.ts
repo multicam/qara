@@ -37,12 +37,18 @@ async function main() {
 
     // Generate a short title from the prompt
     const shortTitle = generateTabTitle(prompt);
-    
+
     // Set tab title with processing indicator
     const daName = process.env.DA || 'AI';
     const titleWithEmoji = `♻️ ${daName}: ${shortTitle}`;
-    
+
+    // Use CC-native sessionTitle (v2.1.94+) AND ANSI fallback
     setTerminalTabTitle(titleWithEmoji);
+    process.stdout.write(JSON.stringify({
+      hookSpecificOutput: {
+        sessionTitle: titleWithEmoji,
+      },
+    }));
 
     process.exit(0);
   } catch (error) {

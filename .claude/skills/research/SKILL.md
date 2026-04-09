@@ -2,6 +2,7 @@
 name: research
 context: fork
 model: sonnet
+effort: high
 description: |
   Web research, content extraction, and deep analysis. Multi-source parallel search
   with extended thinking.

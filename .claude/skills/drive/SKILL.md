@@ -2,6 +2,8 @@
 name: drive
 description: PRD-driven persistent execution mode. Iterates through user stories until all acceptance criteria pass, with TDD cycles, critic/verifier gates, and regression checks.
 context: fork
+effort: high
+keep-coding-instructions: true
 argument-hint: "<task description>"
 ---
 

@@ -2,6 +2,7 @@
 name: thoughts-consolidate
 context: fork
 model: sonnet
+effort: low
 description: |
   Consolidate and clean up thoughts/ files. Takes a list of file paths,
   verifies against current codebase, and produces a single clean document.

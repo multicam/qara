@@ -2,6 +2,8 @@
 name: turbo
 description: Parallel agent dispatch mode. Decomposes tasks into independent subtasks, spawns parallel agents, collects and verifies results.
 context: fork
+effort: high
+keep-coding-instructions: true
 argument-hint: "<task description>"
 ---
 

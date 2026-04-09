@@ -1,6 +1,7 @@
 ---
 name: tdd-qa
 context: fork
+effort: high
 description: |
   Test-driven development and QA architecture. Agent-executable blueprints for
   scenario definitions, TDD cycles, back-testing loops, and quality gates.

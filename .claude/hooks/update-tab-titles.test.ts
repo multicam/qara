@@ -90,9 +90,10 @@ describe("update-tab-titles.ts", () => {
   });
 
   describe("output contract", () => {
-    it("should produce no stdout (escape sequences go to stderr)", async () => {
+    it("should emit sessionTitle via hookSpecificOutput", async () => {
       const result = await runHook(hookInput("test prompt"));
-      expect(result.stdout.trim()).toBe("");
+      const output = JSON.parse(result.stdout.trim());
+      expect(output.hookSpecificOutput.sessionTitle).toContain("Qara");
     });
   });
 });

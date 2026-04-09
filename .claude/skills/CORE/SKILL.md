@@ -1,6 +1,7 @@
 ---
 name: CORE
 context: same
+keep-coding-instructions: true
 description: |
   Qara (Personal AI Infrastructure) - Jean-Marc Giorgi's AI System.
   Loads automatically at session start. Provides identity, operating principles,

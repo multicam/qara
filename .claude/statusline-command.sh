@@ -149,5 +149,26 @@ if [ "$total_input" != "0" ] || [ "$total_output" != "0" ]; then
 line2="$line2 $(printf '\033[2m│\033[0m \033[34m↓%s in\033[0m \033[2m/\033[0m \033[34m↑%s out\033[0m' "$input_fmt" "$output_fmt")"
 fi
 
+# Rate limits (available for Pro/Max subscribers after first API call)
+rl_5h=$(echo "$input" | jq -r '.rate_limits.five_hour.used_percentage // null')
+rl_7d=$(echo "$input" | jq -r '.rate_limits.seven_day.used_percentage // null')
+
+if [ "$rl_5h" != "null" ] && [ "$rl_5h" != "" ]; then
+  rl_5h_int=$(printf "%.0f" "$rl_5h")
+  if [ "$rl_5h_int" -lt 50 ]; then
+    rl_color='\033[92m'  # Green
+  elif [ "$rl_5h_int" -lt 80 ]; then
+    rl_color='\033[93m'  # Yellow
+  else
+    rl_color='\033[91m'  # Red
+  fi
+  rl_display="5h:${rl_5h_int}%"
+  if [ "$rl_7d" != "null" ] && [ "$rl_7d" != "" ]; then
+    rl_7d_int=$(printf "%.0f" "$rl_7d")
+    rl_display="${rl_display} 7d:${rl_7d_int}%"
+  fi
+  line2="$line2 $(printf '\033[2m│\033[0m %b⚡%s\033[0m' "$rl_color" "$rl_display")"
+fi
+
 # Output with blank line separator
 printf '%b\n\n%b' "$line1" "$line2"
