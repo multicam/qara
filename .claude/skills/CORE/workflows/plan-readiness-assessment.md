@@ -52,6 +52,15 @@ Scan for: `TBD`, `TODO`, `TBC`, `decide later`, `open question`, `?` in non-rhet
 
 Circular or missing dependencies = **NEEDS WORK**.
 
+### 6. Ground Truth Check
+
+For each file the plan proposes to modify:
+- [ ] Read the file
+- [ ] Verify the plan's description of its current state matches reality
+- [ ] If the plan says "this file does X" or "this function works like Y", confirm it
+
+If any description doesn't match reality: **NEEDS WORK** — plan is built on stale or wrong assumptions about the codebase.
+
 ## Verdict Format
 
 ```
@@ -66,6 +75,7 @@ Circular or missing dependencies = **NEEDS WORK**.
 - Falsifiable criteria: PASS/FAIL (detail)
 - No open questions: PASS/FAIL (detail)
 - Dependency ordering: PASS/FAIL (detail)
+- Ground truth: PASS/FAIL (detail)
 
 ### Routing Recommendation (only when READY)
 **Recommended executor:** cruise | turbo | /implement_plan
