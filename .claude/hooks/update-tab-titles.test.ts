@@ -90,10 +90,15 @@ describe("update-tab-titles.ts", () => {
   });
 
   describe("output contract", () => {
-    it("should emit sessionTitle via hookSpecificOutput", async () => {
+    it("should produce NO stdout (avoids CC JSON validation errors)", async () => {
       const result = await runHook(hookInput("test prompt"));
-      const output = JSON.parse(result.stdout.trim());
-      expect(output.hookSpecificOutput.sessionTitle).toContain("Qara");
+      expect(result.stdout.trim()).toBe("");
+    });
+
+    it("should write ANSI escape codes to stderr only", async () => {
+      const result = await runHook(hookInput("fix auth bug"));
+      expect(result.stderr).toContain("\x1b]");
+      expect(result.stdout.trim()).toBe("");
     });
   });
 });

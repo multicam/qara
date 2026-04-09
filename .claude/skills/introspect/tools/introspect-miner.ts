@@ -11,7 +11,7 @@
  *   bun introspect-miner.ts --mode monthly [--project NAME]
  */
 
-import { readFileSync, readdirSync, statSync, existsSync, lstatSync } from 'fs';
+import { readFileSync, writeFileSync, readdirSync, statSync, existsSync, lstatSync } from 'fs';
 import { join } from 'path';
 import { execSync } from 'child_process';
 
@@ -19,7 +19,7 @@ import {
     // Constants
     STATE_DIR,
     INTROSPECTION_DIR,
-    DEFAULT_DEFAULT_PROJECT_DIR,
+    DEFAULT_PROJECT_DIR,
     // JSONL / dates
     readJsonlFile,
     getSydneyDate,
@@ -85,8 +85,14 @@ interface InfrastructureDrift {
 }
 
 function detectInfrastructureDrift(paiDir: string): InfrastructureDrift {
-    // Known baselines (updated when Qara evolves — this IS the canary)
-    const EXPECTED = { hooks: 14, libs: 13, agents: 13, skills: 50 };
+    // Baselines auto-saved from previous run — no more hardcoded constants
+    const baselinePath = join(STATE_DIR, 'infra-baseline.json');
+    let EXPECTED = { hooks: 0, libs: 0, agents: 0, skills: 0 };
+    try {
+        if (existsSync(baselinePath)) {
+            EXPECTED = JSON.parse(readFileSync(baselinePath, 'utf-8'));
+        }
+    } catch { /* first run or corrupt file — treat everything as new */ }
 
     const hooksDir = join(paiDir, 'hooks');
     const libDir = join(hooksDir, 'lib');
@@ -118,10 +124,15 @@ function detectInfrastructureDrift(paiDir: string): InfrastructureDrift {
     const actualAgents = countFiles(agentsDir, ['.md']);
     const actualSkills = countDirs(skillsDir);
 
-    const hooks = { expected: EXPECTED.hooks, actual: actualHooks, drifted: actualHooks !== EXPECTED.hooks };
-    const libs = { expected: EXPECTED.libs, actual: actualLibs, drifted: actualLibs !== EXPECTED.libs };
-    const agents = { expected: EXPECTED.agents, actual: actualAgents, drifted: actualAgents !== EXPECTED.agents };
-    const skills = { expected: EXPECTED.skills, actual: actualSkills, drifted: actualSkills !== EXPECTED.skills };
+    // Save current counts as baseline for next run
+    try {
+        writeFileSync(baselinePath, JSON.stringify({ hooks: actualHooks, libs: actualLibs, agents: actualAgents, skills: actualSkills }));
+    } catch { /* non-fatal — drift detection still works, just won't auto-update */ }
+
+    const hooks = { expected: EXPECTED.hooks, actual: actualHooks, drifted: EXPECTED.hooks > 0 && actualHooks !== EXPECTED.hooks };
+    const libs = { expected: EXPECTED.libs, actual: actualLibs, drifted: EXPECTED.libs > 0 && actualLibs !== EXPECTED.libs };
+    const agents = { expected: EXPECTED.agents, actual: actualAgents, drifted: EXPECTED.agents > 0 && actualAgents !== EXPECTED.agents };
+    const skills = { expected: EXPECTED.skills, actual: actualSkills, drifted: EXPECTED.skills > 0 && actualSkills !== EXPECTED.skills };
 
     return { hooks, libs, agents, skills, drifted: hooks.drifted || libs.drifted || agents.drifted || skills.drifted };
 }

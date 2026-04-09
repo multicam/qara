@@ -18,22 +18,38 @@ Files in this directory become available as `/command-name`. They use `$ARGUMENT
 | `/load-dynamic-requirements` | — | Loads dynamic requirements into context |
 | `/Readme` | — | Shows custom slash command documentation |
 
-## Custom Agents (.claude/agents/) — 8 agents
+## Custom Agents (.claude/agents/) — 15 agents (10 base + 5 tiered)
 
 Used via `Task` tool with `subagent_type` parameter.
 
+### Base Agents (10)
+
 | Agent | Model | Purpose |
 |-------|-------|---------|
+| `architect` | opus | PRD creation, system design, technical specs (loads research skill) |
+| `claude-researcher` | haiku | Primary web research via WebSearch/WebFetch |
 | `codebase-analyzer` | sonnet | Traces data flow, finds patterns, explains implementation |
-| `thoughts-analyzer` | sonnet | Extracts decisions and insights from thoughts/ docs |
-| `thoughts-locator` | haiku | Discovers relevant documents in thoughts/ directory |
+| `critic` | opus | Pre-implementation plan review, risk/gap analysis |
 | `designer` | opus | Design review, UX/UI, typography (loads frontend-design skill) |
-| `architect` | opus | PRD creation, system design (loads research skill) |
 | `engineer` | sonnet | Code implementation, debugging, optimization, testing |
-| `reviewer` | opus | Code review for correctness, security, performance |
 | `gemini-researcher` | haiku | Fallback when WebSearch fails — uses Gemini CLI |
+| `reviewer` | opus | Code review for correctness, security, performance |
+| `thoughts-analyzer` | sonnet | Discovers + analyzes thoughts/ docs for insights and decisions |
+| `verifier` | opus | Post-implementation acceptance verification, quality gates |
 
-CC built-in agents (no custom definition): `Explore`, `Plan`, `Bash`, `general-purpose`, `claude-code-guide`.
+### Tiered Variants (5)
+
+| Agent | Base | Model | Purpose |
+|-------|------|-------|---------|
+| `architect-low` | architect | sonnet | Quick specs, feature summaries, lightweight scaffolding |
+| `codebase-analyzer-low` | codebase-analyzer | haiku | Quick file lookups, simple pattern searches |
+| `engineer-high` | engineer | opus | Complex architecture, cross-cutting changes |
+| `engineer-low` | engineer | haiku | Simple fixes, renames, trivial edits |
+| `reviewer-low` | reviewer | sonnet | Quick pass/fail for small diffs (<50 lines) |
+
+Agents with `memory: project`: architect, critic, reviewer, verifier.
+
+CC built-in agents (no custom definition): `Explore`, `Plan`, `general-purpose`, `claude-code-guide`, `statusline-setup`.
 
 ## Delegation Patterns
 
@@ -55,5 +71,7 @@ Delegation uses CC's Task tool. Custom agents extend built-in types with special
 
 | File | Purpose |
 |------|---------|
-| `bun-guide.md` | Bun runtime patterns: Bun.serve(), bun:sqlite, bun test |
+| `routing-cheatsheet.md` | All activation patterns: keywords, skills, commands, agents, hooks |
+| `delegation-guide.md` | Agent selection matrix, model tiers, escalation paths |
 | `hooks-guide.md` | Active hooks reference, shared utilities, event types |
+| `bun-guide.md` | Bun runtime patterns: Bun.serve(), bun:sqlite, bun test |

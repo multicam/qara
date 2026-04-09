@@ -42,13 +42,8 @@ async function main() {
     const daName = process.env.DA || 'AI';
     const titleWithEmoji = `♻️ ${daName}: ${shortTitle}`;
 
-    // Use CC-native sessionTitle (v2.1.94+) AND ANSI fallback
+    // Set tab title via ANSI escape codes (stderr — stdout reserved for CC JSON)
     setTerminalTabTitle(titleWithEmoji);
-    process.stdout.write(JSON.stringify({
-      hookSpecificOutput: {
-        sessionTitle: titleWithEmoji,
-      },
-    }));
 
     process.exit(0);
   } catch (error) {

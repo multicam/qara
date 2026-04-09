@@ -3,6 +3,7 @@
  * transcript mining functions extracted from miner-lib.ts.
  */
 import { readdirSync, statSync, existsSync } from 'fs';
+import { execSync } from 'child_process';
 import { join } from 'path';
 
 import {
@@ -75,8 +76,11 @@ function isCorrection(text: string): boolean {
 const IMPERATIVE_VERBS = /^(use|try|change|make|do|run|add|remove|delete|move|put|fix|update|set|check)\b/i;
 const NEGATION_WORDS = /\b(not|don't|doesn't|isn't|won't|can't|shouldn't|instead|rather|actually|but)\b/i;
 
-function assistantHadCodeOrPath(assistantSnippet: string): boolean {
-    return assistantSnippet.includes('```') || /[/\\][a-zA-Z0-9._-]/.test(assistantSnippet);
+function assistantHadAction(assistantSnippet: string): boolean {
+    // Require the assistant to have performed an action (tool use indicators),
+    // not just mentioned code or paths. Reduces false positives from informational responses.
+    return /\b(Edit|Write|Bash|created|updated|modified|wrote|deleted|fixed)\b/.test(assistantSnippet)
+        || assistantSnippet.includes('```');
 }
 
 // ---------------------------------------------------------------------------
@@ -155,9 +159,9 @@ function extractCorrections(transcripts: string[], targetDate: string): Correcti
                     continue;
                 }
 
-                if (assistantHadCodeOrPath(lastAssistant)) {
+                if (content.length >= 10 && assistantHadAction(lastAssistant)) {
                     const words = content.trim().split(/\s+/);
-                    if (words.length < 30) {
+                    if (words.length >= 3 && words.length < 30) {
                         const hasQuestion = content.includes('?');
                         const hasImperative = IMPERATIVE_VERBS.test(content.trimStart());
                         const hasNegationWord = NEGATION_WORDS.test(content);
@@ -181,12 +185,19 @@ function extractCorrections(transcripts: string[], targetDate: string): Correcti
 }
 
 function extractCCVersion(transcripts: string[]): string | null {
+    // Try transcripts first (most recent session's version field)
     for (const filepath of [...transcripts].reverse()) {
         const messages = readJsonlFile<TranscriptMessage>(filepath);
         for (const msg of messages) {
             if (msg.version) return msg.version;
         }
     }
+    // Fallback: ask the CLI directly (handles upgrades since last session)
+    try {
+        const output = execSync('claude --version 2>/dev/null', { encoding: 'utf-8', timeout: 5000 }).trim();
+        const match = output.match(/(\d+\.\d+\.\d+)/);
+        if (match) return match[1];
+    } catch { /* claude not in PATH or timed out */ }
     return null;
 }
 
@@ -197,7 +208,7 @@ export {
     // Correction detection
     isCorrection,
     detectCorrectionPattern,
-    assistantHadCodeOrPath,
+    assistantHadAction,
     IMPERATIVE_VERBS,
     NEGATION_WORDS,
     // Security

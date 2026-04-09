@@ -238,7 +238,7 @@ function getDateRange(startStr: string, endStr: string): string[] {
 export {
     isCorrection,
     detectCorrectionPattern,
-    assistantHadCodeOrPath,
+    assistantHadAction,
     IMPERATIVE_VERBS,
     NEGATION_WORDS,
     filterTestNoise,

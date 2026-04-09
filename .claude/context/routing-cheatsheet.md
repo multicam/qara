@@ -151,7 +151,7 @@ Use via `Task` tool with `subagent_type`. Parallelize when tasks are independent
 
 ## 7. Hook Events
 
-10 CC hook events registered in `settings.json`. Runs in order listed for each event.
+14 CC hook events registered in `settings.json`. 18 hook scripts total. Runs in order listed for each event.
 
 | Event | Scripts | What it does |
 |-------|---------|-------------|
@@ -167,5 +167,9 @@ Use via `Task` tool with `subagent_type`. Parallelize when tasks are independent
 | `SubagentStart` | `subagent-start.ts` | Track agent spawns for delegation metrics |
 | `SubagentStop` | `subagent-stop.ts` | Finalize agent trace on completion |
 | `PreCompact` | `pre-compact.ts` | Checkpoint working memory before context compaction |
+| `PostCompact` | `post-compact.ts` | Post-compaction state reconciliation |
 | `Stop` | `stop-hook.ts` | Session wrap-up: persist state, update tab title |
+| `StopFailure` | `stop-failure.ts` | Handle stop hook failures, graceful degradation |
 | `ConfigChange` | `config-change.ts` | Sync config changes, rebuild derived state |
+| `PermissionDenied` | `permission-denied.ts` | Log denied tool calls for security audit |
+| `TaskCreated` | `task-created.ts` | Track task creation for progress monitoring |
