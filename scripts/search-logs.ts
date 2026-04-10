@@ -100,11 +100,11 @@ function parseArgs(argv: string[]): SearchOptions {
     else if ((arg === "-q" || arg === "--query") && next) opts.query = argv[++i];
     else if ((arg === "-s" || arg === "--session") && next) opts.session = argv[++i];
     else if ((arg === "-t" || arg === "--tool") && next) opts.tool = argv[++i];
-    else if (arg === "--from" && next) opts.from = argv[++i];
-    else if (arg === "--to" && next) opts.to = argv[++i];
+    else if (arg === "--from" && next) opts.from = argv[++i]!;
+    else if (arg === "--to" && next) opts.to = argv[++i]!;
     else if (arg === "--errors") opts.errors = true;
     else if (arg === "--format" && next) opts.format = argv[++i] as any;
-    else if ((arg === "-n" || arg === "--limit") && next) opts.limit = parseInt(argv[++i], 10) || 50;
+    else if ((arg === "-n" || arg === "--limit") && next) opts.limit = parseInt(argv[++i]!, 10) || 50;
     else if (arg === "--count") opts.count = true;
   }
 
