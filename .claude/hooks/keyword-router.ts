@@ -155,12 +155,26 @@ function main() {
             : prompt;
           const taskContext = afterKeyword.replace(/^[\s:]+/, "").trim() || prompt.trim();
 
+          // Detect a plan file path in the activation text (used by plan-aware cruise).
+          // Heuristic: a .md path that contains "plans/" — matches both absolute and
+          // relative forms (thoughts/shared/plans/foo.md, /home/jm/plans/bar.md).
+          const planMatch = taskContext.match(/[\w./-]*plans\/[\w.-]+\.md/);
+          const planPath = planMatch ? planMatch[0] : undefined;
+
+          // prdPath is drive-only. Cruise/turbo do not use a PRD — setting it for
+          // those modes was a pre-existing bug (prdPath was hardcoded regardless
+          // of mode). Phase 1 of the plan-aware cruise migration fixes this.
+          const prdPath = routeName === "drive"
+            ? join(process.cwd(), "prd.json")
+            : undefined;
+
           writeModeState({
             mode: routeName as ModeName,
             taskContext,
             acceptanceCriteria: "task complete",
             skillPath,
-            prdPath: join(process.cwd(), "prd.json"),
+            prdPath,
+            planPath,
             maxIterations: route.modeDefaults?.maxIterations ?? 50,
             maxTokensBudget: route.modeDefaults?.maxTokensBudget ?? 0,
           });

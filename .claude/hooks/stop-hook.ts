@@ -43,9 +43,10 @@ function emitContinuation(modeState: ModeState): void {
   } catch { /* non-critical */ }
 
   const prdNote = modeState.prdPath ? `\nPRD: ${modeState.prdPath}` : '';
+  const planNote = modeState.planPath ? `\nPlan: ${modeState.planPath}` : '';
 
   const continuation = JSON.stringify({
-    result: `<system-reminder>MODE CONTINUATION — ${modeState.mode} iteration ${modeState.iteration + 1}/${modeState.maxIterations}${extensionNote}\n\nTask: ${modeState.taskContext}\nCriteria: ${modeState.acceptanceCriteria}${prdNote}${antislopNote}${memorySection}\n\n${skillContent}\n\nCONTINUE WORKING.</system-reminder>`,
+    result: `<system-reminder>MODE CONTINUATION — ${modeState.mode} iteration ${modeState.iteration + 1}/${modeState.maxIterations}${extensionNote}\n\nTask: ${modeState.taskContext}\nCriteria: ${modeState.acceptanceCriteria}${prdNote}${planNote}${antislopNote}${memorySection}\n\n${skillContent}\n\nCONTINUE WORKING.</system-reminder>`,
   });
   process.stdout.write(continuation);
 

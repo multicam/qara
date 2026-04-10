@@ -184,6 +184,36 @@ describe("Keyword Router", () => {
       const state = JSON.parse(readFileSync(MODE_STATE_FILE, "utf-8"));
       expect(state.maxIterations).toBe(20); // cruise default
     });
+
+    // ─── planPath detection (plan-aware cruise migration Phase 1) ──────────
+
+    it("should set planPath when cruise is activated with a plan file", async () => {
+      await runRouter({ prompt: "cruise: implement thoughts/shared/plans/foo-plan.md" });
+      const state = JSON.parse(readFileSync(MODE_STATE_FILE, "utf-8"));
+      expect(state.mode).toBe("cruise");
+      expect(state.planPath).toContain("thoughts/shared/plans/foo-plan.md");
+    });
+
+    it("should leave planPath null when cruise is activated without a plan file", async () => {
+      await runRouter({ prompt: "cruise: explore things" });
+      const state = JSON.parse(readFileSync(MODE_STATE_FILE, "utf-8"));
+      expect(state.mode).toBe("cruise");
+      expect(state.planPath).toBeNull();
+    });
+
+    it("should not set prdPath when activating cruise without a PRD (bug fix)", async () => {
+      await runRouter({ prompt: "cruise: explore things" });
+      const state = JSON.parse(readFileSync(MODE_STATE_FILE, "utf-8"));
+      expect(state.mode).toBe("cruise");
+      expect(state.prdPath).toBeNull();
+    });
+
+    it("should still set prdPath when activating drive (regression guard)", async () => {
+      await runRouter({ prompt: "drive: implement auth feature" });
+      const state = JSON.parse(readFileSync(MODE_STATE_FILE, "utf-8"));
+      expect(state.mode).toBe("drive");
+      expect(state.prdPath).toContain("prd.json");
+    });
   });
 
   // ─── Edge Cases ──────────────────────────────────────────────────────────

@@ -131,6 +131,31 @@ describe("Mode State Management", () => {
     it("should return null when no state exists", () => {
       expect(readModeState()).toBeNull();
     });
+
+    // ─── planPath (plan-aware cruise migration Phase 1) ───────────────────
+
+    it("should default planPath to null when not provided", () => {
+      writeModeState({
+        mode: "cruise",
+        taskContext: "task-mode work",
+        acceptanceCriteria: "done",
+        skillPath: "/tmp/c.md",
+      });
+      const raw = JSON.parse(readFileSync(getStateFilePath(), "utf-8"));
+      expect(raw.planPath).toBeNull();
+    });
+
+    it("should preserve planPath through write/read roundtrip", () => {
+      writeModeState({
+        mode: "cruise",
+        taskContext: "implement plan X",
+        acceptanceCriteria: "all phases pass",
+        skillPath: "/tmp/c.md",
+        planPath: "/tmp/foo-plan.md",
+      } as Parameters<typeof writeModeState>[0] & { planPath: string });
+      const raw = JSON.parse(readFileSync(getStateFilePath(), "utf-8"));
+      expect(raw.planPath).toBe("/tmp/foo-plan.md");
+    });
   });
 
   // ─── Validation ──────────────────────────────────────────────────────────
@@ -388,6 +413,25 @@ describe("Mode State Management", () => {
     it("should reject invalid mode names", () => {
       const result = runCLI(["activate", "--mode", "invalid", "--task", "test", "--criteria", "done", "--skill", "/tmp/d.md"]);
       expect(result.exitCode).toBe(1);
+    });
+
+    it("should accept --plan flag and persist planPath", () => {
+      const result = runCLI([
+        "activate", "--mode", "cruise",
+        "--task", "implement plan foo",
+        "--criteria", "done",
+        "--skill", "/tmp/c.md",
+        "--plan", "/tmp/foo-plan.md",
+      ]);
+      expect(result.exitCode).toBe(0);
+      const raw = JSON.parse(readFileSync(getStateFilePath(), "utf-8"));
+      expect(raw.planPath).toBe("/tmp/foo-plan.md");
+    });
+
+    it("should default planPath to null when --plan flag omitted", () => {
+      runCLI(["activate", "--mode", "cruise", "--task", "test", "--criteria", "done", "--skill", "/tmp/c.md"]);
+      const raw = JSON.parse(readFileSync(getStateFilePath(), "utf-8"));
+      expect(raw.planPath).toBeNull();
     });
 
     it("should accept --max flag", () => {

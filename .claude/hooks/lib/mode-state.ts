@@ -48,6 +48,7 @@ export interface ModeState {
   acceptanceCriteria: string;
   skillPath: string;
   prdPath: string | null;
+  planPath: string | null;
   lastCompletedStory: string | null;
   activeSubagents: number;
   completedSubagents: string[];
@@ -133,6 +134,7 @@ export function writeModeState(params: {
   maxIterations?: number;
   maxTokensBudget?: number;
   prdPath?: string;
+  planPath?: string;
 }): void {
   const now = new Date();
   const state: ModeState = {
@@ -149,6 +151,7 @@ export function writeModeState(params: {
     acceptanceCriteria: params.acceptanceCriteria,
     skillPath: params.skillPath,
     prdPath: params.prdPath ?? null,
+    planPath: params.planPath ?? null,
     lastCompletedStory: null,
     activeSubagents: 0,
     completedSubagents: [],
@@ -275,7 +278,7 @@ export function getStateFilePath(): string {
 // ─── CLI ────────────────────────────────────────────────────────────────────
 
 const USAGE = `Usage:
-  bun mode-state.ts activate --mode <drive|cruise|turbo> --task "..." --criteria "..." --skill <path> [--max N] [--budget N]
+  bun mode-state.ts activate --mode <drive|cruise|turbo> --task "..." --criteria "..." --skill <path> [--max N] [--budget N] [--plan <path>]
   bun mode-state.ts status
   bun mode-state.ts clear`;
 
@@ -293,6 +296,7 @@ function runCLI(args: string[]): { exitCode: number; stdout: string; stderr: str
     let skill = "";
     let max = 50;
     let budget = 0;
+    let plan = "";
     for (let i = 1; i < args.length; i++) {
       if (args[i] === "--mode" && args[i + 1]) mode = args[++i].toLowerCase();
       else if (args[i] === "--task" && args[i + 1]) task = args[++i];
@@ -300,6 +304,7 @@ function runCLI(args: string[]): { exitCode: number; stdout: string; stderr: str
       else if (args[i] === "--skill" && args[i + 1]) skill = args[++i];
       else if (args[i] === "--max" && args[i + 1]) max = parseInt(args[++i], 10) || 50;
       else if (args[i] === "--budget" && args[i + 1]) budget = parseInt(args[++i], 10) || 0;
+      else if (args[i] === "--plan" && args[i + 1]) plan = args[++i];
     }
     if (!mode || !VALID_MODES.includes(mode as ModeName)) {
       return { exitCode: 1, stdout: "", stderr: `Error: --mode must be one of: ${VALID_MODES.join(", ")}\n${USAGE}` };
@@ -314,6 +319,7 @@ function runCLI(args: string[]): { exitCode: number; stdout: string; stderr: str
       skillPath: skill || "",
       maxIterations: max,
       maxTokensBudget: budget,
+      planPath: plan || undefined,
     });
     return { exitCode: 0, stdout: `Mode activated: ${mode} (max ${max} iterations)\n  Task: ${task}`, stderr: "" };
   }
