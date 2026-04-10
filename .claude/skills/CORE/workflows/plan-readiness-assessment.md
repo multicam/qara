@@ -78,13 +78,12 @@ If any description doesn't match reality: **NEEDS WORK** — plan is built on st
 - Ground truth: PASS/FAIL (detail)
 
 ### Routing Recommendation (only when READY)
-**Recommended executor:** cruise | turbo | /implement_plan
+**Recommended executor:** cruise | turbo
 **Reasoning:** [why this executor fits]
 
 Routing logic:
-- 1-2 phases, <5 files → /implement_plan (lightweight, no mode overhead)
-- 3+ sequential phases → cruise (working memory, verification loops, checkpoints)
-- 3+ independent phases → turbo (parallel agent dispatch)
+- Any sequential plan → `cruise: implement {plan-file}` (plan-aware cruise: per-phase critic + TDD + quality sniff + verifier + conditional manual pause + final regression)
+- 3+ independent phases → `turbo: implement {plan-file}` (parallel agent dispatch)
 - If unsure: default to cruise (safest, most infrastructure)
 
 ### Gaps (only when NEEDS WORK or UNDERCOOKED)
@@ -112,5 +111,4 @@ Present to JM via AskUserQuestion:
 
 On selection:
 - cruise/turbo: Output the activation command: `cruise: implement {plan-file-path}` or `turbo: implement {plan-file-path}`
-- /implement_plan: Output: `/implement_plan {plan-file-path}`
 - Manual: Acknowledge, plan serves as reference material

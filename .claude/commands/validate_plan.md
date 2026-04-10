@@ -180,7 +180,7 @@ sessions to learn from (thoughts-analyzer will find it).
 ## Relationship to Other Commands
 
 Recommended workflow:
-1. `/implement_plan` - Execute the implementation
+1. Activate cruise mode: `cruise: implement {plan-file}` (or `turbo: implement {plan-file}` for 3+ independent phases)
 2. Commit changes using git (e.g., via the built-in commit flow)
 3. `/validate_plan` - Verify implementation correctness
 4. Create PR via `gh pr create` when ready

@@ -73,12 +73,11 @@ Quality hub:
 - **"is this plan ready?"** → standalone readiness assessment → verdict + routing
 
 Execution dispatch (recommended by readiness assessment):
-- 1-2 phases, simple → `/implement_plan`
-- 3+ sequential phases → `cruise: implement {plan-file}`
+- Any plan, sequential phases → `cruise: implement {plan-file}`
 - 3+ independent phases → `turbo: implement {plan-file}`
 - PRD with user stories → `drive:` (separate track, not plan-consuming)
 
-Quality enforcement per mode (gap matrix, coverage definition, `/implement_plan → drive` migration decision):
+Quality enforcement per mode (gap matrix, coverage definition):
 → READ `.claude/context/execution-modes-quality.md`
 
 Plan naming: `domain--specific-feature-vN.md` (e.g., `planning-ux--unified-lifecycle-v1.md`)
@@ -93,7 +92,6 @@ Invoked as `/command-name` in Claude Code.
 |---------|------|-------------|
 | `/research` | `commands/research.md` | Research auto-select (picks best researcher agent) |
 | `/create_plan` | `commands/create_plan.md` | Create detailed implementation plan (interactive, opus) |
-| `/implement_plan` | `commands/implement_plan.md` | Implement a plan from `thoughts/shared/plans/` |
 | `/validate_plan` | `commands/validate_plan.md` | Validate implementation against plan + success criteria |
 | `/research_codebase` | `commands/research_codebase.md` | Document codebase as-is using thoughts/ history |
 | `/skills` | `commands/skills.md` | Skills discovery — list available skills |

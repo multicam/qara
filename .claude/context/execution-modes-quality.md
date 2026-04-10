@@ -1,8 +1,8 @@
 # Execution Modes — Quality Enforcement Reference
 
-**Purpose:** What quality discipline does each execution path enforce? Answers "if I invoke X, which gates am I getting?" and captures the `/implement_plan → cruise (plan-aware)` migration decision (resolved 2026-04-11).
+**Purpose:** What quality discipline does each execution path enforce? Answers "if I invoke X, which gates am I getting?" Also captures the plan-aware cruise migration decision record (resolved + shipped 2026-04-11).
 
-**Load trigger:** On-demand. Read this when deciding which mode to activate, when debugging why a quality pass didn't fire, or when revisiting the cruise plan-aware migration.
+**Load trigger:** On-demand. Read this when deciding which mode to activate, when debugging why a quality pass didn't fire, or when revisiting the plan-aware cruise architecture.
 
 ---
 
@@ -11,9 +11,8 @@
 | Mode | TDD cycle | Quality sniff | Critic gate | Verifier agent | Mutation check | Human pause |
 |---|:---:|:---:|:---:|:---:|:---:|:---:|
 | **drive** (PRD-driven) | always | ✓ | ✓ | ✓ | ✓ | ✗ (verifier replaces) |
-| **cruise** (task mode, today) | conditional¹ | ✓ | ✗ | ✗ | ✗ | ✗ (checkpoints only) |
-| **cruise** (plan-aware, post-migration)³ | always on behavioral phases | ✓ | ✓ per phase | ✓ per phase | ✗ | ✓ conditional⁴ |
-| **~~/implement_plan~~** (deleted post-migration) | conditional¹ | **✗** | ✗ | ✗ | ✗ | ✓ between phases |
+| **cruise** — task mode | conditional¹ | ✓ | ✗ | ✗ | ✗ | ✗ (checkpoints only) |
+| **cruise** — plan-aware³ | on behavioral phases | ✓ | ✓ per phase | ✓ per phase | ✗ | ✓ conditional⁴ |
 | **turbo** | per-agent | varies | ✗ | ✗ | ✗ | — |
 | **ad-hoc (no mode)** | ✗ | principle only² | ✗ | ✗ | ✗ | — |
 
@@ -21,7 +20,7 @@
 
 ² **Principle only** = CORE lists `Quality Sniff Test` as an operating principle (always loaded) but nothing executes it outside modes. Relies on model discipline.
 
-³ **Plan-aware cruise** activates when invoked as `cruise: implement plans/foo.md`. Uses `cruise/workflows/plan-entry.md` (to be written). Task-mode cruise is unchanged.
+³ **Plan-aware cruise** activates when invoked as `cruise: implement plans/foo.md` (keyword-router detects the plan path and sets `ModeState.planPath`). Cruise's SKILL.md delegates to `workflows/plan-entry.md` for the per-phase loop. Task-mode cruise (no plan path) continues to use SKILL.md's Phase 1-4.
 
 ⁴ **Conditional pause** = plan-aware cruise pauses after a phase's automated verification IF that phase has `#### Manual Verification:` items. Phases without manual items proceed autonomously. No frontmatter flag, no CLI flag — the plan's content is the signal.
 
@@ -34,7 +33,7 @@
 - **Critic gate** — *Pre*-implementation. Spawns `critic` agent with proposed approach + acceptance criteria. Returns `proceed` or `revise`. Catches bad approaches before tokens are spent on code.
 - **Verifier agent** — *Post*-implementation. Spawns `verifier` agent with acceptance criteria. Returns `PASS` or `FAIL` per criterion. Independent from the implementing session — fresh evidence gathering.
 - **Mutation check** — Bonus round in drive's TDD cycle. Stryker-style mutant injection verifies tests *actually* assert behavior, not just execute lines. Catches the "test runs but doesn't fail when code is broken" problem.
-- **Human pause** — /implement_plan specific: between phases, stops and asks JM to manually verify before proceeding. Drive replaces this with the verifier agent gate.
+- **Human pause** — plan-aware cruise only: after a phase's automated verification, if the phase has `#### Manual Verification:` items, cruise pauses and prompts JM for PASS/FAIL, then ticks manual checkboxes on PASS. Drive has no human pause — its per-story verifier agent replaces that pattern.
 
 ---
 
@@ -74,7 +73,7 @@ JM's shorthand "coverage 100%" does NOT mean literal line coverage. It means "do
 
 ## The `/implement_plan → cruise (plan-aware)` Decision
 
-**Status:** Resolved 2026-04-11. Not yet implemented — rollout is scoped as a separate plan.
+**Status:** Implemented on 2026-04-11. Plan-aware cruise is live; `/implement_plan` is deleted. See commits `569646e` (Phase 1 schema), `39be32f` (Phase 2 workflow), `1836193` (Phase 3 SKILL.md integration), plus the Phase 5 cutover commits in the session log.
 
 **Why it should change.** `/implement_plan` is strictly weaker than cruise on every quality dimension except the human-verification pause. That pattern isn't worth maintaining a second execution path. More importantly:
 
@@ -116,7 +115,7 @@ Plan-aware cruise works within cruise's existing 20-iteration base + 1×5 extens
 
 ### Risks acknowledged
 
-- **Token cost per phase.** Cruise spawns `critic` + `verifier` per phase. A 5-phase plan adds ~10 agent spawns vs `/implement_plan` today. Accepted — subagent calls fit inside existing iterations and catch things the human-pause wouldn't (bad approach pre-coding, missed ACs post-coding).
+- **Token cost per phase.** Plan-aware cruise spawns `critic` + `verifier` per phase. A 5-phase plan adds ~10 agent spawns beyond task-mode cruise. Accepted — subagent calls fit inside existing iterations and catch things a simple bun-test pass wouldn't (bad approach pre-coding, missed ACs post-coding).
 - **Cruise's identity split.** Task-cruise and plan-cruise now have different Phase 3/4 behavior. Mitigated by putting plan-aware logic in a separate workflow file (`cruise/workflows/plan-entry.md`) rather than inline in SKILL.md — task-cruise remains unchanged by default.
 - **Plan quality becomes load-bearing.** Cruise's discipline depends on falsifiable phase success criteria. Plans with vague "make it work" criteria either fail at plan-readiness assessment upstream or produce weak critic/verifier reviews. This is a **feature** — it forces plan readiness upstream, which is where grill-me + readiness assessment already live.
 - **Regression scope narrower than drive.** Plan-aware cruise uses a lightweight final `bun test + tsc` sweep instead of drive's full per-story verifier regression loop. Rationale: plan phases are tightly sequenced and TDD cycle tests stay in the suite — the standing test run catches any regression those tests protect against. If a regression escapes `bun test`, re-running per-phase verifier would likely miss it too.
@@ -140,20 +139,17 @@ Plan-aware cruise works within cruise's existing 20-iteration base + 1×5 extens
 | 13 | Missing Testing Strategy | Handled upstream by plan-readiness assessment, not cruise's concern |
 | 14 | Routing update timing | Last step of rollout, after cruise smoke-tests cleanly |
 
-### Rollout order
+### Rollout order (historical, completed 2026-04-11)
 
-The migration is itself a good first test of plan-aware cruise — once the plan exists, cruise can dogfood it.
+The migration self-hosted: once Phase 3 landed, cruise dogfooded the rest of its own migration plan.
 
-1. Write `cruise/workflows/plan-entry.md` with the full plan-aware logic
-2. Add `ModeState.planPath: string | null` + migrate `stop-hook.ts` continuation to emit `planNote`
-3. Wire cruise/SKILL.md's new `Plan-Aware Execution` section to read `plan-entry.md` when activated with a plan file
-4. Smoke-test on a small real plan from `thoughts/searchable/shared/plans/`
-5. Delete `.claude/commands/implement_plan.md`
-6. Update `plan-readiness-assessment.md` routing section to recommend cruise across the board (no more `/implement_plan` reference)
-7. Update this doc: remove the "post-migration" qualifiers from the gap matrix, mark the decision "Implemented" with the commit hash
-8. Commit + push
+1. Phase 1: `ModeState.planPath` + stop-hook `planNote` + keyword-router plan-path detection (commit `569646e`)
+2. Phase 2: Write `cruise/workflows/plan-entry.md` with the full plan-aware logic (commit `39be32f`)
+3. Phase 3: Wire `cruise/SKILL.md`'s Plan-Aware Entry to delegate to `plan-entry.md` (commit `1836193`)
+4. Phase 4: Fresh-session dogfood — JM re-activated cruise with the plan file, plan-aware cruise ran the per-phase loop on Phase 4 itself end-to-end
+5. Phase 5: Delete `/implement_plan`, update `plan-readiness-assessment.md` routing, update `routing-cheatsheet.md`, update this doc, update `Readme.md` + `validate_plan.md`
 
-**Order is load-bearing:** step 6 must come after step 5, otherwise routing recommends a deleted command. Step 3 must come after step 2, otherwise cruise can't pass the plan path through the continuation loop.
+**Order was load-bearing:** Phase 6 (routing update) had to come after the deletion, otherwise routing recommended a non-existent command. Phase 3 had to come after Phase 2's schema, otherwise cruise couldn't pass the plan path through the continuation loop.
 
 ---
 
@@ -175,12 +171,12 @@ Rejected during grill-me sessions on 2026-04-10 and 2026-04-11:
 ## Cross-References
 
 - `.claude/skills/drive/SKILL.md` — full drive pipeline (per-story PRD loop)
-- `.claude/skills/cruise/SKILL.md` — cruise pipeline; has existing Plan-Aware Entry section for task-mode (plan-aware quality stack to be added via `plan-entry.md`)
-- `.claude/skills/cruise/workflows/plan-entry.md` — **to be written** during migration; holds per-phase critic + verifier + plan.md mutation + manual pause logic
-- `.claude/commands/implement_plan.md` — current command, **scheduled for deletion** during migration
-- `.claude/skills/CORE/workflows/plan-readiness-assessment.md` — upstream gate that routes plans to executors; routing section updates during migration
+- `.claude/skills/cruise/SKILL.md` — cruise pipeline; Plan-Aware Entry delegates to `workflows/plan-entry.md` when `ModeState.planPath` is set
+- `.claude/skills/cruise/workflows/plan-entry.md` — plan-aware per-phase loop (critic + TDD + quality sniff + verifier + plan.md mutation + conditional manual pause + final regression)
+- `.claude/skills/CORE/workflows/plan-readiness-assessment.md` — upstream gate that routes plans to cruise or turbo
 - `.claude/skills/CORE/workflows/plan-template.md` — canonical plan structure; plan-aware cruise's regex assumes `^## Phase N:` headings
-- `.claude/skills/tdd-qa/workflows/tdd-cycle.md` — shared TDD cycle blueprint used by drive, cruise, and (today) /implement_plan
+- `.claude/skills/tdd-qa/workflows/tdd-cycle.md` — shared TDD cycle blueprint used by drive and cruise
 - `.claude/hooks/lib/prd-utils.ts` — PRD data model that drive's loop depends on (explains why drive stays PRD-pure)
-- `.claude/hooks/lib/mode-state.ts` — ModeState schema; gains `planPath` field during migration
-- `.claude/hooks/stop-hook.ts` — continuation loop; gains `planNote` emission during migration
+- `.claude/hooks/lib/mode-state.ts` — ModeState schema, includes `planPath: string | null`
+- `.claude/hooks/keyword-router.ts` — detects `plans/*.md` activation paths and writes `planPath` to mode state
+- `.claude/hooks/stop-hook.ts` — continuation emits `Plan:` line when `planPath` is set, so plan-aware cruise survives context compression
