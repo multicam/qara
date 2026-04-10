@@ -20,12 +20,25 @@ IF a plan file path was mentioned in the activation prompt:
 2. Verify it has implementation phases with success criteria (not just an outline).
 3. IF valid plan with phases:
    - Populate `decisions.md` with the plan's key discoveries, constraints, and implementation approach.
-   - Skip Phase 1 (Discover) and Phase 2 (Plan).
-   - Enter Phase 3 (Implement) directly, using the plan's phases as the step-by-step guide.
-   - Output checkpoint: `PLAN IMPORTED: {phase count} phases from {plan file}. Skipping Discover+Plan.`
+   - Confirm `ModeState.planPath` is set (written by keyword-router when activation text matches `plans/*.md`).
+   - Skip all four phases below — plan-driven work uses `workflows/plan-entry.md` instead.
+   - Delegate to `workflows/plan-entry.md` for the full per-phase loop (critic + TDD + quality sniff + verifier + plan.md mutation + conditional manual pause + final regression).
+   - Output checkpoint: `PLAN IMPORTED: {phase count} phases from {plan file}. Delegating to plan-entry.md.`
 4. IF plan is just an outline (no file paths, no code examples):
    - Proceed with normal Phase 1 (Discover), using the plan as initial context.
    - Output: `PLAN OUTLINE LOADED: using as research seed, running full discovery.`
+
+## Plan-Aware Execution
+
+IF `ModeState.planPath` is set (plan-aware entry was triggered):
+→ READ `workflows/plan-entry.md` and follow its per-phase loop.
+→ Phases 1-4 below DO NOT apply to plan-driven sessions — `plan-entry.md`
+  handles the entire Discover + Plan + Implement + Verify flow via its
+  own per-phase loop on the plan's phases.
+
+When `planPath` is null (task-mode cruise), Phase 1-4 below apply as
+documented. No plan file, no delegation — cruise discovers the codebase,
+writes its own plan, implements, and verifies with its native budget.
 
 ## Phase 1: Discover (max 3 iterations)
 
