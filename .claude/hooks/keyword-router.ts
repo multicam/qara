@@ -158,6 +158,11 @@ function main() {
           // Detect a plan file path in the activation text (used by plan-aware cruise).
           // Heuristic: a .md path that contains "plans/" — matches both absolute and
           // relative forms (thoughts/shared/plans/foo.md, /home/jm/plans/bar.md).
+          //
+          // CONSTRAINT: the regex requires a literal `plans/` segment. Plans that
+          // live elsewhere (e.g. `thoughts/shared/2026-04-11-foo.md` at the root)
+          // will NOT be detected — cruise silently falls back to task-mode with
+          // no error. Keep plans under a `plans/` directory OR update this regex.
           const planMatch = taskContext.match(/[\w./-]*plans\/[\w.-]+\.md/);
           const planPath = planMatch ? planMatch[0] : undefined;
 
