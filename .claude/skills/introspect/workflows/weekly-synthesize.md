@@ -1,120 +1,106 @@
 # Weekly Synthesize Workflow
 
-Cluster the past 7 days of observations into pattern updates.
+Cluster past 7 days of observations into pattern updates.
 
 ## Prerequisites
 
-- Pattern spec: `${PAI_DIR}/skills/introspect/references/pattern-format.md`
+- `${PAI_DIR}/skills/introspect/references/pattern-format.md`
 - Observation files in `~/qara/thoughts/shared/introspection/observations/`
 
-## Steps
+## 1. Gather Observations
 
-### 1. Gather Observations
+Read all observation files from past 7 days. Parse each:
+- YAML frontmatter → aggregate stats
+- Bullets → (tags[], text) tuples with date
 
-Read all observation files from the past 7 days in `~/qara/thoughts/shared/introspection/observations/`.
+If fewer than 3 days exist, note it and proceed anyway.
 
-Parse each file:
-- Extract YAML frontmatter for aggregate stats
-- Parse each bullet into (tags[], text) tuples
-- Build a flat list of all observations with their dates
+## 2. Load Existing Patterns
 
-If fewer than 3 days of observations exist, note this in the output but proceed anyway (early data is still useful).
+Read all files in `~/qara/thoughts/shared/introspection/patterns/`:
+- `tool-usage.md`, `session-quality.md`, `user-corrections.md`, `harness-evolution.md`
 
-### 2. Load Existing Patterns
+Parse: title, confidence tier, evidence count, trend, supporting dates.
 
-Read all files in `~/qara/thoughts/shared/introspection/patterns/` (if any exist):
-- `tool-usage.md`
-- `session-quality.md`
-- `user-corrections.md`
-- `harness-evolution.md`
+## 3. Match and Cluster
 
-Parse each pattern entry: title, confidence tier, evidence count, trend, supporting dates.
+**Matching existing:**
+- Semantic match observation against pattern titles
+- On match: increment evidence count, add date, update last-seen
+- Update trend (this week's count vs prior): increasing/stable/decreasing
 
-### 3. Match and Cluster
+**New patterns:**
+- Group unmatched by similarity (same primary tag + related keywords)
+- Cluster with 3+ observations across 2+ days → create pattern, confidence `emerging`, trend `new`
+- Title captures specific insight, not generic ("Bash errors correlate with large test runs", not "Bash errors")
 
-For each topic file, process the relevant observations:
+**Confidence tiers — evidence-weighted scoring:**
 
-**Matching existing patterns:**
-- Compare each observation against existing pattern titles (semantic match, not exact)
-- If an observation supports an existing pattern: increment evidence count, add date to supporting dates, update last-seen date
-- Update trend: compare this week's observation count for the pattern vs prior (increasing/stable/decreasing)
+For each pattern, weight supporting observations:
+- Unique day → 1.0
+- Same day as existing: first counts 1.0, each additional 0.3
+- Example: 8 obs on one day = 1.0 + 7×0.3 = 3.1 (emerging)
+- Example: 5 obs across 5 days = 5.0 (established)
 
-**Creating new patterns:**
-- Group unmatched observations by similarity (same primary tag + related keywords)
-- If a cluster has 3+ observations across 2+ days, create a new pattern entry with confidence: `emerging`, trend: `new`
-- Write a descriptive title that captures the specific insight (not generic like "Bash errors" but "Bash errors correlate with large test suite runs")
+Thresholds (weighted score):
+- **emerging:** 3.0–9.9
+- **established:** 10.0–24.9
+- **confirmed:** 25.0+
 
-**Recalculate confidence tiers using evidence-weighted scoring:**
+Unique days matter: 5 different days (5.0) > 8 obs on one day (3.1).
 
-For each pattern, compute a weighted score from its supporting observations:
-- Each observation from a UNIQUE day contributes 1.0 to the score
-- Multiple observations from the SAME day: the first counts 1.0, each additional counts 0.3
-- Example: 8 observations all on one day → score = 1.0 + 7×0.3 = 3.1 (emerging)
-- Example: 5 observations across 5 different days → score = 5.0 (established)
+## Cross-Session Recovery & Failure Patterns
 
-Tier thresholds (weighted score, not raw count):
-- emerging: 3.0–9.9 weighted score
-- established: 10.0–24.9 weighted score
-- confirmed: 25.0+ weighted score
+Process `[recovery]` and `[repeated-failure]` observations:
 
-When updating confidence, count unique days contributing observations, not raw observation count. A pattern seen on 5 different days (weight 5.0) is stronger than one seen 8 times on a single day (weight 1.0 + 7×0.3 = 3.1).
+- `[recovery]` on 3+ different days → systemic workaround → promote to `patterns/error-recovery.md` (infrastructure fix signal)
+- `[repeated-failure]` spanning multiple days → unresolved issue, not learning → create/update entry with trend `increasing` if growing
+- Create `error-recovery.md` if missing (follow pattern-format.md)
+- Cross-ref `tool-usage.md` for tools with high error_rate that also appear in recovery chains
 
-### Cross-Session Recovery & Failure Patterns
-
-Process `[recovery]` and `[repeated-failure]` observations from the week's observation files:
-
-- Look for `[recovery]` observations that appear on 3+ different days — these represent systemic workarounds that should become infrastructure fixes. Promote to a pattern in `patterns/error-recovery.md`.
-- Look for `[repeated-failure]` observations that span multiple days — these represent unresolved issues the system is not learning from. Create or update a pattern entry in `patterns/error-recovery.md` with trend: `increasing` if the count is growing.
-- When creating new patterns from recovery/failure observations, use `patterns/error-recovery.md` as the target file (create it if it does not exist, following `pattern-format.md`).
-- Cross-reference with `patterns/tool-usage.md` for tool-specific patterns that correlate with recovery events (e.g. if a tool has high error_rate and also appears frequently in recovery chains).
-
-### Mode + TDD Metrics Analysis
-
-Process `mode_metrics` and `tdd_metrics` from each day's miner output:
+## Mode + TDD Metrics Analysis
 
 **Mode session patterns:**
-- Look for `[mode-session]` observations from the week. If mode sessions average >10 iterations: create pattern "Mode sessions running long — consider breaking tasks into smaller stories"
-- If completion rate <50% for any mode type: flag as `[mode-session][anomaly]` — "Low completion rate may indicate overly ambitious task scoping or unclear acceptance criteria"
-- If critic rejection rate (verifier failures ÷ total stories) >50%: create pattern "Spend more time on approach before implementing"
-- Track deactivation reasons: `max-iterations` and `cancelled` warrant investigation
+- `[mode-session]` averaging >10 iterations → "Mode sessions running long — break tasks into smaller stories"
+- Completion rate <50% per mode type → `[mode-session][anomaly]` "Low completion rate may indicate overly ambitious scoping or unclear acceptance criteria"
+- Critic rejection rate (verifier failures / total stories) >50% → "Spend more time on approach before implementing"
+- Track deactivation reasons: `max-iterations`, `cancelled` warrant investigation
 
 **TDD discipline patterns:**
-- If `green_first_pass_rate` <60%: create pattern "Write simpler tests. Each test should verify ONE behavior."
-- If `denied_in_red` >5 per session: create pattern "Agent trying to write source in RED phase. Reinforce: tests first."
-- If `cycle_count` is 0 when TDD entries exist: flag "TDD hook active but no complete RED→GREEN→REFACTOR cycles detected"
-- Compare `denied_in_red` trend week-over-week: decreasing = agent learning discipline, increasing = enforcement working but agent not adapting
+- `green_first_pass_rate < 60%` → "Write simpler tests. Each test verifies ONE behavior."
+- `denied_in_red > 5` per session → "Agent trying to write source in RED. Reinforce: tests first."
+- `cycle_count == 0` with TDD entries → "TDD hook active but no complete RED→GREEN→REFACTOR cycles"
+- `denied_in_red` week-over-week trend: decreasing = learning, increasing = enforcement working but not adapting
 
-**Mode + TDD hint generation (for session-hints.md):**
-- Mode hints only at 'established' confidence (same rules as other hints)
-- TDD hints only at 'established' confidence
+**Mode + TDD hints (session-hints.md):**
+- Only at `established` confidence (same rule as other hints)
 - Examples:
-  - "Drive mode sessions average 15 iterations — break stories into smaller acceptance criteria"
-  - "GREEN first-pass rate is 45% — write tests that verify one behavior each"
-  - "5+ denied edits per RED phase — write the failing test completely before switching to implementation"
+  - "Drive sessions average 15 iterations — break stories into smaller acceptance criteria"
+  - "GREEN first-pass at 45% — write tests that verify one behavior"
+  - "5+ denied edits per RED — write the failing test completely before implementing"
 
-### 4. Detect Trends
+## 4. Detect Trends
 
-Compare this week's observation distribution against prior observations (if available):
-- Which tags are increasing in frequency?
-- Are there new tag categories appearing?
-- Are there patterns that haven't received new evidence in 14+ days? Flag them as potentially stale.
+Compare this week vs prior:
+- Which tags increasing?
+- New tag categories?
+- Patterns with no new evidence in 14+ days → flag as potentially stale
 
-### 5. Write Pattern Files
+## 5. Write Pattern Files
 
-Write/update each pattern topic file following the format in `pattern-format.md`:
-- One `## ` section per pattern, separated by `---`
-- Cap supporting dates list at 10 most recent
-- Preserve existing patterns even if no new evidence this week (but flag stale ones)
-- **first_observed tracking**: For each pattern, preserve the `first_observed` date if it already exists. For new patterns, set `first_observed` to today's date. This enables measuring pattern promotion velocity (days from first observation to "established").
+Per `pattern-format.md`:
+- One `##` section per pattern, separated by `---`
+- Cap supporting dates at 10 most recent
+- Preserve existing patterns with no new evidence (flag stale)
+- **`first_observed`**: preserve existing, set to today for new. Enables measuring promotion velocity (days to "established").
 
-Create topic files that don't yet exist if observations warrant them.
+Create topic files that don't exist if observations warrant.
 
-### 6. Glacier Check
+## 6. Glacier Check
 
-Count files in `observations/`:
-- If > 50 files, archive the oldest 30 days
-- Create `glacier/YYYY-MM/observations-YYYY-MM-DD-to-YYYY-MM-DD.md`
-- The glacier file combines all observations from the archived period with YAML frontmatter:
+If `observations/` has > 50 files:
+- Archive oldest 30 days to `glacier/YYYY-MM/observations-YYYY-MM-DD-to-YYYY-MM-DD.md`
+- Combine into one file with frontmatter:
   ```yaml
   ---
   date_range: "2026-01-01 to 2026-01-30"
@@ -122,26 +108,27 @@ Count files in `observations/`:
   archived_at: "2026-03-28"
   ---
   ```
-- Move (not copy) the observation files to glacier
-- Update `glacier/index.md` with the new archive entry
+- **Move** (not copy) observation files to glacier
+- Update `glacier/index.md`
 
-### 7. Regenerate Session Hints
+## 7. Regenerate Session Hints
 
-After updating pattern files, regenerate `~/qara/thoughts/shared/introspection/session-hints.md`.
+Regenerate `~/qara/thoughts/shared/introspection/session-hints.md` after updating patterns.
 
-For each pattern at 'established' or 'confirmed' confidence, write one **prescriptive** hint — a single sentence that tells Qara what to DO, not what IS. Hints must change behavior, not describe it.
+For each `established`/`confirmed` pattern, write one **prescriptive** hint — tells Qara what to DO, not what IS. Hints must change behavior.
 
-**Good (prescriptive):** "When a Bash command fails, read the full error output before retrying rather than issuing the same command again."
-**Good (prescriptive):** "Use Grep instead of `rg` via Bash for content searches — it's faster and the user prefers native tools."
-**Bad (descriptive):** "Bash usage is at ~33%." (describes state, changes nothing)
-**Bad (descriptive):** "Agent delegation is at ~1.8%." (observation, not directive)
+**Good (prescriptive):**
+- "When a Bash command fails, read the full error output before retrying rather than issuing the same command again."
+- "Use Grep instead of `rg` via Bash for content searches — it's faster and the user prefers native tools."
 
-Each hint should follow the pattern: **When [trigger], do [action] instead of [default].**
-If a pattern doesn't imply a behavioral change, don't generate a hint for it — not every pattern needs one.
+**Bad (descriptive):**
+- "Bash usage is at ~33%." (state, changes nothing)
+- "Agent delegation is at ~1.8%." (observation, not directive)
 
-Remove hints for patterns that have been demoted below 'established' or flagged as stale.
+Pattern: **When [trigger], do [action] instead of [default].**
+Skip hints for patterns that don't imply behavior changes. Remove hints for demoted/stale patterns.
 
-Write the file in this format:
+File format:
 
 ```markdown
 # Session Hints
@@ -156,18 +143,12 @@ Last updated: YYYY-MM-DD
 ## How This File Works
 
 The weekly-synthesize workflow updates this file when patterns reach "established" or higher.
-The session-start hook reads this file and includes hints in the session context.
+The session-start hook reads this file and includes hints in session context.
 Hints are removed when their source pattern is demoted below "established".
 ```
 
-If no patterns are at 'established' or above yet, write the file with an empty `## Active Hints` section (no bullet points).
+If no patterns at `established`+, write empty `## Active Hints` section (no bullets).
 
-### 8. Summary
+## 8. Summary
 
-Output to the conversation:
-- Number of observations processed
-- Patterns updated (with evidence count changes)
-- New patterns created
-- Stale patterns flagged
-- Glacier archival status (if triggered)
-- Path to updated pattern files
+Output: observations processed, patterns updated (with evidence count changes), new patterns, stale flagged, glacier status, file paths.

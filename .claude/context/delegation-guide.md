@@ -7,12 +7,16 @@ When to delegate to agents and how to use them effectively.
 | Need | Agent | Model | Key trait |
 |------|-------|-------|-----------|
 | How does code X work? | `codebase-analyzer` | sonnet | Traces data flow, gives file:line refs |
+| Where does X live? (haiku lookup) | `codebase-analyzer-low` | haiku | Fast file discovery + pattern finding |
 | Design review / UI polish | `designer` | opus | Loads frontend-design skill |
 | PRD / system design / planning | `architect` | opus | Loads research skill, reasoning protocol, dependency graphs |
 | Implement from spec | `engineer` | sonnet | Code, tests, debugging |
+| Trivial edit (rename, import fix) | `engineer-low` | haiku | Fast path for small changes |
+| Cross-cutting refactor / new abstraction | `engineer-high` | opus | Deep reasoning, architectural changes |
 | Review code quality | `reviewer` | opus | Security, perf, correctness |
-| Review plan before impl | `critic` | opus | Scenario coverage, scope, risks |
-| Verify impl meets criteria | `verifier` | opus | Fresh evidence, quality gates |
+| Quick pass/fail review on small diffs | `reviewer-low` | sonnet | Routine correctness checks |
+| Review plan before impl | `critic` | **sonnet** | Scenario coverage, scope, risks. Opus escalation on 3rd retry. |
+| Verify impl meets criteria | `verifier` | **sonnet** | Fresh evidence, quality gates. Opus escalation on 3rd retry. |
 | Find + analyze thoughts/ docs | `thoughts-analyzer` | sonnet | Discovery + insight extraction |
 | Web research (primary) | `claude-researcher` | haiku | First-line web research via WebSearch |
 | Web research fallback | `gemini-researcher` | haiku | When WebSearch fails |
@@ -24,10 +28,12 @@ When to delegate to agents and how to use them effectively.
 - **opus** — Judgment calls (design, architecture, review)
 
 **Per-task overrides:** Agent frontmatter defines the default model, but the `model` parameter on the Agent/Task tool overrides it. Use overrides when the task complexity doesn't match the agent's default:
-- Override `engineer` to haiku for simple file renames or trivial edits
+- Override `engineer` to haiku for simple file renames or trivial edits (or use `engineer-low` directly)
 - Override `codebase-analyzer` to opus for security-sensitive trace analysis
-- Override `reviewer` to sonnet for quick pass/fail checks on small diffs
+- Override `reviewer` to sonnet for quick pass/fail checks on small diffs (or use `reviewer-low` directly)
 - Never override researchers — they're already haiku (cheapest tier)
+
+**Critic + verifier escalation (2026-04-11):** `critic` and `verifier` default to sonnet. If the first two calls return `revise`/`FAIL` and the main session issues a third retry, **the third call MUST include `model: opus` override on the Task tool.** This gives sonnet first-pass coverage at 5× lower cost while preserving opus-level judgment when the sonnet tier struggles. Critic/verifier agent prompts reference this escalation explicitly.
 
 ## Parallel Execution
 

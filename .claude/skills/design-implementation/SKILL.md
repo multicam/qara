@@ -23,22 +23,14 @@ description: |
 | "fix errors", "fix the issues" | `workflows/fix-errors.md` |
 | "start server", "stop server" | `workflows/manage-server.md` |
 
-
 ---
 
 ## Quick Start
 
 ```bash
-# Basic usage
 "implement the login form based on the Figma design"
-
-# With specific file
 "implement the feature described in thoughts/features/hero-section.md"
-
-# Headless mode (CI/testing)
 "implement next feature --headless"
-
-# Just verify current state
 "verify the current implementation"
 ```
 
@@ -108,10 +100,10 @@ Edit `config.json` in this skill directory:
 ## History
 
 Each feature creates artifacts in `history/{feature-id}/`:
-- `spec.md` - Original feature specification
-- `iteration-{n}.png` - Screenshots per iteration
-- `figma-reference.png` - Design reference (if Figma link provided)
-- `errors.log` - Captured errors
-- `report.md` - Final completion report
+- `spec.md` — original feature specification
+- `iteration-{n}.png` — screenshots per iteration
+- `figma-reference.png` — design reference (if Figma link provided)
+- `errors.log` — captured errors
+- `report.md` — final completion report
 
 **Note:** `history/` is gitignored.

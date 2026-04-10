@@ -3,294 +3,109 @@ description: Create detailed implementation plans through interactive research a
 model: opus
 ---
 
-# Implementation Plan
+# Create Implementation Plan
 
-You are tasked with creating detailed implementation plans through an interactive, iterative process. You should be skeptical, thorough, and work collaboratively with the user to produce high-quality technical specifications.
+Produce implementation plans interactively. Skeptical, thorough, collaborative.
 
-## Initial Response
+## Invocation
 
-When this command is invoked:
-
-1. **Check if parameters were provided**:
-   - If a file path or ticket reference was provided as a parameter, skip the default message
-   - Immediately read any provided files FULLY
-   - Begin the research process
-
-2. **If no parameters provided**, respond with:
+With args: read any referenced file fully, skip the intro, jump to Step 1.
+Without args:
 ```
-I'll help you create a detailed implementation plan. Let me start by understanding what we're building.
+I'll create an implementation plan. Give me:
+1. Task/ticket (or path to a file)
+2. Constraints or non-obvious requirements
+3. Links to prior research or similar implementations
 
-Please provide:
-1. The task/ticket description (or reference to a ticket file)
-2. Any relevant context, constraints, or specific requirements
-3. Links to related research or previous implementations
-
-I'll analyze this information and work with you to create a comprehensive plan.
-
-Tip: You can also invoke this command with a ticket file directly: `/create_plan thoughts/shared/plans/some-plan.md`
-For deeper analysis, try: `/create_plan think deeply about thoughts/shared/plans/some-plan.md`
+Tip: `/create_plan path/to/plan.md` — direct entry
+     `/create_plan think deeply about path/to/plan.md` — extended reasoning
 ```
 
-Then wait for the user's input.
+## Pre-Step: Reasoning Gate (compressed)
 
-## Pre-Planning Reasoning Protocol
+Before Step 1, write ONE bullet per dimension inline — not a page:
 
-Before spawning research agents or writing anything, reason through these dimensions.
-Document your reasoning inline (the user should see it) — this prevents anchoring on the first idea.
+1. **Hard constraints** (security/architecture/policy): ...
+2. **Hypotheses** (2-3 contrarian options): ...
+3. **Critical path** (what decides what): ...
+4. **Gaps** (need tools vs. need JM): ...
+5. **Ready?** (yes / still uncertain about X): ...
 
-1. **Constraint hierarchy** — What are the hard constraints (security, architecture, policy)
-   vs. soft preferences (style, convention)? If they conflict, hard wins. List them explicitly.
+Expand to full paragraphs **only** when:
+- Task spans ≥5 phases, OR
+- Architecture decisions are load-bearing, OR
+- User says "think deeply"
 
-2. **Hypothesis formation** — Form 2-3 competing theories about the right approach.
-   Don't anchor on the first plausible idea. What would a contrarian argue?
+## Step 1: Context Gathering
 
-3. **Dependency graph** — What must be decided before what? Which decisions are
-   load-bearing (change everything downstream) vs. leaf decisions (local impact only)?
-   Identify the critical path.
+1. **Read referenced files fully.** No limit/offset. Read them yourself in the main context — don't delegate upfront.
 
-4. **Information gaps** — What do I need to know that I don't yet? Which gaps can I
-   fill with tools (codebase-analyzer, thoughts-analyzer) vs. which require asking JM?
-   Don't ask what you can look up.
+2. **Decide whether to spawn research agents.** Gate:
+   - Task names a specific existing file/function → **skip** thoughts-analyzer; scope codebase-analyzer-low (haiku) to that file's neighborhood.
+   - Task is "add a flag" / "fix bug in X" / "rename Y" → **skip both agents**.
+   - Task touches a subsystem you haven't seen before → spawn `codebase-analyzer` (sonnet).
+   - Task has historical context implications ("why is X structured this way", "we tried Y before") → spawn `thoughts-analyzer` (sonnet).
+   - Genuinely novel, cross-cutting architecture → spawn both in parallel.
 
-5. **Inhibition check** — Am I ready to act, or am I about to jump to a conclusion?
-   State what I'm still uncertain about before proceeding.
+3. **Trust agent summaries.** When agents return file:line references + extracts, use those. Re-read a file only when (a) the summary has a gap relevant to a decision, or (b) you need verbatim code for the plan. DO NOT re-read every file the agents touched — that defeats delegation.
 
-Only after completing this reasoning should you move to Step 1.
+4. **Verify against reality.** Cross-reference ticket → actual code. Note discrepancies and assumptions.
 
-## Process Steps
+5. **Present findings + focused questions.** Only ask what you genuinely can't resolve via code.
 
-### Step 1: Context Gathering & Initial Analysis
+## Step 1.5: Adaptation
 
-1. **Read all mentioned files immediately and FULLY**:
-   - Plan or spec files (e.g., `thoughts/shared/plans/some-plan.md`)
-   - Research documents
-   - Related implementation plans
-   - Any JSON/data files mentioned
-   - **IMPORTANT**: Use the Read tool WITHOUT limit/offset parameters to read entire files
-   - **CRITICAL**: DO NOT spawn sub-tasks before reading these files yourself in the main context
-   - **NEVER** read files partially - if a file is mentioned, read it completely
+After research:
+- Did any finding contradict a hypothesis? Revise.
+- Does the problem statement need re-scoping? Revise.
+- New constraints (coupling, patterns, tech debt)? Fold in.
 
-2. **Spawn initial research tasks to gather context**:
-   Before asking the user any questions, use specialized agents to research in parallel:
+If yes to any → loop back to the specific gap. Otherwise proceed.
 
-   **ALWAYS spawn these agents first (historical context is critical):**
-   - Use the **thoughts-analyzer** agent to find existing research, plans, decisions, and historical context
-   - Use the **codebase-analyzer** agent to find all files related to the task and understand how the current implementation works
+## Step 2: Research & Discovery (only if Step 1 had gaps)
 
-   **Historical context from thoughts/ often contains:**
-   - Past decisions that explain WHY code is structured a certain way
-   - Previous research that answers questions you might have
-   - Lessons learned from similar implementations
-   - Design constraints or trade-offs already considered
+1. If user corrected a misunderstanding: spawn new research to verify, don't accept blind.
+2. Parallel sub-tasks for specific aspects. Use the cheapest sufficient tier:
+   - `codebase-analyzer-low` (haiku) — file discovery, pattern finding
+   - `codebase-analyzer` (sonnet) — data flow, implementation tracing
+   - `thoughts-analyzer` (sonnet) — historical research extraction
+3. Wait for all to complete before proceeding.
+4. Present design options (2-3) with trade-offs. Ask which aligns.
 
-   These agents will:
-   - Find relevant source files, configs, and tests
-   - Identify the specific directories to focus on (e.g., if WUI is mentioned, they'll focus on humanlayer-wui/)
-   - Trace data flow and key functions
-   - Return detailed explanations with file:line references
+## Step 3: Plan Structure
 
-3. **Read all files identified by research tasks**:
-   - After research tasks complete, read ALL files they identified as relevant
-   - Read them FULLY into the main context
-   - This ensures you have complete understanding before proceeding
-
-4. **Analyze and verify understanding**:
-   - Cross-reference the ticket requirements with actual code
-   - Identify any discrepancies or misunderstandings
-   - Note assumptions that need verification
-   - Determine true scope based on codebase reality
-
-5. **Present informed understanding and focused questions**:
-   ```
-   Based on the ticket and my research of the codebase, I understand we need to [accurate summary].
-
-   I've found that:
-   - [Current implementation detail with file:line reference]
-   - [Relevant pattern or constraint discovered]
-   - [Potential complexity or edge case identified]
-
-   Questions that my research couldn't answer:
-   - [Specific technical question that requires human judgment]
-   - [Business logic clarification]
-   - [Design preference that affects implementation]
-   ```
-
-   Only ask questions that you genuinely cannot answer through code investigation.
-
-### Step 1.5: Adaptation Check
-
-After research agents report back, pause and reason:
-
-- Does any finding **contradict** my initial hypotheses? If so, which hypothesis survives?
-- Do I need to **revise the problem statement** based on what I actually found in the code?
-- Are there constraints I didn't know about (e.g., existing patterns, coupling, tech debt)?
-- Should I **re-scope** before proceeding?
-
-If any answer is yes: revise hypotheses and re-research the specific gap.
-If all answers are no: proceed with documented confidence to Step 2.
-
-### Step 2: Research & Discovery
-
-After getting initial clarifications:
-
-1. **If the user corrects any misunderstanding**:
-   - DO NOT just accept the correction
-   - Spawn new research tasks to verify the correct information
-   - Read the specific files/directories they mention
-   - Only proceed once you've verified the facts yourself
-
-2. **Create a research todo list** using TodoWrite to track exploration tasks
-
-3. **Spawn parallel sub-tasks for comprehensive research**:
-   - Create multiple Task agents to research different aspects concurrently
-   - Use the right agent for each type of research:
-
-   **For deeper investigation:**
-   - **codebase-analyzer** - To find specific files, understand implementation details, and find similar features we can model after
-
-   **For historical context (CRITICAL - don't skip this):**
-   - **thoughts-analyzer** - FIRST: Find all related research, plans, decisions, and learnings
-   - **thoughts-analyzer** - THEN: Extract detailed insights from the 2-3 most relevant documents found
-
-   READ: .claude/skills/CORE/workflows/plan-common-patterns.md (for sub-task spawning best practices)
-
-4. **Wait for ALL sub-tasks to complete** before proceeding
-
-5. **Present findings and design options**:
-   ```
-   Based on my research, here's what I found:
-
-   **Current State:**
-   - [Key discovery about existing code]
-   - [Pattern or convention to follow]
-
-   **Design Options:**
-   1. [Option A] - [pros/cons]
-   2. [Option B] - [pros/cons]
-
-   **Open Questions:**
-   - [Technical uncertainty]
-   - [Design decision needed]
-
-   Which approach aligns best with your vision?
-   ```
-
-### Step 3: Plan Structure Development
-
-Once aligned on approach:
-
-1. **Create initial plan outline**:
-   ```
-   Here's my proposed plan structure:
-
-   ## Overview
-   [1-2 sentence summary]
-
-   ## Implementation Phases:
-   1. [Phase name] - [what it accomplishes]
-   2. [Phase name] - [what it accomplishes]
-   3. [Phase name] - [what it accomplishes]
-
-   Does this phasing make sense? Should I adjust the order or granularity?
-   ```
-
-2. **Get feedback on structure** before writing details
-
-### Step 4: Detailed Plan Writing
-
-After structure approval:
-
-1. **Write the plan** to `thoughts/shared/plans/domain--specific-feature-vN.md`
-   - Format: `{domain}--{specific-feature}-v{N}.md` where:
-     - domain is the broad area in kebab-case (e.g., planning-ux, tdd-qa, auth, infra)
-     - specific-feature is what this plan addresses in kebab-case
-     - vN is the version number, starting at v1 (bump only for major reworks)
-   - Examples:
-     - `planning-ux--unified-lifecycle-v1.md`
-     - `tdd-qa--coverage-gaps-v1.md`
-     - `auth--session-token-compliance-v1.md`
-   - Old versions move to `thoughts/shared/plans/archive/`
-
-2. **Use the standard template structure**:
-   READ: .claude/skills/CORE/workflows/plan-template.md
-
-### Step 5: Sync and Review
-
-1. **Present the draft plan location**:
-   ```
-   I've created the initial implementation plan at:
-   `thoughts/shared/plans/domain--specific-feature-vN.md`
-
-   Please review it and let me know:
-   - Are the phases properly scoped?
-   - Are the success criteria specific enough?
-   - Any technical details that need adjustment?
-   - Missing edge cases or considerations?
-   ```
-
-3. **Iterate based on feedback** - be ready to:
-   - Add missing phases
-   - Adjust technical approach
-   - Clarify success criteria (both automated and manual)
-   - Add/remove scope items
-
-4. **Continue refining** until the user is satisfied
-
-## Important Guidelines
-
-1. **Be Skeptical**:
-   - Question vague requirements
-   - Identify potential issues early
-   - Ask "why" and "what about"
-   - Don't assume - verify with code
-
-2. **Be Interactive**:
-   - Don't write the full plan in one shot
-   - Get buy-in at each major step
-   - Allow course corrections
-   - Work collaboratively
-
-3. **Be Thorough**:
-   - Read all context files COMPLETELY before planning
-   - Research actual code patterns using parallel sub-tasks
-   - Include specific file paths and line numbers
-   - Write measurable success criteria with clear automated vs manual distinction
-   - Use `make` commands whenever possible for automated steps
-
-4. **Be Practical**:
-   - Focus on incremental, testable changes
-   - Consider migration and rollback
-   - Think about edge cases
-   - Include "what we're NOT doing"
-
-5. **Track Progress**:
-   - Use TodoWrite to track planning tasks
-   - Update todos as you complete research
-   - Mark planning tasks complete when done
-
-6. **No Open Questions in Final Plan**:
-   - If you encounter open questions during planning, STOP
-   - Research or ask for clarification immediately
-   - Do NOT write the plan with unresolved questions
-   - The implementation plan must be complete and actionable
-   - Every decision must be made before finalizing the plan
-
-## Common Implementation Patterns
-
-READ: .claude/skills/CORE/workflows/plan-common-patterns.md
-
-## Example Interaction Flow
+Propose phase outline, get feedback before writing details:
 
 ```
-User: /implementation_plan
-Assistant: I'll help you create a detailed implementation plan...
+## Overview
+{1-2 sentences}
 
-User: We need to add parent-child tracking for Claude sub-tasks. See thoughts/shared/plans/parent-child-tracking.md
-Assistant: Let me read that plan file completely first...
-
-[Reads file fully]
-
-Based on the ticket, I understand we need to track parent-child relationships for Claude sub-task events in the hld daemon. Before I start planning, I have some questions...
-
-[Interactive process continues...]
+## Phases
+1. {name} — {what it accomplishes}
+2. ...
 ```
+
+## Step 4: Write the Plan
+
+**Now** — and only now — `READ .claude/skills/CORE/workflows/plan-template.md` for the canonical structure.
+
+Plan path: `thoughts/shared/plans/{domain}--{specific-feature}-v{N}.md`
+- `domain`: kebab-case broad area (planning-ux, tdd-qa, auth, infra)
+- `specific-feature`: kebab-case what this addresses
+- `vN`: starts at v1, bump only for major rewrites
+- Old versions → `thoughts/shared/plans/archive/`
+
+Common patterns reference (lazy-load): if the plan involves multi-service changes, migrations, or unusual phasing → `READ .claude/skills/CORE/workflows/plan-common-patterns.md`. Otherwise skip.
+
+## Step 5: Review & Iterate
+
+1. Present the plan path. Ask: phases scoped right? Success criteria specific? Missing edge cases?
+2. Iterate on feedback. No open questions in the final plan — resolve them before finalizing.
+
+## Guidelines
+
+- **Skeptical.** Question vague requirements. Verify with code, not assumptions.
+- **Interactive.** Get buy-in at each major step. Don't write the whole plan in one shot.
+- **Specific.** File paths, line numbers, measurable criteria (automated vs manual).
+- **Practical.** Incremental, testable. Include "what we're NOT doing."
+- **Complete.** Every decision made before finalizing. No TBDs.

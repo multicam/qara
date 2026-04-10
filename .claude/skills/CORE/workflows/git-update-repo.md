@@ -1,12 +1,11 @@
 # Git Update Repository Workflow
 
-**Purpose**: Safe and systematic git workflow for committing and pushing changes to Qara repositories with mandatory security checks.
+Safe commit + push to Qara repos with mandatory security checks.
 
 ---
 
-## 🎯 Trigger Phrases
+## Trigger Phrases
 
-Invoke this workflow when Jean-Marc says:
 - "update the Qara repo"
 - "commit and push to Qara"
 - "push to Qara repo"
@@ -16,146 +15,99 @@ Invoke this workflow when Jean-Marc says:
 
 ---
 
-## 🚨 PRE-FLIGHT CHECKS (MANDATORY)
-
-**STOP AND RUN THESE BEFORE ANYTHING ELSE**
+## PRE-FLIGHT CHECKS (MANDATORY)
 
 ### 1. Verify Repository Location
-```bash
-# Check current directory
-pwd
 
-# Verify git remote
+```bash
+pwd
 git remote -v
 ```
 
-**Expected outputs**:
-- **Private Qara**: `github.com/[username]/.private-qara` or `github.com/[username]/qara` (if private)
-- **Public PAI**: `github.com/[username]/qara` or similar (if public template)
+Expected: `github.com/[username]/.private-qara` or private qara repo.
 
-**🚨 RED FLAG**: If you see a public remote from `~/.claude/` directory, **STOP IMMEDIATELY** and confirm with Jean-Marc.
+**RED FLAG:** Public remote from `~/.claude/` → STOP and confirm with Jean-Marc.
 
 ### 2. Check Current Branch
+
 ```bash
 git branch --show-current
 ```
 
-Expected: `main` or `master` (or feature branch if working on one)
+Expected: `main`, `master`, or a feature branch.
 
-### 3. Verify No Sensitive Data
+### 3. Scan for Sensitive Data
+
 ```bash
-# Search for API keys (rg is 10-50x faster than grep)
 rg "sk-|api_key.*=.*[a-zA-Z0-9]" --glob '!.git' --glob '!node_modules' 2>/dev/null
-
-# Search for secrets/tokens
 rg "SECRET|TOKEN|PASSWORD" --glob '!.git' --glob '!node_modules' --glob '!*.md' 2>/dev/null
-
-# Search for email addresses (real ones, not examples)
 rg "@" --glob '!.git' --glob '!node_modules' --glob '!*.md' 2>/dev/null | rg -v "example.com"
 ```
 
-**If ANY matches found**: Review each one carefully. Ensure they're in gitignored files or are example values only.
+Any match → review. Must be in gitignored files or example values only.
 
 ---
 
-## 📋 STANDARD WORKFLOW
+## STANDARD WORKFLOW
 
-### Step 1: Status Check
+### Step 1: Status
+
 ```bash
 git status
 ```
 
-**Review**:
-- What files are modified?
-- What files are untracked?
-- Are any sensitive files showing up that should be gitignored?
-
 ### Step 2: Review Changes
-```bash
-# See detailed diff of all changes
-git diff
 
-# Or review specific file
+```bash
+git diff
 git diff path/to/file
 ```
 
-**Look for**:
-- ❌ API keys, tokens, passwords
-- ❌ Personal email addresses
-- ❌ Business-specific information
-- ❌ Hardcoded paths like `/home/jean-marc/specific-project/`
-- ✅ Generic, sanitized content
-- ✅ Proper use of placeholders
+Look for: API keys, tokens, passwords, personal emails, hardcoded paths like `/home/jean-marc/specific-project/`, business-specific info.
 
-### Step 3: Stage Files
+### Step 3: Stage
 
-**Option A: Stage specific files** (recommended)
 ```bash
-git add path/to/file1
-git add path/to/file2
-```
+# Preferred: specific files
+git add path/to/file1 path/to/file2
 
-**Option B: Stage all changes** (use with caution)
-```bash
+# Or all (caution)
 git add .
-```
 
-**After staging, review what will be committed**:
-```bash
+# Verify staged
 git diff --cached
 ```
 
-### Step 4: Commit with Descriptive Message
+### Step 4: Commit
+
 ```bash
 git commit -m "type: brief description"
 ```
 
-**Commit Message Convention**:
-- `feat:` New feature
-- `fix:` Bug fix
-- `docs:` Documentation only
-- `refactor:` Code refactoring
-- `test:` Adding or updating tests
-- `chore:` Maintenance tasks
-- `perf:` Performance improvements
-- `style:` Code style changes (formatting, etc.)
+**Types:** `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `perf`, `style`
 
-**Examples**:
+Examples:
 ```bash
 git commit -m "feat: add security-protocols.md documentation"
 git commit -m "fix: correct identity references in SKILL.md"
-git commit -m "docs: update README with installation instructions"
 git commit -m "refactor: reorganize workflow directory structure"
 ```
 
 ### Step 5: Verify Commit
-```bash
-# View last commit with file stats
-git log -1 --stat
 
-# View last commit with full diff
+```bash
+git log -1 --stat
 git log -1 -p
 ```
 
-**Final check**:
-- Commit message clear and descriptive?
-- Files included are correct?
-- No sensitive data in the diff?
+### Step 6: Push
 
-### Step 6: Push to Remote
 ```bash
-# Push current branch
 git push origin $(git branch --show-current)
-
-# Or if on main/master
-git push origin main
 # or
-git push origin master
-```
+git push origin main
 
-**After push**:
-```bash
-# Verify push succeeded
+# Verify
 git status
 ```
 
@@ -163,189 +115,140 @@ Should show: "Your branch is up to date with 'origin/main'"
 
 ---
 
-## 🛡️ SAFETY GATES
+## THREE-CHECK RULE
 
-### Three-Check Rule
-1. **Check #1**: When reviewing `git diff` (before staging)
-2. **Check #2**: When reviewing `git diff --cached` (after staging)
-3. **Check #3**: When reviewing `git log -1 -p` (after commit, before push)
+1. **Check #1:** `git diff` (before staging)
+2. **Check #2:** `git diff --cached` (after staging)
+3. **Check #3:** `git log -1 -p` (after commit, before push)
 
-**If ANY check fails, fix before proceeding.**
-
-### Questions to Ask at Each Gate
-
-**Before staging (git add)**:
-- [ ] Are these the right files to commit?
-- [ ] Have I reviewed all changes?
-- [ ] Is any sensitive data visible?
-
-**Before committing (git commit)**:
-- [ ] Is the commit message clear?
-- [ ] Are only intended files staged?
-- [ ] Did I run `git diff --cached` to verify?
-
-**Before pushing (git push)**:
-- [ ] Is this the correct repository?
-- [ ] Is this the correct branch?
-- [ ] Have I verified the commit contents?
-- [ ] Am I sure this is safe to push?
+Any failure → fix before proceeding.
 
 ---
 
-## 🔄 COMMON SCENARIOS
+## COMMON SCENARIOS
 
-### Amending Last Commit (before push)
+### Amend Last Commit (Before Push)
+
 ```bash
 git add forgotten-file.md
 git commit --amend --no-edit
-# If already pushed: git push origin main --force-with-lease
+# If already pushed:
+git push origin main --force-with-lease
 ```
 
 ### Wrong Directory
+
 ```bash
-pwd && git remote -v  # Verify location
-git stash             # Stash changes
-cd /correct/repo      # Navigate
-git stash pop         # Apply changes
+pwd && git remote -v
+git stash
+cd /correct/repo
+git stash pop
 ```
 
-### Unstaging / Discarding
+### Unstage / Discard
+
 ```bash
-git reset HEAD <file>           # Unstage specific file
+git reset HEAD <file>           # Unstage specific
 git reset HEAD                  # Unstage all
 git checkout -- <file>          # Discard changes (DANGEROUS)
-git reset --hard HEAD           # Discard ALL changes (VERY DANGEROUS)
+git reset --hard HEAD           # Discard ALL (VERY DANGEROUS)
 ```
 
 ---
 
-## 🚨 ROLLBACK PROCEDURES
+## ROLLBACK
 
 ### Undo Last Commit (Keep Changes)
-```bash
-# Reset to previous commit, keep changes staged
-git reset --soft HEAD~1
 
-# Now you can modify files and recommit
+```bash
+git reset --soft HEAD~1
 ```
 
 ### Undo Last Commit (Discard Changes)
+
 ```bash
-# DANGEROUS: This will delete your changes
 git reset --hard HEAD~1
 ```
 
 ### Undo Last Push (VERY DANGEROUS)
+
 ```bash
-# Only use if you pushed sensitive data and caught it immediately
 git reset --hard HEAD~1
 git push --force origin main
-
-# Then follow security-protocols.md incident response
 ```
 
-### Revert a Commit (Safe)
+Then follow `security-protocols.md` incident response.
+
+### Revert Commit (Safe on Shared Branches)
+
 ```bash
-# Creates a new commit that undoes changes from specific commit
 git revert <commit-hash>
-
-# This is safer than reset when working with shared branches
 ```
 
 ---
 
-## 📊 STATUS INDICATORS
+## STATUS MEANINGS
 
-| Status output | Meaning | Next action |
-|---|---|---|
-| "nothing to commit, working tree clean" | All done | ✅ |
-| "Changes not staged for commit" | Modified, not staged | `git add` |
-| "Changes to be committed" | Staged, not committed | `git commit` |
-| "Your branch is ahead by N commits" | Committed, not pushed | `git push` |
-
----
-
-## 🔗 INTEGRATION WITH SECURITY PROTOCOLS
-
-**Always consult** `security-protocols.md` for:
-- Pre-commit security checklist (detailed version)
-- Two repository strategy (private vs public)
-- Prompt injection defense
-- API key management
-- Incident response procedures
-
-**This workflow enforces**:
-- Three-check rule from security-protocols.md
-- Repository verification before commits
-- Sensitive data scanning
-- Safe rollback procedures
+| Output | Next action |
+|---|---|
+| "nothing to commit, working tree clean" | done |
+| "Changes not staged for commit" | `git add` |
+| "Changes to be committed" | `git commit` |
+| "Your branch is ahead by N commits" | `git push` |
 
 ---
 
-## 📝 QUICK REFERENCE CARD
+## TROUBLESHOOTING
+
+### Permission denied (publickey)
 
 ```bash
-# Standard workflow
-git status              # Check status
-git diff                # Review changes
-git add <files>         # Stage files
-git diff --cached       # Verify staged
-git commit -m "msg"     # Commit
-git log -1 --stat       # Verify commit
-git push origin main    # Push
-
-# Safety checks
-pwd                     # Verify location
-git remote -v           # Verify remote
-rg "API_KEY"            # Check for secrets
-
-# Rollback
-git reset --soft HEAD~1 # Undo commit (keep changes)
-git reset --hard HEAD~1 # Undo commit (discard changes)
-git revert <hash>       # Safe undo (creates new commit)
-```
-
----
-
-## ❓ TROUBLESHOOTING
-
-### "Permission denied (publickey)"
-```bash
-# Check SSH key is loaded
 ssh-add -l
-
-# Add SSH key if needed
 ssh-add ~/.ssh/id_ed25519
 ```
 
-### "Merge conflict"
-```bash
-# See conflicted files
-git status
+### Merge Conflict
 
-# Edit files to resolve conflicts (look for <<< === >>> markers)
-# Then:
+```bash
+git status
+# Edit files, remove <<< === >>> markers
 git add <resolved-files>
 git commit -m "fix: resolve merge conflicts"
 ```
 
-### "Diverged branches"
-```bash
-# Pull remote changes first
-git pull origin main
+### Diverged Branches
 
-# Resolve conflicts if any
-# Then push
+```bash
+git pull origin main
+# Resolve any conflicts
 git push origin main
 ```
 
-### "Nothing to commit"
-- All changes already committed
-- Check `git status` to confirm
-- Maybe you meant to modify different files?
-
 ---
 
-**Remember**: It takes 3 seconds to verify, but hours to fix a leaked API key. Always run the pre-flight checks.
+## QUICK REFERENCE
+
+```bash
+# Standard
+git status
+git diff
+git add <files>
+git diff --cached
+git commit -m "msg"
+git log -1 --stat
+git push origin main
+
+# Safety
+pwd
+git remote -v
+rg "API_KEY"
+
+# Rollback
+git reset --soft HEAD~1
+git reset --hard HEAD~1
+git revert <hash>
+```
 
 **When in doubt, DON'T push. Ask Jean-Marc first.**
+
+See `security-protocols.md` for incident response, two-repo strategy, and API key management.

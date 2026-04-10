@@ -1,24 +1,16 @@
 # Validate Skill Workflow
 
-**Purpose:** Audit existing skill for compliance with canonical PAI architectural standards
+Audit an existing skill for compliance with canonical PAI architectural standards.
 
-**When to Use:**
-- User says "validate skill", "check skill compliance", "audit skill structure"
-- Before deploying a skill to production
-- After creating or updating a skill
+**When to use:** "validate skill", "check skill compliance", "audit skill structure" — or before deploying/after updating a skill.
 
-**Prerequisites:**
-- Target skill exists in ${PAI_DIR}/skills/
-- Access to skill-structure.md
+**Prerequisites:** Target skill exists in `${PAI_DIR}/skills/` and access to `skill-structure.md`.
 
 ---
 
-## Workflow Steps
+## Step 1: Read Canonical Architecture
 
-### Step 1: Read Canonical Architecture
-
-**REQUIRED FIRST STEP:**
-```bash
+```
 ${PAI_DIR}/skills/CORE/skill-structure.md
 ${PAI_DIR}/skills/system-create-skill/references/quality-checklist.md
 ```
@@ -27,9 +19,9 @@ Extract: 3 archetypes, mandatory requirements, routing rules, naming conventions
 
 ---
 
-### Step 2: Identify Target Skill
+## Step 2: Identify Target Skill
 
-If user specifies name: `${PAI_DIR}/skills/[skill-name]/`
+If user specifies name: `${PAI_DIR}/skills/[skill-name]/`.
 If user says "validate this skill": check current directory for SKILL.md.
 
 ```bash
@@ -38,14 +30,12 @@ test -f ${PAI_DIR}/skills/[skill-name]/SKILL.md && echo "✅ Skill found"
 
 ---
 
-### Step 3: Structural Validation [Score: X/10]
+## Step 3: Structural Validation [Score: X/10]
 
 ```bash
 tree ${PAI_DIR}/skills/[skill-name]/
 find ${PAI_DIR}/skills/[skill-name]/workflows/ -name "*.md" -type f | wc -l
 ```
-
-**Check archetype compliance:**
 
 | Workflows | Expected Archetype | Required |
 |-----------|-------------------|----------|
@@ -53,23 +43,20 @@ find ${PAI_DIR}/skills/[skill-name]/workflows/ -name "*.md" -type f | wc -l
 | 3-15 | Standard | + optional documentation/, references/ |
 | 15+ | Complex | + documentation/, optional METHODOLOGY.md |
 
-- Does structure match workflow count?
-- Is skill over/under-engineered?
-- SKILL.md uppercase? Workflows kebab-case?
+Checks:
+- Structure matches workflow count (not over/under-engineered)
+- SKILL.md uppercase, workflows kebab-case
 
 ---
 
-### Step 4: Routing Validation [Score: X/10]
-
-Read SKILL.md and check:
+## Step 4: Routing Validation [Score: X/10]
 
 **YAML frontmatter:**
 - [ ] `name:` and `description:` present
 - [ ] Description includes USE WHEN triggers (5-10 variations)
 
 **Workflow Routing section:**
-- [ ] Present and FIRST (immediately after YAML)
-- [ ] NOT buried in middle/end
+- [ ] Present and FIRST (immediately after YAML) — NOT buried mid/end
 
 **Coverage:**
 ```bash
@@ -77,46 +64,46 @@ grep -c "When user requests" ${PAI_DIR}/skills/[skill-name]/SKILL.md
 find ${PAI_DIR}/skills/[skill-name]/workflows/ -name "*.md" -type f | wc -l
 ```
 
-- Route count = file count? (no orphans, no dead routes)
-- Each route has 3-5 example phrases?
-- File paths are absolute (`${PAI_DIR}/skills/...`)?
-- EXECUTE description provided?
+- Route count = file count (no orphans, no dead routes)
+- Each route has 3-5 example phrases
+- File paths absolute (`${PAI_DIR}/skills/...`)
+- EXECUTE description provided
 
 ---
 
-### Step 5: Activation Triggers Validation [Score: X/10]
+## Step 5: Activation Triggers Validation [Score: X/10]
 
-Check "When to Activate This Skill" section covers 8 categories:
+Check "When to Activate This Skill" covers 8 categories:
 
-1. **Core Skill Name** — name variations, abbreviations
-2. **Action Verbs** — "do/run/perform/conduct [skill]"
+1. **Core skill name** — name variations, abbreviations
+2. **Action verbs** — "do/run/perform/conduct [skill]"
 3. **Modifiers** — "basic/quick/comprehensive/deep [skill]"
 4. **Prepositions** — "[skill] on/for/about [target]"
 5. **Synonyms** — industry jargon, casual vs formal
-6. **Use Case Oriented** — why someone would use this
-7. **Result-Oriented** — "find/discover/get [thing]"
-8. **Tool/Method Specific** — specialized scenarios
+6. **Use-case oriented** — why someone would use this
+7. **Result-oriented** — "find/discover/get [thing]"
+8. **Tool/method specific** — specialized scenarios
 
-Target: ≥5/8 categories. Includes casual phrasing, natural variations.
+Target: ≥5/8 categories. Includes casual phrasing and natural variations.
 
 ---
 
-### Step 6: Documentation Validation [Score: X/10]
+## Step 6: Documentation Validation [Score: X/10]
 
 ```bash
 find ${PAI_DIR}/skills/[skill-name]/ -name "*.md" -type f
 ```
 
 For each file (excluding SKILL.md):
-- Referenced in SKILL.md main body?
-- Purpose explained?
-- When-to-use guidance?
+- Referenced in SKILL.md main body
+- Purpose explained
+- When-to-use guidance present
 
-Check for orphan files (unreferenced) and broken links (references to non-existent files).
+Flag orphan files (unreferenced) and broken links (references to non-existent files).
 
 ---
 
-### Step 7: Integration & Quality Validation [Score: X/10 each]
+## Step 7: Integration & Quality Validation [Score: X/10 each]
 
 **Integration:**
 - No duplication of CORE context
@@ -131,9 +118,7 @@ Check for orphan files (unreferenced) and broken links (references to non-existe
 
 ---
 
-### Step 8: Generate Validation Report
-
-Compile results into report:
+## Step 8: Generate Validation Report
 
 ```markdown
 # Skill Validation Report: [skill-name]
@@ -165,11 +150,7 @@ Compile results into report:
 
 ## Success Criteria
 
-**Validation complete when:**
-- All 6 categories checked with scores
-- Issues identified and categorized
-- Compliance status determined
-- Report generated
+**Validation complete when:** all 6 categories scored, issues categorized, compliance status determined, report generated.
 
 **COMPLIANT when:** Score ≥ 60/70, no critical issues, Workflow Routing present and FIRST, all workflows routed.
 
@@ -191,8 +172,8 @@ Compile results into report:
 
 ## Related Workflows
 
-- **create-skill.md** - Create new compliant skill
-- **canonicalize-skill.md** - Fix non-compliant existing skill
-- **update-skill.md** - Update skill while maintaining compliance
+- `create-skill.md` — create new compliant skill
+- `canonicalize-skill.md` — fix non-compliant existing skill
+- `update-skill.md` — update skill while maintaining compliance
 
-**One Source of Truth:** `${PAI_DIR}/skills/CORE/skill-structure.md`
+**One source of truth:** `${PAI_DIR}/skills/CORE/skill-structure.md`

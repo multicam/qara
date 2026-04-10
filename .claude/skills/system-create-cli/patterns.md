@@ -1,6 +1,6 @@
 # CLI Patterns Reference
 
-**Production patterns for TypeScript CLIs. Merged from typescript-patterns.md + common patterns.**
+Reusable TypeScript CLI patterns. Sources: tsx, Vite, Turbo, Bun, pnpm, Shopify CLI, llcli.
 
 ---
 
@@ -131,36 +131,26 @@ OUTPUT: JSON to stdout, errors to stderr. Exit 0=success, 1=error.
 
 ## 6. Modern TypeScript Patterns
 
-### `satisfies` for exhaustive switches
-
 ```typescript
+// satisfies for exhaustive switches
 type LogLevel = 'info' | 'warn' | 'error';
 function handle(level: LogLevel) {
   switch (level) {
-    case 'info': /* ... */; break;
-    case 'warn': /* ... */; break;
-    case 'error': /* ... */; break;
+    case 'info': break;
+    case 'warn': break;
+    case 'error': break;
     default: level satisfies never;
   }
 }
-```
 
-### Template literal types
-
-```typescript
+// Template literal types
 type ViteScope = `vite:${string}`;
 function createDebugger(ns: ViteScope) { /* ... */ }
-createDebugger('vite:server'); // ✅
-createDebugger('app:server');  // ❌ Type error
-```
 
-### Const type parameters (TS 5.0)
-
-```typescript
+// Const type parameters (TS 5.0) — infers literals, not widened types
 function defineFlags<const T extends Record<string, string | boolean>>(flags: T): T {
   return flags;
 }
-// Infers literal types, not widened string/boolean
 ```
 
 ---
@@ -214,7 +204,7 @@ type Config = z.infer<typeof ConfigSchema>;
 
 ---
 
-## 10. File I/O
+## 10. File I/O with Typed Errors
 
 ```typescript
 async function readJsonFile<T>(path: string): Promise<T> {
@@ -234,14 +224,7 @@ async function readJsonFile<T>(path: string): Promise<T> {
 
 ## Checklist
 
-**Type Safety:** strict mode, interfaces for all data, no `any`, template literals, discriminated unions, `as const satisfies`
-
-**Error Handling:** custom CLIError with code+hint, exit codes (0=ok, 1=error, 2=bug), top-level catch, signal handling
-
-**Async:** top-level await or `void main().catch()`, Promise.allSettled for best-effort, cleanup in finally
-
-**Output:** JSON to stdout, errors to stderr, deterministic, composable with jq/grep
-
----
-
-**Sources:** tsx, Vite, Turbo, Bun, pnpm, Shopify CLI, llcli
+- **Type safety:** strict mode, no `any`, discriminated unions, `as const satisfies`
+- **Errors:** `CLIError` with code+hint, exit codes (0=ok, 1=error, 2=bug), top-level catch, signals
+- **Async:** top-level await or `void main().catch()`, `Promise.allSettled` for best-effort, cleanup in finally
+- **Output:** JSON to stdout, errors to stderr, deterministic, pipeable to jq/grep

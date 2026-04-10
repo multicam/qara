@@ -5,43 +5,30 @@ purpose: Migrate CLI from Tier 1 (manual) to Tier 2 (Commander.js)
 
 # Upgrade Tier Workflow
 
-**Migrate from manual parsing to Commander.js when CLI grows complex.**
+Migrate a Tier 1 (manual `process.argv`) CLI to Tier 2 (Commander.js).
 
----
+## When to Upgrade
 
-## 🎯 PURPOSE
-
-Convert Tier 1 CLI (llcli-style) to Tier 2 (Commander.js) when complexity demands it.
-
----
-
-## 📍 WHEN TO USE
-
-**Indicators to upgrade:**
 - 15+ commands (switch statement unwieldy)
 - Need subcommands (git-style: `cli convert json csv`)
 - Plugin architecture needed
-- Complex option combinations
-- Multiple output formats
+- Complex nested options / multiple output formats
 
-**Rule:** Don't upgrade prematurely. Tier 1 handles 10-15 commands fine.
+**Don't upgrade prematurely.** Tier 1 handles 10-15 commands fine. Most CLIs never need this.
 
----
+## Steps
 
-## 📋 MIGRATION STEPS
-
-### 1. Install Commander.js
+### 1. Install
 
 ```bash
 cd ${PAI_DIR}/bin/[cli-name]/
 bun add commander
 ```
 
-### 2. Create Commander Structure
+### 2. Commander Skeleton
 
 ```typescript
 #!/usr/bin/env bun
-
 import { Command } from 'commander';
 
 const program = new Command();
@@ -49,17 +36,13 @@ const program = new Command();
 program
   .name('[cli-name]')
   .description('[description from old CLI]')
-  .version('2.0.0'); // Bump major version
+  .version('2.0.0'); // bump major
 ```
 
 ### 3. Convert Commands
 
-**Before (Tier 1):**
+Before (Tier 1):
 ```typescript
-async function fetchData(arg: string, limit: number): Promise<void> {
-  // ...
-}
-
 switch (command) {
   case 'fetch':
     await fetchData(args[1], limit);
@@ -67,21 +50,20 @@ switch (command) {
 }
 ```
 
-**After (Tier 2):**
+After (Tier 2):
 ```typescript
 program
   .command('fetch <arg>')
-  .option('-l, --limit <number>', 'limit results', '20')
   .description('Fetch data')
+  .option('-l, --limit <number>', 'limit results', '20')
   .action(async (arg: string, options) => {
-    const limit = parseInt(options.limit, 10);
-    await fetchData(arg, limit);
+    await fetchData(arg, parseInt(options.limit, 10));
   });
 ```
 
 ### 4. Preserve Help Quality
 
-Don't let auto-generated help be worse than manual help.
+Don't let auto-generated help be worse than the old manual help.
 
 ```typescript
 program
@@ -91,76 +73,36 @@ program
   .addHelpText('after', `
 Examples:
   $ ${program.name()} fetch "keyword" --limit 50
-  $ ${program.name()} fetch "api query"
 
 Output: JSON to stdout
 `);
 ```
 
-### 5. Test All Commands
+### 5. Test
 
 ```bash
 ./cli.ts --help
 ./cli.ts fetch test
-./cli.ts [each-command]
+# ... exercise every command
 ```
 
-### 6. Update Documentation
+### 6. Update Docs
 
 ```markdown
 # Breaking Changes (v2.0.0)
 
 Now uses Commander.js for better command organization.
-
-**Migration:**
 - All commands work the same
 - Help text improved
 - Added subcommand support
-
-No API changes - drop-in replacement.
 ```
 
----
-
-## 🔄 BEFORE/AFTER COMPARISON
-
-### Before (Tier 1)
-```typescript
-// Manual parsing, ~350 lines
-async function main() {
-  const args = process.argv.slice(2);
-  const command = args[0];
-  switch (command) {
-    case 'fetch': /* ... */
-    case 'create': /* ... */
-    // ... 15 more cases
-  }
-}
-```
-
-### After (Tier 2)
-```typescript
-// Commander.js, ~250 lines (cleaner)
-program
-  .command('fetch <query>').action(fetchCommand)
-  .command('create <name>').action(createCommand);
-  // ... 15 more commands
-
-program.parse();
-```
-
----
-
-## ✅ CHECKLIST
+## Checklist
 
 - [ ] Commander.js installed
 - [ ] All commands converted
-- [ ] Help text quality maintained
+- [ ] Help text quality maintained (use `addHelpText`)
 - [ ] All tests pass
-- [ ] README updated (breaking changes)
+- [ ] README updated with breaking changes
 - [ ] Version bumped to 2.0.0
-- [ ] Users notified if published
-
----
-
-**Note:** Most CLIs NEVER need this upgrade. Tier 1 is production-ready indefinitely.
+- [ ] Published users notified

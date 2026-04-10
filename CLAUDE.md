@@ -5,10 +5,10 @@
 | Complexity | Approach | When |
 |-----------|----------|------|
 | Simple | Direct execution | Single-file change, clear task |
-| Medium | Plan mode → `/implement_plan` | Multi-file, clear scope |
-| Complex | `/create_plan` → mode execution | Multi-phase, unclear scope, needs research |
+| Medium | Plan mode → `cruise: implement {plan-path}` | Multi-file, clear scope |
+| Complex | `/create_plan` → `cruise:` / `drive:` / `turbo:` | Multi-phase, unclear scope, needs research |
 
-After plan approval: follow `/implement_plan` workflow — phase tracking, TDD enforcement, human verification pauses. Do NOT implement ad-hoc.
+After plan approval: activate an execution mode (`cruise:` for phased, `drive:` for PRD-driven, `turbo:` for parallel). Modes provide phase tracking, TDD enforcement, and verification gates. Do NOT implement ad-hoc. See `.claude/context/execution-modes-quality.md` for mode selection.
 
 ## Delegation
 

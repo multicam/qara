@@ -11,248 +11,83 @@ description: |
 
 ## Workflow Routing (SYSTEM PROMPT)
 
-**CRITICAL: Every skill creation request MUST follow architectural compliance validation.**
+Every skill creation/update request MUST follow architectural compliance validation. `${PAI_DIR}/skills/CORE/skill-structure.md` is the single source of truth — read it before any operation.
 
-**When user requests creating a new skill:**
-Examples: "create skill", "create a skill", "new skill", "build skill", "make skill", "skill for X", "Create-A-Skill"
-→ **READ:** ${PAI_DIR}/skills/CORE/skill-structure.md
-→ **READ:** ${PAI_DIR}/skills/system-create-skill/workflows/create-skill.md
-→ **EXECUTE:** Complete skill creation workflow with architectural validation
+**Create skill:** "create skill", "new skill", "build skill", "skill for X"
+→ READ `${PAI_DIR}/skills/CORE/skill-structure.md`
+→ READ `${PAI_DIR}/skills/system-create-skill/workflows/create-skill.md`
 
-**When user requests validating existing skill:**
-Examples: "validate skill", "check skill compliance", "audit skill", "verify skill structure"
-→ **READ:** ${PAI_DIR}/skills/CORE/skill-structure.md
-→ **READ:** ${PAI_DIR}/skills/system-create-skill/workflows/validate-skill.md
-→ **EXECUTE:** Skill compliance audit workflow
+**Validate skill:** "validate skill", "check skill compliance", "audit skill"
+→ READ `${PAI_DIR}/skills/CORE/skill-structure.md`
+→ READ `${PAI_DIR}/skills/system-create-skill/workflows/validate-skill.md`
 
-**When user requests updating existing skill:**
-Examples: "update skill", "refactor skill", "fix skill routing", "add workflow to skill"
-→ **READ:** ${PAI_DIR}/skills/CORE/skill-structure.md
-→ **READ:** ${PAI_DIR}/skills/system-create-skill/workflows/update-skill.md
-→ **EXECUTE:** Skill update workflow with compliance checking
+**Update skill:** "update skill", "refactor skill", "add workflow to skill"
+→ READ `${PAI_DIR}/skills/CORE/skill-structure.md`
+→ READ `${PAI_DIR}/skills/system-create-skill/workflows/update-skill.md`
 
-**When user requests canonicalizing a skill:**
-Examples: "canonicalize skill", "canonicalize this skill", "canonicalize [skill-name]", "rebuild skill to standards", "refactor skill to canonical structure"
-→ **READ:** ${PAI_DIR}/skills/CORE/skill-structure.md
-→ **READ:** ${PAI_DIR}/skills/system-create-skill/workflows/canonicalize-skill.md
-→ **EXECUTE:** Complete skill canonicalization workflow - analyze current skill structure and rebuild according to canonical architecture while preserving functionality
+**Canonicalize skill:** "canonicalize skill", "rebuild skill to standards", "fix skill compliance"
+→ READ `${PAI_DIR}/skills/CORE/skill-structure.md`
+→ READ `${PAI_DIR}/skills/system-create-skill/workflows/canonicalize-skill.md`
 
 ---
 
-## When to Activate This Skill
+## Non-Negotiable Requirements
 
-### Direct Skill Creation Requests
-- "create skill", "create a skill", "new skill for X"
-- "build skill", "make skill", "add skill"
-- "Create-A-Skill" (canonical name)
-- "skill for [purpose]" or "need a skill that does X"
+1. **Workflow Routing section FIRST** — immediately after YAML frontmatter
+2. **Every workflow must be routed** — no orphaned workflow files
+3. **Every secondary file must be linked** from main SKILL.md body
+4. **Follow canonical archetype** (Minimal/Standard/Complex)
+5. **Progressive disclosure:** SKILL.md → workflows → documentation → references
 
-### Skill Validation Requests
-- "validate skill", "check skill compliance", "audit skill structure"
-- "verify skill follows standards", "is this skill compliant"
-- "review skill architecture", "skill quality check"
-
-### Skill Update Requests
-- "update skill", "refactor skill", "fix skill routing"
-- "add workflow to skill", "extend skill"
-- "reorganize skill structure", "migrate skill"
-
-### Skill Canonicalization Requests
-- "canonicalize skill", "canonicalize this skill", "canonicalize [skill-name]"
-- "rebuild skill to standards", "refactor skill to canonical structure"
-- "fix skill compliance", "bring skill to canonical form"
-- "standardize skill structure", "make skill compliant"
-
-### Quality & Compliance Indicators
-- User mentions "architectural standards" or "compliance"
-- User references "skill-structure.md"
-- User asks about "skill best practices" or "skill patterns"
-- User needs to ensure skill follows "template" or "philosophy"
-
----
-
-## Core Principles
-
-### Architectural Compliance
-
-**MANDATORY: Every skill MUST comply with the canonical architecture defined in:**
-`${PAI_DIR}/skills/CORE/skill-structure.md`
-
-This document defines:
-- The 3 skill archetypes (Minimal, Standard, Complex)
-- The 4-level routing hierarchy
-- Mandatory structural requirements
-- Workflow organization patterns
-- Naming conventions
-- Routing patterns
-
-**NON-NEGOTIABLE Requirements:**
-
-1. **Workflow Routing Section FIRST** - Immediately after YAML frontmatter
-2. **Every Workflow Must Be Routed** - No orphaned workflow files
-3. **Every Secondary File Must Be Linked** - From main SKILL.md body
-4. **Canonical Structure Template** - Follow the exact structure
-5. **Progressive Disclosure** - SKILL.md → workflows → documentation → references
-
-### Template-Driven Philosophy
-
-**Consistency over creativity** when it comes to structure:
-- Use established archetypes (Minimal/Standard/Complex)
-- Follow canonical naming conventions
-- Implement proven routing patterns
-- Maintain predictable organization
-
-**Creativity where it matters:**
-- Domain-specific workflows
-- Custom capabilities
-- Unique integrations
-- Innovative approaches to problems
-
-### Quality Gates
+## Quality Gates
 
 Every created/updated skill must pass:
 
-1. **Structural Validation**
-   - Correct archetype directory structure
-   - Proper file naming conventions
-   - Required files present
-
-2. **Routing Validation**
-   - Workflow Routing section present and FIRST
-   - All workflows explicitly routed
-   - Activation triggers comprehensive (8-category pattern)
-
-3. **Documentation Validation**
-   - All files referenced in SKILL.md
-   - Clear purpose and when-to-use guidance
-   - Examples provided
-
-4. **Integration Validation**
-   - No duplication of CORE context
-   - Compatible with agent workflows
+1. **Structural** — correct archetype, file naming, required files present
+2. **Routing** — Workflow Routing FIRST, all workflows routed, 8-category activation triggers
+3. **Documentation** — all files referenced, clear purpose, examples
+4. **Integration** — no CORE duplication, compatible with agent workflows
 
 ---
 
-## Skill Creation Process
+## Archetype Selection
 
-### Step 1: Define Skill Purpose
+| Workflows | Archetype | Structure |
+|-----------|-----------|-----------|
+| 1-3 | Minimal | SKILL.md + workflows/ |
+| 3-15 | Standard | + optional documentation/, references/ |
+| 15+ | Complex | + nested workflows/, CONSTITUTION.md, METHODOLOGY.md |
 
-Ask user to clarify:
-- **What does this skill do?** (Core capability)
-- **When should it activate?** (Trigger patterns)
-- **What workflows does it need?** (Count and categories)
-- **What integrations?** (Agents, external services)
+See `references/archetype-templates.md` for complete structure templates.
 
-### Step 2: Choose Archetype
+---
 
-Based on workflow count and complexity - see `references/archetype-templates.md` for details:
+## Process
 
-**Minimal Skill (1-3 workflows)** - Zero framework dependencies
-**Standard Skill (3-15 workflows)** - Optional documentation/references
-**Complex Skill (15+ workflows)** - Full documentation hierarchy
-
-### Step 3: Read Architecture Document
-
-**ALWAYS read the canonical architecture before creating:**
-```bash
-${PAI_DIR}/skills/CORE/skill-structure.md
-```
-
-This ensures:
-- Latest architectural requirements
-- Current best practices
-- Proven routing patterns
-- Quality standards
-
-### Step 4: Create Skill Structure
-
-Use the canonical template from skill-structure.md - follow exact structure for chosen archetype.
-
-### Step 5: Validate Compliance
-
-Run through quality gates:
-- ✅ Workflow Routing section present and FIRST?
-- ✅ All workflows explicitly routed?
-- ✅ All files referenced in main body?
-- ✅ Activation triggers comprehensive?
-- ✅ Examples provided?
-- ✅ Naming conventions followed?
-
-### Step 6: Test Activation
-
-Verify skill activates with natural language triggers from description.
+1. **Define purpose** — capability, triggers, workflow count, integrations
+2. **Choose archetype** — based on workflow count and complexity
+3. **Read `skill-structure.md`** — latest requirements and patterns
+4. **Create structure** — follow exact canonical template
+5. **Validate** — run quality gates checklist
+6. **Test activation** — verify natural language triggers
 
 ---
 
 ## Extended Context
 
-### Primary Reference Document
+**Primary reference:** `${PAI_DIR}/skills/CORE/skill-structure.md` — canonical guide, 3 archetypes, 4-level routing hierarchy, structural requirements, naming conventions.
 
-**${PAI_DIR}/skills/CORE/skill-structure.md**
-- Canonical guide for all skill structure and routing
-- Defines the 3 archetypes (Minimal, Standard, Complex)
-- The 4-level routing hierarchy
-- All structural requirements and naming conventions
-- Routing pattern examples
-- Complete skill ecosystem reference
-- **ALWAYS read this before creating or updating skills**
+**Workflows:**
+- `workflows/create-skill.md` — full creation workflow with validation gates
+- `workflows/validate-skill.md` — compliance audit
+- `workflows/update-skill.md` — refactoring/extension
+- `workflows/canonicalize-skill.md` — rebuild non-compliant skill
 
-### Workflow Files
-
-**${PAI_DIR}/skills/system-create-skill/workflows/create-skill.md**
-- Complete skill creation workflow
-- Step-by-step process with validation gates
-- Template generation
-- Quality assurance checks
-
-**${PAI_DIR}/skills/system-create-skill/workflows/validate-skill.md**
-- Skill compliance audit workflow
-- Structural validation
-- Routing validation
-- Documentation validation
-- Integration validation
-
-**${PAI_DIR}/skills/system-create-skill/workflows/update-skill.md**
-- Skill update and refactoring workflow
-- Adding workflows to existing skills
-- Reorganizing skill structure
-- Migration patterns
-
-### Reference Documentation
-
-**READ:** `references/archetype-templates.md` for complete structure templates and archetype selection guide
-
-**READ:** `references/skill-examples.md` for 6 detailed examples covering all common scenarios
-
-**READ:** `references/quality-checklist.md` for skill validation checklist (structure, routing, activation, documentation, integration)
+**References:**
+- `references/archetype-templates.md` — complete structure templates
+- `references/skill-examples.md` — worked examples
+- `references/quality-checklist.md` — validation checklist
 
 ---
 
-## Summary
-
-**system-create-skill ensures:**
-- Every created skill follows architectural standards
-- Compliance is validated automatically
-- Templates drive consistency
-- Quality gates prevent non-compliant skills
-- Philosophy is embedded in process
-
-**Three core operations:**
-1. **Create** - New skills with architectural compliance
-2. **Validate** - Existing skills against standards
-3. **Update** - Modify skills while maintaining compliance
-
-**One source of truth:**
-`${PAI_DIR}/skills/CORE/skill-structure.md`
-
-**Zero tolerance for:**
-- Orphaned workflows (not routed)
-- Invisible files (not linked)
-- Vague triggers (not comprehensive)
-- Structural violations (wrong archetype)
-
----
-
-**Related Documentation:**
-- `${PAI_DIR}/skills/CORE/skill-structure.md` - Canonical architecture guide (PRIMARY)
-- `${PAI_DIR}/skills/CORE/CONSTITUTION.md` - Overall PAI philosophy
+**Zero tolerance for:** orphaned workflows, invisible files, vague triggers, structural violations.

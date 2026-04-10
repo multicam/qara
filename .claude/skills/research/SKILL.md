@@ -11,236 +11,79 @@ description: |
 
 # Research Skill
 
-## API Keys Required
+## API Keys (optional, in `~/.env`)
 
-**This skill works best with these optional API keys configured in `~/.env`:**
+| Feature | Key | Source |
+|---------|-----|--------|
+| Perplexity | `PERPLEXITY_API_KEY` | https://perplexity.ai/settings/api |
+| Gemini | `GOOGLE_API_KEY` | https://aistudio.google.com/app/apikey |
 
-| Feature | API Key | Get It From |
-|---------|---------|-------------|
-| Perplexity Research | `PERPLEXITY_API_KEY` | https://perplexity.ai/settings/api |
-| Gemini Research | `GOOGLE_API_KEY` | https://aistudio.google.com/app/apikey |
-
-**Works without API keys:**
-- Claude-based research (uses built-in WebSearch)
-- Basic web fetching (uses built-in WebFetch)
+Works without keys via built-in WebSearch/WebFetch and `claude-researcher`.
 
 ---
 
 ## Workflow Routing
 
-### Multi-Source Research Workflows
-
-**When user requests community sentiment, community pulse, or what people are saying:**
-Examples: "what is the community saying about X", "community pulse on Y", "pulse check on Z", "what are people saying about X on Reddit"
-→ **READ:** `${PAI_DIR}/skills/research/workflows/community-pulse.md`
-→ **EXECUTE:** Multi-platform community sentiment research (Reddit, HN, X, YouTube, Web)
-
-**When user requests comprehensive parallel research:**
-Examples: "do research on X", "research this topic", "find information about Y", "investigate this subject"
-→ **READ:** `${PAI_DIR}/skills/research/workflows/conduct.md`
-→ **EXECUTE:** Parallel multi-agent research using available researcher agents
-
-**When user requests Claude-based research (FREE - no API keys):**
-Examples: "use claude for research", "claude research on X", "use websearch to research Y"
-→ **READ:** `${PAI_DIR}/skills/research/workflows/claude-research.ts`
-→ **EXECUTE:** Intelligent query decomposition with Claude's WebSearch
-
-**When Claude WebSearch fails or returns poor results (fallback):**
-Examples: WebSearch returned nothing, stale results, rate-limited, user says "use gemini"
-→ **EXECUTE:** Launch `gemini-researcher` agent via Task tool with the failed query
-→ **NOTE:** Also use as parallel second opinion when confidence is low
-
-**When user requests Perplexity research (requires PERPLEXITY_API_KEY):**
-Examples: "use perplexity to research X", "perplexity research on Y"
-→ **READ:** `${PAI_DIR}/skills/research/workflows/perplexity-research.ts`
-→ **EXECUTE:** Fast web search with query decomposition via Perplexity API
-
-**When user requests interview preparation:**
-Examples: "prepare interview questions for X", "interview research on Y"
-→ **READ:** `${PAI_DIR}/skills/research/workflows/interview-research.md`
-→ **EXECUTE:** Interview prep with diverse question generation
-
-### Content Retrieval Workflows
-
-**When user indicates difficulty accessing content:**
-Examples: "can't get this content", "site is blocking me", "CAPTCHA blocking"
-→ **READ:** `${PAI_DIR}/skills/research/workflows/retrieve.md`
-→ **EXECUTE:** Content retrieval via WebFetch
-
-**When user provides YouTube URL:**
-Examples: "get this youtube video", "extract from youtube URL"
-→ **READ:** `${PAI_DIR}/skills/research/workflows/youtube-extraction.md`
-→ **EXECUTE:** YouTube content extraction
-
-**When user requests web scraping:**
-Examples: "scrape this site", "extract data from this website"
-→ **READ:** `${PAI_DIR}/skills/research/workflows/web-scraping.md`
-→ **EXECUTE:** Web scraping techniques and tools
-
-### Content Enhancement Workflows
-
-**When user requests content enhancement:**
-Examples: "enhance this content", "improve this draft"
-→ **READ:** `${PAI_DIR}/skills/research/workflows/enhance.md`
-→ **EXECUTE:** Content improvement and refinement
-
-**When user requests knowledge extraction:**
-Examples: "extract knowledge from X", "get insights from this"
-→ **READ:** `${PAI_DIR}/skills/research/workflows/extract-knowledge.md`
-→ **EXECUTE:** Knowledge extraction and synthesis
+| Trigger | Read | Action |
+|---------|------|--------|
+| "community pulse on X", "what people are saying" | `workflows/community-pulse.md` | Multi-platform sentiment (Reddit, HN, X, YouTube, Web) |
+| "research X", "investigate Y" | `workflows/conduct.md` | Parallel multi-agent research |
+| "use claude for research" | `workflows/claude-research.ts` | WebSearch with query decomposition |
+| WebSearch fails / "use gemini" | — | Launch `gemini-researcher` via Task |
+| "use perplexity" | `workflows/perplexity-research.ts` | Perplexity API (needs key) |
+| "interview prep for X" | `workflows/interview-research.md` | Interview question generation |
+| "can't access content", CAPTCHA | `workflows/retrieve.md` | WebFetch retrieval |
+| YouTube URL given | `workflows/youtube-extraction.md` | YouTube extraction |
+| "scrape this site" | `workflows/web-scraping.md` | Web scraping |
+| "enhance this draft" | `workflows/enhance.md` | Content improvement |
+| "extract knowledge from" | `workflows/extract-knowledge.md` | Knowledge synthesis |
 
 ---
 
-## Multi-Source Research
+## Research Modes
 
-### Three Research Modes
+| Mode | Trigger | Agents/type | Timeout |
+|------|---------|------------|---------|
+| Quick | "quick research" | 1 | 2 min |
+| Standard | default | 3 | 3 min |
+| Extensive | "extensive research" | 8 | 10 min |
 
-**QUICK RESEARCH MODE:**
-- User says "quick research" → Launch 1 agent per researcher type
-- **Timeout: 2 minutes**
-- Best for: Simple queries, straightforward questions
+### Researcher Agents
 
-**STANDARD RESEARCH MODE (Default):**
-- Default for most research requests → Launch 3 agents per researcher type
-- **Timeout: 3 minutes**
-- Best for: Most research needs, comprehensive coverage
-
-**EXTENSIVE RESEARCH MODE:**
-- User says "extensive research" → Launch 8 agents per researcher type
-- **Timeout: 10 minutes**
-- Best for: Deep-dive research, comprehensive reports
-
-### Available Research Agents
-
-- `claude-researcher` - Primary researcher using Claude's native WebSearch/WebFetch (use first)
-- `gemini-researcher` - Fallback using Gemini CLI when WebSearch fails (requires GOOGLE_API_KEY)
-- ~~`perplexity-researcher`~~ Removed (no API key; gemini covers fallback)
-
-### Speed Benefits
-
-- ❌ **Old approach**: Sequential searches → 5-10 minutes
-- ✅ **Quick mode**: 1 agent per type → **2 minute timeout**
-- ✅ **Standard mode**: 3 agents per type → **3 minute timeout**
-- ✅ **Extensive mode**: 8 agents per type → **10 minute timeout**
+- `claude-researcher` — primary, uses WebSearch/WebFetch
+- `gemini-researcher` — fallback when WebSearch fails (needs `GOOGLE_API_KEY`)
+- ~~`perplexity-researcher`~~ removed; gemini covers fallback
 
 ---
 
-## Intelligent Content Retrieval
+## Core Principles
 
-### Three-Layer Escalation System
-
-**Layer 1: Built-in Tools (Try First - FREE)**
-- WebFetch - Standard web content fetching
-- WebSearch - Search engine queries
-- When to use: Default for all content retrieval
-
-**Critical Rules:**
-- Always try simplest approach first (Layer 1)
-- Escalate only when previous layer fails
-- Document which layers were used and why
+1. Parallel execution — launch all agents in one message
+2. Hard timeouts — proceed with partial results, don't wait
+3. Simplest first — WebFetch/WebSearch before paid services
+4. Document which layers ran and why
 
 ---
 
 ## File Organization
 
-### Working Directory (Scratchpad)
 ```
+# Working scratchpad
 ${PAI_DIR}/scratchpad/YYYY-MM-DD-HHMMSS_research-[topic]/
-├── raw-outputs/
-├── synthesis-notes.md
-└── draft-report.md
-```
+  raw-outputs/  synthesis-notes.md  draft-report.md
 
-### Permanent Storage (History)
-```
+# Permanent history
 ${PAI_DIR}/history/research/YYYY-MM/YYYY-MM-DD_[topic]/
-├── README.md
-├── research-report.md
-└── metadata.json
+  README.md  research-report.md  metadata.json
 ```
 
 ---
 
-## Key Principles
-
-1. **Parallel execution** - Launch multiple agents simultaneously
-2. **Hard timeouts** - Don't wait indefinitely, proceed with partial results
-3. **Simplest first** - Always try free tools before paid services
-4. **Auto-routing** - Skill analyzes intent and activates appropriate workflow
-
----
-
-## WebSearch Tool Usage
-
-### Built-in Web Search (FREE)
-
-Claude Code includes a built-in WebSearch tool for real-time web queries.
-
-**When to Use:**
-- Current events and recent information
-- Documentation and API references
-- Pricing, availability, status checks
-- Fact verification beyond training data
-
-**Best Practices:**
-
-```typescript
-// Include year for recent info
-WebSearch({ query: "Next.js 15 features 2024" })
-
-// Be specific
-WebSearch({ query: "TypeScript 5.4 satisfies operator examples" })
-
-// Use domain filtering for trusted sources
-WebSearch({
-  query: "React hooks best practices",
-  allowed_domains: ["react.dev", "kentcdodds.com"]
-})
-```
-
-**Query Optimization:**
-- Include year: "React Server Components 2024"
-- Be specific: "Bun vs Node.js benchmark comparison"
-- Use domain filters: Focus on official docs or trusted sources
-
-**Source Citation:**
-Always cite sources in research output:
-```markdown
-## Sources
-- [React Documentation](https://react.dev/...)
-- [Official Blog Post](https://...)
-```
-
-### WebSearch vs WebFetch
+## WebSearch vs WebFetch
 
 | Need | Tool |
 |------|------|
-| Search for information | WebSearch |
-| Get specific page content | WebFetch |
-| Multiple search results | WebSearch |
-| Full article extraction | WebFetch |
+| Search the web | WebSearch |
+| Retrieve specific URL content | WebFetch |
 
-### Integration with Research Workflows
-
-WebSearch is the foundation of `claude-researcher` agent:
-1. Query decomposition into sub-queries
-2. Parallel WebSearch calls
-3. Result synthesis
-4. Source attribution
-
----
-
-## Workflow Files
-
-| Workflow | File | API Keys Needed |
-|----------|------|-----------------|
-| Multi-Source Research | `workflows/conduct.md` | Varies by agent |
-| Claude Research | `workflows/claude-research.ts` | None (FREE) |
-| Perplexity Research | `workflows/perplexity-research.ts` | PERPLEXITY_API_KEY |
-| Interview Prep | `workflows/interview-research.md` | None |
-| Content Retrieval | `workflows/retrieve.md` | None |
-| YouTube Extraction | `workflows/youtube-extraction.md` | None |
-| Web Scraping | `workflows/web-scraping.md` | None |
-| Content Enhancement | `workflows/enhance.md` | None |
-| Knowledge Extraction | `workflows/extract-knowledge.md` | None |
-| Community Pulse | `workflows/community-pulse.md` | None (FREE) |
+Query tips: include the year ("React 19 features 2026"), be specific, use `allowed_domains` for trusted sources, always cite in output.

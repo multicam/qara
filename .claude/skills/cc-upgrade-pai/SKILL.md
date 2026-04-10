@@ -9,311 +9,266 @@ description: |
 
 # CC-Upgrade-PAI (v1.0.0)
 
-PAI-specific analysis extending the base `cc-upgrade` skill.
+Extends `cc-upgrade` with PAI-specific analysis.
 
-## Workflow Routing (SYSTEM PROMPT)
+## Workflow Routing
 
-**When user requests PAI external skills analysis, PAI skill ecosystem audit, or Qara skill review:**
-Examples: "audit PAI skills", "deep skill analysis", "analyze PAI installed skills",
-"PAI skill redundancies", "what external skills do we have", "PAI skill hygiene",
-"visual-explainer audit", "mattpocock sync", "skill wrapping opportunities"
-→ **READ:** `workflows/external-skills-deep-analysis.md`
-→ **EXECUTE:** Full PAI external skills deep analysis with UltraThink
+**PAI external skills analysis / Qara skill review**: "audit PAI skills", "deep skill analysis", "PAI skill redundancies", "visual-explainer audit", "mattpocock sync", "skill wrapping opportunities"
+-> READ: `workflows/external-skills-deep-analysis.md`
 
-**When user needs the external skills registry or inventory:**
-Examples: "external skills registry", "skill inventory", "what skills are installed"
-→ **READ:** `references/external-skills-registry.md`
+**External skills registry / inventory**: "external skills registry", "skill inventory", "what skills are installed"
+-> READ: `references/external-skills-registry.md`
 
-**When user requests general PAI CC audit:**
-→ Continue with PAI-Specific Analysis below
+**General PAI CC audit**: continue below.
 
 ## Prerequisites
 
-**Before running PAI analysis, load base skill context:**
-
-→ READ: `../cc-upgrade/references/cc-trusted-sources.md` for CC feature sources
-→ READ: `../cc-upgrade/references/12-factor-checklist.md` for compliance audit
+-> READ: `../cc-upgrade/references/cc-trusted-sources.md`
+-> READ: `../cc-upgrade/references/12-factor-checklist.md`
 
 ## PAI-Specific Analysis
 
-### 1. PAI Structure Validation
-
-Expected PAI v2.x structure:
+### 1. PAI Structure (v2.x)
 
 ```
 $PAI_DIR/
 ├── .claude/
-│   ├── context/           # UFC (Universal File-based Context)
-│   ├── skills/            # Skills-as-Containers
+│   ├── context/           # UFC
+│   ├── skills/
 │   │   └── CORE/          # Core skill (identity, routing)
-│   ├── agents/            # Specialized agents
-│   ├── commands/          # Slash commands
-│   ├── hooks/             # TypeScript hooks
-│   │   └── lib/           # Hook libraries
+│   ├── agents/
+│   ├── commands/
+│   ├── hooks/
+│   │   └── lib/
 │   └── settings.json
-├── CLAUDE.md              # Project-specific context (global config in ~/.claude/CLAUDE.md via symlink from .claude/CLAUDE.md)
-├── .claude/skills/CORE/CONSTITUTION.md  # Philosophy doc
-└── DECISIONS.md           # Decision log (append-only)
+├── CLAUDE.md              # Project-specific (global via symlink)
+├── .claude/skills/CORE/CONSTITUTION.md
+└── DECISIONS.md           # Append-only decision log
 ```
 
 ### 2. CORE Skill Audit
 
-Check CORE skill compliance:
-
 ```bash
-# Verify CORE skill exists and loads at startup
 cat "$PAI_DIR/.claude/skills/CORE/SKILL.md" | head -20
 ```
 
-Key checks:
+Required:
 - [ ] `context: same` (loads in main conversation)
 - [ ] Identity section (name, personality)
-- [ ] Workflow routing (→ READ: patterns)
+- [ ] Workflow routing (-> READ: patterns)
 - [ ] Response format tiers
 - [ ] Delegation instructions
 
 ### 3. Delegation Patterns
 
-PAI requires explicit delegation guidance:
-
 | Pattern | Location | Check |
 |---------|----------|-------|
 | Parallel agents | `delegation-guide.md` | Task tool with multiple calls |
-| Agent hierarchy | `.claude/context/delegation-guide.md` | Escalation paths defined |
-| Spotcheck pattern | Commands | Post-delegation verification |
+| Agent hierarchy | `.claude/context/delegation-guide.md` | Escalation paths |
+| Spotcheck | Commands | Post-delegation verification |
 
-### 4. Hook Library Analysis
-
-PAI hooks (14 scripts, 10 CC events, 14 libs + context-graph/):
+### 4. Hook Library (14 scripts, 14 libs + context-graph/)
 
 ```
 .claude/hooks/
 ├── lib/
 │   ├── pai-paths.ts          # Paths + getSessionId + atomicWriteJson
-│   ├── tab-titles.ts         # Terminal tab title generation
+│   ├── tab-titles.ts
 │   ├── jsonl-utils.ts        # JSONL append/rotate
-│   ├── datetime-utils.ts     # Timestamp formatting
-│   ├── tdd-state.ts          # TDD RED/GREEN/REFACTOR state machine
+│   ├── datetime-utils.ts
+│   ├── tdd-state.ts          # RED/GREEN/REFACTOR state machine
 │   ├── trace-utils.ts        # Topic classification
-│   ├── mode-state.ts         # Execution mode lifecycle (drive/cruise/turbo)
-│   ├── keyword-routes.json   # Declarative keyword→skill routing config
+│   ├── mode-state.ts         # drive/cruise/turbo lifecycle
+│   ├── keyword-routes.json   # Declarative routing config
 │   ├── working-memory.ts     # Session-scoped 4-file memory
-│   ├── compact-checkpoint.ts # State snapshot before compression
-│   ├── prd-utils.ts          # PRD read/write, story tracking
-│   ├── test-macros.ts        # Reusable test patterns
-│   ├── ollama-client.ts      # Local Gemma 4 via Ollama
-│   ├── file-patterns.ts      # File classification patterns
+│   ├── compact-checkpoint.ts # Pre-compression snapshot
+│   ├── prd-utils.ts          # PRD read/write
+│   ├── test-macros.ts
+│   ├── ollama-client.ts      # Gemma 4 via Ollama
+│   ├── file-patterns.ts
 │   └── context-graph/        # Static context analyzer
 ├── session-start.ts          # SessionStart: CORE, hints, crash recovery
-├── update-tab-titles.ts      # UserPromptSubmit: processing indicator
+├── update-tab-titles.ts      # UserPromptSubmit
 ├── keyword-router.ts         # UserPromptSubmit: mode activation
-├── rtk-rewrite.sh            # PreToolUse:Bash: RTK token reduction
-├── pre-tool-use-security.ts  # PreToolUse:Bash: dangerous pattern detection
+├── rtk-rewrite.sh            # PreToolUse:Bash: token reduction
+├── pre-tool-use-security.ts  # PreToolUse:Bash: dangerous patterns
 ├── pre-tool-use-tdd.ts       # PreToolUse:Write,Edit: TDD enforcement
-├── pre-tool-use-quality.ts   # PreToolUse:Write,Edit,MultiEdit: read-before-edit
-├── post-tool-use.ts          # PostToolUse: telemetry logging
-├── post-tool-failure.ts      # PostToolUseFailure: consecutive failure tracking
-├── subagent-start.ts         # SubagentStart: delegation logging
-├── subagent-stop.ts          # SubagentStop: deliverable recording
+├── pre-tool-use-quality.ts   # PreToolUse: read-before-edit
+├── post-tool-use.ts          # PostToolUse: telemetry
+├── post-tool-failure.ts      # PostToolUseFailure
+├── subagent-start.ts
+├── subagent-stop.ts          # Deliverable recording
 ├── pre-compact.ts            # PreCompact: state checkpoint
-├── stop-hook.ts              # Stop: tab title, mode continuation, memory injection
-└── config-change.ts          # ConfigChange: settings logging
+├── stop-hook.ts              # Stop: mode continuation, memory injection
+└── config-change.ts
 ```
 
-Check for:
-- [ ] TypeScript (not JavaScript)
-- [ ] Tests in `.claude/tests/` (hidden dir, use `bun test ./.claude/`)
-- [ ] Proper hook output schema (CC 2.1.14)
-- [ ] Never `exit(1)` — always `exit(0)`, even on error
-- [ ] Uses `readFileSync(0, 'utf-8')` for stdin (not Bun.stdin.stream)
-- [ ] Uses `getSessionId()` from pai-paths.ts (not inline env var chains)
+Required:
+- [ ] TypeScript (not JS)
+- [ ] Tests in `.claude/tests/` (hidden, use `bun test ./.claude/`)
+- [ ] Hook output schema (CC 2.1.14)
+- [ ] Never `exit(1)` — always `exit(0)`
+- [ ] `readFileSync(0, 'utf-8')` for stdin (not Bun.stdin.stream)
+- [ ] `getSessionId()` from pai-paths.ts (not inline env chains)
 
-### 4a. Execution Modes System
+### 4a. Execution Modes
 
-PAI has 3 persistent execution modes activated via keyword-router:
-
-| Mode | Trigger | Purpose | Max Iterations |
-|------|---------|---------|----------------|
-| drive | `drive:`, `drive mode` | PRD-driven TDD with critic/verifier gates | 50 |
-| cruise | `cruise:`, `cruise mode` | Phased: Discover → Plan → Implement → Verify | 20 |
+| Mode | Trigger | Purpose | Max Iter |
+|------|---------|---------|----------|
+| drive | `drive:`, `drive mode` | PRD-driven TDD with critic/verifier | 50 |
+| cruise | `cruise:`, `cruise mode` | Discover→Plan→Implement→Verify | 20 |
 | turbo | `turbo:`, `turbo mode` | Parallel agent dispatch | 30 |
 
-Check for:
-- [ ] mode-state.ts: state machine with TTL, session scoping, atomic writes
+Required:
+- [ ] mode-state.ts: state machine, TTL, session scoping, atomic writes
 - [ ] keyword-routes.json: patterns require colon or "mode" suffix (no bare words)
 - [ ] Stop hook: reads mode state, injects continuation, respects safety valves
-- [ ] Working memory: session-scoped 4-file memory survives compression via re-injection
-- [ ] Compact checkpoint: PreCompact saves state, session-start recovers from crash
-- [ ] Deactivation: 3 exit paths (complete, cancelled, max-iterations)
+- [ ] Working memory: session-scoped, survives compression via re-injection
+- [ ] PreCompact saves state; session-start recovers from crash
+- [ ] 3 deactivation paths: complete, cancelled, max-iterations
 
 ### 4b. Quality Gate Agents
 
 | Agent | Role | When |
 |-------|------|------|
-| critic | Pre-implementation plan review | Before coding — checks approach vs criteria |
-| verifier | Post-implementation acceptance | After coding — runs quality gates |
-| reviewer | Code review | General code quality |
+| critic | Pre-impl plan review | Before coding |
+| verifier | Post-impl acceptance | After coding — quality gates |
+| reviewer | Code review | General |
 
-Check for:
-- [ ] critic.md: deterministic checks, verdict format (proceed/revise)
-- [ ] verifier.md: quality gate suite (bun test, tsc, baseline comparison)
-- [ ] No overlap between the three (disambiguation documented in delegation-guide)
+Required:
+- [ ] critic.md: deterministic checks, proceed/revise verdict
+- [ ] verifier.md: quality gate suite (bun test, tsc, baseline)
+- [ ] No overlap; disambiguation in delegation-guide
 
 ### 5. Context Engineering (UFC)
 
-PAI uses Universal File-based Context:
-
 | Pattern | Implementation |
 |---------|----------------|
-| Progressive disclosure | `→ READ:` directives |
+| Progressive disclosure | `-> READ:` directives |
 | Context routing | Workflow routing in CORE |
 | Size limits | <500 lines per file |
 | Enforcement | MANDATORY/MUST directives |
 
-### 6. External Skills Update
+### 6. External Skills (Symlinked)
 
-PAI uses symlinked external skills from `~/.agents/skills/`. These need version checking against upstream.
+Managed from `~/.agents/skills/`:
 
-**Managed external skills:**
-
-| Skill | Source | Local Path |
-|-------|--------|------------|
+| Skill | Source | Local |
+|-------|--------|-------|
 | visual-explainer | `nicobailon/visual-explainer` | `~/.agents/skills/visual-explainer` |
 
-**Update check:**
+Update check:
 ```bash
-# Get local version
 grep 'version:' ~/.agents/skills/visual-explainer/SKILL.md
-
-# Get latest release
 gh api repos/nicobailon/visual-explainer/releases/latest --jq '.tag_name'
 ```
 
-### 7. Adapted Community Skills Update
+### 7. Adapted Community Skills
 
-PAI includes skills adapted from [mattpocock/skills](https://github.com/mattpocock/skills). These are not symlinked — they were rewritten for PAI conventions. When Matt updates the upstream repo, review changes for improvements to incorporate.
-
-**Adapted skills and their upstream sources:**
+Skills adapted from [mattpocock/skills](https://github.com/mattpocock/skills) — rewritten for PAI conventions, not symlinked. Review upstream for improvements to incorporate.
 
 | PAI Location | Upstream Source | What Was Adapted |
 |---|---|---|
 | `skills/grill-me/SKILL.md` | `grill-me/SKILL.md` | Expanded methodology, probe patterns, PAI structure |
-| `skills/design-it-twice/SKILL.md` | `design-an-interface/SKILL.md` | Broadened scope (architecture + data models), uses `architect` agents |
-| `skills/edit-article/SKILL.md` | `edit-article/SKILL.md` | Added Phase 3 humaniser pass, expanded scope to docs/specs |
+| `skills/design-it-twice/SKILL.md` | `design-an-interface/SKILL.md` | Broadened to architecture+data models, uses `architect` agents |
+| `skills/edit-article/SKILL.md` | `edit-article/SKILL.md` | Added Phase 3 humaniser, expanded to docs/specs |
 | ~~`skills/refactor-plan/SKILL.md`~~ | ~~`request-refactor-plan/SKILL.md`~~ | RETIRED — subsumed by cruise mode |
 | `skills/triage-issue/SKILL.md` | `triage-issue/SKILL.md` | PAI conventions, codebase-analyzer integration, TDD fix plans |
-| `skills/ubiquitous-language/SKILL.md` | `ubiquitous-language/SKILL.md` | PAI conventions, DDD glossary extraction |
+| `skills/ubiquitous-language/SKILL.md` | `ubiquitous-language/SKILL.md` | DDD glossary extraction |
 | ~~`skills/prd-to-plan/SKILL.md`~~ | ~~`prd-to-plan/SKILL.md`~~ | RETIRED — subsumed by drive mode + product-shaping Phase 4 |
-| `skills/CORE/testing-guide.md` | `tdd/SKILL.md` + `tdd/tests.md` | Merged TDD methodology into existing testing guide |
-| `skills/CORE/references/deep-modules.md` | `tdd/deep-modules.md` | Extracted as shared cross-cutting reference |
-| `skills/CORE/references/mocking-guidelines.md` | `tdd/mocking.md` + `improve-codebase-architecture/REFERENCE.md` | Combined mocking rules + dependency classification |
+| `skills/CORE/testing-guide.md` | `tdd/SKILL.md` + `tdd/tests.md` | Merged TDD into existing guide |
+| `skills/CORE/references/deep-modules.md` | `tdd/deep-modules.md` | Extracted as shared reference |
+| `skills/CORE/references/mocking-guidelines.md` | `tdd/mocking.md` + `improve-codebase-architecture/REFERENCE.md` | Mocking rules + dependency classification |
 | `skills/CORE/references/interface-design.md` | `tdd/interface-design.md` | Extracted as shared reference |
 | `skills/CORE/references/refactoring-signals.md` | `tdd/refactoring.md` | Extracted as shared reference |
-| `skills/product-shaping/workflows/breakdown.md` | `prd-to-issues/SKILL.md` | Vertical slice + HITL/AFK methodology added as Phase 4 |
-| `agents/codebase-analyzer.md` | `improve-codebase-architecture/SKILL.md` | Friction-driven analysis lens added to agent prompt |
+| `skills/product-shaping/workflows/breakdown.md` | `prd-to-issues/SKILL.md` | Vertical slice + HITL/AFK as Phase 4 |
+| `agents/codebase-analyzer.md` | `improve-codebase-architecture/SKILL.md` | Friction-driven analysis lens |
 
-**Update check:**
+Upstream check:
 ```bash
-# Check for new commits since last review
 gh api repos/mattpocock/skills/commits --jq '.[0] | "\(.sha[0:7]) \(.commit.message | split("\n")[0]) (\(.commit.author.date[0:10]))"'
-
-# List all skill directories for new additions
 gh api repos/mattpocock/skills/contents/ --jq '.[].name' | sort
 ```
 
-**When upstream changes are detected:**
-1. Fetch the changed files and compare against PAI adaptations
-2. Look for: new methodology, improved patterns, additional reference material
-3. Merge improvements while preserving PAI conventions (frontmatter, routing, references)
-4. Do NOT blindly replace — PAI versions are intentionally different from upstream
+When upstream changes:
+1. Fetch changed files, compare against PAI adaptations
+2. Look for: new methodology, improved patterns, additional references
+3. Merge while preserving PAI conventions (frontmatter, routing, references)
+4. Do NOT blindly replace — PAI versions are intentionally different
 
-**Update procedure (when outdated):**
+Visual-explainer update procedure:
 ```bash
-# Clone latest to temp
 git clone --depth 1 https://github.com/nicobailon/visual-explainer.git /tmp/visual-explainer-update
-
-# Sync files (preserves local .gitignore, removes deleted upstream files)
 rsync -av --delete --exclude='.git' /tmp/visual-explainer-update/ ~/.agents/skills/visual-explainer/
-
-# Cleanup
 rm -rf /tmp/visual-explainer-update
-
-# Verify symlink still works
 ls -la $(readlink -f ~/.claude/skills/visual-explainer)/SKILL.md
 ```
 
-**Post-update:** Copy any new prompt templates to commands:
+Post-update — check for new prompts:
 ```bash
-# Check for new prompts not yet in commands/
 diff <(ls ~/.agents/skills/visual-explainer/prompts/) <(ls ~/.claude/commands/ | grep -f <(ls ~/.agents/skills/visual-explainer/prompts/))
 ```
 
 ## Interactive PAI Audit
 
-Extends the base cc-upgrade Interactive Audit with PAI-specific interview questions and deeper code review. Run the base audit first, then this.
+Extends base cc-upgrade interactive audit. Run base audit first.
 
 ### PAI Interview (AskUserQuestion)
 
-**Call 1 — PAI-specific context (2 questions):**
+**Call 1 — PAI context (2 questions):**
 
 | # | Question | Header | Options |
 |---|----------|--------|---------|
-| 1 | "Which PAI subsystem needs the most attention?" | PAI focus | **Hook system (Recommended)** — hook scripts, libs, event coverage; **CORE skill & routing** — identity, workflow routing, response tiers; **Agent delegation** — agent configs, routing, parallel execution; **Context engineering** — UFC compliance, file sizes, progressive disclosure |
-| 2 | "What triggered this audit?" | Trigger | **Post-cleanup validation** — verify recent deletions/refactors didn't break things; **Capability expansion** — planning to add new hooks/skills/agents; **Debugging** — something is broken or behaving unexpectedly; **Routine maintenance** — periodic health check |
+| 1 | "Which PAI subsystem needs the most attention?" | PAI focus | **Hook system (Recommended)** — scripts, libs, event coverage; **CORE skill & routing** — identity, workflow routing, tiers; **Agent delegation** — configs, routing, parallel; **Context engineering** — UFC compliance, sizes |
+| 2 | "What triggered this audit?" | Trigger | **Post-cleanup validation**; **Capability expansion**; **Debugging**; **Routine maintenance** |
 
-**Call 2 — Deeper diagnostics (1-2 questions, based on Call 1 answers):**
+**Call 2 — Deeper diagnostics (based on Call 1):**
 
-If Hook system selected:
+If Hook system:
 
 | # | Question | Header | Options | multiSelect |
 |---|----------|--------|---------|-------------|
-| 3 | "Which hook issues have you encountered?" | Hook issues | **Timeout errors** — hooks taking too long; **Silent failures** — hooks exit 0 but don't work; **Stdin parsing** — JSON parse errors or empty input; **Settings desync** — settings.json doesn't match actual hook files | true |
+| 3 | "Which hook issues have you encountered?" | Hook issues | **Timeout errors**; **Silent failures** (exit 0 but don't work); **Stdin parsing**; **Settings desync** | true |
 
-If CORE skill selected:
-
-| # | Question | Header | Options |
-|---|----------|--------|---------|
-| 3 | "What's wrong with CORE routing?" | Routing | **Wrong workflow loads** — triggers match too broadly or too narrowly; **Missing routes** — common requests have no routing; **Stale references** — → READ: points to deleted files; **Context bloat** — CORE loads too much at startup |
-
-If Agent delegation selected:
+If CORE skill:
 
 | # | Question | Header | Options |
 |---|----------|--------|---------|
-| 3 | "What's the delegation pain point?" | Delegation | **Wrong agent chosen** — tasks routed to the wrong specialist; **Agent overlap** — multiple agents could handle the same task; **Missing coverage** — no agent for a needed capability; **Performance** — agents too slow or use too many tokens |
+| 3 | "What's wrong with CORE routing?" | Routing | **Wrong workflow loads**; **Missing routes**; **Stale references** (-> READ: points to deleted); **Context bloat** |
+
+If Agent delegation:
+
+| # | Question | Header | Options |
+|---|----------|--------|---------|
+| 3 | "What's the delegation pain point?" | Delegation | **Wrong agent chosen**; **Agent overlap**; **Missing coverage**; **Performance** |
 
 ### PAI Code Review Extensions
 
-In addition to the base cc-upgrade code review, perform these PAI-specific checks:
+In addition to base cc-upgrade review:
 
-#### CLAUDE.md Compliance
-Read the global CLAUDE.md and verify:
+**CLAUDE.md compliance**:
 - Minimal pointer to CORE (avoids token duplication with CC system prompt)
-- Delegation guidance present (agent dispatch thresholds)
-- No rules that duplicate CC's built-in system prompt behavior
+- Delegation guidance (agent dispatch thresholds)
+- No rules duplicating CC built-in behavior
 
-#### DECISIONS.md Health
-Check root `DECISIONS.md`:
-- File exists and follows the template (Chosen/Alternatives/Why/Trade-offs/Revisit if)
-- "Revisit if" conditions — flag any that may now be true
-- No stale entries referencing deleted files or patterns
+**DECISIONS.md health**:
+- Exists, follows template (Chosen/Alternatives/Why/Trade-offs/Revisit if)
+- "Revisit if" conditions — flag any now true
+- No stale entries referencing deleted files
 
-#### Hook Library Integrity
-Read `.claude/hooks/lib/` files and verify:
+**Hook library integrity**:
 - `pai-paths.ts`: warns on bad paths, never exit(1)
 - `jsonl-utils.ts`: imports ensureDir from pai-paths (no duplicate)
-- `datetime-utils.ts`: pure functions, no side effects
-- `context-graph/`: CLI entry point resolves, no broken imports
+- `datetime-utils.ts`: pure functions
+- `context-graph/`: CLI resolves, no broken imports
 
-#### CORE Skill Routing Validation
-Read CORE's workflow routing table and verify:
-- Every `→ READ:` path resolves to an existing file
-- No duplicate trigger patterns across routes
-- Documentation Index entries all resolve
-- Agent table matches actual `.claude/agents/` contents
+**CORE routing validation**:
+- Every `-> READ:` path resolves
+- No duplicate trigger patterns
+- Documentation Index entries resolve
+- Agent table matches `.claude/agents/` contents
 
 ### PAI Gap Analysis
-
-Extend the base gap analysis matrix with PAI-specific rows:
 
 ```markdown
 | PAI Capability | Expected | Actual | Gap | Priority |
@@ -332,11 +287,11 @@ Extend the base gap analysis matrix with PAI-specific rows:
 | Compact checkpoint | PreCompact + crash recovery | ? | | |
 | Quality gates | critic + verifier agents | ? | | |
 | Keyword routing | No false positives, colon/mode patterns | ? | | |
-| Diderot CLI sync | Skill routes all available subcommands | ? | | |
-| Diderot schema sync | Skill uses current frontmatter fields | ? | | |
+| Diderot CLI sync | Skill routes available subcommands | ? | | |
+| Diderot schema sync | Skill uses current frontmatter | ? | | |
 ```
 
-## PAI Compliance Report Format
+## PAI Report Format
 
 ```markdown
 # PAI Optimization Report
@@ -345,116 +300,75 @@ Extend the base gap analysis matrix with PAI-specific rows:
 [1-2 sentence PAI-specific assessment]
 
 ## Base CC Analysis
-[Run cc-upgrade first, summarize results]
+[cc-upgrade results summary]
 
 ## PAI-Specific Findings
 
 ### CORE Skill
-- Identity: ✅/❌
-- Workflow routing: ✅/❌
-- Response tiers: ✅/❌
-- Delegation: ✅/❌
+- Identity / Workflow routing / Response tiers / Delegation
 
 ### Delegation Patterns
 | Pattern | Status | Notes |
-|---------|--------|-------|
 
 ### Hook Library
 | Module | Coverage | Notes |
-|--------|----------|-------|
 
 ### UFC Compliance
 | Metric | Value | Target |
-|--------|-------|--------|
 
 ## PAI-Specific Recommendations
-1. [High Priority] ...
-2. [Medium Priority] ...
+1. [High] ...
+2. [Medium] ...
 ```
 
 ## Quick Commands
 
-### Full PAI Audit
 ```bash
+# Full PAI audit
 bun run .claude/skills/cc-upgrade-pai/scripts/analyse-pai.ts $PAI_DIR
-```
 
-### Context Graph Audit
-```bash
+# Context graph audit
 bun run .claude/hooks/lib/context-graph/cli.ts audit --pai-dir $PAI_DIR/.claude
-```
 
-### Hook Test Coverage
-```bash
+# Hook test coverage
 cd $PAI_DIR/.claude/hooks && bun test --coverage
-```
 
-### External Skills Analysis
-```bash
+# External skills analysis
 bun run .claude/skills/cc-upgrade/scripts/analyse-external-skills.ts $PAI_DIR
 ```
 
-### OMC (oh-my-claudecode) Monitoring
+## OMC Monitoring
 
-Track OMC evolution as an inspiration source for PAI improvement opportunities. OMC was the prior art that triggered the unified evolution plan (persistent modes, working memory, subagent tracking). Even though PAI now has its own implementation, OMC may evolve new patterns worth adopting.
+Track [oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode) as inspiration source. OMC was the prior art that triggered the unified evolution plan (persistent modes, working memory, subagent tracking). May evolve new patterns worth adopting.
 
-**Check:**
 ```bash
 gh api repos/Yeachan-Heo/oh-my-claudecode/commits --jq '.[0:3] | .[] | "\(.sha[0:7]) \(.commit.message | split("\n")[0]) (\(.commit.author.date[0:10]))"'
 ```
 
-**When new OMC features detected:**
-1. Compare against PAI's current capabilities
-2. IF OMC has a pattern PAI lacks: evaluate for adoption
-3. IF PAI has a better implementation: document why (prevents re-evaluation)
-4. Log findings in `references/external-skills-registry.md` update history
+When new features detected:
+1. Compare against PAI capabilities
+2. IF OMC has pattern PAI lacks: evaluate for adoption
+3. IF PAI has better implementation: document why (prevents re-evaluation)
+4. Log in `references/external-skills-registry.md`
 
 ## Workflow
 
-1. **Run base analysis first:**
-   ```
-   Use cc-upgrade skill to analyze generic .claude/ structure
-   ```
-
-2. **Then run PAI-specific:**
-   ```bash
-   bun run .claude/skills/cc-upgrade-pai/scripts/analyse-pai.ts .
-   ```
-
-3. **Run context graph audit:**
-   ```bash
-   bun run .claude/hooks/lib/context-graph/cli.ts audit --pai-dir .claude
-   ```
-   Check for: broken references, orphaned files, circular dependencies, bloated skills.
-
-4. **Check hook coverage:**
-   ```bash
-   cd .claude/hooks && bun test --coverage
-   ```
-
-5. **Generate combined report** using the format above
-
-6. **Run external skills deep analysis:**
-   ```
-   → READ & EXECUTE: workflows/external-skills-deep-analysis.md
-   ```
-   This covers: visual-explainer ecosystem (22 sub-skills), mattpocock adaptation sync,
-   redundancy analysis, wrapping opportunities, and ecosystem scanning.
-
-7. **Apply fixes** from the report recommendations
-
-8. **Update all affected documentation (MANDATORY after any changes):**
-   - Update docs that reference changed files, patterns, or architecture
-   - Key docs to check: `delegation-guide.md`, `MEMORY.md`
-   - If `settings.json` changed: verify symlink at `~/.claude/settings.json` still resolves correctly
-   - If hooks changed: update hook-authoring skill and hook test expectations
-   - If agents changed: update CORE skill agent table and `delegation-guide.md`
-   - If skills added/removed: update CORE documentation index
-   - **Do NOT skip this step** — stale docs cause cascading confusion in future sessions
-
-9. **Post-fix validation (MANDATORY after any changes):**
-   - Run hook health check: load `hook-test` skill workflow (`${PAI_DIR}/skills/hook-test/workflows/test-and-fix.md`) and execute all 8 steps
-   - Run full test suite: `bun run test`
-   - Run shell scripts: `scripts/validate-skills.sh`, `scripts/check-references.sh`
-   - **Do NOT report success until all validations pass**
-   - If validation fails, fix the issue and re-run validation
+1. Run base analysis: use `cc-upgrade` skill on generic `.claude/` structure
+2. Run PAI-specific: `bun run .claude/skills/cc-upgrade-pai/scripts/analyse-pai.ts .`
+3. Context graph audit: `bun run .claude/hooks/lib/context-graph/cli.ts audit --pai-dir .claude` — check broken refs, orphaned files, circular deps, bloated skills
+4. Hook coverage: `cd .claude/hooks && bun test --coverage`
+5. Generate combined report
+6. External skills deep analysis: -> READ & EXECUTE: `workflows/external-skills-deep-analysis.md`
+7. Apply fixes from recommendations
+8. **Update affected documentation (MANDATORY):**
+   - Docs referencing changed files/patterns/architecture
+   - Key docs: `delegation-guide.md`, `MEMORY.md`
+   - If `settings.json` changed: verify `~/.claude/settings.json` symlink resolves
+   - If hooks changed: update hook-authoring skill and test expectations
+   - If agents changed: update CORE agent table and `delegation-guide.md`
+   - If skills added/removed: update CORE Documentation Index
+9. **Post-fix validation (MANDATORY):**
+   - Load `hook-test` skill workflow (`${PAI_DIR}/skills/hook-test/workflows/test-and-fix.md`) — execute all 8 steps
+   - `bun run test`
+   - `scripts/validate-skills.sh`, `scripts/check-references.sh`
+   - Do NOT report success until all validations pass

@@ -5,234 +5,150 @@ purpose: Configure CLI for publishing or standalone binary distribution
 
 # Setup Distribution Workflow
 
-**Make a CLI installable — via standalone binary, npm package, or PATH symlink.**
+Make a CLI installable — PATH symlink, npm/bun package, or standalone binary.
 
----
+## When to Use
 
-## 🎯 PURPOSE
-
-Take a working CLI from "runs locally" to "installable by others" — or just make it globally available on the current machine.
-
----
-
-## 📍 WHEN TO USE
-
-- User requests: "publish CLI", "make CLI installable", "distribute CLI"
-- "make standalone binary", "make it work without bun"
+- "publish CLI", "make CLI installable", "distribute CLI", "standalone binary"
 - CLI is tested and production-ready
-- Sharing with others or deploying to servers
 
----
-
-## 📋 DISTRIBUTION OPTIONS
-
-### Decision Tree
+## Decision Tree
 
 ```
-Is this just for JM's machine?  ─ YES → Option 1: PATH Symlink
-Does the target have Bun?       ─ YES → Option 2: npm/bun Package
-Need it to run without Bun?     ─ YES → Option 3: Standalone Binary
+Just for this machine?   → Option 1: PATH symlink
+Target has Bun?          → Option 2: npm/bun package
+Must run without Bun?    → Option 3: standalone binary
 ```
 
 ---
 
-## Option 1: PATH Symlink (Personal Use)
-
-The simplest option — just make it globally available.
-
-### Steps
+## Option 1: PATH Symlink (personal)
 
 ```bash
-# 1. Ensure CLI is executable
 chmod +x ${PAI_DIR}/bin/[cli-name]/[cli-name].ts
-
-# 2. Symlink to a PATH directory
 ln -sf ${PAI_DIR}/bin/[cli-name]/[cli-name].ts ~/.local/bin/[cli-name]
-
-# 3. Verify
 which [cli-name]
 [cli-name] --version
 ```
 
-### Requirements
-- `~/.local/bin` in PATH (already configured in Qara)
-- Shebang line: `#!/usr/bin/env bun`
-- File has +x permission
+Requires: `~/.local/bin` in PATH (already configured in Qara), shebang `#!/usr/bin/env bun`, `chmod +x`.
 
 ---
 
 ## Option 2: npm/bun Package
 
-For sharing with others who have Bun or Node.js.
-
-### Steps
-
-#### 1. Prepare package.json
+### 1. package.json
 
 ```json
 {
   "name": "[cli-name]",
   "version": "1.0.0",
   "type": "module",
-  "bin": {
-    "[cli-name]": "./[cli-name].ts"
-  },
-  "files": [
-    "[cli-name].ts",
-    "README.md"
-  ],
-  "engines": {
-    "bun": ">=1.0.0"
-  },
+  "bin": { "[cli-name]": "./[cli-name].ts" },
+  "files": ["[cli-name].ts", "README.md"],
+  "engines": { "bun": ">=1.0.0" },
   "license": "MIT",
   "description": "[one-line description]"
 }
 ```
 
-#### 2. Verify Package Contents
+### 2. Verify package contents
 
 ```bash
 cd ${PAI_DIR}/bin/[cli-name]/
-
-# Check what would be published
 bun pm pack --dry-run
-
-# Verify no secrets included
 # NEVER include: .env, credentials, API keys
 ```
 
-#### 3. Test Local Install
+### 3. Test local install
 
 ```bash
-# Install globally from local path
 bun link
-
-# Verify
 [cli-name] --version
-[cli-name] --help
 ```
 
-#### 4. Publish (if public)
+### 4. Publish
 
 ```bash
-# Login (first time only)
-npm login
-
-# Publish
+npm login         # first time only
 npm publish
-
-# Users install with:
-# bun add -g [cli-name]
-# or: npm install -g [cli-name]
+# users: bun add -g [cli-name]  OR  npm install -g [cli-name]
 ```
 
-**SAFETY:** Double-check repository — NEVER publish from `${PAI_DIR}/` to public npm. Only from `~/Projects/PAI/` or other public repos.
+**SAFETY:** NEVER publish from `${PAI_DIR}/` (private). Only from `~/Projects/PAI/` or other public repos.
 
 ---
 
 ## Option 3: Standalone Binary
 
-For distribution to machines without Bun. Creates a single executable.
-
-### Steps
-
-#### 1. Build Binary
+### 1. Build
 
 ```bash
 cd ${PAI_DIR}/bin/[cli-name]/
 
-# Compile to standalone binary
 bun build [cli-name].ts --compile --outfile [cli-name]
 
-# Cross-compile for other platforms
+# Cross-compile
 bun build [cli-name].ts --compile --target=bun-linux-x64 --outfile [cli-name]-linux
 bun build [cli-name].ts --compile --target=bun-darwin-arm64 --outfile [cli-name]-macos
 ```
 
-#### 2. Test Binary
+### 2. Test
 
 ```bash
-# Run the compiled binary (no bun needed)
 ./[cli-name] --version
 ./[cli-name] --help
-./[cli-name] [test-command]
 
-# Verify it works without bun in PATH
+# Verify runs without bun in PATH
 env -i HOME=$HOME PATH=/usr/bin ./[cli-name] --version
 ```
 
-#### 3. Distribute
+### 3. Distribute
 
-**For personal servers:**
 ```bash
+# Personal server
 scp [cli-name]-linux user@server:/usr/local/bin/[cli-name]
 ssh user@server "chmod +x /usr/local/bin/[cli-name]"
+
+# GitHub release
+gh release create v1.0.0 [cli-name]-linux [cli-name]-macos \
+  --title "[cli-name] v1.0.0" --notes "Initial release"
 ```
 
-**For GitHub releases:**
-```bash
-# Create release with binaries
-gh release create v1.0.0 \
-  [cli-name]-linux \
-  [cli-name]-macos \
-  --title "[cli-name] v1.0.0" \
-  --notes "Initial release"
-```
+### Binary Size
 
-### Binary Size Expectations
+| Complexity | Size |
+|---|---|
+| Tier 1 (no deps) | ~45-55 MB |
+| Tier 2 (Commander) | ~50-60 MB |
+| With native deps | ~60-80 MB |
 
-| CLI Complexity | Approximate Size |
-|---------------|-----------------|
-| Simple (Tier 1, no deps) | ~45-55 MB |
-| Medium (Tier 2, Commander) | ~50-60 MB |
-| Complex (with native deps) | ~60-80 MB |
-
-Bun includes its runtime in the binary — the size is mostly fixed overhead.
+Bun runtime is embedded — size is mostly fixed overhead.
 
 ---
 
-## 📋 PRE-DISTRIBUTION CHECKLIST
-
-Run these before any distribution option:
+## Pre-Distribution Checklist
 
 ```bash
-# 1. Tests pass
-bun test bin/[cli-name]/
-
-# 2. Help text is complete
-./[cli-name].ts --help
-
-# 3. Version is set
-./[cli-name].ts --version
-
-# 4. No secrets in source
-grep -r 'API_KEY\|SECRET\|PASSWORD' [cli-name].ts  # Should use env vars, not literals
-
-# 5. .env.example exists (documents required config)
-cat .env.example
-
-# 6. README has install instructions
-head -30 README.md
+bun test bin/[cli-name]/                                # tests pass
+./[cli-name].ts --help                                  # help complete
+./[cli-name].ts --version                               # version set
+grep -r 'API_KEY\|SECRET\|PASSWORD' [cli-name].ts       # no literals
+cat .env.example                                        # config documented
+head -30 README.md                                      # install instructions
 ```
 
----
+- [ ] Distribution method chosen
+- [ ] Tests pass
+- [ ] No secrets in source
+- [ ] `.env.example` exists
+- [ ] README has install instructions
+- [ ] `chmod +x` on entry
+- [ ] If publishing: verified correct repo (not private)
+- [ ] If binary: tested on target platform without Bun
 
-## ✅ QUALITY CHECKLIST
+## Related
 
-- [ ] Distribution method chosen (symlink / package / binary)
-- [ ] Tests pass before distribution
-- [ ] No secrets in source code
-- [ ] .env.example documents required configuration
-- [ ] README has installation instructions
-- [ ] `--help` and `--version` work
-- [ ] File permissions correct (chmod +x)
-- [ ] **If publishing:** verified correct repository (not private PAI repo)
-- [ ] **If binary:** tested on target platform without Bun
-
----
-
-## Related Workflows
-
-- **add-testing.md** — Tests are a prerequisite for distribution
-- **create-cli.md** — Start here to generate the CLI
-- **upgrade-tier.md** — Consider complexity before distributing
+- `add-testing.md` — prerequisite for distribution
+- `create-cli.md` — initial generation
+- `upgrade-tier.md` — consider complexity first

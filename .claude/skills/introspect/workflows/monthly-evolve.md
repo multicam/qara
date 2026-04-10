@@ -1,70 +1,60 @@
 # Monthly Evolve Workflow
 
-Strategic self-audit: review patterns, propose memory updates, detect harness evolution, recommend self-improvements.
+Strategic self-audit: review patterns, propose memory updates, detect harness evolution, recommend improvements.
 
 ## Prerequisites
 
 - Pattern files in `~/qara/thoughts/shared/introspection/patterns/`
-- Memory files in `~/.claude/projects/-home-jean-marc-qara/memory/`
-- Miner CLI for CC version check
+- Memory in `~/.claude/projects/-home-jean-marc-qara/memory/`
+- Miner CLI
 
 ## Autonomy
 
-This workflow writes PROPOSALS, not direct edits. JM reviews before changes are applied to MEMORY.md or other memory files. Output goes to `~/qara/thoughts/shared/introspection/reports/`.
+Writes **proposals**, not direct edits. JM reviews before applying. Output to `~/qara/thoughts/shared/introspection/reports/`.
 
-## Steps
+## 1. Gather All Data (parallel)
 
-### 1. Gather All Data
-
-Read in parallel:
-- All pattern files from `~/qara/thoughts/shared/introspection/patterns/`
-- `~/.claude/projects/-home-jean-marc-qara/memory/MEMORY.md` and all `*.md` in that directory
+- All pattern files from `patterns/`
+- `MEMORY.md` and all `*.md` in `~/.claude/projects/-home-jean-marc-qara/memory/`
 - `~/qara/DECISIONS.md`
-- Run `bun ${PAI_DIR}/skills/introspect/tools/introspect-miner.ts --mode monthly` for CC version data
+- `bun ${PAI_DIR}/skills/introspect/tools/introspect-miner.ts --mode monthly` (CC version data)
 
-### 2. Pattern-to-Memory Review
+## 2. Pattern-to-Memory Review
 
-For each **confirmed** pattern (25+ observations):
-- Is this already captured in MEMORY.md? If yes, is the memory entry still accurate?
-- If not captured: draft a proposed MEMORY.md addition or a new individual memory file
-- Follow existing memory conventions (YAML frontmatter with name, description, type)
+**Confirmed (25+ observations):**
+- Captured in MEMORY.md? If yes, still accurate?
+- If not: draft MEMORY.md addition or new individual memory file (YAML frontmatter: name, description, type)
 
-For each **established** pattern (10-25 observations):
-- Flag for awareness but don't propose memory changes yet
-- Note if it's trending toward confirmed
+**Established (10-25):** flag for awareness, don't propose memory changes. Note trending-toward-confirmed.
 
-For patterns with `user-correction` tag at any confidence:
-- These are high-priority — corrections indicate Qara is repeating mistakes
-- Check if a corresponding `feedback` memory already exists
-- If not, draft a proposed feedback memory with the correction pattern
+**`user-correction` tag (any confidence):**
+- High priority — corrections = Qara repeating mistakes
+- Corresponding `feedback` memory exists?
+- If not: draft proposed feedback memory
 
-### 3. Harness Evolution Check
+## 3. Harness Evolution Check
 
-From the miner's monthly output:
-- Compare current CC version against the version from the previous month's report
-- If version changed:
-  - Note the version progression (e.g., "2.1.73 -> 2.1.85 over March")
-  - List major version jumps (>2 minor versions between sessions)
-  - Recommend checking CC changelog for capability changes
-  - Flag if new hook events, tools, or features may be available
+From miner's monthly output:
+- Compare current CC version vs last month
+- If changed:
+  - Note progression ("2.1.73 → 2.1.85 over March")
+  - Major jumps (>2 minor versions)
+  - Recommend checking CC changelog
+  - Flag new hook events, tools, features
 
-### 4. Harness Code Proposals
+## 4. Harness Code Proposals
 
-For each **confirmed** (25+) or **established** (10-25) pattern, evaluate whether a CODE change (not just a memory update) would address it:
+For `confirmed` or `established` patterns, evaluate if CODE change (not just memory update) would address:
 
-1. **Hook changes:** If a pattern reveals inadequate logging or a repeated manual workaround, propose enriching the relevant hook or automating the workaround.
+1. **Hook changes** — inadequate logging or repeated manual workaround → enrich hook / automate
+2. **Miner changes** — weekly synthesize lacks a signal miner doesn't extract → add to miner-lib or miner-trace-lib
+3. **Workflow changes** — daily observations miss an insight category → update workflow prompt
+4. **Settings changes** — timeout issues, delegation underuse, permission friction → settings.json edit
+5. **New tool/skill** — recurring need no skill addresses → propose creation
 
-2. **Miner changes:** If the weekly synthesize frequently encounters a signal the miner doesn't extract, propose adding that extraction to miner-lib or miner-trace-lib.
+Each follows `${PAI_DIR}/skills/introspect/references/proposal-format.md`. Write all to `~/qara/thoughts/shared/introspection/reports/proposals-YYYY-MM.md`.
 
-3. **Workflow changes:** If daily observations consistently miss a category of insight, propose updating the relevant workflow prompt.
-
-4. **Settings changes:** If patterns reveal timeout issues, delegation underuse, or permission friction, propose a settings.json edit.
-
-5. **New tool/skill proposals:** If patterns reveal a recurring need that no existing skill addresses, propose creating one.
-
-Each proposal follows the format in `${PAI_DIR}/skills/introspect/references/proposal-format.md`. Write all proposals to `~/qara/thoughts/shared/introspection/reports/proposals-YYYY-MM.md`.
-
-Add a summary table to the monthly report:
+Summary table in monthly report:
 
 ```markdown
 ## Harness Evolution Proposals
@@ -76,19 +66,19 @@ Add a summary table to the monthly report:
 See `proposals-YYYY-MM.md` for full details.
 ```
 
-**Safety reminder:** Proposals are NEVER auto-applied. Each includes risk rating and rollback instructions. Write proposals as review-ready documents for JM.
+**Safety:** proposals NEVER auto-applied. Each includes risk rating + rollback instructions.
 
-### 5. Diderot Demand Signals
+## 5. Diderot Demand Signals
 
-Scan the month's observations for research-related sessions. Look for:
-- Sessions where `topic_hint` contains words like "research", "investigate", "search", "explore", "find", "what is", "how does"
-- Sessions with `dominant_activity='searching'` or heavy use of WebSearch/WebFetch tools
-- Patterns in `tool-usage.md` or `session-quality.md` that reference external knowledge-seeking
+Scan month's observations for research-related sessions:
+- `topic_hint` contains "research", "investigate", "search", "explore", "find", "what is", "how does"
+- `dominant_activity='searching'` or heavy WebSearch/WebFetch
+- Patterns in `tool-usage.md` / `session-quality.md` referencing external knowledge-seeking
 
-For each research-related session found, extract the topic being researched and write it as a demand signal to `~/qara/thoughts/shared/introspection/diderot-signals.md`:
+Extract topic, append to `~/qara/thoughts/shared/introspection/diderot-signals.md`:
 
 ```
-- [YYYY-MM-DD] <topic> — <evidence from session>
+- [YYYY-MM-DD] <topic> — <evidence>
 ```
 
 Example:
@@ -97,39 +87,38 @@ Example:
 - [2026-04-22] WCAG 2.2 contrast ratio changes — repeated WebFetch to accessibility docs
 ```
 
-Append new signals to the existing file (do not overwrite prior signals). Update the file header's implicit date by adding entries in chronological order.
+**Append**, don't overwrite. Chronological order.
 
-These signals represent topics Qara actively needed external knowledge on during the month. They can be manually fed into Diderot's `_meta/logs/knowledge_gaps.yaml` to guide knowledge acquisition. Note in the monthly report how many signals were extracted and their top themes.
+Signals can be fed manually into Diderot's `_meta/logs/knowledge_gaps.yaml`. Note in monthly report how many were extracted and top themes.
 
-### 6. cc-upgrade-pai Status
+## 6. cc-upgrade-pai Status
 
-Check when cc-upgrade-pai was last run:
 ```bash
 cd ~/qara && git log --all --oneline --since="30 days ago" | grep -i "cc-upgrade\|pai.*audit\|upgrade.*pai"
 ```
 
-- If run in past 30 days: note date and summary
-- If not: recommend running cc-upgrade-pai as part of monthly hygiene
+- Run in past 30 days: note date + summary
+- Not run: recommend as monthly hygiene
 
-### 7. Self-Improvement Assessment
+## 7. Self-Improvement Assessment
 
 Review the introspection system itself:
-- Are daily observations being generated consistently? (Check observation file count and dates)
-- Are the observation tags adequate? Any observations that don't fit existing taxonomy?
-- Are patterns actionable? (Do confirmed patterns lead to memory updates or behavioral changes?)
-- Is the correction detection finding real corrections? (Check false positive rate by reviewing recent corrections)
-- Propose specific workflow modifications if warranted (but don't apply them directly)
+- Daily observations generated consistently? (file count + dates)
+- Observation tags adequate? Any not fitting taxonomy?
+- Patterns actionable? (confirmed → memory updates or behavior changes?)
+- Correction detection real? (false positive rate in recent corrections)
+- Propose workflow modifications if warranted (don't apply)
 
-### 8. Architecture Review
+## 8. Architecture Review
 
-Check for staleness:
-- `DECISIONS.md` entries: are any "Revisit if" conditions now true?
-- Memory files: do any reference files, functions, or patterns that no longer exist?
-- CORE SKILL.md doc index: do all paths still resolve?
+Staleness check:
+- `DECISIONS.md` — any "Revisit if" conditions now true?
+- Memory files — reference files/functions/patterns that no longer exist?
+- CORE SKILL.md doc index — all paths resolve?
 
-This is lighter than cc-upgrade-pai — focused on what patterns revealed, not full infrastructure audit.
+Lighter than cc-upgrade-pai — focused on what patterns revealed.
 
-### 9. Compose Monthly Report
+## 9. Compose Monthly Report
 
 Write to `~/qara/thoughts/shared/introspection/reports/monthly-YYYY-MM.md`:
 
@@ -146,8 +135,7 @@ Write to `~/qara/thoughts/shared/introspection/reports/monthly-YYYY-MM.md`:
 | [title] | established | increasing | Monitor next month |
 
 ## Proposed Memory Updates
-[Specific additions/changes to MEMORY.md or individual memory files]
-[Each proposal includes: what to add/change, which file, why]
+[Specific additions/changes — what, which file, why]
 
 ## Harness Evolution
 - CC version: [current] (was [previous])
@@ -155,18 +143,15 @@ Write to `~/qara/thoughts/shared/introspection/reports/monthly-YYYY-MM.md`:
 - cc-upgrade-pai last run: [date or "STALE — recommend running"]
 
 ## Self-Improvement Recommendations
-[Proposed changes to introspection workflows, tag taxonomy, detection heuristics]
+[Proposed workflow/taxonomy/heuristic changes]
 
 ## Architecture Notes
-[Stale DECISIONS.md entries, broken references, drift detected]
+[Stale DECISIONS.md entries, broken references, drift]
 ```
 
-### 10. Write Proposed Updates File
+## 10. Proposed Updates File
 
-If there are concrete memory changes to propose, also write:
-`~/qara/thoughts/shared/introspection/reports/proposed-updates-YYYY-MM.md`
-
-This file contains the exact content to add/modify in memory files, ready for JM to review and apply (or reject). Format each proposal as:
+If concrete memory changes exist, write `~/qara/thoughts/shared/introspection/reports/proposed-updates-YYYY-MM.md` with exact content for JM to apply:
 
 ```markdown
 ### Proposal: [title]
@@ -176,15 +161,9 @@ This file contains the exact content to add/modify in memory files, ready for JM
 **Reason:** [pattern evidence]
 
 **Content:**
-[exact markdown to add/change]
+[exact markdown]
 ```
 
-### 11. Summary
+## 11. Summary
 
-Output to the conversation:
-- Report location
-- Number of proposals generated
-- CC version status
-- Top recommendation
-- Whether cc-upgrade-pai is stale
-- Number of Diderot demand signals extracted this month
+Output: report location, proposal count, CC version status, top recommendation, cc-upgrade-pai staleness, Diderot signal count.

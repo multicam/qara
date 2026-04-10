@@ -4,71 +4,47 @@ Detailed comparison of the three CLI complexity tiers.
 
 ---
 
+## Decision Matrix
+
+| Factor | Tier 1 | Tier 2 | Tier 3 |
+|---|---|---|---|
+| Commands | 2-10 | 10-30 | 30+ |
+| Complexity | Simple | Moderate | High |
+| Subcommands | No | Yes | Yes |
+| Plugins | No | Possible | Built-in |
+| Help | Manual | Auto | Auto |
+| Learning curve | Low | Medium | High |
+| Dev speed | Fast | Medium | Slow |
+| Dependencies | 0 | 1 | Many |
+| Startup time | ~10ms | ~30ms | ~100ms |
+| Idle memory | ~15MB | ~25MB | ~50MB |
+
+Performance differences are negligible for interactive CLIs.
+
+---
+
 ## Tier 1: llcli-Style (Manual Parsing)
 
-### Overview
-- Manual argument parsing using `process.argv`
-- Zero framework dependencies
-- Bun + TypeScript
-- ~300-400 lines total
-- **Default choice for 80% of CLIs**
+**Default choice — ~80% of CLIs.** Manual `process.argv` parsing, zero deps, Bun + TypeScript, ~300-400 lines.
 
-### Strengths
-- **Simplicity** - Easy to understand and modify
-- **Zero Dependencies** - No framework to learn or update
-- **Fast Development** - Quick to build and iterate
-- **Transparent** - Clear control flow
-- **Lightweight** - Minimal overhead
+**Strengths:** simple, zero deps, fast to build, transparent control flow, lightweight.
+**Limits:** manual help text, no auto-completion, manual subcommand routing.
+**Best for:** API clients, file processors, simple automation, data transformers, 2-10 commands.
 
-### Limitations
-- Manual help text maintenance
-- No auto-completion out of the box
-- Subcommands require manual routing
-- Option parsing is manual
-
-### Best For
-- API clients (GitHub, Notion, Slack, etc.)
-- File processors (markdown, JSON, CSV)
-- Simple automation scripts
-- Data transformers
-- 2-10 commands with simple arguments
-
-### Example Structure
 ```typescript
 #!/usr/bin/env bun
 
-// Configuration
-interface Config {
-  apiKey: string;
-  endpoint: string;
-}
+interface Config { apiKey: string; endpoint: string; }
 
-// Command interface
-interface Command {
-  name: string;
-  args: string[];
-  options: Record<string, string>;
-}
-
-// Main logic
 const args = process.argv.slice(2);
 const command = args[0];
 
-if (!command) {
-  showHelp();
-  process.exit(1);
-}
+if (!command) { showHelp(); process.exit(1); }
 
 switch (command) {
-  case 'list':
-    await handleList(args.slice(1));
-    break;
-  case 'create':
-    await handleCreate(args.slice(1));
-    break;
-  case 'delete':
-    await handleDelete(args.slice(1));
-    break;
+  case 'list':   await handleList(args.slice(1)); break;
+  case 'create': await handleCreate(args.slice(1)); break;
+  case 'delete': await handleDelete(args.slice(1)); break;
   default:
     console.error(`Unknown command: ${command}`);
     process.exit(1);
@@ -90,154 +66,65 @@ Options:
 }
 ```
 
-### Real-World Example: llcli
-- 327 lines total
-- Handles 8 commands
-- Complete error handling
-- Type-safe throughout
-- Zero dependencies
-- Production-ready
+**Real-world:** llcli — 327 lines, 8 commands, zero deps, production-ready.
 
 ---
 
-## Tier 2: Commander.js (Framework-Based)
+## Tier 2: Commander.js
 
-### Overview
-- Commander.js for argument parsing
-- Auto-generated help text
-- Subcommand support
-- Plugin-ready architecture
-- **Escalation tier for 15% of CLIs**
+**Escalation tier — ~15% of CLIs.** Framework parsing, auto-help, subcommands, plugin-ready.
 
-### Strengths
-- **Auto-help** - Generated from definitions
-- **Subcommands** - Natural grouping
-- **Validation** - Built-in option validation
-- **Extensibility** - Plugin system ready
-- **Standards** - Well-known patterns
+**Strengths:** auto-help from definitions, subcommand grouping, built-in validation, plugin system, well-known patterns.
+**Limits:** framework dep, more complex, slightly slower startup, learning curve.
+**Best for:** 10+ commands needing grouping, complex nested options, multiple output formats.
 
-### Limitations
-- Framework dependency
-- More complex codebase
-- Slightly slower startup
-- Learning curve for contributors
-
-### Best For
-- 10+ commands needing grouping
-- Complex nested options
-- Multiple output formats
-- Plugin architecture
-- Enterprise-grade tools
-
-### Example Structure
 ```typescript
 #!/usr/bin/env bun
 import { Command } from 'commander';
 
-const program = new Command();
-
-program
+const program = new Command()
   .name('mycli')
   .description('My CLI tool')
   .version('1.0.0');
 
-// List command
 program
   .command('list')
   .description('List items')
   .option('-f, --format <type>', 'Output format', 'json')
-  .action(async (options) => {
-    // Implementation
-  });
+  .action(async (options) => { /* ... */ });
 
-// Create subcommand group
 const create = program.command('create');
-
 create
   .command('item <name>')
   .description('Create new item')
   .option('-t, --tags <tags...>', 'Tags')
-  .action(async (name, options) => {
-    // Implementation
-  });
+  .action(async (name, options) => { /* ... */ });
 
 create
   .command('batch <file>')
   .description('Create multiple items')
-  .action(async (file) => {
-    // Implementation
-  });
+  .action(async (file) => { /* ... */ });
 
 program.parse();
 ```
 
-### When to Escalate from Tier 1
-- Commands exceed 10 and need categorization
-- Complex option combinations
-- Need plugin system
-- Multiple output format requirements
-- Auto-completion is critical
+**Escalate from Tier 1 when:** commands exceed 10 and need grouping, complex option combinations, plugin system needed, auto-completion critical.
 
 ---
 
-## Tier 3: oclif (Enterprise Framework)
+## Tier 3: oclif (Enterprise)
 
-### Overview
-- Full enterprise framework
-- Plugin ecosystem
-- Multi-command architecture
-- Auto-documentation
-- **Reference only - rarely needed**
+**Reference only — ~5% of CLIs.** Full enterprise framework with plugin ecosystem and auto-docs.
 
-### Strengths
-- **Enterprise-Ready** - Battle-tested at scale
-- **Plugin System** - Rich ecosystem
-- **Auto-Docs** - Generated documentation
-- **Testing** - Comprehensive test utilities
-- **Standards** - Best practices baked in
+**Strengths:** enterprise-tested, rich plugin ecosystem, auto-generated docs, comprehensive test utilities.
+**Limits:** heavy framework, complex setup, slow development, over-engineered for most.
+**Best for:** Heroku CLI, Salesforce CLI, Twilio CLI scale projects.
 
-### Limitations
-- Heavy framework
-- Complex setup
-- Slower development
-- Over-engineered for most needs
-
-### Best For
-- Heroku CLI scale projects
-- Large plugin ecosystems
-- Multi-tenant CLI systems
-- 50+ commands
-- Team of CLI developers
-
-### Real-World Examples
-- Heroku CLI
-- Salesforce CLI
-- Twilio CLI
-
-### Why Reference Only
-**95% of CLIs don't need this complexity.** Even complex tools work well with Commander.js.
-
-Only consider oclif if:
+**95% of CLIs don't need this.** Even complex tools work well with Commander.js. Only consider oclif if:
 - Building the next Heroku CLI
 - Need plugin marketplace
 - Managing 50+ commands
-- Have dedicated CLI team
-
----
-
-## Decision Matrix
-
-| Factor | Tier 1 | Tier 2 | Tier 3 |
-|--------|--------|--------|--------|
-| Commands | 2-10 | 10-30 | 30+ |
-| Complexity | Simple | Moderate | High |
-| Subcommands | No | Yes | Yes |
-| Plugins | No | Possible | Built-in |
-| Help | Manual | Auto | Auto |
-| Learning Curve | Low | Medium | High |
-| Dev Speed | Fast | Medium | Slow |
-| Dependencies | 0 | 1 | Many |
-| Startup Time | Instant | Fast | Slower |
+- Have a dedicated CLI team
 
 ---
 
@@ -245,163 +132,99 @@ Only consider oclif if:
 
 ### Tier 1 → Tier 2
 
-**When to migrate:**
-- Commands exceed 10
-- Need subcommand grouping
-- Want auto-generated help
-- Complex option combinations
+**When:** commands exceed 10, need subcommand grouping, want auto-help, complex options.
 
-**How to migrate:**
-1. Install Commander: `bun add commander`
-2. Create Command instance
+**Steps:**
+1. `bun add commander`
+2. Create `Command` instance
 3. Convert each switch case to `.command()`
 4. Update option parsing to Commander syntax
 5. Test all commands
 6. Update documentation
 
-**Effort:** 2-4 hours for typical CLI
+**Effort:** 2-4 hours for typical CLI. See `../workflows/upgrade-tier.md`.
 
 ### Tier 2 → Tier 3
 
-**When to migrate:**
-- Commands exceed 30
-- Need plugin system
-- Building marketplace
-- Enterprise requirements
+**When:** commands exceed 30, need plugin marketplace, enterprise requirements.
 
-**How to migrate:**
-1. Use oclif generator
-2. Port commands to oclif structure
-3. Setup plugin infrastructure
-4. Comprehensive testing
-5. Update all documentation
+**Steps:** oclif generator → port commands → setup plugin infra → comprehensive testing → update docs.
 
-**Effort:** 1-2 weeks for typical CLI
-
-**Note:** This migration is rarely justified. Commander.js scales to 50+ commands.
+**Effort:** 1-2 weeks. Rarely justified — Commander.js scales to 50+ commands.
 
 ---
 
-## Performance Comparison
+## Adding a New Command
 
-### Startup Time (Empty CLI)
-- Tier 1: ~10ms
-- Tier 2: ~30ms
-- Tier 3: ~100ms
-
-### Memory Usage (Idle)
-- Tier 1: ~15MB
-- Tier 2: ~25MB
-- Tier 3: ~50MB
-
-### Cold Start (First Run)
-- Tier 1: Instant
-- Tier 2: <100ms
-- Tier 3: ~200ms
-
-**Verdict:** Performance differences are negligible for human interaction.
-
----
-
-## Maintenance Comparison
-
-### Adding a New Command
-
-**Tier 1:**
+**Tier 1** (~5 min):
 ```typescript
 case 'newcmd':
   await handleNewCmd(args.slice(1));
   break;
 ```
-Time: 5 minutes
 
-**Tier 2:**
+**Tier 2** (~3 min, auto-help included):
 ```typescript
 program
   .command('newcmd <arg>')
   .description('New command')
   .action(handleNewCmd);
 ```
-Time: 3 minutes (auto-help included)
 
-**Tier 3:**
+**Tier 3** (~10 min, template overhead):
 ```bash
 oclif generate command newcmd
 ```
-Time: 10 minutes (template overhead)
 
 ---
 
-## Testing Comparison
+## Testing
 
-### Tier 1 Testing
+**Tier 1:**
 ```typescript
 import { execSync } from 'child_process';
-
 it('executes command', () => {
   const output = execSync('./cli.ts list').toString();
   expect(JSON.parse(output)).toHaveProperty('items');
 });
 ```
 
-### Tier 2 Testing
+**Tier 2:**
 ```typescript
 import { Command } from 'commander';
-
 it('executes command', async () => {
   const program = new Command();
-  // Setup and test
+  // setup and test
 });
 ```
 
-### Tier 3 Testing
+**Tier 3:**
 ```typescript
 import { test } from '@oclif/test';
-
 describe('list command', () => {
-  test
-    .stdout()
-    .command(['list'])
-    .it('lists items', ctx => {
-      expect(ctx.stdout).to.contain('items');
-    });
+  test.stdout().command(['list']).it('lists items', ctx => {
+    expect(ctx.stdout).to.contain('items');
+  });
 });
 ```
 
-**Verdict:** All tiers are testable. Tier 1 is simplest, Tier 3 has most utilities.
+All tiers testable. Tier 1 simplest, Tier 3 has most utilities.
 
 ---
 
 ## Recommendation Algorithm
 
 ```typescript
-function selectTier(requirements: {
+function selectTier(req: {
   commandCount: number;
   needsSubcommands: boolean;
   needsPlugins: boolean;
   teamSize: number;
   complexity: 'low' | 'medium' | 'high';
 }): 1 | 2 | 3 {
-  // Check Tier 3
-  if (
-    requirements.commandCount > 30 ||
-    requirements.needsPlugins ||
-    requirements.teamSize > 3
-  ) {
-    return 3; // oclif
-  }
-
-  // Check Tier 2
-  if (
-    requirements.commandCount > 10 ||
-    requirements.needsSubcommands ||
-    requirements.complexity === 'high'
-  ) {
-    return 2; // Commander
-  }
-
-  // Default to Tier 1
-  return 1; // llcli-style
+  if (req.commandCount > 30 || req.needsPlugins || req.teamSize > 3) return 3;
+  if (req.commandCount > 10 || req.needsSubcommands || req.complexity === 'high') return 2;
+  return 1;
 }
 ```
 
@@ -409,23 +232,8 @@ function selectTier(requirements: {
 
 ## Summary
 
-**Start with Tier 1** (llcli-style) for:
-- Quick CLI needs
-- Simple automation
-- API clients
-- File processors
-- <10 commands
+- **Tier 1 (llcli-style)** — quick CLIs, simple automation, API clients, file processors, <10 commands
+- **Tier 2 (Commander)** — 10+ commands, subcommand groups, auto-help, complex options
+- **Tier 3 (oclif)** — enterprise scale, plugin marketplace, 30+ commands, dedicated team
 
-**Escalate to Tier 2** (Commander) when:
-- Commands exceed 10
-- Need subcommand groups
-- Want auto-help
-- Complex options
-
-**Reference Tier 3** (oclif) only for:
-- Enterprise scale
-- Plugin marketplace
-- 30+ commands
-- Dedicated team
-
-**Philosophy:** Start simple, escalate only when justified. The llcli pattern solves 80% of CLI needs with zero dependencies and maximum clarity.
+Start simple, escalate only when justified. The llcli pattern solves 80% of CLI needs.

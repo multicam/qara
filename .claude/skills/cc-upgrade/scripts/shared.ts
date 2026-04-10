@@ -34,11 +34,14 @@ export function emptyResult(maxScore: number): AnalysisResult {
     return { score: 0, maxScore, findings: [], recommendations: [] };
 }
 
-/** Recursively find files by extension (e.g. '.md', '.ts') */
+const EXCLUDED_DIRS = new Set(['node_modules', '.git', 'dist', 'build', '.next', 'coverage', 'purgatory']);
+
+/** Recursively find files by extension (e.g. '.md', '.ts'). Skips node_modules, .git, and build output. */
 export function findFiles(dir: string, ext: string, results: string[] = []): string[] {
     if (!existsSync(dir)) return results;
 
     for (const file of readdirSync(dir)) {
+        if (EXCLUDED_DIRS.has(file)) continue;
         const fullPath = join(dir, file);
         try {
             const stat = statSync(fullPath);

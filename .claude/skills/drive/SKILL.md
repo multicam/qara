@@ -9,66 +9,53 @@ argument-hint: "<task description>"
 
 # Drive Mode
 
-Persistent execution. Iterates `prd.json` stories until all pass. Stop hook injects continuation — you do NOT stop until criteria met or max iterations (50) reached.
+Persistent execution. Iterates `prd.json` stories until all pass. Stop hook injects continuation — do NOT stop until criteria met or max iterations (50) reached.
 
 ## Bootstrap
 
-1. The PRD path is injected by the mode system (check the continuation message for `PRD: /path/to/prd.json`). If not present, use `prd.json` in the current working directory.
-2. Read the PRD file. IF missing: scaffold from task description. **Write `prd.json` to the project root** (the repo you're working in, NOT ~/.claude/). Each story MUST have `id`, `title`, `description`, `acceptance_criteria[]`, `passes: false`, `scenario_file: null`.
-3. IF malformed: fix and rewrite.
-4. **Detect test runner:** Follow `tdd-qa/references/detect-runner.md` (authoritative 4-step detection: pytest → Vitest → Bun → package.json fallback). Set `$TEST_CMD` and `$FILE_EXT` for the entire session.
+1. PRD path from continuation message (`PRD: /path/to/prd.json`); else `prd.json` in cwd.
+2. Read PRD. Missing → scaffold from task description, write to project root (NOT `~/.claude/`). Each story: `id`, `title`, `description`, `acceptance_criteria[]`, `passes: false`, `scenario_file: null`.
+3. Malformed → fix + rewrite.
+4. **Test runner:** follow `tdd-qa/references/detect-runner.md`. Set `$TEST_CMD` + `$FILE_EXT` for the session.
 5. Pick first story where `passes == false`.
 
 ## Per-Story Loop
 
 ### 1. Critic Gate
 
-Write a PROPOSED APPROACH:
-- Files to create/modify (list paths)
-- Strategy per file (1-3 sentences)
-- Test strategy (which scenarios)
+Write PROPOSED APPROACH: files, strategy per file (1–3 sentences), test strategy (scenarios).
 
-Spawn `critic` agent with prompt containing the acceptance criteria AND proposed approach.
+Spawn `critic` (sonnet). Prompt: acceptance criteria + proposed approach.
 
-Parse critic response:
-- IF contains "proceed": continue to step 2.
-- IF contains "revise": extract issues, modify approach, re-spawn critic.
-- IF 2 revisions exhausted AND still "revise": write to `problems.md` "Critic rejected 3x for story {id}". Ask JM. STOP.
+- `proceed` → step 2
+- `revise` (≤2×) → modify approach, re-spawn
+- 3rd rejection → `problems.md` + third call uses `model: opus` override. Still `revise` → escalate to JM. STOP.
 
 ### 2. Scenario Check
 
-Check story's `scenario_file` field in prd.json, OR `specs/{story-id}.md`.
-- IF file exists AND contains "Given" or "When" or "Then" AND is >50 bytes: proceed.
-- IF missing or empty: follow `tdd-qa/workflows/write-scenarios.md` to generate scenarios. Deactivate mode with reason "awaiting-scenario-review". STOP.
+Check `scenario_file` in `prd.json`, or `specs/{story-id}.md`.
+- Exists + `>50 bytes` + contains Given/When/Then → proceed
+- Missing/empty → `tdd-qa/workflows/write-scenarios.md`, deactivate `awaiting-scenario-review`. STOP.
 
 ### 3. TDD Cycle
 
-Follow `tdd-qa/workflows/tdd-cycle.md` (authoritative RED→GREEN→REFACTOR blueprint).
-Use `{story-id}` as the feature name for TDD activation.
+`tdd-qa/workflows/tdd-cycle.md`. Feature name: `{story-id}`. Workflow handles activation, RED→GREEN→REFACTOR, verification, cleanup.
 
-For each scenario in the spec file, the workflow handles: activation, phase transitions,
-verification, mutation bonus round, and cleanup.
+TDD enforcement cleared after the cycle. Steps 4–5 operate without TDD enforcement — the tests the cycle wrote are the safety net for quality-pass refactoring.
 
-**Note:** TDD enforcement is cleared after the cycle completes. The subsequent verifier
-gate and quality pass (steps 4-5) operate without TDD enforcement — this is intentional,
-as existing tests from the TDD cycle provide the safety net for quality-pass refactoring.
-
-IF any test run crashes (non-zero exit, no output): read stderr. IF import error: fix import. IF syntax error: fix syntax. IF still crashing after 3 attempts: write to `problems.md` and ask JM.
+Test runner crash (non-zero exit, no output): read stderr. Import error → fix import. Syntax error → fix. Still crashing after 3 → `problems.md`, ask JM.
 
 ### 4. Verifier Gate
 
-Spawn `verifier` agent with the story's acceptance criteria.
+Spawn `verifier` (sonnet). Prompt: story's acceptance criteria.
 
-Parse verifier response:
-- IF contains "PASS": continue to step 5.
-- IF contains "FAIL": extract failing criteria, fix each, re-spawn verifier.
-- MAX 3 verification attempts. After 3: write to `problems.md`, ask JM. STOP.
+- `PASS` → step 5
+- `FAIL` → extract failing criteria, fix, re-spawn. Max 3 attempts.
+- 3rd failure → third call uses `model: opus` override. Still failing → `problems.md`, escalate. STOP.
 
 ### 5. Quality Pass
 
-Run `git diff --name-only HEAD~1 -- $FILE_EXT` to get changed files.
-For each file: quality sniff test — would "un-smell, un-slop, un-stale, refactor for DRY" find anything? If yes, fix it.
-After changes: run `$TEST_CMD`. IF tests fail: revert quality-pass changes for that file.
+`git diff --name-only HEAD~1 -- $FILE_EXT` → changed files. Per file: apply sniff test ("un-smell, un-slop, un-stale, refactor for DRY"). Fix in place. Run `$TEST_CMD`; tests failing → revert that file's quality-pass diff.
 
 ### 6. Mark Story Passing
 
@@ -84,20 +71,30 @@ Stop hook injects continuation with next story.
 ## Completion
 
 When `allStoriesPassing(prd) == true`:
-- Full regression: for each story, spawn `verifier` agent.
-- IF any verifier returns FAIL: `markStoryFailing(prd, story.id)`, `writePRD(projectDir, prd)`, loop back.
-- MAX 3 regression cycles. After 3: deactivate with reason "regression-loop", escalate to JM.
-- IF all pass: deactivate with reason "complete".
 
-## Working Memory
+1. **Regression (NOT per-story re-verification).** Per-story verifier gates already ran; completion only catches cross-story regressions.
+   ```bash
+   bun test ./.claude/         # catches test regressions
+   bunx tsc --noEmit           # catches type regressions
+   ```
+2. Any failure → identify the offending story from the test/type error, `markStoryFailing(prd, story.id)`, `writePRD(projectDir, prd)`, loop back.
+3. Max 3 regression cycles. Exceeded → deactivate `regression-loop`, escalate.
+4. All pass → deactivate `complete`.
 
-4-file memory (decisions, learnings, problems, issues) in `STATE_DIR/sessions/{session_id}/memory/`. Survives compression via Stop hook re-injection. Write at decision points, surprises, blockers, and bug discoveries.
+**Do NOT re-spawn verifier per story at completion.** The per-story gates are the source of truth; tests + tsc are sufficient cross-story coverage.
+
+## Working Memory (Batched)
+
+4-file memory in `$STATE_DIR/sessions/{session_id}/memory/`: `decisions.md`, `learnings.md`, `problems.md`, `issues.md`.
+
+**Batch writes.** Accumulate observations in-context during a story. Flush once per story transition (or immediately on critic/verifier rejection, blocker, or bug discovery).
 
 ## Error Recovery
 
-IF same error message (>50 char substring match) appears 3 consecutive times:
-1. Write to `problems.md`: "Stuck on: {error}. Attempts: {count}"
-2. IF import/module error: grep codebase for the symbol.
-3. IF type error: read the type definition file.
-4. IF test assertion: re-read scenario and acceptance criteria.
-5. IF still failing after 5 total attempts: deactivate with reason "stuck". Output problem summary.
+Same error message (>50 char substring match) 3× consecutively:
+
+1. Write `problems.md`: "Stuck on: {error}. Attempts: {count}"
+2. Import/module error → grep codebase for the symbol
+3. Type error → read the type definition file
+4. Test assertion → re-read scenario + acceptance criteria
+5. Still failing after 5 total → deactivate `stuck`, output problem summary

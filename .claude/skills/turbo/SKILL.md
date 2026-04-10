@@ -9,91 +9,96 @@ argument-hint: "<task description>"
 
 # Turbo Mode
 
-Parallel agent dispatch. Decompose → Dispatch → Collect → Synthesize → Verify. Default: 30 max iterations.
+Parallel dispatch. Decompose → Dispatch → Collect → Synthesize → Verify. Default: 30 max iterations.
 
 ## Plan-Aware Entry
 
-Before starting Decompose, check: was this mode activated with a reference to an existing plan file (e.g., `turbo: implement thoughts/shared/plans/domain--feature-v1.md`)?
+If activated with a plan file path (e.g. `turbo: implement plans/foo-v1.md`):
 
-IF a plan file path was mentioned in the activation prompt:
 1. Read the plan file fully.
-2. Check if the plan's phases are independent (no phase references output from another phase).
-3. IF phases are independent:
-   - Use the plan's phases as the subtask decomposition directly.
-   - Map each phase to an agent type (engineer for implementation phases, codebase-analyzer for research phases).
-   - Write decomposition to `decisions.md` sourced from plan.
-   - Skip to Dispatch (step 2).
-   - Output checkpoint: `PLAN DECOMPOSED: {subtask count} independent subtasks from {plan file}.`
-4. IF phases are sequential/dependent:
-   - Fall back to cruise mode (deactivate turbo, activate cruise with plan reference).
-   - Output: `PLAN IS SEQUENTIAL: falling back to cruise with plan reference.`
-5. IF <2 phases: fall back to cruise (existing behavior).
+2. Check independence: no phase references output from another phase.
+3. Independent → use phases as subtasks, map each to an agent type + tier (see Dispatch matrix). Write to `decisions.md`. Skip to step 2 (Dispatch). Output: `PLAN DECOMPOSED: {N} independent subtasks`.
+4. Sequential/dependent → deactivate turbo, activate cruise with plan reference. Output: `PLAN IS SEQUENTIAL: falling back to cruise`.
+5. `<2` phases → fall back to cruise.
 
 ## 1. Decompose
 
-Break task into 2-5 independent subtasks. Write to `decisions.md`:
+2–5 independent subtasks. Write to `decisions.md`:
 
 ```
 Subtask {n}: {title}
-  Agent: {engineer|codebase-analyzer|reviewer}
+  Agent: {type}
+  Tier: {low|standard|high}
   Input files: {list}
   Output files: {list}
   Acceptance: {criterion}
 ```
 
-Independence check: IF any two subtasks share an output file, they are NOT independent. Merge or sequence them.
+Independence check: any two subtasks sharing an output file → not independent → merge or sequence.
+`<2` subtasks → fall back to cruise.
+`>5` subtasks → group related ones.
 
-IF task yields <2 subtasks: fall back to cruise mode. Deactivate turbo, activate cruise with same task.
-IF task yields >5 subtasks: group related ones until count is 2-5.
+## 2. Dispatch — Tiered Matrix
 
-## 2. Dispatch
+Spawn ALL agents in a single message (parallel). Pick the cheapest sufficient tier per subtask:
 
-Spawn ALL agents in a single message (parallel execution) using the Agent tool:
-- `engineer` for implementation
-- `codebase-analyzer` for research
-- `reviewer` for review
+| Subtask kind | Default agent | Tier / model |
+|---|---|---|
+| File discovery, pattern finding, "where does X live" | `codebase-analyzer-low` | haiku |
+| Trivial edit: rename, import fix, type annotation | `engineer-low` | haiku |
+| Data-flow trace, implementation analysis | `codebase-analyzer` | sonnet |
+| Standard implementation: add function, wire feature, write tests | `engineer` | sonnet |
+| Routine review: correctness, style, simple security | `reviewer-low` | sonnet |
+| Cross-cutting refactor, new abstraction, multi-file redesign | `engineer-high` | opus |
+| Security/OWASP review, architectural review | `reviewer` | opus |
+| PRD, system design, architecture decisions | `architect` | opus |
 
-Each agent prompt MUST include: the subtask description, input files, expected output, and acceptance criterion.
+**Rule:** start at the lowest tier that plausibly covers the subtask. Escalate via re-dispatch if the low-tier output is insufficient (see Collect → "mark as gap").
+
+Each agent prompt MUST include: subtask description, input files, expected output, acceptance criterion.
 
 ## 3. Collect
 
 For each completed agent:
-1. IF output contains "FAIL" or "Error" at the start: mark subtask as failed.
-2. Extract file paths from output (after "Created:", "Modified:", or file paths in code blocks).
-3. Build file-to-subtask map. IF any file appears in 2+ subtask outputs: flag as CONFLICT.
-4. Check acceptance criterion against output. IF unmet: mark as gap.
 
-IF subtask failed:
-1. Read failure output. Write to `problems.md`.
-2. Re-dispatch same agent type with additional context from the failure.
-3. MAX 2 re-dispatches per subtask. After 2: mark as permanently failed, handle in main thread.
+1. Output starts with "FAIL" or "Error" → mark failed.
+2. Extract file paths (after "Created:", "Modified:", or code-block paths).
+3. Build file-to-subtask map. File in 2+ subtask outputs → CONFLICT.
+4. Check acceptance criterion. Unmet → mark as gap.
+
+Subtask failed:
+1. Write `problems.md`.
+2. Re-dispatch SAME agent type at the NEXT tier up (low → standard → high).
+3. Max 2 re-dispatches per subtask. Still failing → mark permanently failed, handle in main thread.
 
 ## 4. Synthesize
 
-IF conflicts detected:
-1. Read both versions of conflicting file.
-2. IF one is strictly additive (only adds lines): prefer it.
-3. IF both modify existing lines: run `bun test` with each version. Keep the one that passes.
-4. IF neither passes: merge manually, take the smaller diff.
+Conflicts:
+1. Read both versions.
+2. One strictly additive (only adds lines) → prefer it.
+3. Both modify existing lines → run `bun test` with each. Keep the one that passes.
+4. Neither passes → manual merge, smaller diff wins.
 
-Run `bun test` after merge. Run `bunx tsc --noEmit`.
+Run `bun test` + `bunx tsc --noEmit` after merge.
 
 ## 5. Verify
 
-**Test runner:** Follow `tdd-qa/references/detect-runner.md` if `$TEST_CMD` not yet set.
+Test runner: `tdd-qa/references/detect-runner.md` if `$TEST_CMD` unset.
 
-- `$TEST_CMD` — all tests must pass.
-- `bunx tsc --noEmit` — zero type errors (TypeScript projects only).
-- Quality sniff test: would "un-smell, un-slop, un-stale, refactor for DRY" find anything? If yes, fix.
-- IF issues found: fix and re-verify. MAX 3 verify loops.
-- IF still failing after 3: deactivate with reason "turbo-verify-failed", escalate to JM.
+- `$TEST_CMD` — all tests pass
+- `bunx tsc --noEmit` — zero type errors (TS only)
+- Sniff test: "un-smell, un-slop, un-stale, refactor for DRY" → fix
+- Issues → fix + re-verify. Max 3 verify loops.
+- Still failing → deactivate `turbo-verify-failed`, escalate.
 
-IF all pass: deactivate with reason "complete".
+All pass → deactivate `complete`.
 
-## Working Memory
+## Working Memory (Batched)
 
-4-file memory (decisions, learnings, problems, issues) in `STATE_DIR/sessions/{session_id}/memory/`. Survives compression via Stop hook re-injection. Write after decomposition, after each agent completes, and during synthesis.
+4-file memory in `$STATE_DIR/sessions/{session_id}/memory/`: `decisions.md`, `learnings.md`, `problems.md`, `issues.md`.
+
+**Batch writes.** Flush at: decomposition complete, after each agent completes, during synthesis, at mode deactivation. No per-event flushing.
 
 ## Error Recovery
 
-IF synthesis fails 2 times: deactivate with reason "turbo-fallback". Activate cruise mode with same task. Do NOT re-attempt turbo decomposition.
+Synthesis fails 2× → deactivate `turbo-fallback`. Activate cruise with same task. Do NOT re-attempt turbo decomposition.

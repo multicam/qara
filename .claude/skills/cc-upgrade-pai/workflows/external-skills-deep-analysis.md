@@ -1,102 +1,68 @@
 # External Skills Deep Analysis (PAI)
 
-PAI-specific deep analysis of installed external skills. Extends the base
-`cc-upgrade/workflows/external-skills-audit.md` with PAI-specific evaluation,
-wrapping strategy, and enhancement planning.
+PAI-specific deep analysis extending `cc-upgrade/workflows/external-skills-audit.md` with PAI evaluation, wrapping strategy, and enhancement planning.
 
 ## Prerequisites
 
-→ READ: `../../cc-upgrade/workflows/external-skills-audit.md` for base methodology
-→ READ: `../../cc-upgrade/references/skills-ecosystem-sources.md` for ecosystem context
-→ READ: `../references/external-skills-registry.md` for current skill inventory
+-> READ: `../../cc-upgrade/workflows/external-skills-audit.md` (base methodology)
+-> READ: `../../cc-upgrade/references/skills-ecosystem-sources.md`
+-> READ: `../references/external-skills-registry.md` (current inventory)
 
 ## When to Use
 
-- After running `~/update-skills.sh` or `npx skills update`
-- When planning to adopt new external skills into PAI
-- When evaluating whether external skills conflict with local PAI conventions
-- Quarterly deep review of external skill value and version drift
-- When JM says "audit external skills", "analyze installed skills", "skill redundancies",
-  "what external skills do we have", "skill hygiene"
-
----
+- After `~/update-skills.sh` or `npx skills update`
+- When planning to adopt new external skills
+- When evaluating conflicts with PAI conventions
+- Quarterly deep review
+- User says: "audit external skills", "analyze installed skills", "skill redundancies", "skill hygiene"
 
 ## Workflow
 
-> **ULTRATHINK MANDATE:** Every phase in this workflow requires extended thinking.
-> External skills touch the entire PAI development environment. A bad skill
-> recommendation compounds across every future session. Think deeply about:
-> - Second-order effects (does adopting skill X make skill Y less useful?)
-> - Context budget impact (every `context: same` skill eats into every conversation)
-> - Convention conflicts (does the skill teach patterns that contradict PAI?)
-> - Maintenance burden (who updates this if upstream dies?)
+> **ULTRATHINK MANDATE:** External skills touch the entire PAI dev environment. Every phase requires extended thinking:
+> - Second-order effects (adopting X makes Y less useful?)
+> - Context budget (every `context: same` eats into every conversation)
+> - Convention conflicts (does the skill contradict PAI patterns?)
+> - Maintenance burden (who updates if upstream dies?)
 
 ### Phase 1: Run Base Audit
 
-Execute the base external-skills-audit workflow first:
+-> READ & EXECUTE: `../../cc-upgrade/workflows/external-skills-audit.md`
 
-```
-→ READ & EXECUTE: ../../cc-upgrade/workflows/external-skills-audit.md
-```
+Capture output — Phase 2 builds on it.
 
-Capture the output — Phase 2 builds on it.
+### Phase 2: PAI Skill Deep Dive
 
-### Phase 2: PAI-Specific Skill Deep Dive
+#### 2.1 Visual-Explainer Ecosystem (22 sub-skills)
 
-> **ULTRATHINK:** For each skill category below, consider not just "does it work"
-> but "does it make PAI better or worse as a whole system?"
+Read the actual SKILL.md for each. Don't rely on names alone.
 
-#### 2.1 Visual-Explainer Ecosystem Analysis (22 sub-skills)
+**Evaluate on 5 axes (0-3 each):**
 
-**Read the actual SKILL.md** for each of these 22 skills. Don't rely on names alone.
-
-**Evaluate each skill on 5 axes:**
-
-| Axis | Question | Score |
-|------|----------|-------|
-| **Value** | Does PAI actually use this? Has it been invoked in the last 30 days? | 0-3 |
-| **Uniqueness** | Does any local PAI skill cover the same ground? | 0-3 |
-| **Convention Fit** | Does it follow PAI's design principles (CLI-first, TS > Python, etc.)? | 0-3 |
-| **Context Cost** | How many tokens does loading this skill consume? | 0-3 |
-| **Maintenance** | Is the upstream actively maintained? Last commit date? | 0-3 |
+| Axis | Question |
+|------|----------|
+| Value | Invoked in last 30 days? |
+| Uniqueness | Does any local skill cover same ground? |
+| Convention Fit | Matches PAI principles (CLI-first, TS > Python)? |
+| Context Cost | Tokens consumed when loaded? |
+| Maintenance | Upstream active? Last commit? |
 
 **Score interpretation:**
-- 12-15: Keep as-is
-- 8-11: Keep but consider wrapping for PAI conventions
-- 4-7: Evaluate whether to wrap, adapt, or remove
-- 0-3: Strong candidate for removal
+- 12-15: keep as-is
+- 8-11: keep, consider wrapping
+- 4-7: wrap, adapt, or remove
+- 0-3: strong removal candidate
 
-**Specific checks for visual-explainer ecosystem:**
+**Specific checks:**
 
-1. **Foundation skills (frontend-design, teach-impeccable):**
-   - Is `frontend-design` still aligned with the `designer` agent prompt?
-   - Has `.impeccable.md` been generated for any PAI project?
-   - Do the anti-AI-slop patterns match PAI's aesthetic standards?
-
-2. **Design creation skills (animate, arrange, typeset, clarify, colorize, delight):**
-   - Are these used in any PAI project's frontend work?
-   - Do they conflict with PAI's stack preferences (TS > Python)?
-   - Would a subset (e.g., just typeset + arrange) suffice?
-
-3. **Design evaluation skills (audit, critique, optimize, polish, harden):**
-   - `audit` has a name collision with cc-upgrade's audit workflow — is routing clear?
-   - `critique` overlaps with `grill-me` — is the boundary well-defined?
-   - Are all 5 evaluation skills necessary, or could some merge?
-
-4. **Amplification pair (bolder, quieter):**
-   - How often are these actually used?
-   - Could they be a single skill with a mode parameter?
-
-5. **Specialized skills (adapt, normalize, onboard, overdrive, extract, distill):**
-   - `overdrive` recommends bleeding-edge browser APIs — is this appropriate for PAI projects?
-   - `extract` and `distill` are system-level — do they overlap with PAI's simplification philosophy?
+1. **Foundation (frontend-design, teach-impeccable):** aligned with `designer` agent? `.impeccable.md` generated? Anti-AI-slop matches PAI aesthetic?
+2. **Design creation (animate, arrange, typeset, clarify, colorize, delight):** used in any frontend work? Conflicts with TS > Python? Could a subset suffice?
+3. **Design evaluation (audit, critique, optimize, polish, harden):** `audit` collides with cc-upgrade `audit` workflow — routing clear? `critique` overlaps with `grill-me` — boundary defined? Could some merge?
+4. **Amplification (bolder, quieter):** usage frequency? Single skill with mode parameter?
+5. **Specialized (adapt, normalize, onboard, overdrive, extract, distill):** `overdrive` bleeding-edge APIs appropriate? `extract`/`distill` overlap with PAI simplification philosophy?
 
 #### 2.2 Matt Pocock Adaptations Review
 
-**For each adapted skill:**
-
 ```bash
-# Check latest upstream commits since our last review
 gh api repos/mattpocock/skills/commits \
   --jq '.[] | "\(.sha[0:7]) \(.commit.message | split("\n")[0]) (\(.commit.author.date[0:10]))"' \
   | head -20
@@ -104,115 +70,90 @@ gh api repos/mattpocock/skills/commits \
 
 **Review each adaptation:**
 
-| PAI Skill | Upstream Check | Questions |
-|-----------|---------------|-----------|
-| `grill-me` | Compare methodology sections | Has Matt added new probe patterns? |
-| `design-it-twice` | Compare constraint definitions | Has the interface design approach evolved? |
-| `edit-article` | Compare phases | Has Matt improved the editing pipeline? |
-| `CORE/testing-guide.md` | Compare TDD methodology | New test patterns or approaches? |
-| `CORE/references/deep-modules.md` | Compare module definitions | New depth criteria? |
-| `CORE/references/mocking-guidelines.md` | Compare mocking rules | New anti-patterns discovered? |
-| `CORE/references/interface-design.md` | Compare design principles | New interface patterns? |
-| `CORE/references/refactoring-signals.md` | Compare refactoring triggers | New smell patterns? |
-| `product-shaping/workflows/breakdown.md` | Compare vertical slicing | New breakdown methodology? |
-| `agents/codebase-analyzer.md` | Compare analysis lens | New friction patterns? |
+| PAI Skill | Compare | Questions |
+|-----------|---------|-----------|
+| `grill-me` | Methodology sections | New probe patterns? |
+| `design-it-twice` | Constraint definitions | Interface approach evolved? |
+| `edit-article` | Phases | Improved editing pipeline? |
+| `CORE/testing-guide.md` | TDD methodology | New test patterns? |
+| `CORE/references/deep-modules.md` | Module definitions | New depth criteria? |
+| `CORE/references/mocking-guidelines.md` | Mocking rules | New anti-patterns? |
+| `CORE/references/interface-design.md` | Design principles | New patterns? |
+| `CORE/references/refactoring-signals.md` | Refactoring triggers | New smells? |
+| `product-shaping/workflows/breakdown.md` | Vertical slicing | New methodology? |
+| `agents/codebase-analyzer.md` | Analysis lens | New friction patterns? |
 
-**Check for NEW upstream skills not yet evaluated:**
+**Check for NEW upstream skills:**
 
 ```bash
-# List all current upstream skills
 gh api repos/mattpocock/skills/contents/ --jq '.[].name' | sort
 ```
 
-Compare against the "Upstream Skills NOT Yet Adopted" table in the registry.
-Flag any new additions worth evaluating.
+Compare against "Upstream Skills NOT Yet Adopted" table in registry.
 
 #### 2.3 Ecosystem Scanning
 
-> **ULTRATHINK:** The agent skills ecosystem is exploding (280k+ on SkillsMP).
-> Most are noise. Focus on: skills from trusted authors (Tier 1/2 in ecosystem sources),
-> skills that solve problems PAI currently handles poorly, and skills that represent
-> new Claude Code capabilities we haven't adopted yet.
-
-**Scan trusted sources for new skills worth adopting:**
+Focus on: trusted authors (Tier 1/2 in ecosystem sources), skills solving problems PAI handles poorly, new CC capabilities not yet adopted.
 
 ```bash
-# Check awesome-agent-skills for new high-quality additions
 gh api repos/VoltAgent/awesome-agent-skills/commits \
   --jq '.[0] | "\(.sha[0:7]) \(.commit.message | split("\n")[0]) (\(.commit.author.date[0:10]))"'
 ```
 
-**Evaluation criteria for new skills:**
-→ READ: `../../cc-upgrade/references/skills-ecosystem-sources.md` — "Evaluation Criteria for New Skills" section
+Evaluation criteria: -> READ: `../../cc-upgrade/references/skills-ecosystem-sources.md` ("Evaluation Criteria for New Skills")
 
 ### Phase 3: Strategic Analysis
 
-> **ULTRATHINK:** This is the most critical phase. You're not just auditing —
-> you're shaping PAI's development capability surface. Every skill kept or removed
-> changes what JM can accomplish efficiently.
-
 #### 3.1 Redundancy Resolution
 
-For each redundancy found in Phase 2:
-
-1. **Measure actual usage** — grep session logs, check invocation history
-2. **Compare quality** — read both skills, determine which is more complete
-3. **Check maintenance** — which has a more active upstream?
-4. **Decide: keep one, merge, or differentiate**
-5. **Document the decision** in `../references/external-skills-registry.md`
+For each redundancy from Phase 2:
+1. Measure usage — grep session logs, check invocation history
+2. Compare quality — read both, determine which is more complete
+3. Check maintenance — which upstream is more active?
+4. Decide: keep one, merge, or differentiate
+5. Document in `../references/external-skills-registry.md`
 
 #### 3.2 Enhancement Opportunities
 
-For strong external skills that could be better:
-
-| Enhancement Type | When | How |
-|-----------------|------|-----|
-| **Thin PAI wrapper** | Skill is good but needs PAI conventions | Create local SKILL.md that `→ READ:`s the external and adds PAI context |
-| **Reference injection** | Skill is missing PAI-relevant references | Add `references/` dir with PAI-specific guidelines |
-| **Agent integration** | Skill should be loaded by a specific agent | Update agent prompt to reference the skill |
-| **Activation refinement** | Skill triggers too broadly or narrowly | Create wrapper with precise activation triggers |
+| Enhancement | When | How |
+|-------------|------|-----|
+| Thin PAI wrapper | Skill good, needs PAI conventions | Local SKILL.md `-> READ:`s external, adds context |
+| Reference injection | Missing PAI-relevant references | Add `references/` with PAI guidelines |
+| Agent integration | Should load via specific agent | Update agent prompt to reference skill |
+| Activation refinement | Triggers too broad/narrow | Wrapper with precise triggers |
 
 #### 3.3 Removal Candidates
 
-For skills scoring 0-3 in the evaluation:
-
-1. **Check for hidden dependencies** — does any local skill `→ READ:` this?
-2. **Check agent prompts** — does any agent load this skill?
-3. **Check settings.json** — is it referenced in any hook or permission?
-4. **If safe to remove:** unlink, update registry, update lock file
+For skills scoring 0-3:
+1. Check hidden dependencies — does any local skill `-> READ:` this?
+2. Check agent prompts — does any load this skill?
+3. Check settings.json — referenced in hooks/permissions?
+4. If safe: unlink, update registry, update lock file
 
 ```bash
-# Remove symlink (does NOT delete the source)
 rm .claude/skills/<skill-name>
-
-# Update lock file if needed
-# (Only if removing the entire source, not just a sub-skill)
 ```
 
-### Phase 4: Documentation Update
-
-> **MANDATORY** — All analysis results must be persisted.
+### Phase 4: Documentation Update (MANDATORY)
 
 1. **Update `../references/external-skills-registry.md`:**
-   - Refresh all version numbers, dates, hashes
+   - Refresh versions, dates, hashes
    - Update overlap analysis tables
    - Update wrapping recommendations
-   - Add/remove skills as needed
-   - Update "Update History" section
+   - Add/remove skills
+   - Append to "Update History"
 
 2. **Update `../../cc-upgrade/references/skills-ecosystem-sources.md`:**
-   - Add any new trusted sources discovered
-   - Update star counts and activity levels
-   - Add new evaluation results
+   - New trusted sources
+   - Star counts, activity levels
+   - New evaluation results
 
-3. **If skills were added/removed:**
-   - Update CORE skill Documentation Index (if applicable)
+3. **If skills added/removed:**
+   - Update CORE Documentation Index
    - Update `delegation-guide.md` (if agent routing changed)
    - Update MEMORY.md architecture counts
 
 ### Phase 5: Report
-
-Generate the PAI External Skills Deep Analysis Report:
 
 ```markdown
 # PAI External Skills Deep Analysis Report
@@ -222,48 +163,47 @@ Generate the PAI External Skills Deep Analysis Report:
 **Scope:** [Global + Project skills]
 
 ## Executive Summary
-[2-3 sentences: overall health, key findings, urgency]
+[2-3 sentences: health, key findings, urgency]
 
-## Skill Inventory (Current State)
+## Skill Inventory
 | Source | Skills | Symlinked | Adapted | Direct |
 |--------|--------|-----------|---------|--------|
 | nicobailon/visual-explainer | 22 | ? | 0 | 0 |
 | mattpocock/skills | 10 | 0 | 10 | 0 |
 | Local (PAI-built) | ? | 0 | 0 | ? |
 
-## Deep Dive: Visual-Explainer Ecosystem
+## Deep Dive: Visual-Explainer
 ### Per-Skill Evaluation
-| Skill | Value | Uniqueness | Convention Fit | Context Cost | Maintenance | Total | Action |
-|-------|-------|-----------|---------------|-------------|------------|-------|--------|
-| [each skill...] | 0-3 | 0-3 | 0-3 | 0-3 | 0-3 | /15 | keep/wrap/adapt/remove |
+| Skill | Value | Uniq | Fit | Cost | Maint | Total | Action |
+|-------|-------|------|-----|------|-------|-------|--------|
 
 ### Dependency Chain Impact
 [What breaks if we remove X? What improves if we enhance Y?]
 
 ## Deep Dive: Matt Pocock Adaptations
-### Upstream Drift Report
-| PAI Skill | Last Synced | Upstream Changes | Action Needed |
-|-----------|------------|-----------------|---------------|
+### Upstream Drift
+| PAI Skill | Last Synced | Upstream Changes | Action |
+|-----------|-------------|------------------|--------|
 
 ### New Upstream Skills
 | Skill | Purpose | Adoption Recommendation |
 |-------|---------|------------------------|
 
-## Ecosystem Scan Results
-| Source | New Skills Found | Worth Evaluating |
-|--------|-----------------|------------------|
+## Ecosystem Scan
+| Source | New Skills | Worth Evaluating |
+|--------|-----------|------------------|
 
 ## Redundancies
 | Skills | Type | Resolution | Priority |
 |--------|------|-----------|----------|
 
 ## Enhancement Opportunities
-| Skill | Enhancement | Expected Impact | Effort |
-|-------|------------|----------------|--------|
+| Skill | Enhancement | Impact | Effort |
+|-------|-------------|--------|--------|
 
 ## Removal Candidates
-| Skill | Score | Dependencies | Safe to Remove? |
-|-------|-------|-------------|----------------|
+| Skill | Score | Dependencies | Safe? |
+|-------|-------|-------------|-------|
 
 ## Recommendations (Prioritized)
 1. [CRITICAL] ...
@@ -272,13 +212,10 @@ Generate the PAI External Skills Deep Analysis Report:
 4. [LOW] ...
 
 ## Registry Updates Made
-[List of changes applied to external-skills-registry.md]
+[Changes applied to external-skills-registry.md]
 ```
 
-### Phase 6: Web Research (Optional, Recommended Quarterly)
-
-> **ULTRATHINK:** Best practices evolve. What was best-in-class 3 months ago
-> may be superseded. Research proactively.
+### Phase 6: Web Research (Optional, Quarterly)
 
 Launch parallel research agents:
 
@@ -293,4 +230,4 @@ Agent 3 (claude-researcher): "Claude Code skill redundancy management,
   skill lifecycle best practices, agent skill ecosystem trends"
 ```
 
-Synthesize findings into actionable recommendations and update the registry.
+Synthesize findings into recommendations; update registry.

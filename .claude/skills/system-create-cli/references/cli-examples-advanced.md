@@ -1,25 +1,23 @@
-# CLI Generation Examples — Patterns, Testing & Documentation
+# CLI Generation Examples — Patterns, Testing, Docs
 
-Common implementation patterns, tier decision matrix, testing examples, and documentation templates for CLI generation.
-
-For concrete CLI examples (Examples 1–6) see: `cli-examples-basic.md`
+Shared patterns, tier decision matrix, test examples, and documentation templates. See `cli-examples-basic.md` for Examples 1-6.
 
 ---
 
-## Common Patterns Across Examples
+## Common Patterns
 
-### 1. Configuration Management
+### Config loading
 ```typescript
 function loadConfig(): Config {
   const envPath = path.join(process.env.HOME!, '.env');
   if (!existsSync(envPath)) {
     throw new Error('Config file not found. Run: cp .env.example ~/.env');
   }
-  // Load and parse config
+  // parse and return
 }
 ```
 
-### 2. Error Handling
+### Error handling
 ```typescript
 try {
   await executeCommand();
@@ -29,7 +27,7 @@ try {
 }
 ```
 
-### 3. Help Text
+### Help text
 ```typescript
 function showHelp(): void {
   console.log(`
@@ -46,25 +44,23 @@ Options:
 }
 ```
 
-### 4. JSON Output
+### JSON output
 ```typescript
-// Always output parseable JSON for composability
+// Always parseable JSON for composability
 console.log(JSON.stringify(result, null, 2));
 ```
 
-### 5. Type Safety
+### Typed options
 ```typescript
-// Define clear interfaces
 interface CommandOptions {
   format?: 'json' | 'yaml';
   output?: string;
   verbose?: boolean;
 }
 
-// Type-safe argument parsing
 function parseOptions(args: string[]): CommandOptions {
   const options: CommandOptions = {};
-  // Parse and validate
+  // parse and validate
   return options;
 }
 ```
@@ -73,57 +69,46 @@ function parseOptions(args: string[]): CommandOptions {
 
 ## Tier Decision Matrix
 
-| Scenario | Workflows | Complexity | Tier | Why |
-|----------|-----------|------------|------|-----|
-| API Client | 5-8 commands | Simple args | 1 | llcli pattern works perfectly |
-| File Processor | 3-5 commands | Basic options | 1 | No subcommands needed |
-| Data Pipeline | 15+ commands | Nested options | 2 | Need grouping + auto-help |
-| Automation | 2-4 commands | Simple flags | 1 | Lightweight is better |
-| Database Tool | 10+ commands | Complex options | 2 | Categories needed |
-| HTTP Client | 6-10 commands | Standard REST | 1 | llcli pattern proven |
+| Scenario | Commands | Complexity | Tier | Why |
+|---|---|---|---|---|
+| API Client | 5-8 | Simple args | 1 | llcli pattern |
+| File Processor | 3-5 | Basic options | 1 | No subcommands |
+| Data Pipeline | 15+ | Nested options | 2 | Grouping + auto-help |
+| Automation | 2-4 | Simple flags | 1 | Lightweight |
+| Database Tool | 10+ | Complex options | 2 | Categories |
+| HTTP Client | 6-10 | Standard REST | 1 | llcli pattern |
 
-**Default to Tier 1** unless you have clear evidence that Commander's features are needed.
+**Default to Tier 1** unless Commander features are clearly needed.
 
 ---
 
-## Testing Examples
-
-### Example: Testing API Client
+## Testing Example
 
 ```typescript
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'bun:test';
 import { execSync } from 'child_process';
 
 describe('ghcli', () => {
-  beforeEach(() => {
-    // Setup test environment
-  });
-
   it('lists repositories', () => {
     const output = execSync('ghcli repos --user multicam').toString();
-    const result = JSON.parse(output);
-    expect(result).toHaveProperty('repositories');
+    expect(JSON.parse(output)).toHaveProperty('repositories');
   });
 
   it('handles API errors gracefully', () => {
-    expect(() => {
-      execSync('ghcli repos --user invalid-user-12345');
-    }).toThrow();
+    expect(() => execSync('ghcli repos --user invalid-user-12345')).toThrow();
   });
 
   it('validates required arguments', () => {
-    expect(() => {
-      execSync('ghcli repos');
-    }).toThrow(/missing required argument/i);
+    expect(() => execSync('ghcli repos')).toThrow(/missing required argument/i);
   });
 });
 ```
 
+See `../workflows/add-testing.md` for the full `bun:test` harness using `Bun.spawn`.
+
 ---
 
-## Documentation Examples
-
-### Example README Structure
+## README Template
 
 ```markdown
 # CLI Name
@@ -131,11 +116,9 @@ describe('ghcli', () => {
 One-line description.
 
 ## Philosophy
-
 Why this CLI exists and design principles.
 
 ## Installation
-
 \`\`\`bash
 cd ~/.claude/bin/mycli
 bun install
@@ -143,38 +126,28 @@ chmod +x mycli.ts
 \`\`\`
 
 ## Configuration
-
 \`\`\`bash
 cp .env.example ~/.env
 # Edit ~/.env with your API keys
 \`\`\`
 
 ## Usage
-
-### Command 1
 \`\`\`bash
 mycli command1 --option value
-\`\`\`
-
-### Command 2
-\`\`\`bash
 mycli command2 <arg>
 \`\`\`
 
 ## Examples
-
 [Concrete examples with expected output]
 
 ## Composability
-
 [How to pipe to jq, grep, etc.]
 
 ## Error Handling
-
 [Common errors and solutions]
 ```
 
-### Example QUICKSTART Structure
+## QUICKSTART Template
 
 ```markdown
 # Quick Start
@@ -183,28 +156,16 @@ Most common use cases for [CLI Name].
 
 ## Common Tasks
 
-### Task 1
 \`\`\`bash
 mycli task1
-\`\`\`
-
-### Task 2
-\`\`\`bash
 mycli task2 | jq '.data[]'
-\`\`\`
-
-### Task 3
-\`\`\`bash
 mycli task3 --format=yaml > output.yaml
 \`\`\`
 
 ## Tips
-
 - Tip 1
 - Tip 2
-- Tip 3
 
 ## Next Steps
-
-[Link to full README for advanced usage]
+[Link to full README]
 ```

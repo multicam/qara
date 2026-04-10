@@ -8,7 +8,6 @@ Files in this directory become available as `/command-name`. They use `$ARGUMENT
 |---------|-------|---------|
 | `/research` | auto | Auto-selects best research agent based on available API keys |
 | `/create_plan` | opus | Interactive planning with parallel research agents |
-| `/implement_plan` | sonnet | Executes plans with phased verification |
 | `/validate_plan` | — | Validates implementation against plan |
 | `/spotcheck` | — | Verify agent output quality |
 | `/skills` | haiku | Lists all available skills with metadata |
@@ -29,13 +28,13 @@ Used via `Task` tool with `subagent_type` parameter.
 | `architect` | opus | PRD creation, system design, technical specs (loads research skill) |
 | `claude-researcher` | haiku | Primary web research via WebSearch/WebFetch |
 | `codebase-analyzer` | sonnet | Traces data flow, finds patterns, explains implementation |
-| `critic` | opus | Pre-implementation plan review, risk/gap analysis |
+| `critic` | **sonnet** | Pre-implementation plan review, risk/gap analysis. Opus escalation on 3rd retry. |
 | `designer` | opus | Design review, UX/UI, typography (loads frontend-design skill) |
 | `engineer` | sonnet | Code implementation, debugging, optimization, testing |
 | `gemini-researcher` | haiku | Fallback when WebSearch fails — uses Gemini CLI |
 | `reviewer` | opus | Code review for correctness, security, performance |
 | `thoughts-analyzer` | sonnet | Discovers + analyzes thoughts/ docs for insights and decisions |
-| `verifier` | opus | Post-implementation acceptance verification, quality gates |
+| `verifier` | **sonnet** | Post-implementation acceptance verification, quality gates. Opus escalation on 3rd retry. |
 
 ### Tiered Variants (5)
 
@@ -63,9 +62,11 @@ Delegation uses CC's Task tool. Custom agents extend built-in types with special
 
 | Task Type | Model |
 |-----------|-------|
-| Architecture, planning, review | opus |
-| Analysis, research, implementation | sonnet |
-| File location, simple search, listing | haiku |
+| Architecture, PRD creation, design review, code review | opus |
+| Plan critique, acceptance verification, implementation, trace analysis | sonnet |
+| File location, simple search, trivial edits, web research | haiku |
+
+**Critic + verifier escalation (2026-04-11):** `critic` and `verifier` default to sonnet. If the caller retries twice and both return `revise`/`FAIL`, the third call MUST include `model: opus` override via the Task tool. This gives sonnet first-pass coverage at 5× lower cost while preserving opus judgment when sonnet struggles. See `.claude/context/delegation-guide.md` for escalation rules.
 
 ## Context Files (.claude/context/)
 

@@ -1,51 +1,30 @@
 # Implement Feature Workflow
 
-The core workflow for automated UI feature implementation.
+Core workflow for automated UI feature implementation.
 
-## Triggers
+**Triggers:** "implement next feature", "implement the [feature]", "build the [component]", "implement feature from [file path]".
 
-- "implement next feature"
-- "implement the [feature name]"
-- "build the [component]"
-- "implement feature from [file path]"
+---
 
-## Workflow Steps
+## Steps
 
 ### 1. Parse Feature Specification
 
-Identify the feature source:
+Source types: verbal description, file path (`thoughts/features/` or plan file), Figma link, current plan file.
 
-```
-Source Types:
-1. Verbal description → Extract from user message
-2. File path → Read spec from thoughts/features/ or plan file
-3. Figma link → Fetch design via Figma API
-4. Current plan → Read from active plan file
-```
-
-**Extract:**
-- Feature name (for history directory)
-- Component(s) to create/modify
-- Design reference (Figma link or description)
-- Acceptance criteria
+Extract: feature name (for history dir), components to create/modify, design reference, acceptance criteria.
 
 ### 2. Setup Environment
 
 ```bash
-# Check/start dev server
 bun ${SKILL_DIR}/tools/server-manager.ts status
-
-# If not running:
 bun ${SKILL_DIR}/tools/server-manager.ts start
-
-# Wait for ready
 bun ${SKILL_DIR}/tools/server-manager.ts wait-ready
 ```
 
-### 3. Launch Browser (if not already open)
+### 3. Launch Browser (capture "before" state)
 
 ```bash
-# Capture current state before changes
 bun ${SKILL_DIR}/tools/playwright-runner.ts capture \
   --url http://localhost:${PORT} \
   --output-dir ${SKILL_DIR}/history/${FEATURE_ID}
@@ -54,30 +33,23 @@ bun ${SKILL_DIR}/tools/playwright-runner.ts capture \
 ### 4. Implement Feature
 
 Delegate to `frontend-design` skill or implement directly:
+- Create/modify component files
+- Add imports
+- Style with Tailwind (or project CSS system)
+- Wire up to page/route
+- Add state management if needed
 
-```
-Implementation Checklist:
-- [ ] Create/modify component files
-- [ ] Add necessary imports
-- [ ] Style with Tailwind (or project CSS system)
-- [ ] Wire up to page/route
-- [ ] Add any required state management
-```
-
-**Important:** Wait for HMR after each file save (configurable delay, default 2s).
+Wait for HMR after each file save (configurable delay, default 2s).
 
 ### 5. Verify Implementation
 
-Run verification workflow:
-
 ```bash
-# Full capture after implementation
 bun ${SKILL_DIR}/tools/playwright-runner.ts full \
   --url http://localhost:${PORT} \
   --output-dir ${SKILL_DIR}/history/${FEATURE_ID}
 ```
 
-Read `capture.json` and check:
+Read `capture.json`:
 
 | Check | Pass Criteria |
 |-------|---------------|
@@ -99,12 +71,12 @@ IF checks fail:
   → Track iteration count
 ```
 
-### 7. Iteration Loop (if needed)
+### 7. Iteration Loop
 
 ```
 WHILE errors exist AND iteration < maxIterations:
   1. Categorize errors (console/TS/network/visual)
-  2. Apply fix via Edit tool
+  2. Apply fix via Edit
   3. Wait for HMR
   4. Re-verify
   5. iteration++
@@ -113,6 +85,8 @@ IF iteration >= maxIterations:
   → Escalate with detailed report
   → Ask Jean-Marc for guidance
 ```
+
+---
 
 ## State Management
 
@@ -128,13 +102,9 @@ Update `state.json` at each step:
 }
 ```
 
-Status values:
-- `idle` - No active feature
-- `implementing` - Writing code
-- `verifying` - Running checks
-- `fixing` - In iteration loop
-- `complete` - Feature done
-- `escalated` - Hit max iterations
+**Status values:** `idle` | `implementing` | `verifying` | `fixing` | `complete` | `escalated`.
+
+---
 
 ## Completion Report
 
@@ -166,22 +136,7 @@ Generate `history/${FEATURE_ID}/report.md`:
 ${ANY_ISSUES_OR_OBSERVATIONS}
 ```
 
-## Example Invocation
-
-User: "implement the hero section based on the Figma design"
-
-Agent:
-1. Extracts Figma link from conversation or spec
-2. Fetches design screenshot via Figma API
-3. Starts dev server (detects port 5173)
-4. Takes "before" screenshot
-5. Creates `src/components/Hero.tsx`
-6. Styles with Tailwind
-7. Adds to `src/pages/index.tsx`
-8. Waits 2s for HMR
-9. Takes "after" screenshot
-10. Verifies: no console errors, no TS errors, visual match
-11. Reports completion
+---
 
 ## Integration Points
 

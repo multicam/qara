@@ -3,9 +3,9 @@ description: Skills Discovery Command
 model: haiku
 ---
 
-# Skills Discovery Command
+# Skills Discovery
 
-Lists all available skills with their descriptions and trigger phrases.
+Lists available skills with descriptions and triggers.
 
 ## Usage
 
@@ -15,24 +15,14 @@ Lists all available skills with their descriptions and trigger phrases.
 
 ## Execution
 
-**Step 1: Find All Skills**
+1. **Find skills** — list directories under `${PAI_DIR}/skills/` (use Glob)
+2. **Extract metadata** — read each `SKILL.md`, pull `name`, `description`, workflow count from `workflows/`
+3. **Filter** — if `$ARGUMENTS` provided, match against name/description/triggers
+4. **Format output** — summary table, then optionally details per skill
 
-```bash
-# List all skill directories
-ls -1 ${PAI_DIR}/skills/
-```
+## Output Format
 
-**Step 2: Extract Skill Metadata**
-
-For each skill directory, read the SKILL.md file and extract:
-- `name` from YAML frontmatter
-- `description` from YAML frontmatter (includes USE WHEN triggers)
-- Workflow count from `workflows/` directory
-
-**Step 3: Format Output**
-
-Present skills in a table format:
-
+Summary table:
 ```
 ## Available Skills (N total)
 
@@ -40,55 +30,26 @@ Present skills in a table format:
 |-------|-------------|-----------|----------|
 | CORE | System foundation... | 15+ | Always loaded |
 | research | Multi-source research... | 10 | "do research", "find info" |
-| ... | ... | ... | ... |
 ```
 
-**Step 4: Optional Filter**
-
-If `$ARGUMENTS` is provided, filter skills by:
-- Name contains filter string
-- Description contains filter string
-- Triggers contain filter string
-
-## Arguments
-
-`$ARGUMENTS` - Optional filter string to search skills
-
-## Examples
-
-```
-/skills              # List all skills
-/skills research     # Find skills related to research
-/skills create       # Find skills for creating things
-```
-
-## Output Format
-
-For each skill, show:
-
+Per-skill detail (on request or when list is short):
 ```
 ### skill-name (N workflows)
-Description from YAML frontmatter
+[Description from frontmatter]
 
 **Triggers:** "phrase 1", "phrase 2", "phrase 3"
 
 **Workflows:**
-- workflow1.md - Brief description
-- workflow2.md - Brief description
+- workflow1.md — brief description
+- workflow2.md — brief description
 ```
 
-## Quick Reference Mode
+If many skills, show summary first then offer: `Say "/skills [name]" for full details`.
 
-If many skills exist, first show summary table, then offer to show details:
+## Examples
 
 ```
-Found 16 skills. Showing summary:
-
-| # | Skill | Workflows | Key Triggers |
-|---|-------|-----------|--------------|
-| 1 | CORE | 15+ | Always loaded |
-| 2 | research | 10 | "do research" |
-...
-
-Say "/skills [name]" for full details on a specific skill.
+/skills              # all skills
+/skills research     # skills matching "research"
+/skills create       # skills matching "create"
 ```

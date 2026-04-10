@@ -10,89 +10,69 @@ description: |
 
 # CC-Upgrade (v2.0.0)
 
-**Base skill** for Claude Code folder analysis and optimization. Works on any codebase with a `.claude/` directory.
+Base skill for Claude Code folder analysis. Works on any codebase with a `.claude/` directory.
 
-## Extending This Skill
+Domain extensions: `cc-upgrade-pai` (Personal AI Infrastructure repos).
 
-This skill serves as the base for domain-specific upgrade skills:
+## Workflow Routing
 
-| Skill | Extends With | Use Case |
-|-------|--------------|----------|
-| `cc-upgrade-pai` | PAI-specific analysis | Personal AI Infrastructure repos |
+**Generic external skills audit** (non-PAI): "check installed skills", "skill redundancies", "skill hygiene", "analyze skill dependencies"
+-> READ: `workflows/external-skills-audit.md`
 
-## Workflow Routing (SYSTEM PROMPT)
+**Skill ecosystem references/sources/evaluation criteria**: "skill ecosystem", "where to find skills", "evaluate this skill"
+-> READ: `references/skills-ecosystem-sources.md`
 
-**When user requests generic CC external skills audit (non-PAI repos):**
-Examples: "check installed skills", "skill redundancies",
-"skill hygiene", "analyze skill dependencies"
--> **READ:** `workflows/external-skills-audit.md`
--> **EXECUTE:** Full external skills audit with redundancy analysis
+**Changelog sync / feature gap check**: "sync features from changelog", "what CC features aren't tracked", "feature gap", "update FEATURE_REQUIREMENTS"
+-> RUN: `bun run scripts/cc-feature-sync.ts`
+-> REVIEW: suggested additions; update `cc-version-check.ts` FEATURE_REQUIREMENTS
 
-**When user needs skill ecosystem references, sources, or evaluation criteria:**
-Examples: "skill ecosystem", "where to find skills", "skill sources", "evaluate this skill"
--> **READ:** `references/skills-ecosystem-sources.md`
+**Skill pulse check / upstream activity**: "check skill updates", "skill pulse", "which skills are stale"
+-> RUN: `bun run scripts/skill-pulse-check.ts`
 
-**When user requests a changelog sync, feature gap check, or wants to know what new CC features are not yet tracked:**
-Examples: "sync features from changelog", "what CC features aren't tracked", "check for new CC features", "feature gap", "update FEATURE_REQUIREMENTS"
--> **RUN:** `bun run scripts/cc-feature-sync.ts`
--> **REVIEW:** Suggested additions and update `cc-version-check.ts` FEATURE_REQUIREMENTS as needed
+**Thorough/interactive audit**: "full audit", "interview me about my setup"
+-> READ: `workflows/interactive-audit.md`
 
-**When user requests a skill pulse check, skill update check, or wants to see upstream activity on installed skills:**
-Examples: "check skill updates", "skill pulse", "are my skills up to date", "which skills are stale", "skill ecosystem health"
--> **RUN:** `bun run scripts/skill-pulse-check.ts`
--> **REVIEW:** Report for outdated versions and stale upstream repositories
-
-**When user requests thorough/interactive audit:**
-Examples: "full audit", "interview me about my setup", "thorough CC review"
--> **READ:** `workflows/interactive-audit.md`
-
-**When user requests CC version check or general .claude/ audit:**
--> Continue with Core Workflow below
+**CC version check / general audit**: continue with Core Workflow below.
 
 ## Core Workflow
 
-### 1. Check Current CC Version
+### 1. CC Version
 
 ```bash
 claude --version
 ```
 
-Reference `references/cc-trusted-sources.md` for latest CC features and update sources.
+Reference `references/cc-trusted-sources.md` for latest features.
 
-### 2. Analyze .claude/ Folder Structure
-
-Expected structure (CC 2.1.x):
+### 2. Expected Structure (CC 2.1.x)
 
 ```
 .claude/
-├── context/           # Context files (CLAUDE.md)
-├── skills/            # Skill definitions with SKILL.md
-│   └── */SKILL.md    # Each skill with frontmatter
-├── agents/            # Agent configurations
-├── commands/          # Reusable workflows (slash commands)
+├── context/           # CLAUDE.md context files
+├── skills/            # SKILL.md with frontmatter
+├── agents/            # Agent configs
+├── commands/          # Slash commands
 ├── hooks/             # Hook scripts
 ├── state/             # State persistence
-├── settings.json      # CC configuration with hooks
-└── keybindings.json   # Custom keyboard shortcuts (optional)
+├── settings.json      # Hooks config
+└── keybindings.json   # Optional
 ```
 
-### 3. Run Analysis Pipeline
+### 3. Analysis Pipeline (in order)
 
-Execute in order:
-
-1. **Structure Analysis** - Directory layout and required files
-2. **Skills System Audit** - SKILL.md format, context types, invocability
-3. **Hooks Configuration** - settings.json hooks, lifecycle events
-4. **Context Engineering** - UFC patterns, progressive disclosure, file sizes
-5. **TDD Compliance** - Test infrastructure, coverage, scenario specs
-6. **12-Factor Compliance** - Agent principles audit
-7. **Upgrade Recommendations** - Prioritized improvements
+1. Structure analysis
+2. Skills system audit (SKILL.md format, context types)
+3. Hooks configuration (settings.json, lifecycle events)
+4. Context engineering (UFC patterns, file sizes)
+5. TDD compliance (tests, coverage, scenario specs)
+6. 12-factor compliance
+7. Prioritized upgrade recommendations
 
 ## Analysis Modules
 
-### Skills System Analysis
+### Skills System
 
-Check for proper SKILL.md format:
+SKILL.md frontmatter:
 
 ```yaml
 ---
@@ -102,125 +82,95 @@ description: What this skill does
 ---
 ```
 
-Key checks:
+Checks:
 - All skills have SKILL.md with frontmatter
-- `context: fork` for isolated execution (subagent)
-- `context: same` for main conversation
-- references/, scripts/, workflows/ subdirectories
+- `context: fork` = isolated subagent, `context: same` = main conversation
+- references/, scripts/, workflows/ subdirs present where needed
 
-### Hooks Configuration (CC 2.1.x)
+### Hooks (CC 2.1.x)
 
-Run `bun run scripts/analyse-claude-folder.ts .` — checks hook scripts for stdin pattern, exit behavior, output schema, shebang, and executable bit. Verifies settings.json hook events and timeout values.
+Run `bun run scripts/analyse-claude-folder.ts .` — checks stdin pattern, exit behavior, output schema, shebang, executable bit, settings.json events, timeouts.
 
-### Execution Modes (Advanced Pattern)
+### Execution Modes (Advanced)
 
-Check for persistent execution modes — Stop hook continuation loops:
-- Mode state management (JSON file with TTL, session scoping)
-- Keyword-based activation (UserPromptSubmit hook)
-- Working memory (session-scoped files surviving compression)
-- Quality gates (pre-impl critic + post-impl verifier agents)
+Persistent modes via Stop hook continuation loops:
+- Mode state management (JSON with TTL, session-scoped)
+- Keyword-based activation (UserPromptSubmit)
+- Working memory (session-scoped, survives compression)
+- Quality gates (pre-impl critic + post-impl verifier)
 - Crash recovery (PreCompact checkpoint + SessionStart restore)
 
-### CC Feature Gap Analysis [AUTOMATED]
+### CC Feature Gap [AUTOMATED]
 
-Run `bun run scripts/cc-version-check.ts .` — canonical feature list in FEATURE_REQUIREMENTS.
+Run `bun run scripts/cc-version-check.ts .` — canonical list in FEATURE_REQUIREMENTS.
 
-### 12-Factor Compliance Check
+### 12-Factor Compliance
 
-Reference `references/12-factor-checklist.md` for complete audit criteria.
+See `references/12-factor-checklist.md`. Key factors:
 
-Key factors to validate:
-
-1. **Factor 3 - Own Context Window**: Is context hydration explicit and controlled? (PreCompact checkpoints, working memory injection)
-2. **Factor 5 - Unify State**: Is execution state externalized? (mode-state.json, tdd-mode.json, prd.json)
-3. **Factor 6 - Launch/Pause/Resume**: Can agent sessions be stopped and resumed? (compact checkpoints, crash recovery in SessionStart)
-4. **Factor 8 - Own Control Flow**: Is agent loop logic in application code? (Stop hook continuation, keyword router)
-5. **Factor 10 - Small Focused Agents**: Are agents single-purpose? (critic vs verifier vs reviewer)
-6. **Factor 12 - Stateless Reducer**: Is state externalized? (all state in files, not in context window)
+1. **F3 Own Context Window**: explicit context hydration (PreCompact, working memory)
+2. **F5 Unify State**: externalized state (mode-state.json, tdd-mode.json, prd.json)
+3. **F6 Launch/Pause/Resume**: compact checkpoints, SessionStart crash recovery
+4. **F8 Own Control Flow**: agent loop in application code (Stop hook, keyword router)
+5. **F10 Small Focused Agents**: critic vs verifier vs reviewer — no overlap
+6. **F12 Stateless Reducer**: all state in files, not context window
 
 ## Output Format
-
-Generate report as:
 
 ```markdown
 # CC Folder Optimization Report
 
 ## Executive Summary
-[1-2 sentence overall assessment]
+[1-2 sentences]
 
 ## CC Feature Adoption
 | Feature | Status | Priority | Effort |
-|---------|--------|----------|--------|
 
 ## Skills System
-[SKILL.md format compliance, context types]
-
 ## Hooks Configuration
-[settings.json hooks audit]
-
 ## 12-Factor Compliance
-[Factor-by-factor status]
-
 ## Context Engineering
-[UFC audit results]
 
 ## Recommended Upgrades
-1. [High Priority] ...
-2. [Medium Priority] ...
+1. [High] ...
+2. [Medium] ...
 
 ## Implementation Snippets
-[Ready-to-use code for top recommendations]
 ```
 
 ## Simplification Analysis
 
-**Run this BEFORE adding features.** Identify superfluous code:
+Run BEFORE adding features. Categories:
 
-### Analysis Categories
+1. **Dead Code** — unused functions/exports
+2. **Redundant Patterns** — duplicates elsewhere
+3. **Over-Engineering** — unnecessary abstractions
+4. **Outdated Patterns** — pre-2.1.x context mgmt, manual UFC
 
-1. **Dead Code** - Functions/exports never used
-2. **Redundant Patterns** - Duplicates functionality elsewhere
-3. **Over-Engineering** - Unnecessary abstractions, excessive config
-4. **Outdated Patterns** - Doesn't align with modern CC patterns
-
-### Common Findings
-
-| Pattern | Example | Action |
-|---------|---------|--------|
-| Legacy integrations | Unused API clients | Delete entire file |
-| Duplicate workflows | Same workflow in subdirs | Keep one, delete rest |
-| Pre-2.1.x context mgmt | Manual UFC patterns | Remove (CC handles natively) |
-| Excessive routing | Decision trees for similar outputs | Single workflow with params |
+| Pattern | Action |
+|---------|--------|
+| Legacy integrations (unused API clients) | Delete file |
+| Duplicate workflows across subdirs | Keep one |
+| Pre-2.1.x manual UFC | Remove (CC handles natively) |
+| Decision trees for similar outputs | Single parameterized workflow |
 
 ## Quick Commands
 
-### Version Check
 ```bash
+# Version check
 bun run .claude/skills/cc-upgrade/scripts/cc-version-check.ts .
-```
 
-### Full Analysis
-```bash
+# Full analysis
 bun run .claude/skills/cc-upgrade/scripts/analyse-claude-folder.ts .
-```
 
-### External Skills Analysis
-```bash
+# External skills analysis
 bun run .claude/skills/cc-upgrade/scripts/analyse-external-skills.ts .
+
+# Feature sync (changelog vs tracked)
+bun run .claude/skills/cc-upgrade/scripts/cc-feature-sync.ts [--verbose]
+
+# Skill pulse check
+bun run .claude/skills/cc-upgrade/scripts/skill-pulse-check.ts [--verbose]
 ```
 
-### Feature Sync (changelog vs tracked features)
-```bash
-bun run .claude/skills/cc-upgrade/scripts/cc-feature-sync.ts
-bun run .claude/skills/cc-upgrade/scripts/cc-feature-sync.ts --verbose
-```
-
-### Skill Ecosystem Pulse Check
-```bash
-bun run .claude/skills/cc-upgrade/scripts/skill-pulse-check.ts
-bun run .claude/skills/cc-upgrade/scripts/skill-pulse-check.ts --verbose
-```
-
-## Version Tracking
-
-See `scripts/cc-version-check.ts` FEATURE_REQUIREMENTS for the canonical feature registry.
+Canonical feature registry: `scripts/cc-version-check.ts` FEATURE_REQUIREMENTS.

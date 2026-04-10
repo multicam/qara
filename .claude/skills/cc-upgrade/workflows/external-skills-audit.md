@@ -1,94 +1,84 @@
 # External Skills Audit Workflow
 
-Generic workflow for auditing external skill dependencies in any `.claude/` setup.
-Works with the `skills` CLI ecosystem, symlinked skills, and manually installed skills.
+Generic audit of external skill dependencies in any `.claude/` setup. Works with `skills` CLI, symlinked skills, manually installed skills.
 
 ## Prerequisites
 
-→ READ: `../references/skills-ecosystem-sources.md` for ecosystem context
-→ READ: `../references/12-factor-checklist.md` for compliance criteria
+-> READ: `../references/skills-ecosystem-sources.md`
+-> READ: `../references/12-factor-checklist.md`
 
 ## When to Use
 
-- Periodic skill hygiene (monthly recommended)
+- Monthly skill hygiene
 - Before adopting new external skills
-- After running `npx skills update` or `~/update-skills.sh`
-- When context window pressure suggests too many skills are loading
+- After `npx skills update` or `~/update-skills.sh`
+- When context window pressure suggests skill overload
 - When skill behavior seems stale or broken
 
 ## Workflow
 
-> **ULTRATHINK:** This workflow impacts the entire development environment.
-> Use extended thinking at every analysis step — surface non-obvious interactions,
-> second-order effects, and architectural implications.
+> **ULTRATHINK:** Impacts entire dev environment. Use extended thinking at every analysis step — surface non-obvious interactions, second-order effects, architectural implications.
 
-### Phase 1: Discovery — Map the Skill Landscape
+### Phase 1: Discovery
 
-#### 1.1 Inventory All Skill Sources
+#### 1.1 Inventory Sources
 
 ```bash
-# List globally installed skills (skills CLI)
+# Globally installed (skills CLI)
 npx skills ls -g 2>/dev/null
 
-# List project-level skills
+# Project-level
 npx skills ls 2>/dev/null || true
 
-# Find symlinked skills
+# Symlinked
 find .claude/skills/ -maxdepth 1 -type l -exec readlink -f {} \;
 
-# Check for lock file
+# Lock file
 cat ~/.agents/.skill-lock.json 2>/dev/null | jq '.skills | keys[]'
 ```
 
 #### 1.2 Classify Each Skill
 
-For every skill found, determine:
+| Field | Source |
+|-------|--------|
+| Origin | Lock file `source` field, or git remote |
+| Author | GitHub username from source URL |
+| Version | `skillFolderHash` in lock file, or `version:` in SKILL.md |
+| Last Updated | `updatedAt` in lock file, or `git log -1` |
+| Context Type | `context:` in SKILL.md frontmatter |
+| Agent Compatibility | Which agents list this skill (`npx skills ls`) |
+| Local vs External | Symlink or direct directory? |
 
-| Field | How to Check |
-|-------|-------------|
-| **Origin** | Lock file `source` field, or git remote in skill dir |
-| **Author** | GitHub username from source URL |
-| **Version** | `skillFolderHash` in lock file, or `version:` in SKILL.md |
-| **Last Updated** | `updatedAt` in lock file, or `git log -1` in skill dir |
-| **Context Type** | `context:` field in SKILL.md frontmatter |
-| **Agent Compatibility** | Which agents list this skill (from `npx skills ls`) |
-| **Local vs External** | Is it a symlink or a direct directory? |
-
-#### 1.3 Build Dependency Graph
+#### 1.3 Dependency Graph
 
 ```markdown
 | Skill | Depends On | Required By | Shared Context |
 |-------|-----------|-------------|----------------|
-| [name] | [prerequisites] | [consumers] | fork/same |
 ```
 
 ### Phase 2: Redundancy Analysis
 
-> **ULTRATHINK:** Consider semantic overlap, not just name overlap.
-> Two skills with different names may solve the same problem differently.
+> **ULTRATHINK:** Consider semantic overlap, not just names. Two skills with different names may solve the same problem differently.
 
-#### 2.1 Detect Functional Overlaps
+#### 2.1 Functional Overlaps
 
-For each pair of skills (external × external, external × local):
+For each pair (external x external, external x local):
 
-1. **Read both SKILL.md files** — don't just compare names
-2. **Compare activation triggers** — do they respond to the same user intents?
-3. **Compare capabilities** — does one subsume the other?
-4. **Check for conflicting advice** — do they recommend contradictory patterns?
+1. Read both SKILL.md — don't just compare names
+2. Compare activation triggers — same user intents?
+3. Compare capabilities — does one subsume the other?
+4. Check for conflicting advice
 
-Classification:
+| Overlap | Action |
+|---------|--------|
+| Full duplicate | Remove one, document which and why |
+| Partial | Determine authoritative, wrap or delegate |
+| Complementary | Keep both, document boundary |
+| Conflicting | Resolve, adapt one to defer to the other |
 
-| Overlap Type | Action |
-|-------------|--------|
-| **Full duplicate** | Remove one, document which and why |
-| **Partial overlap** | Determine which is authoritative, wrap or delegate |
-| **Complementary** | Keep both, document the boundary |
-| **Conflicting** | Resolve conflict, adapt one to defer to the other |
-
-#### 2.2 Context Window Impact Assessment
+#### 2.2 Context Window Impact
 
 ```bash
-# Measure total skill footprint
 for skill in .claude/skills/*/SKILL.md; do
   wc -l "$skill"
 done | sort -rn
@@ -98,87 +88,70 @@ Flag skills that:
 - Exceed 500 lines (progressive disclosure violation)
 - Use `context: same` unnecessarily (loads into every conversation)
 - Define overlapping activation triggers (ambiguous routing)
-- Include inline content that should be in `references/`
+- Include inline content belonging in `references/`
 
 ### Phase 3: Feature Evaluation
 
-> **ULTRATHINK:** Think about the compound effect of skill interactions.
-> A weak skill can degrade a strong one if they share context space.
-
-#### 3.1 Counterproductive Feature Detection
-
-Check for external skills that:
+#### 3.1 Counterproductive Features
 
 | Anti-Pattern | Detection | Impact |
 |-------------|-----------|--------|
-| **Contradicts local conventions** | Compare advice against CLAUDE.md, CORE skill | Conflicting instructions confuse the model |
-| **Pollutes context** | `context: same` with verbose content | Wastes context tokens on every conversation |
-| **Stale upstream** | No updates in 60+ days, known issues open | May recommend deprecated patterns |
-| **Agent mismatch** | Designed for Cursor/Copilot, not Claude Code | Instructions may not apply or may conflict |
-| **Over-prescriptive** | Forces specific tools/frameworks | Conflicts with stack preferences |
+| Contradicts local conventions | Compare against CLAUDE.md, CORE | Conflicting instructions confuse model |
+| Pollutes context | `context: same` + verbose | Wastes tokens every conversation |
+| Stale upstream | No updates 60+ days | May recommend deprecated patterns |
+| Agent mismatch | Designed for Cursor/Copilot | Instructions may not apply |
+| Over-prescriptive | Forces specific tools/frameworks | Conflicts with stack preferences |
 
-#### 3.2 Strong Feature Identification
-
-Identify external skills worth enhancing:
+#### 3.2 Strong Features
 
 | Signal | Meaning |
 |--------|---------|
-| **Frequently activated** | High-value capability, worth investing in |
-| **Unique methodology** | Teaches approach not covered by local skills |
-| **Active upstream** | Author maintains and improves regularly |
-| **Good progressive disclosure** | Well-structured with references/ |
-| **Community-validated** | High install count, positive feedback |
+| Frequently activated | High-value capability |
+| Unique methodology | Approach not covered locally |
+| Active upstream | Author maintains regularly |
+| Good progressive disclosure | Well-structured with `references/` |
+| Community-validated | High installs, positive feedback |
 
-#### 3.3 Wrapping Opportunity Analysis
-
-For each strong external skill, evaluate:
-
-1. **Direct use** — Symlink as-is, no modification needed
-2. **Thin wrapper** — Local SKILL.md that adds PAI conventions then delegates
-3. **Deep adaptation** — Rewrite for PAI (like mattpocock adaptations)
-4. **Merge into existing** — Extract valuable parts into existing local skills
-
-Decision matrix:
+#### 3.3 Wrapping Decision Matrix
 
 ```
-Is the external skill well-maintained?
-  ├─ YES → Does it match PAI conventions?
-  │   ├─ YES → Direct use (symlink)
-  │   └─ NO → Is the gap small?
-  │       ├─ YES → Thin wrapper
-  │       └─ NO → Deep adaptation
-  └─ NO → Is the methodology valuable?
-      ├─ YES → Deep adaptation (fork and own)
-      └─ NO → Consider removal
+Well-maintained?
+  YES -> Matches PAI conventions?
+    YES -> Direct use (symlink)
+    NO  -> Gap small?
+      YES -> Thin wrapper
+      NO  -> Deep adaptation
+  NO -> Methodology valuable?
+    YES -> Deep adaptation (fork and own)
+    NO  -> Consider removal
 ```
 
-### Phase 4: Version Drift & Upstream Tracking
+Options: direct use | thin wrapper | deep adaptation | merge into existing.
 
-#### 4.1 Check for Updates
+### Phase 4: Version Drift
+
+#### 4.1 Check Updates
 
 ```bash
-# For skills CLI managed skills
+# Skills CLI managed
 npx skills check 2>/dev/null
 
-# For lock-file tracked skills
+# Lock-file tracked
 cat ~/.agents/.skill-lock.json | jq -r '.skills | to_entries[] | "\(.key): \(.value.sourceUrl) @ \(.value.skillFolderHash[0:7])"'
 
-# For GitHub-sourced skills — check latest commit
+# GitHub-sourced latest commit
 gh api repos/OWNER/REPO/commits --jq '.[0].sha[0:7]'
 ```
 
 #### 4.2 Changelog Review
 
 When upstream has new commits:
-
-1. **Read the diff** — What changed?
-2. **Assess relevance** — Does it affect capabilities we use?
-3. **Check for breaking changes** — Will update break our wrappers/adaptations?
-4. **Decide: update, skip, or adapt** — Document the decision
+1. Read the diff
+2. Assess relevance — affects capabilities we use?
+3. Check breaking changes — will it break wrappers/adaptations?
+4. Decide: update, skip, or adapt — document the decision
 
 ### Phase 5: Report
-
-Generate structured output:
 
 ```markdown
 # External Skills Audit Report
@@ -196,16 +169,16 @@ Generate structured output:
 |-------|-------|--------|--------|
 
 ## Strong Features to Enhance
-| Skill | Strength | Enhancement Opportunity |
-|-------|----------|------------------------|
+| Skill | Strength | Enhancement |
+|-------|----------|-------------|
 
 ## Wrapping Opportunities
 | External Skill | Strategy | Effort | Priority |
 |---------------|----------|--------|----------|
 
 ## Version Drift
-| Skill | Local Version | Upstream | Behind By | Action |
-|-------|--------------|----------|-----------|--------|
+| Skill | Local | Upstream | Behind By | Action |
+|-------|-------|----------|-----------|--------|
 
 ## Recommendations (Prioritized)
 1. [HIGH] ...

@@ -13,90 +13,81 @@ Phased autonomous execution. 4 phases, checkpoints between each. Default: 20 max
 
 ## Plan-Aware Entry
 
-Before starting Phase 1, check: was this mode activated with a reference to an existing plan file (e.g., `cruise: implement thoughts/shared/plans/domain--feature-v1.md`)?
+Before Phase 1, check: was cruise activated with a plan file path (e.g. `cruise: implement plans/domain--feature-v1.md`)?
 
-IF a plan file path was mentioned in the activation prompt:
 1. Read the plan file fully.
 2. Verify it has implementation phases with success criteria (not just an outline).
-3. IF valid plan with phases:
-   - Populate `decisions.md` with the plan's key discoveries, constraints, and implementation approach.
-   - Confirm `ModeState.planPath` is set (written by keyword-router when activation text matches `plans/*.md`).
-   - Skip all four phases below — plan-driven work uses `workflows/plan-entry.md` instead.
-   - Delegate to `workflows/plan-entry.md` for the full per-phase loop (critic + TDD + quality sniff + verifier + plan.md mutation + conditional manual pause + final regression).
-   - Output checkpoint: `PLAN IMPORTED: {phase count} phases from {plan file}. Delegating to plan-entry.md.`
-4. IF plan is just an outline (no file paths, no code examples):
-   - Proceed with normal Phase 1 (Discover), using the plan as initial context.
-   - Output: `PLAN OUTLINE LOADED: using as research seed, running full discovery.`
+3. **Valid plan**:
+   - Populate `decisions.md` with key discoveries, constraints, approach.
+   - Confirm `ModeState.planPath` is set (keyword-router writes it when activation text matches `plans/*.md`).
+   - Skip Phases 1–4 below.
+   - Delegate to `workflows/plan-entry.md` for the full per-phase loop.
+   - Output: `PLAN IMPORTED: {N} phases from {path}. Delegating to plan-entry.md.`
+4. **Outline only** (no file paths, no code examples): proceed with normal Phase 1, using the outline as context. Output: `PLAN OUTLINE: using as research seed, running full discovery.`
 
 ## Plan-Aware Execution
 
-IF `ModeState.planPath` is set (plan-aware entry was triggered):
-→ READ `workflows/plan-entry.md` and follow its per-phase loop.
-→ Phases 1-4 below DO NOT apply to plan-driven sessions — `plan-entry.md`
-  handles the entire Discover + Plan + Implement + Verify flow via its
-  own per-phase loop on the plan's phases.
+`ModeState.planPath` set → READ `workflows/plan-entry.md` and follow it. Phases 1–4 DO NOT apply.
 
-When `planPath` is null (task-mode cruise), Phase 1-4 below apply as
-documented. No plan file, no delegation — cruise discovers the codebase,
-writes its own plan, implements, and verifies with its native budget.
+`planPath` null → Phases 1–4 below apply as documented (task-mode cruise).
 
 ## Phase 1: Discover (max 3 iterations)
 
-1. Extract key nouns from task description (module names, file names, feature names).
-2. For each noun: `Grep` codebase for matches. Read top 3 matching files.
-3. For each file: extract imports to build dependency list.
-4. Write to `decisions.md`: affected files, dependencies, constraints.
-5. Output checkpoint: `DISCOVER COMPLETE: {file count} files, {dependency count} deps`
+1. Extract key nouns from task (module names, file names, feature names).
+2. Per noun: `Grep` codebase. Read top 3 matching files.
+3. Per file: extract imports → dependency list.
+4. Write `decisions.md`: affected files, dependencies, constraints.
+5. Checkpoint: `DISCOVER COMPLETE: {files} files, {deps} deps`.
 
-EXIT: When `decisions.md` contains discovery entry. IF 3 iterations without checkpoint: escalate to JM.
+EXIT: `decisions.md` has discovery entry. 3 iterations without checkpoint → escalate.
 
 ## Phase 2: Plan (max 2 iterations)
 
-Write plan to `decisions.md`:
+Write to `decisions.md`:
 ```
 ## Implementation Plan
-- Files to create: {paths}
-- Files to modify: {paths}
-- Test files: {paths}
-- Order of operations: {numbered list}
-- Risks: {files imported by 3+ modules = high-risk}
-- Test strategy: {one test file per modified source file}
+- Create: {paths}
+- Modify: {paths}
+- Tests: {paths}
+- Order: {numbered list}
+- Risks: {files imported by 3+ modules}
+- Test strategy: {one test file per modified source}
 ```
 
-Output checkpoint: `PLAN COMPLETE: {file count} files, {step count} steps`
+Checkpoint: `PLAN COMPLETE: {files} files, {steps} steps`.
 
-EXIT: When plan written. IF 2 iterations without plan: escalate.
+EXIT: plan written. 2 iterations without plan → escalate.
 
 ## Phase 3: Implement (max 10 iterations)
 
 Execute the plan step by step.
 
-**Test runner:** Follow `tdd-qa/references/detect-runner.md` (authoritative 4-step detection). Set `$TEST_CMD` for the session.
+**Test runner:** `tdd-qa/references/detect-runner.md` (authoritative 4-step detection). Set `$TEST_CMD`.
 
-IF task involves new functions or behavior changes: follow `tdd-qa/workflows/tdd-cycle.md` for RED→GREEN→REFACTOR enforcement. Use `{task-slug}` as the feature name.
+IF task adds new functions / behavior changes: follow `tdd-qa/workflows/tdd-cycle.md`. Feature name: `{task-slug}`.
 
-After EVERY Write/Edit on `.ts`/`.tsx` file: run `$TEST_CMD`.
-- IF exit code != 0: read error output, fix before proceeding.
-- IF same test fails 3 times: write to `problems.md`, try different approach.
+After every Write/Edit on `.ts`/`.tsx`: run `$TEST_CMD`. Exit != 0 → read error, fix. Same test fails 3× → `problems.md`, try different approach.
 
-Output checkpoint: `IMPLEMENT COMPLETE: {files changed}, {tests passing}`
+Checkpoint: `IMPLEMENT COMPLETE: {files changed}, {tests passing}`.
 
 ## Phase 4: Verify (max 5 iterations)
 
-1. `bun test` — all tests must pass.
-2. `bunx tsc --noEmit` — zero type errors.
-3. Read each modified file. Verify it addresses the task description.
-4. Quality sniff test: would "un-smell, un-slop, un-stale, refactor for DRY" find anything? If yes, fix before proceeding.
-5. IF a file was supposed to change but didn't: flag as gap.
+1. `bun test` — all pass
+2. `bunx tsc --noEmit` — zero type errors
+3. Re-read each modified file, verify it addresses the task
+4. Sniff test: "un-smell, un-slop, un-stale, refactor for DRY" → fix
+5. File supposed to change but didn't → flag as gap
 
-IF issues found: loop back to Phase 3. MAX Phase 3↔4 loops: 3. After 3: deactivate with reason "verify-loop", escalate to JM.
+Issues → loop to Phase 3. Max Phase 3↔4 loops: 3. Exceeded → deactivate `verify-loop`, escalate.
 
-IF all checks pass: deactivate with reason "complete".
+All pass → deactivate `complete`.
 
-## Working Memory
+## Working Memory (Batched)
 
-4-file memory (decisions, learnings, problems, issues) in `STATE_DIR/sessions/{session_id}/memory/`. Survives compression via Stop hook re-injection. Write at phase transitions and surprises.
+4-file memory at `$STATE_DIR/sessions/{session_id}/memory/`: `decisions`, `learnings`, `problems`, `issues`. Survives compression via Stop hook re-injection.
+
+**Batch writes.** Accumulate in-context; flush once per phase transition (or immediately on surprises/blockers).
 
 ## Error Recovery
 
-IF stuck for 3+ iterations on same phase: escalate to JM with problem statement and what was tried.
+Stuck 3+ iterations on same phase → escalate to JM with problem statement and attempts.

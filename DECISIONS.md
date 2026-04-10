@@ -138,6 +138,147 @@ Append-only record of architectural and design decisions. Memory files capture *
 
 ---
 
+## 2026-04-11 — Repo-wide skill/workflow trim (agent-direct prose pass)
+
+**Chosen:** Second phase of token-cost remediation. After the planning+execution pipeline trim (11 items, above), apply the same "un-slop without losing power" discipline to every local skill, workflow, command, and agent prompt in `.claude/`. Skills and workflows are read by AI agents, not humans — agents don't need tutorial prose, "You should" framing, duplicated examples, or "why it matters" paragraphs. Preserve exact commands, file paths, decision rules, escalation paths, state machines, output format templates, safety rules, and cross-references. Remove the rhetorical wrapping.
+
+**Alternatives:** (a) Leave narrative files alone on the theory that "it's cheap to read"; (b) trim only the top 3-5 biggest files; (c) wait for a future CC feature like cached skill loading to make it moot.
+
+**Why:** Every skill file loads into context when its workflow runs. The planning+dev phase demonstrated that `create_plan.md` (296→111), `tdd-cycle.md` (256→163), and mode SKILLs can all drop 30-60% without losing a single load-bearing rule. The rest of the repo has the same pattern — tutorial-style prose, duplicated "Quick Reference" sections, verbose example pairs, rhetorical lead-ins like "You are a X specialist". Session-start + every skill invocation reads these files; the aggregate token cost across a month of usage is substantial. Agents don't benefit from the narrative — they benefit from structure and decision rules.
+
+**Execution:** 6 parallel `engineer-high` agents, each assigned a non-overlapping cluster. Explicit "what is slop / what to preserve" guidelines in each prompt. Tests, code files, append-only audit logs, and frontmatter explicitly off-limits.
+
+**Files touched (63 total):**
+
+| Batch | Files | Before | After | Δ | % |
+|---|---|---|---|---|---|
+| cli-first-guide.md (direct rewrite) | 1 | 734 | 188 | −546 | 74% |
+| CORE cluster (aesthetic, contacts, 5 workflows) | 7 | 1763 | 1038 | −725 | 41% |
+| cc-upgrade + cc-upgrade-pai | 5 | 1463 | 1154 | −309 | 21% |
+| system-create-cli (SKILL + 3 workflows + 3 refs + patterns) | 8 | 2111 | 1365 | −746 | 35% |
+| commands (6) + remaining agents (7) | 13 | 1134 | 810 | −324 | 29% |
+| research + triage-issue + hook-authoring + introspect (9) | 9 | 1594 | 1207 | −387 | 24% |
+| system-create-skill + design-implementation + tdd-qa refs | 10 | 2282 | 1757 | −525 | 23% |
+| **Subtotal** | **53** | **11081** | **7519** | **−3562** | **32%** |
+
+Plus the earlier planning+dev pipeline trim (10 files, ~−350 lines).
+
+**Grand total: ~−3912 lines across ~63 files (34% aggregate reduction).**
+
+**Reduction variance explained:**
+- High-reduction files (40-75%): narrative-heavy skill prompts (`cli-first-guide.md`, `create_plan.md`, `research/SKILL.md`, `system-create-cli/SKILL.md`, `CORE/workflows/file-organization-detailed.md`).
+- Low-reduction files (6-15%): data-dense references where nearly every line is load-bearing (`introspect/workflows/*-reflect.md` — downstream miner parses output formats; `cc-upgrade/references/12-factor-checklist.md` — every factor is a check; `system-create-skill/references/archetype-templates.md` — templates are the product).
+- Restraint is correct. The mandate was "un-slop without losing power", not uniform 40%.
+
+**What was removed:**
+- "You are a..." and "You should..." lead-ins
+- "Overview", "Purpose", "Introduction" headers that repeated the title
+- Tutorial-style "first we do X, then we do Y" framing where a numbered list works
+- Duplicated "Quick Reference" sections that mirrored the full content
+- Verbose example pairs (TS + Python) where one language suffices
+- "Key Takeaways" sections that restated the opening principle
+- Rhetorical "why it matters" paragraphs unless the why changes behavior
+- Emoji-prefixed section headers used purely for visual variety
+
+**What was preserved (load-bearing content contract):**
+- Every exact command (`bun test`, `bunx tsc --noEmit`, `git ...`)
+- Every file path (`~/.claude/...`, `${PAI_DIR}/...`, `thoughts/shared/plans/...`)
+- Every decision rule, threshold, retry limit
+- Every escalation path (critic 3× → opus override, verifier 3× → opus override)
+- Every state machine (RED → GREEN → REFACTOR, Discover → Plan → Implement → Verify)
+- Every safety rule, hard constraint, output format template
+- Every cross-reference other files rely on
+- All frontmatter (name/description/model/tools/memory/skills fields)
+- Append-only audit logs (`cc-upgrade-pai/references/external-skills-registry.md`)
+
+**Validation after trim:**
+- `bun run test` — **1550 pass, 0 fail** (same as baseline)
+- `bash scripts/check-references.sh` — **0 broken references** (2 fixed post-trim: `QUICKSTART.md` backtick reference in system-create-cli/SKILL.md rephrased, relative workflow links in `references/*.md` prefixed with `../`)
+- `bun .claude/hooks/lib/context-graph/cli.ts orphans` — **0 broken references, 0 cycles**
+
+**Trade-offs:**
+- A human reading the trimmed files gets less narrative hand-holding. Mitigation: the files are designed for agent consumption, not human tutorial. Humans have git history, DECISIONS.md, and CONSTITUTION.md for the "why".
+- Aggressive compression risks losing context that prevented past mistakes. Mitigation: explicit "what to preserve" list for each cluster, spot-checked post-trim for load-bearing content.
+- Future additions may accidentally reintroduce slop. Mitigation: update the trim philosophy into `cc-upgrade` audit rules so the next audit pass can detect it.
+- Some reference files (archetype-templates.md, setup-guide.md) have legitimate structural duplication (three complete templates; per-project setup steps). The quality hook flagged these; they are kept intact because deduplicating them would defeat the file's purpose.
+
+**Revisit if:**
+- Session tests start failing after compaction (maybe a compressed workflow lost information Claude was depending on).
+- Agents start producing lower-quality output in trimmed workflows (would need to correlate quality regression to the trim date).
+- New files grow without trim discipline — re-run the audit periodically.
+
+**Files specifically skipped:**
+- 22 symlinked upstream skills (adapt, animate, arrange, audit, bolder, clarify, colorize, critique, delight, distill, extract, frontend-design, harden, normalize, onboard, optimize, overdrive, polish, quieter, teach-impeccable, typeset, visual-explainer) — upstream-owned, changes would revert on sync.
+- All `.ts`, `.test.ts`, `.test.md` files — code, not prose.
+- `cc-upgrade-pai/references/external-skills-registry.md` — append-only audit log.
+- `spotcheck.md` (41 lines) + `engineer-high.md` (31 lines) — already terse, no slop found.
+
+**Estimated token savings per session:** 7-12k tokens when a session touches the trimmed workflows (read-once or after compaction recovery). Not the main money lever (that was the opus→sonnet downgrade from the earlier phase), but closes the tail of the cost distribution — every small skill invocation is now lighter, and cache-friendliness improves because the static prefixes are smaller.
+
+---
+
+## 2026-04-11 — Planning + execution pipeline token-cost remediation (11 changes)
+
+**Chosen:** Across-the-board token-cost reduction on the planning and execution pipeline. 11 concrete changes driven by deep workflow audit. Biggest levers: (1) downgrade `critic` + `verifier` from opus to sonnet with opus escalation on 3rd retry; (2) rewrite `create_plan.md` to remove double-reads, gate agent spawns on complexity, lazy-load templates, compress reasoning; (3) add plan-cache to `cruise/workflows/plan-entry.md` so phase identification stops re-reading the full plan; (4) drop redundant per-story verifier re-spawns in drive completion (tests + tsc cover cross-story regression); (5) tiered dispatch matrix in `turbo/SKILL.md` so subtasks pick the cheapest sufficient agent; (6) tighten workflow prose for agent-direct consumption (no narrative, no pleasantries).
+
+**Alternatives:** (a) Keep everything opus-tier, optimize prompt caching instead; (b) introduce a model-selection oracle PreToolUse hook (punted as Phase 3 architectural work); (c) stop-gap: run fewer mode sessions (rejected — modes are the quality loop).
+
+**Why:** `rtk cc-economics` reports $3752 spend, RTK saves only $103 (2.7%). RTK is a margin-level optimization. The real money is in agent model tiers and create_plan's defensive reading patterns. Deep audit of `.claude/commands/create_plan.md` (296 lines → 111 lines after rewrite), `cruise/workflows/plan-entry.md` (re-reads plan file every phase identification, ~32k wasted tokens per 8-phase cruise), and `drive/SKILL.md` (spawns verifier per story at completion on top of per-story verifier gates that already ran). `critic.md` and `verifier.md` do mechanical work (grep imports, map criteria to steps, run commands, parse output) where opus pattern-matching earns nothing over sonnet — the loop provides quality, not the tier.
+
+**Changes landed:**
+1. `critic.md` + `verifier.md`: `model: opus` → `model: sonnet`. Escalation note: 3rd retry uses `model: opus` override via Task tool.
+2. `create_plan.md`: 296 → 111 lines. Removed "read ALL files identified by research tasks... FULLY into main context" (double-read). Gated agent spawns on task complexity. Moved `plan-template.md` read to Step 4. Made `plan-common-patterns.md` conditional on multi-service/migration/unusual-phasing. Compressed 5-dimension reasoning protocol to one-bullet-per-dimension unless task is genuinely architectural.
+3. `cruise/workflows/plan-entry.md`: added Plan Cache (`$STATE_DIR/sessions/{id}/memory/plan-cache.json`) with mtime-based invalidation. Re-read plan file only when cache is missing/stale or cruise itself mutates the plan.
+4. `cruise/workflows/plan-entry.md`: batched checkbox Edit — rewrite the phase block in a single Edit instead of N edits per criterion.
+5. `drive/SKILL.md`: completion regression is `bun test` + `bunx tsc --noEmit`, NOT per-story verifier re-spawns. Per-story gates are the source of truth.
+6. `turbo/SKILL.md`: Dispatch matrix mapping subtask complexity → tiered agent variant (haiku-low / sonnet / opus-high).
+7. `create_plan.md`, `cruise/SKILL.md`, `drive/SKILL.md`, `turbo/SKILL.md`, `cruise/workflows/plan-entry.md`: working-memory writes now batched per phase/story transition rather than flushed per small event.
+8. `tdd-qa/workflows/tdd-cycle.md`: 256 → 163 lines. Deduplicated TS + Python examples, consolidated verify code blocks.
+9. Agent prompts tightened for agent-direct consumption: `critic.md`, `verifier.md`, `architect.md`, `reviewer.md`. Removed "You are a..." pleasantries, narrative explanations, redundant examples.
+10. All mode SKILLs and workflows: rewritten for imperative agent-direct style. Removed rhetorical "why it matters" paragraphs (agents don't need persuasion).
+11. `specs/commands-and-agents.md`: removed stale `/implement_plan` row (caught during verification).
+
+**Total line reduction** (planning + dev pipeline only):
+- `create_plan.md`: 296 → 111 (−185)
+- `tdd-cycle.md`: 256 → 163 (−93)
+- Mode SKILLs + plan-entry + agent prompts: ~150 lines total reduction
+- **Aggregate: ~430 lines removed**, ≈ 8-10k tokens saved per session that touches these files.
+
+**Estimated savings:**
+- Model downgrade (critic + verifier → sonnet): ~$15-30/month (biggest lever)
+- Create_plan double-read removal: ~$4-12/month
+- Drive completion verifier drop: ~$2-5/month
+- Plan cache: ~$3-6/month
+- Other items combined: ~$5-10/month
+- **Total: ~$30-60/month** on a $3752 baseline (~1-2% of spend — meaningful but small. The architecture is fundamentally sound; these are marginal closes.)
+
+**Trade-offs:**
+- Critic/verifier at sonnet may miss subtle architectural anti-patterns opus would catch. Mitigation: 3rd-retry escalation to opus via Task tool `model` override.
+- Plan cache may serve stale data if JM hand-edits plan mid-cruise. Mitigation: mtime comparison on every read.
+- Tightened workflow prose assumes agent consumption; a human reading the skill files gets less narrative hand-holding. Mitigation: agents are the primary reader; humans have git history and DECISIONS.md for context.
+- Aggressive prose compression risks losing context that prevented past mistakes. Mitigation: DECISIONS.md preserves the "why" for every load-bearing decision.
+
+**Revisit if:**
+- Critic escalation to opus fires >30% of the time (sonnet is insufficient).
+- Plan cache mtime check produces false negatives (cache served after hand-edit).
+- Quality regression: if mode sessions start producing lower-quality code, correlate with the sonnet downgrade and re-evaluate.
+- Savings measured after 1 month don't match the estimate (need to re-audit).
+
+**Files touched:** 10 production files (2 agents downgraded, 4 agents tightened, 1 command rewritten, 3 mode SKILLs rewritten, 2 workflow files updated).
+
+---
+
+## 2026-04-11 — /implement_plan deleted, routing migrated to cruise (Phase 1-5 cutover)
+
+**Chosen:** Cold-turkey cutover — delete `/implement_plan` command entirely, migrate all plan-execution routing to `cruise` mode with `planPath` state field and plan-aware workflow. No compatibility shim.
+**Alternatives:** Keep `/implement_plan` as a thin alias that invokes cruise (backward-compatible); deprecate slowly with warnings; maintain both commands in parallel.
+**Why:** `/implement_plan` and `cruise` had 80% overlapping responsibilities — phase tracking, TDD enforcement, verification gates — and maintaining both caused routing confusion (keyword router had to disambiguate). Cruise mode already has mature quality sniff test, extendIterations, and working memory. Aliasing would preserve the ambiguity; clean cutover forces a single routing path. The 5-phase rollout (Phase 1 schema, Phase 2 plan-entry workflow, Phase 3 cruise delegation, Phase 4 keyword router, Phase 5 deletion) de-risked the migration.
+**Trade-offs:** Any in-flight plan referencing `/implement_plan` breaks immediately. Acceptable — no plans were mid-execution at cutover (verified). Muscle memory for the old command needs retraining; CLAUDE.md and routing cheatsheet updated to document cruise entry points.
+**Commits:** 569646e (Phase 1), 39be32f (Phase 2), 1836193 (Phase 3), afbfc3d (Phase 4 docs), fad9f7d (Phase 5 deletion).
+**Revisit if:** Cruise mode gains complexity that warrants splitting plan execution back into a dedicated command, or if a significantly different execution style emerges (e.g., real-time collaborative plans) that doesn't fit cruise's phase model.
+
+---
+
 ## 2026-04-08 — ~/.claude/state symlinked to qara/.claude/state
 
 **Chosen:** `~/.claude/state` → symlink to `qara/.claude/state` (canonical in qara, same as settings.json and .env)

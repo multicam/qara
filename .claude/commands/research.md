@@ -3,15 +3,15 @@ description: Research Command (Auto-Select)
 model: sonnet
 ---
 
-# Research Command (Auto-Select)
+# Research (Auto-Select)
 
-Automatically selects the best available research agent based on API key availability.
+Selects the best available research agent by API key availability.
 
-## Selection Priority
+## Priority
 
-1. **Perplexity** (if `PERPLEXITY_API_KEY` exists) - Best citations, fast
-2. **Claude WebSearch** (always available) - Free, built-in
-3. **Gemini** (if `GOOGLE_API_KEY` exists) - Multi-perspective, thorough
+1. **Perplexity** (`PERPLEXITY_API_KEY`) — best citations, fast
+2. **Claude WebSearch** (always available) — free, built-in
+3. **Gemini** (`GOOGLE_API_KEY`) — multi-perspective fallback
 
 ## Usage
 
@@ -21,22 +21,11 @@ Automatically selects the best available research agent based on API key availab
 
 ## Execution
 
-**Step 1: Check API Key Availability**
-
-```bash
-# Check which keys are available
-source ${PAI_DIR}/.env 2>/dev/null || true
-```
-
-**Step 2: Select Agent Based on Priority**
-
-Check in this order:
-1. If `PERPLEXITY_API_KEY` is set → Use `perplexity-researcher` agent
-2. Otherwise → Use `claude-researcher` agent (always available)
-
-**Step 3: Execute Research**
-
-Launch the selected agent with the Task tool:
+1. **Check keys:** `source ${PAI_DIR}/.env 2>/dev/null || true`
+2. **Select agent:**
+   - `PERPLEXITY_API_KEY` set → `perplexity-researcher`
+   - else → `claude-researcher`
+3. **Launch via Task tool:**
 
 ```
 Task(subagent_type="[selected-agent]", prompt="Research the following query comprehensively. Use your primary research tools (WebSearch, Perplexity API, etc.) to gather information from multiple sources. Synthesize findings and provide actionable insights with sources.
@@ -50,27 +39,17 @@ Provide a comprehensive answer with:
 - Any conflicting information found")
 ```
 
-**Step 4: Present Results**
-
-Format the agent's findings clearly with:
-- Summary of key points
-- Sources/citations
-- Confidence assessment
-
-## Arguments
-
-`$ARGUMENTS` - The research query (required)
+4. **Present results** — summary, sources, confidence assessment.
 
 ## Examples
 
 ```
 /research best practices for TypeScript error handling 2025
 /research comparing Bun vs Node.js performance benchmarks
-/research Claude Code hooks system documentation
 ```
 
-## Related Commands
+## Related
 
-- `/research-claude` - Force Claude WebSearch
-- `/research-perplexity` - Force Perplexity API
-- `/research-gemini` - Force Gemini multi-perspective research
+- `/research-claude` — force Claude WebSearch
+- `/research-perplexity` — force Perplexity
+- `/research-gemini` — force Gemini

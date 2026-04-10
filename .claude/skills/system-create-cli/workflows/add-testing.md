@@ -5,65 +5,37 @@ purpose: Generate comprehensive test suite for an existing CLI
 
 # Add Testing Workflow
 
-**Add a production-quality test suite to an existing CLI using bun:test.**
+Add a `bun:test` suite to an existing CLI covering commands, errors, exit codes, and help text.
 
----
+## When to Use
 
-## 🎯 PURPOSE
-
-Generate tests that verify command output, error handling, exit codes, and help text for an existing CLI — regardless of tier.
-
----
-
-## 📍 WHEN TO USE
-
-- User requests: "add tests to [CLI]", "test scaffolding for [CLI]"
-- CLI exists and works but has no tests
-- Before a Tier upgrade (lock in current behavior)
+- "add tests to [CLI]", "test scaffolding for [CLI]"
+- Before Tier upgrade (lock current behavior)
 - Before publishing (distribution quality gate)
 
----
-
-## 📋 STEPS
+## Steps
 
 ### 1. Read the CLI
 
-Locate the CLI and understand its structure:
-
 ```bash
-# Find the CLI
 ls -la ${PAI_DIR}/bin/[cli-name]/
 cat ${PAI_DIR}/bin/[cli-name]/[cli-name].ts
 ```
 
-Extract:
-- All commands (from switch statement or Commander config)
-- All flags/options per command
-- Expected output format (JSON, plain text)
-- Error conditions and exit codes
-- Environment variables needed
+Extract: commands (from switch or Commander config), flags/options, output format, error conditions, env vars.
 
 ### 2. Create Test File
 
-Place tests next to the CLI source:
+Place next to source: `bin/[cli-name]/[cli-name].test.ts`
 
-```
-bin/[cli-name]/
-├── [cli-name].ts
-├── [cli-name].test.ts    ← create this
-├── package.json
-└── README.md
-```
-
-### 3. Generate Test Structure
+### 3. Test Harness
 
 ```typescript
-import { describe, it, expect, beforeAll } from 'bun:test';
+import { describe, it, expect } from 'bun:test';
 import { join } from 'path';
 
 const CLI = join(import.meta.dir, '[cli-name].ts');
 
-// Helper: run CLI command and capture output
 async function run(
   args: string[],
   env?: Record<string, string>,
@@ -82,17 +54,15 @@ async function run(
 }
 ```
 
-### 4. Write Tests by Category
+### 4. Test Categories
 
-#### Help & Version
-
+**Help & version:**
 ```typescript
 describe('help and version', () => {
   it('--help exits 0 and shows usage', async () => {
     const { stdout, exitCode } = await run(['--help']);
     expect(exitCode).toBe(0);
     expect(stdout).toContain('USAGE');
-    expect(stdout).toContain('COMMANDS');
   });
 
   it('--version prints version string', async () => {
@@ -109,27 +79,23 @@ describe('help and version', () => {
 });
 ```
 
-#### Command Output
-
+**Command output:**
 ```typescript
 describe('[command-name]', () => {
   it('returns valid JSON', async () => {
     const { stdout, exitCode } = await run(['command', 'arg']);
     expect(exitCode).toBe(0);
-    const data = JSON.parse(stdout);
-    expect(data).toBeDefined();
+    expect(JSON.parse(stdout)).toBeDefined();
   });
 
   it('respects --limit flag', async () => {
     const { stdout } = await run(['command', 'arg', '--limit', '5']);
-    const data = JSON.parse(stdout);
-    expect(data.length).toBeLessThanOrEqual(5);
+    expect(JSON.parse(stdout).length).toBeLessThanOrEqual(5);
   });
 });
 ```
 
-#### Error Handling
-
+**Errors:**
 ```typescript
 describe('error handling', () => {
   it('unknown command exits 1', async () => {
@@ -139,102 +105,75 @@ describe('error handling', () => {
   });
 
   it('missing required arg exits 1', async () => {
-    const { stderr, exitCode } = await run(['command']);
+    const { exitCode } = await run(['command']);
     expect(exitCode).toBe(1);
-    expect(stderr).toContain('required');
   });
 
   it('missing API key exits 1 with hint', async () => {
-    const { stderr, exitCode } = await run(['command', 'arg'], {
-      API_KEY: '',  // override
-    });
+    const { stderr, exitCode } = await run(['command', 'arg'], { API_KEY: '' });
     expect(exitCode).toBe(1);
     expect(stderr).toContain('.env');
   });
 });
 ```
 
-#### Output Format
-
+**Output format:**
 ```typescript
 describe('output format', () => {
   it('outputs to stdout, errors to stderr', async () => {
     const { stdout, stderr, exitCode } = await run(['command', 'arg']);
     expect(exitCode).toBe(0);
-    // stdout has data
     expect(stdout.length).toBeGreaterThan(0);
-    // stderr is clean (no debug noise)
     expect(stderr).toBe('');
   });
 
-  it('JSON is pipe-friendly (no trailing garbage)', async () => {
+  it('JSON is pipe-friendly', async () => {
     const { stdout } = await run(['command', 'arg']);
-    // Should parse cleanly — no ANSI codes or extra output
     expect(() => JSON.parse(stdout)).not.toThrow();
   });
 });
 ```
 
-### 5. Handle API-dependent Tests
+### 5. API-Dependent Tests
 
-For CLIs that call external APIs, use one of these strategies:
-
-**Option A: Skip if no API key (pragmatic)**
+Option A — skip when unconfigured:
 ```typescript
 const HAS_API_KEY = !!process.env.API_KEY;
 
 describe('API commands', () => {
   it.skipIf(!HAS_API_KEY)('fetches data', async () => {
-    const { stdout, exitCode } = await run(['fetch', 'test']);
+    const { exitCode } = await run(['fetch', 'test']);
     expect(exitCode).toBe(0);
   });
 });
 ```
 
-**Option B: Test error path only (always runnable)**
+Option B — test error path only (always runnable):
 ```typescript
 it('reports auth error without API key', async () => {
-  const { stderr, exitCode } = await run(['fetch', 'test'], { API_KEY: '' });
+  const { exitCode } = await run(['fetch', 'test'], { API_KEY: '' });
   expect(exitCode).toBe(1);
 });
 ```
 
-### 6. Run & Verify
+### 6. Run
 
 ```bash
 bun test bin/[cli-name]/[cli-name].test.ts
 ```
 
-### 7. Report
+## Checklist
 
-```
-✅ Test suite added: bin/[cli-name]/[cli-name].test.ts
-
-Tests: X passing
-Coverage: help, version, commands, errors, output format
-
-Run: bun test bin/[cli-name]/[cli-name].test.ts
-```
-
----
-
-## ✅ QUALITY CHECKLIST
-
-- [ ] Test file created next to CLI source
+- [ ] Test file next to source
 - [ ] `run()` helper captures stdout, stderr, exitCode
 - [ ] `--help` and `--version` tested
-- [ ] Every command has at least one happy-path test
-- [ ] Unknown command error tested
-- [ ] Missing argument error tested
-- [ ] Missing config/API key error tested
-- [ ] JSON output parsed (no garbage in stdout)
-- [ ] All tests pass with `bun test`
-- [ ] API-dependent tests use `skipIf` or test error path only
+- [ ] Every command has a happy-path test
+- [ ] Unknown command + missing arg + missing config tested
+- [ ] JSON output parsed cleanly
+- [ ] API-dependent tests use `skipIf` or error-path only
 
----
+## Related
 
-## Related Workflows
-
-- **create-cli.md** — Generate new CLI (doesn't include tests by default)
-- **upgrade-tier.md** — Run tests before and after tier migration
-- **setup-distribution.md** — Tests are a quality gate before publishing
+- `create-cli.md` — generate CLI (tests not included by default)
+- `upgrade-tier.md` — run tests before/after migration
+- `setup-distribution.md` — tests gate distribution

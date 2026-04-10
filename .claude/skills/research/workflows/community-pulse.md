@@ -1,26 +1,22 @@
 # Workflow: Community Pulse
 
-Multi-platform community sentiment research. What people are actually saying, upvoting, and sharing about a topic.
+Multi-platform sentiment research — what people say, upvote, share about a topic.
 
--> **READ:** `../references/platform-queries.md` for platform-specific query templates and API patterns
+-> **READ:** `../references/platform-queries.md` for platform query templates
 
 ## Phase 1: Parse Intent [DETERMINISTIC]
 
-Extract from the user's request:
-- **topic**: the subject to research
-- **timeWindow**: days to look back (default: 30)
-- **platforms**: which to include (default: all — Reddit, HN, X, YouTube, Web)
-- **mode**: Quick / Standard / Extensive
+Extract: `topic`, `timeWindow` (default 30 days), `platforms` (default all), `mode`.
 
 | Mode | Platforms | Thread reads | YouTube transcripts | Timeout |
 |------|-----------|-------------|---------------------|---------|
 | Quick | Reddit + HN | 0 | 0 | 2 min |
-| Standard (default) | All 5 | 3-4 top | 1 | 4 min |
-| Extensive | All 5 | 6-8 top | 2-3 | 8 min |
+| Standard | All 5 | 3-4 | 1 | 4 min |
+| Extensive | All 5 | 6-8 | 2-3 | 8 min |
 
-Calculate date boundary:
-- WebSearch: `after:YYYY-MM-DD` format
-- HN Algolia: Unix timestamp for `created_at_i` filter
+Date boundary:
+- WebSearch: `after:YYYY-MM-DD`
+- HN Algolia: Unix timestamp for `created_at_i`
 
 Or use the deterministic tool:
 ```bash
@@ -29,105 +25,102 @@ bun ${PAI_DIR}/skills/research/tools/community-pulse.ts --topic "{topic}" --days
 
 ## Phase 2: Parallel Platform Search [AGENTIC]
 
-Launch ALL platform searches in a **single message** using parallel tool calls. Do not serialize.
+Launch ALL searches in a **single message**. Do not serialize.
 
-### Reddit (2 searches + top thread fetches)
+### Reddit
 
 ```
 WebSearch("site:reddit.com {topic} after:{date}")
 WebSearch("site:reddit.com {topic} best|recommended|experience after:{date}")
 ```
 
-For top results, fetch the Reddit JSON endpoint (append `.json` to the thread URL):
+Thread detail (append `.json` to thread URL):
 ```
-WebFetch({ url: "https://www.reddit.com/r/{subreddit}/comments/{id}/.json", prompt: "Extract: post title, score, top 10 comments with scores, comment themes" })
+WebFetch({ url: "https://www.reddit.com/r/{sub}/comments/{id}/.json", prompt: "Extract: post title, score, top 10 comments with scores, comment themes" })
 ```
 
-### Hacker News (1 API fetch + top story fetches)
+### Hacker News
 
 ```
 WebFetch({
-  url: "https://hn.algolia.com/api/v1/search?query={topic}&tags=story&numericFilters=created_at_i>{unixTimestamp}&hitsPerPage=10",
-  prompt: "Extract: objectIDs, titles, points, num_comments for top results sorted by points"
+  url: "https://hn.algolia.com/api/v1/search?query={topic}&tags=story&numericFilters=created_at_i>{unix}&hitsPerPage=10",
+  prompt: "Extract: objectIDs, titles, points, num_comments sorted by points"
 })
 ```
 
-For top 2-3 stories by points:
+Top 2-3 stories:
 ```
 WebFetch({
   url: "https://hn.algolia.com/api/v1/items/{objectID}",
-  prompt: "Extract: title, points, top-level comments text, key themes and opinions"
+  prompt: "Extract: title, points, top-level comments, themes"
 })
 ```
 
-### X/Twitter (2 searches — no free API, accepted limitation)
+### X/Twitter (no free API — lower coverage)
 
 ```
 WebSearch("site:x.com OR site:twitter.com {topic} after:{date}")
 WebSearch("{topic} twitter thread viral after:{date}")
 ```
 
-Mark X data as **lower-coverage** in output. WebSearch finds high-engagement tweets indexed by search engines, which biases toward viral content (useful signal).
+Mark X data as **lower-coverage**. WebSearch biases toward viral content (useful signal).
 
-### YouTube (1 search + transcript extraction)
+### YouTube
 
 ```
 WebSearch("site:youtube.com {topic} after:{date}")
 ```
 
-For top 1-2 results, extract transcripts via yt-dlp:
+Extract transcripts for top 1-2 via yt-dlp:
 ```bash
-yt-dlp --write-auto-sub --sub-lang en --skip-download -o "/tmp/%(title)s" "{VIDEO_URL}"
+yt-dlp --write-auto-sub --sub-lang en --skip-download -o "/tmp/%(title)s" "{URL}"
 ```
 
-Then read the subtitle file. Only extract first 15 minutes of transcript to manage context.
+Read subtitle file. First 15 minutes only.
 
-### General Web (1-2 searches)
+### General Web
 
 ```
 WebSearch("{topic} community discussion blog post {year}")
 WebSearch("{topic} people are saying opinion {year}")
 ```
 
-Catches Medium, Substack, podcast show notes, forums outside the major platforms.
+Catches Medium, Substack, podcast notes, minor forums.
 
 ## Phase 3: Synthesize [AGENTIC]
 
-Analyze all collected data across **5 dimensions**:
+Analyze across 5 dimensions:
 
-1. **Dominant Narratives** — What are the 3-5 main things people are saying? Group by theme, not by platform.
-2. **Signal Strength** — Rank themes by engagement (upvotes, comments, shares, views). Distinguish "many people mentioned this" from "one viral post about this."
-3. **Sentiment Distribution** — For each theme: positive/negative/mixed/neutral with representative quotes.
-4. **Contrarian Views** — Minority opinions getting traction. Highly upvoted comments that disagree with the post. Threads where the top comment contradicts the title.
-5. **Temporal Trends** — Is discussion increasing, decreasing, or stable? Any inflection points?
+1. **Dominant Narratives** — 3-5 main themes, grouped by theme not platform
+2. **Signal Strength** — rank by engagement; distinguish "many people" from "one viral post"
+3. **Sentiment Distribution** — positive/negative/mixed/neutral per theme with quotes
+4. **Contrarian Views** — high-upvote comments disagreeing with posts, top comments contradicting titles
+5. **Temporal Trends** — increasing/decreasing/stable, inflection points
 
-**Cite specific sources with numbers.** "On r/programming (245 upvotes)..." or "HN discussion with 187 points..."
+**Cite specific sources with numbers.** "r/programming (245 upvotes)", "HN (187 points)".
 
 ## Phase 4: Structured Output [DETERMINISTIC]
 
 ```markdown
 # Community Pulse: {topic}
-**Period:** {start_date} to {end_date} ({N} days)
+**Period:** {start} to {end} ({N} days)
 **Platforms:** {list}
 **Mode:** {Quick|Standard|Extensive}
 
 ## TL;DR
-[2-3 sentence summary]
+[2-3 sentences]
 
 ## Dominant Narratives
 
-### 1. {Theme Name}
+### 1. {Theme}
 **Sentiment:** {Positive|Negative|Mixed|Neutral}
-**Signal:** {Strong|Moderate|Weak} ({engagement evidence})
+**Signal:** {Strong|Moderate|Weak} ({evidence})
 **Summary:** [2-3 sentences]
 **Voices:**
-- "{quote}" — r/{subreddit} ({score} upvotes)
+- "{quote}" — r/{sub} ({score} upvotes)
 - "{quote}" — HN ({points} points)
 
-### 2. {Theme Name}
-[same structure]
-
-### 3. {Theme Name}
+### 2. {Theme}
 [same structure]
 
 ## Contrarian & Minority Views
@@ -136,17 +129,17 @@ Analyze all collected data across **5 dimensions**:
 ## Platform Highlights
 
 ### Reddit
-- Top thread: [{title}]({url}) ({score} upvotes, {comments} comments)
-- Active subreddits: r/{sub1}, r/{sub2}
+- Top thread: [{title}]({url}) ({score}, {comments})
+- Active subs: r/{sub1}, r/{sub2}
 
 ### Hacker News
-- Top discussion: [{title}]({url}) ({points} points)
+- Top: [{title}]({url}) ({points})
 
 ### X/Twitter
-- Notable tweets found: [limited coverage — no API access]
+- [limited coverage — no API]
 
 ### YouTube
-- Top video: [{title}]({url}) ({views} views)
+- Top: [{title}]({url}) ({views})
 
 ## Trend Signal
 {Increasing|Decreasing|Stable|Spiking} — {evidence}
@@ -154,22 +147,18 @@ Analyze all collected data across **5 dimensions**:
 ## Confidence
 | Dimension | Level | Rationale |
 |-----------|-------|-----------|
-| Coverage | {H/M/L} | {which platforms returned good data} |
-| Recency | {H/M/L} | {how much content fell within time window} |
-| Signal Quality | {H/M/L} | {engagement metrics vs noise} |
+| Coverage | {H/M/L} | {platforms returning data} |
+| Recency | {H/M/L} | {content within window} |
+| Signal Quality | {H/M/L} | {engagement vs noise} |
 
 ## Sources
-- [Source 1](URL)
-- [Source 2](URL)
+- [Source](URL)
 ```
 
-Save output to:
-- **Working:** `${PAI_DIR}/scratchpad/YYYY-MM-DD-HHMMSS_pulse-{topic}/`
-- **Permanent:** `${PAI_DIR}/history/research/YYYY-MM/YYYY-MM-DD_pulse-{topic}/README.md`
+Save to:
+- Working: `${PAI_DIR}/scratchpad/YYYY-MM-DD-HHMMSS_pulse-{topic}/`
+- Permanent: `${PAI_DIR}/history/research/YYYY-MM/YYYY-MM-DD_pulse-{topic}/README.md`
 
 ## Background Execution
 
-Supports `run_in_background: true`. When invoked with "background community pulse on {topic}":
-1. Launch with background flag
-2. Write results to scratchpad
-3. Notify when complete
+"background community pulse on {topic}" → launch with `run_in_background: true`, write to scratchpad, notify on completion.

@@ -1,8 +1,8 @@
 # tdd-qa Setup Guide
 
-How to set up the tdd-qa testing framework in any project. Covers both Bun and Vitest stacks.
+Set up the tdd-qa testing framework in any project (Bun or Vitest stacks).
 
-## Quick Start (5 minutes)
+## Quick Start
 
 ### 1. Create specs/ directory
 
@@ -10,45 +10,33 @@ How to set up the tdd-qa testing framework in any project. Covers both Bun and V
 mkdir -p specs
 ```
 
-Add `specs/README.md` — see `scenario-format.md` (in this same references directory) for the template.
+Add `specs/README.md` — see `scenario-format.md` in this references directory for the template.
 
-### 2. Configure test reporter for JUnit XML
+### 2. Configure JUnit XML reporter
 
-The backtest loop needs structured output. Both Bun and Vitest support JUnit XML.
+The backtest loop needs structured output.
 
-**Vitest projects** (tgds-schoolyard, tgds-office):
-```bash
-# Add junit reporter (already built into Vitest)
-pnpm test -- --reporter=junit --outputFile=.test-current.xml
-
-# Or add to vitest.config.ts:
-```
-
+**Vitest** (tgds-schoolyard, tgds-office):
 ```typescript
 // vitest.config.ts
 export default defineConfig({
   test: {
     reporters: ['default', 'junit'],
-    outputFile: {
-      junit: '.test-current.xml',
-    },
+    outputFile: { junit: '.test-current.xml' },
   },
 });
 ```
 
-**Bun projects** (Qara, Hermes):
+Or CLI: `pnpm test -- --reporter=junit --outputFile=.test-current.xml`
+
+**Bun** (Qara, Hermes):
 ```bash
 bun test --reporter=junit --reporter-outfile=.test-current.xml
 ```
 
-### 3. Configure coverage for lcov
+### 3. Configure lcov coverage
 
 **Vitest:**
-```bash
-pnpm test -- --coverage --coverage.reporter=lcov
-# Or in vitest.config.ts:
-```
-
 ```typescript
 // vitest.config.ts
 export default defineConfig({
@@ -82,7 +70,7 @@ traces/
 tests/e2e/*.draft.spec.ts
 ```
 
-### 5. Add test scripts to package.json
+### 5. Add package.json scripts
 
 ```json
 {
@@ -100,46 +88,35 @@ tests/e2e/*.draft.spec.ts
 
 ### tgds-schoolyard (SvelteKit + Vitest)
 
-**Path:** `<project-root>` (e.g. your local schoolyard checkout)
 **Stack:** SvelteKit 2, Vite 5, pnpm, Vitest 4.1, TailwindCSS, Carbon
 **Dev server:** `pnpm dev` (port 5500)
 **Existing tests:** 62 files in `tests/`
 
-**Setup steps:**
-
 ```bash
 cd <project-root>
-
-# 1. Create specs directory
 mkdir -p specs
 
-# 2. Update vitest.config.js to add junit reporter
-# Add reporters: ['default', 'junit'] and outputFile config
+# Update vitest.config.js: reporters: ['default', 'junit'] + outputFile config
+# Add scripts to package.json (test:junit, test:backtest)
 
-# 3. Add scripts to package.json
-# "test:junit": "vitest run --reporter=junit --outputFile=.test-current.xml"
-# "test:backtest": "bun run $PAI_DIR/skills/tdd-qa/tools/test-report.ts compare --baseline .test-baseline.xml --current .test-current.xml"
-
-# 4. Update .gitignore
 echo -e '\n# tdd-qa baselines\n.test-baseline.xml\n.test-current.xml\n.coverage-baseline/\n.coverage-current/\ntraces/' >> .gitignore
 
-# 5. Create initial baseline
 pnpm test:junit
 cp .test-current.xml .test-baseline.xml
 
-# 6. (Optional) Install Bombadil for UI exploration
+# Optional: Bombadil
 curl -L -o ~/.local/bin/bombadil https://github.com/antithesishq/bombadil/releases/download/v0.3.2/bombadil-x86_64-linux
 chmod +x ~/.local/bin/bombadil
 pnpm add -D @antithesishq/bombadil
 ```
 
-**Schoolyard-specific scenario ideas:**
+**Scenario ideas:**
 - `specs/student-enrolment.md` — enrolment flow, payment, course access
 - `specs/forum-posting.md` — create thread, reply, moderation
 - `specs/course-navigation.md` — lesson progression, completion tracking
 - `specs/governance.md` — role-based access, admin actions
 
-**Schoolyard Bombadil properties:**
+**Bombadil properties:**
 - "Loading spinners always resolve within 5s"
 - "Error banners always disappear after dismissal"
 - "Navigation never leads to a blank page"
@@ -149,44 +126,31 @@ pnpm add -D @antithesishq/bombadil
 
 ### tgds-office (Next.js + Vitest)
 
-**Path:** `<project-root>` (e.g. your local office checkout)
 **Stack:** Next.js 15.5, React 18, pnpm workspace, Vitest 4.1, Blueprint.js
 **Dev server:** `make dev` (port 6300)
 **Existing tests:** 14 files in `tests/`
 **Architecture:** YAML-driven page definitions (`app.definitions.yaml`)
 
-**Setup steps:**
-
 ```bash
 cd <project-root>
-
-# 1. Create specs directory
 mkdir -p specs
 
-# 2. Update vitest.config.ts at root to add junit reporter
+# Update vitest.config.ts at root for junit reporter
+# Add scripts to root package.json
 
-# 3. Add scripts to root package.json
-# "test:junit": "vitest run --reporter=junit --outputFile=.test-current.xml"
-# "test:backtest": "bun run $PAI_DIR/skills/tdd-qa/tools/test-report.ts compare --baseline .test-baseline.xml --current .test-current.xml"
-
-# 4. Update .gitignore
 echo -e '\n# tdd-qa baselines\n.test-baseline.xml\n.test-current.xml\n.coverage-baseline/\n.coverage-current/\ntraces/' >> .gitignore
 
-# 5. Create initial baseline
 pnpm test:junit
 cp .test-current.xml .test-baseline.xml
-
-# 6. (Optional) Install Bombadil
-# Same as schoolyard
 ```
 
-**Office-specific scenario ideas:**
+**Scenario ideas:**
 - `specs/student-management.md` — CRUD, search, filtering
 - `specs/yaml-page-rendering.md` — YAML definitions produce correct pages
 - `specs/crm-operations.md` — account management, status transitions
 - `specs/static-export.md` — build produces valid static output
 
-**Office Bombadil properties:**
+**Bombadil properties:**
 - "YAML-defined pages always render without console errors"
 - "Table pagination never loses selected rows"
 - "Form validation errors always display before submission"
@@ -196,18 +160,18 @@ cp .test-current.xml .test-baseline.xml
 
 ## TDD Enforcement Hook (PAI repos)
 
-For PAI repos with the tdd-qa skill, the TDD enforcement hook blocks source file edits during the RED phase of a TDD cycle. This is automatic — the tdd-cycle workflow activates and deactivates it.
+Blocks source file edits during RED phase of a TDD cycle. Automatic — the tdd-cycle workflow activates/deactivates it.
 
 **Requirements:**
 - `hooks/lib/tdd-state.ts` — state management library
 - `hooks/pre-tool-use-tdd.ts` — PreToolUse hook for Write/Edit
 - settings.json entries for Write and Edit matchers
 
-**How it works:**
-- RED phase: only test files (`.test.ts`, `.spec.ts`) can be edited
-- GREEN phase: source files allowed (writing implementation)
-- REFACTOR phase: both allowed
-- No active TDD cycle: everything allowed (transparent)
+**Phases:**
+- **RED:** only test files (`.test.ts`, `.spec.ts`) editable
+- **GREEN:** source files allowed
+- **REFACTOR:** both allowed
+- **No active cycle:** transparent (everything allowed)
 
 State is session-scoped with 2h TTL. Stale state from crashed sessions is cleaned up on next session start.
 
@@ -215,28 +179,24 @@ State is session-scoped with 2h TTL. Stale state from crashed sessions is cleane
 
 ## Targeted Test Selection
 
-The `test-report affected` command finds tests relevant to changed files:
-
 ```bash
 bun $PAI_DIR/skills/tdd-qa/tools/test-report.ts affected --files src/auth.ts,src/utils.ts
 ```
 
-Uses co-location heuristic: `foo.ts` → looks for `foo.test.ts` and `foo.integration.test.ts` in the same directory. Faster than running the full suite during TDD inner loops.
+Co-location heuristic: `foo.ts` → looks for `foo.test.ts` and `foo.integration.test.ts` in the same directory. Faster than full suite during TDD inner loops.
 
 ---
 
 ## Mutation Testing (Advisory)
 
-StrykerJS validates test effectiveness by mutating source code and checking if tests catch the changes.
+StrykerJS validates test effectiveness by mutating source and checking if tests catch changes.
 
-**Setup:**
 ```bash
-# Install (when ready — not required for basic TDD)
 bun add -d @stryker-mutator/core @stryker-mutator/typescript-checker
 ```
 
-**Create `stryker.config.json`:**
 ```json
+// stryker.config.json
 {
   "testRunner": "command",
   "commandRunner": { "command": "bun test" },
@@ -246,30 +206,26 @@ bun add -d @stryker-mutator/core @stryker-mutator/typescript-checker
 }
 ```
 
-Adjust `commandRunner.command` for your test runner (e.g., `vitest run` for Vitest projects). Advisory only — reports mutation score but does not block merges. Threshold: >70%.
+Adjust `commandRunner.command` for your runner (e.g., `vitest run`). Advisory only — reports mutation score, does not block merges. Threshold: >70%.
 
 ---
 
 ## E2E Browser Testing
-
-For UI projects, E2E tests use **playwright-core** (lightweight, 5MB, no bundled browsers — uses system-installed browsers) or **@playwright/test** (full test runner with fixtures).
 
 | Tool | Use case | Size |
 |------|----------|------|
 | `playwright-core` | Direct browser automation (screenshots, capture) | ~5MB |
 | `@playwright/test` | Full E2E test runner with fixtures and reporters | ~400MB + browsers |
 
-**Recommendation:** Start with `playwright-core` for design verification. Only install `@playwright/test` if you need CI-runnable E2E test suites with fixtures.
+**Recommendation:** Start with `playwright-core` for design verification. Only install `@playwright/test` for CI-runnable E2E suites.
 
 ```bash
-# Lightweight (design verification, devtools-mcp)
 bun add -d playwright-core
-
-# Full runner (CI E2E suites — heavy)
 bun add -d @playwright/test
 ```
 
-The `e2e-verify` workflow auto-drafts `.draft.spec.ts` files. Freeze them to `.spec.ts` for CI:
+The `e2e-verify` workflow auto-drafts `.draft.spec.ts` files. Freeze for CI:
+
 ```bash
 bun $PAI_DIR/skills/tdd-qa/tools/e2e-freeze.ts tests/e2e/*.draft.spec.ts
 ```
@@ -278,28 +234,25 @@ bun $PAI_DIR/skills/tdd-qa/tools/e2e-freeze.ts tests/e2e/*.draft.spec.ts
 
 ## Workflow Usage After Setup
 
-### Daily development (Mode 1: New feature)
-
+**New feature:**
 ```
-JM: "write scenarios for student-enrolment"     → creates specs/student-enrolment.md
-JM: "run TDD on student-enrolment"              → RED→GREEN→VERIFY loop
-JM: "backtest"                                   → compares against baseline
-```
-
-### After refactoring (Mode 3: Confidence check)
-
-```
-JM: "backtest"                                   → checks for regressions
-JM: "run the pyramid"                            → static→unit→integration→e2e
+"write scenarios for student-enrolment"  → creates specs/student-enrolment.md
+"run TDD on student-enrolment"           → RED→GREEN→VERIFY loop
+"backtest"                                → compares against baseline
 ```
 
-### Finding hidden bugs (Mode 5: Chaos exploration)
-
+**After refactoring:**
 ```
-JM: "explore with bombadil"                      → autonomous UI property testing
+"backtest"           → checks for regressions
+"run the pyramid"    → static→unit→integration→e2e
 ```
 
-Bombadil requires a running dev server:
+**Chaos exploration:**
+```
+"explore with bombadil"  → autonomous UI property testing
+```
+
+Bombadil needs a running dev server:
 - Schoolyard: `pnpm dev` → `bombadil test http://localhost:5500`
 - Office: `make dev` → `bombadil test http://localhost:6300`
 
@@ -311,13 +264,13 @@ Bombadil requires a running dev server:
 |---------|----------|--------|-------|
 | JUnit XML output | `--reporter=junit` | `--reporter=junit` | Both supported |
 | lcov coverage | `--coverage-reporter=lcov` | `--coverage.reporter=lcov` | Slightly different flags |
-| Watch mode | `--watch` | Default behavior | Vitest watches by default |
-| File pattern | `*.test.ts` | `*.test.ts` | Same convention |
-| E2E pattern | `*.spec.ts` | `*.spec.ts` | Same convention |
-| test-report.ts | Works with both | Works with both | Parses JUnit XML, agnostic to runner |
+| Watch mode | `--watch` | Default | Vitest watches by default |
+| File pattern | `*.test.ts` | `*.test.ts` | Same |
+| E2E pattern | `*.spec.ts` | `*.spec.ts` | Same |
+| test-report.ts | Works with both | Works with both | Parses JUnit XML, runner-agnostic |
 | Backtest loop | Full support | Full support | JUnit XML is the common contract |
 
-**Key insight:** `test-report.ts` doesn't care which test runner produced the JUnit XML. The data contract is the format, not the tool.
+`test-report.ts` is agnostic to the test runner — the data contract is the format.
 
 ---
 
@@ -344,29 +297,26 @@ pnpm add -D @antithesishq/bombadil
 bun add -d @antithesishq/bombadil
 ```
 
-**Verify installation:**
-```bash
-bombadil --version
-```
+Verify: `bombadil --version`
 
 ---
 
 ## Checklist: Ready to Use
 
 **Core (required):**
-- [ ] `specs/` directory created with README.md
-- [ ] JUnit XML reporter configured (vitest.config or bun flag)
+- [ ] `specs/` directory with README.md
+- [ ] JUnit XML reporter configured
 - [ ] lcov coverage configured
-- [ ] `.gitignore` updated for baselines, traces, and `.stryker-tmp/`
-- [ ] Test scripts added to package.json
+- [ ] `.gitignore` updated (baselines, traces, `.stryker-tmp/`)
+- [ ] Test scripts in package.json
 - [ ] Initial baseline captured (`.test-baseline.xml`)
 
 **Recommended:**
-- [ ] First scenario spec written in `specs/`
-- [ ] `stryker.config.json` created (advisory mutation testing)
-- [ ] Coverage threshold set in bunfig.toml or vitest.config
+- [ ] First scenario spec in `specs/`
+- [ ] `stryker.config.json` (advisory mutation testing)
+- [ ] Coverage threshold set
 
 **Optional:**
-- [ ] Bombadil installed and types added (UI exploration)
-- [ ] `playwright-core` installed (design verification, lightweight)
+- [ ] Bombadil installed (UI exploration)
+- [ ] `playwright-core` installed (design verification)
 - [ ] TDD enforcement hook configured (PAI repos only)

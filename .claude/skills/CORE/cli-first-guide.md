@@ -1,734 +1,188 @@
 # CLI-First Implementation Guide
 
-**Purpose**: Practical patterns and best practices for building deterministic CLI tools that AI can orchestrate.
+Patterns for building deterministic CLI tools that AI orchestrates.
 
-**When to read**: Building a new CLI tool, refactoring prompts to CLI-First, or integrating external APIs.
+**Read when**: building a new CLI tool, refactoring prompt logic into code, integrating an external API.
 
----
+## Core Principle
 
-## Overview
+> If the same logic shows up in prompts multiple times, it should be a CLI tool.
 
-The CLI-First pattern is fundamental to Qara's architecture: build deterministic command-line tools that work independently, then wrap them with AI orchestration for natural language interaction.
+Deterministic code first. Prompts wrap code, not the other way around.
 
-**Core Principle:**
-> If you're writing the same logic in prompts multiple times, it should be a CLI tool.
+## When to Build a CLI
 
----
+Build a CLI if ≥2 of:
+- Runs more than 5 times
+- Needs consistent results
+- Others will use it
+- Needs tests
+- Manages non-trivial state
 
-## Quick Reference
+Otherwise: inline is fine.
 
-### The CLI-First Checklist
+## Three-Step Pattern
 
-Before building anything, ask:
-- [ ] Will this be run more than 5 times?
-- [ ] Do I need consistent results?
-- [ ] Will others use this?
-- [ ] Do I need to test this?
-- [ ] Is this managing complex state?
+1. **Requirements** — document inputs, outputs, edge cases, error conditions, dependencies.
+2. **Deterministic CLI** — build the tool. Testable, documented, idempotent.
+3. **Prompting wrapper** — AI interprets intent, calls the CLI, handles results.
 
-If 2+ yes → Build CLI tool
+**Never skip step 2.** Ad-hoc bash in prompts is the failure mode.
 
-### CLI Tool Must-Haves
+## CLI Must-Haves
 
-Every CLI tool needs:
-- [ ] Clear command structure
-- [ ] Full --help documentation
-- [ ] Input validation
-- [ ] Error handling with actionable messages
-- [ ] Exit codes (0 success, 1+ errors)
-- [ ] Output format (human + JSON)
-- [ ] TypeScript implementation
-- [ ] README.md with examples
-- [ ] Location in `~/.claude/bin/toolname/`
-- [ ] Executable (`chmod +x`, shebang)
+- Clear command structure (verb + noun hierarchy)
+- Full `--help` (usage, options, examples, exit codes)
+- Input validation (fail fast, clear errors to stderr)
+- Exit codes: 0 success, 1 generic error, 2 invalid args, 3+ specific
+- Human output by default, `--json` for scripting
+- TypeScript with typed arg parsing
+- `#!/usr/bin/env bun` shebang + `chmod +x`
+- Located under `~/.claude/bin/{toolname}/` (or skill `tools/`)
+- `README.md` with examples
+- Composable (pipes to `jq`, `grep`, etc.)
+- Independently testable (no AI dependency)
 
-### The Pattern
-
-```
-1. Requirements (what) → Document fully
-2. CLI Tool (how) → Build deterministically
-3. Prompting (orchestration) → AI wraps CLI
-```
-
-**Never skip step 2.**
-
-### Key Takeaways
-
-1. **Build tools that work without AI** - Then add AI for convenience
-2. **Code is cheaper than prompts** - Write it once, use it forever
-3. **CLI enables testing** - Test tools independently of AI
-4. **Version control behavior** - CLI changes are explicit code changes
-5. **Determinism is reliability** - Same command = same result
-6. **Discoverability matters** - --help makes tools self-documenting
-7. **Compose with Unix tools** - Pipes, filters, automation
-
----
-
-## The Three-Step Pattern
-
-### Step 1: Understand Requirements
-
-**Document Everything:**
-- What does this tool need to do?
-- What inputs does it accept?
-- What outputs does it produce?
-- What edge cases exist?
-- What error conditions might occur?
-
-**Write Specifications First:**
-```markdown
-# Tool: blog-publish
-
-## Purpose
-Publish markdown blog post to production site
-
-## Inputs
-- Post file path (required)
-- Verify deployment flag (optional)
-- Environment (dev/prod, optional, default: prod)
-
-## Outputs
-- Success message with live URL
-- Exit code 0 on success, 1 on failure
-
-## Edge Cases
-- File doesn't exist → Error with helpful message
-- Invalid frontmatter → Error listing missing fields
-- Deployment verification timeout → Retry 3 times
-
-## Dependencies
-- git (for deployment)
-- curl (for verification)
-- Hugo (for building)
-```
-
-### Step 2: Build Deterministic CLI
-
-**Create Command-Line Tool:**
-```typescript
-#!/usr/bin/env bun
-// blog-publish.ts
-
-import { parseArgs } from "util";
-import { existsSync } from "fs";
-import { exec } from "child_process";
-
-/**
- * CLI tool for publishing blog posts
- *
- * Usage: blog-publish <file> [options]
- */
-
-interface PublishOptions {
-  file: string;
-  verify?: boolean;
-  environment?: "dev" | "prod";
-}
-
-function showHelp() {
-  console.log(`
-Usage: blog-publish <file> [options]
-
-Publish markdown blog post to production site
-
-Arguments:
-  file              Path to markdown file (required)
-
-Options:
-  --verify          Verify deployment by checking live URL
-  --env <env>       Environment: dev or prod (default: prod)
-  --help            Show this help message
-
-Examples:
-  blog-publish ./posts/my-post.md
-  blog-publish ./posts/my-post.md --verify
-  blog-publish ./posts/my-post.md --env dev
-
-Exit Codes:
-  0    Success
-  1    Error (file not found, build failed, etc.)
-`);
-}
-
-async function publish(options: PublishOptions): Promise<void> {
-  // Validate inputs
-  if (!existsSync(options.file)) {
-    console.error(`Error: File not found: ${options.file}`);
-    process.exit(1);
-  }
-
-  // Implementation...
-  // All logic deterministic, testable, documented
-}
-
-// Parse args and execute
-const args = parseArgs({
-  options: {
-    verify: { type: "boolean" },
-    env: { type: "string", default: "prod" },
-    help: { type: "boolean" },
-  },
-  allowPositionals: true,
-});
-
-if (args.values.help) {
-  showHelp();
-  process.exit(0);
-}
-
-const file = args.positionals[0];
-if (!file) {
-  console.error("Error: Missing required argument: file");
-  showHelp();
-  process.exit(1);
-}
-
-await publish({
-  file,
-  verify: args.values.verify,
-  environment: args.values.env as "dev" | "prod",
-});
-```
-
-### Step 3: Wrap with Prompting
-
-**AI Orchestration Layer (in skill workflow):**
-```markdown
-## Workflow: Publish Blog Post
-
-### When to Use
-User says: "publish blog", "push post to production", "deploy article"
-
-### Steps
-
-1. **Identify post file**
-   - Ask user which post or use current file
-   - Validate file exists
-
-2. **Execute CLI tool**
-   ```bash
-   blog-publish ./posts/my-post.md --verify
-   ```
-
-3. **Handle results**
-   - Success: Show live URL, confirm deployment
-   - Error: Parse error message, suggest fix
-   - Verification failed: Show retry options
-
-4. **Follow-up actions**
-   - Offer to share on social media
-   - Suggest next steps (analytics, etc.)
-```
-
-**Key Points:**
-- AI uses the tool, doesn't replicate it
-- AI adds user experience layer
-- Tool works independently of AI
-- Natural language → structured commands
-
----
-
-## CLI Design Best Practices
+## Design Rules
 
 ### 1. Command Structure
 
-**Hierarchical, Clear Verbs:**
+Hierarchical, explicit verbs:
 ```bash
-# Good: Clear command hierarchy
-tool command subcommand --flag value
-
-# Examples:
 evals use-case create --name foo
-evals test-case add --use-case foo --file test.json
-evals run --use-case foo --model claude-3-5-sonnet
-
-blog post create --title "My Post"
 blog post publish --file ./posts/my-post.md
-blog site build --env prod
+tool command subcommand --flag value
 ```
 
-Avoid ambiguous commands — use explicit verbs like `process` or `analyze` instead of generic `run`.
+Avoid generic verbs like `run` or `process` — prefer `publish`, `analyze`, `deploy`.
 
-### 2. Comprehensive --help
+### 2. Idempotency
 
-**Every Command Needs --help:**
+Same command = same result.
 ```bash
-$ tool --help
-Usage: tool <command> [options]
-
-Commands:
-  create    Create new resource
-  list      List all resources
-  update    Update existing resource
-  delete    Delete resource
-
-Options:
-  --help    Show this help
-  --json    Output as JSON
-  --verbose Enable verbose logging
-
-Examples:
-  tool create --name foo
-  tool list --json
-  tool update foo --name bar
-
-For command-specific help:
-  tool <command> --help
-```
-
-### 3. Idempotency
-
-**Same Command = Same Result:**
-```bash
-# Create command is idempotent
 $ tool create --name foo
 Created: foo
-
 $ tool create --name foo
-Already exists: foo (no changes)
-
-# Not an error - just confirmation
+Already exists: foo (no changes)   # not an error, confirmation
 ```
 
-**Why Idempotency Matters:**
-- Safe to retry on failure
-- Scripts can be re-run
-- No accidental duplicates
-- Predictable behavior
+Idempotent commands are safe to retry, scriptable, predictable.
 
-### 4. Output Formats
+### 3. Output Formats
 
-**Human-Readable by Default:**
+- Human-readable default (prose + list form, no JSON noise)
+- `--json` for scripting (stable schema)
+- Everything composable: `tool list --json | jq '.items[].name'`
+
+### 4. Progressive Disclosure
+
+Simple common case, advanced options when needed:
 ```bash
-$ tool list
-Resources:
-  - foo (created: 2025-11-19)
-  - bar (created: 2025-11-18)
-
-Total: 2 resources
+$ tool run my-task                          # simplest
+$ tool run my-task --verbose                # common option
+$ tool run my-task --config custom.json \   # full control
+  --retries 5 --timeout 30 --output results.json
 ```
 
-**JSON for Scripting:**
-```bash
-$ tool list --json
-{
-  "resources": [
-    {"name": "foo", "created": "2025-11-19"},
-    {"name": "bar", "created": "2025-11-18"}
-  ],
-  "total": 2
-}
+### 5. Error Handling
+
+Clear, actionable, self-repairing:
 ```
-
-**Composable with Unix Tools:**
-```bash
-# Pipes to jq for filtering
-$ tool list --json | jq '.resources[].name'
-"foo"
-"bar"
-
-# Pipes to grep
-$ tool list | grep foo
-```
-
-### 5. Progressive Disclosure
-
-**Simple for Common Cases:**
-```bash
-# Simplest form
-$ tool run my-task
-
-# With common option
-$ tool run my-task --verbose
-```
-
-**Advanced Options Available:**
-```bash
-# Full control when needed
-$ tool run my-task \
-  --config custom.json \
-  --retries 5 \
-  --timeout 30 \
-  --output results.json \
-  --verbose
-```
-
-### 6. Error Handling
-
-**Clear, Actionable Error Messages:**
-```bash
-# Bad
-$ tool run
-Error: invalid input
-
-# Good
-$ tool run
 Error: Missing required argument: <task-name>
-
 Usage: tool run <task-name> [options]
-
 Examples:
   tool run my-task
-  tool run my-task --verbose
-
 Run 'tool --help' for more information
 ```
 
-**Exit Codes:**
-```bash
-0    Success
-1    Generic error
-2    Invalid arguments
-3    File not found
-4    Permission denied
-# etc.
-```
+Never `Error: invalid input`. The user (or AI reader) needs to know what's wrong AND what to do.
 
-### 7. Input Validation
+### 6. Input Validation
 
-**Validate Early, Fail Fast:**
+Validate early, fail fast, report ALL errors at once:
 ```typescript
-// Validate all inputs before execution
 function validateArgs(args: Args): ValidationResult {
   const errors: string[] = [];
-
-  if (!args.taskName) {
-    errors.push("Missing required argument: task-name");
-  }
-
-  if (args.timeout && args.timeout < 0) {
-    errors.push("Timeout must be positive number");
-  }
-
-  if (args.config && !existsSync(args.config)) {
-    errors.push(`Config file not found: ${args.config}`);
-  }
-
-  if (errors.length > 0) {
-    return { valid: false, errors };
-  }
-
-  return { valid: true };
+  if (!args.taskName) errors.push("Missing required argument: task-name");
+  if (args.timeout && args.timeout < 0) errors.push("Timeout must be positive");
+  if (args.config && !existsSync(args.config)) errors.push(`Config not found: ${args.config}`);
+  return errors.length > 0 ? { valid: false, errors } : { valid: true };
 }
 ```
 
----
+## Skeleton (Reference)
 
-## CLI-First for API Calls
-
-**CRITICAL PATTERN**: Never write API calls directly in prompts or ad-hoc bash scripts.
-
-### The Problem with Ad-Hoc API Scripts
-
-**Old Way (Bash Script in Prompt):**
-```bash
-#!/bin/bash
-# Embedded in skill prompt - BAD!
-
-API_KEY=$SOME_API_KEY
-URL="https://api.service.com/v1/data?date=$1&limit=$2"
-curl -H "X-API-Key: $API_KEY" "$URL"
-```
-
-**Problems:**
-- ❌ No validation of inputs
-- ❌ No error handling
-- ❌ No documentation (--help)
-- ❌ Hard to test independently
-- ❌ Difficult to maintain
-- ❌ No type safety
-- ❌ Code embedded in prompts
-- ❌ Can't compose with other tools
-
-### The CLI Tool Solution
-
-**New Way (TypeScript CLI Tool):**
 ```typescript
 #!/usr/bin/env bun
-// api-tool.ts - Production-ready CLI
-
 import { parseArgs } from "util";
-
-/**
- * CLI tool for Service API
- *
- * Usage: api-tool <command> [options]
- */
-
-interface FetchOptions {
-  date?: string;
-  limit?: number;
-  search?: string;
-}
-
-async function fetchData(options: FetchOptions): Promise<void> {
-  // Input validation
-  if (options.date && !isValidDate(options.date)) {
-    console.error(`Error: Invalid date format: ${options.date}`);
-    console.error("Expected format: YYYY-MM-DD");
-    process.exit(1);
-  }
-
-  // API call with error handling
-  try {
-    const apiKey = process.env.API_KEY;
-    if (!apiKey) {
-      console.error("Error: API_KEY environment variable not set");
-      console.error("Add to ~/.claude/.env: API_KEY=your_key");
-      process.exit(1);
-    }
-
-    const url = buildUrl(options);
-    const response = await fetch(url, {
-      headers: { "X-API-Key": apiKey },
-    });
-
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status} ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    console.log(JSON.stringify(data, null, 2));
-  } catch (error) {
-    console.error(`Error: ${error.message}`);
-    process.exit(1);
-  }
-}
-
-function isValidDate(date: string): boolean {
-  const regex = /^\d{4}-\d{2}-\d{2}$/;
-  return regex.test(date) && !isNaN(Date.parse(date));
-}
-
-function buildUrl(options: FetchOptions): string {
-  const params = new URLSearchParams();
-  if (options.date) params.set("date", options.date);
-  if (options.limit) params.set("limit", String(options.limit));
-  if (options.search) params.set("q", options.search);
-
-  return `https://api.service.com/v1/data?${params}`;
-}
+import { existsSync } from "fs";
 
 function showHelp() {
-  console.log(`
-Usage: api-tool <command> [options]
-
+  console.log(`Usage: tool <command> [options]
 Commands:
-  fetch         Fetch data from API
-  search        Search resources
-
+  fetch      Fetch data
 Options:
-  --date <date>     Date in YYYY-MM-DD format
-  --limit <num>     Max results (default: 20)
-  --search <term>   Search term
-  --help            Show this help
-
-Examples:
-  api-tool fetch --date 2025-11-19
-  api-tool fetch --limit 50
-  api-tool search "keyword" --limit 10
-  api-tool fetch --date 2025-11-19 | jq '.data[].title'
-
-Environment:
-  API_KEY          Required. Set in ~/.claude/.env
-
-Exit Codes:
-  0    Success
-  1    Error (invalid input, API failure, etc.)
-`);
+  --date <d>     YYYY-MM-DD
+  --json         JSON output
+  --help         Show this help
+Exit: 0 success, 1 error`);
 }
 
-// Main execution
 const args = parseArgs({
-  options: {
-    date: { type: "string" },
-    limit: { type: "string" },
-    search: { type: "string" },
-    help: { type: "boolean" },
-  },
+  options: { date: { type: "string" }, json: { type: "boolean" }, help: { type: "boolean" } },
   allowPositionals: true,
 });
 
-if (args.values.help) {
-  showHelp();
-  process.exit(0);
-}
+if (args.values.help) { showHelp(); process.exit(0); }
+const cmd = args.positionals[0];
+if (!cmd) { console.error("Error: missing command"); showHelp(); process.exit(1); }
 
-const command = args.positionals[0];
-if (!command) {
-  console.error("Error: Missing command");
-  showHelp();
-  process.exit(1);
-}
-
-if (command === "fetch" || command === "search") {
-  await fetchData({
-    date: args.values.date,
-    limit: args.values.limit ? parseInt(args.values.limit) : undefined,
-    search: args.values.search,
-  });
-} else {
-  console.error(`Error: Unknown command: ${command}`);
-  showHelp();
-  process.exit(1);
-}
+// Validate, execute, catch errors → stderr + exit(1).
 ```
 
-**Benefits:**
-- ✅ Validated inputs (date formats, required fields)
-- ✅ Comprehensive error handling
-- ✅ Full --help documentation
-- ✅ Type-safe TypeScript
-- ✅ Independently testable
-- ✅ Version controlled
-- ✅ Zero code in prompts
-- ✅ Composable (pipes to jq, grep, etc.)
-- ✅ Reusable across skills
+## CLI-First for API Calls (CRITICAL)
 
-### CLI Tool Checklist
+**Never write API calls directly in prompts or ad-hoc bash scripts.**
 
-Every API CLI tool must have:
+Wrong: embedded `curl` with API key interpolation inside a skill prompt. No validation, no error handling, no `--help`, not testable, not composable, code in prompts.
 
-- [ ] Full --help documentation
-- [ ] Input validation with clear errors
-- [ ] TypeScript with proper types
-- [ ] Error messages to stderr
-- [ ] JSON output to stdout
-- [ ] Exit codes (0/1)
-- [ ] README.md with examples
-- [ ] Environment config (API keys in `~/.claude/.env`)
-- [ ] Located in `~/.claude/bin/toolname/`
-- [ ] Executable with shebang (`#!/usr/bin/env bun`)
-- [ ] Composable with Unix tools (pipes, filters)
-- [ ] Testable independently of AI
+Right: a CLI tool in `~/.claude/bin/{tool}/` that:
+- Reads API keys from env (`~/.claude/.env`)
+- Validates every input (date format, required fields)
+- Builds the URL with `URLSearchParams`
+- Handles non-2xx with clear errors
+- Outputs JSON to stdout for composition
+- Has full `--help`
 
----
+Any skill that needs the API calls the CLI. Never duplicates the logic.
 
-## Prompting Layer Responsibilities
+## Prompting Layer — What It Does
 
-### The Prompting Layer Should:
+- **Understand intent.** "publish my latest blog post" → identify target file + action.
+- **Map intent to CLI.** `publish blog` → `blog-publish`.
+- **Execute in correct order.** Wait for result, chain next command.
+- **Handle errors.** Parse error message, explain, suggest retry.
+- **Summarize results.** Live URL, verification status, timing.
+- **Ask clarifying questions** when ambiguous (multiple drafts, unclear env).
 
-**1. Understand User Intent**
-```markdown
-User: "publish my latest blog post"
+## Prompting Layer — What It Does NOT
 
-AI interprets:
-- Intent: Publish blog post
-- Target: Most recent post in drafts/
-- Action: Run blog-publish CLI
-- Verification: Likely wants confirmation
-```
+- **Never replicate CLI functionality.** Don't re-implement in ad-hoc bash.
+- **Never generate ad-hoc API calls.** Use the existing CLI tool.
+- **Never bypass the CLI for "simple" operations.** File moves, config updates, etc. go through tools.
+- **Never duplicate logic across skills.** If two skills need the same thing, it's a CLI.
 
-**2. Map Intent to CLI Commands**
-```markdown
-Intent → CLI mapping:
-- "publish blog" → blog-publish
-- "run evaluations" → evals run
-- "check API logs" → llcli today
-```
+## Takeaways
 
-**3. Execute CLI in Correct Order**
-```bash
-# AI orchestrates sequence
-blog-publish ./posts/draft.md --verify
-# Wait for result
-# If success, proceed
-blog-share --url <live-url> --platforms twitter,linkedin
-```
+1. Build tools that work without AI, then add AI for convenience.
+2. Code is cheaper than prompts (write once, run forever).
+3. Determinism = reliability. Same input → same output.
+4. `--help` makes tools self-documenting for both AI and humans.
+5. Compose with Unix tools (pipes, filters, jq, grep).
+6. Version-controlled behavior (code changes are explicit).
 
-**4. Handle Errors and Retry**
-```markdown
-CLI error: "Deployment verification timeout"
+## Related
 
-AI response:
-- Parse error message
-- Explain to user in plain language
-- Suggest: "Should I retry with longer timeout?"
-- If yes: blog-publish --verify --timeout 60
-```
-
-**5. Summarize Results for User**
-```markdown
-✅ RESULTS:
-Blog post "My Title" published successfully
-- Live URL: https://site.com/posts/my-title
-- Verified deployment: ✓
-- Build time: 2.3s
-- Content size: 45KB
-```
-
-**6. Ask Clarifying Questions**
-```markdown
-User: "publish post"
-AI: Multiple draft posts found:
-- draft1.md (updated today)
-- draft2.md (updated 3 days ago)
-
-Which post should I publish?
-```
-
-### The Prompting Layer Should NOT:
-
-**1. Replicate CLI Functionality**
-```bash
-# ❌ Bad: AI generates ad-hoc code
-AI: Let me write a bash script to deploy...
-
-# ✅ Good: AI uses existing CLI
-AI: Running: blog-publish ./posts/my-post.md
-```
-
-**2. Generate Solutions Without CLI**
-```bash
-# ❌ Bad: Ad-hoc curl command in prompt
-curl -X POST https://api.service.com/deploy...
-
-# ✅ Good: Use CLI tool
-blog-publish --env prod
-```
-
-**3. Perform Operations That Should Be CLI**
-```bash
-# ❌ Bad: AI does file manipulation ad-hoc
-AI: Moving files, updating configs manually...
-
-# ✅ Good: CLI tool handles file operations
-config-update --add-field new_value
-```
-
-**4. Bypass CLI for "Simple" Operations**
-```bash
-# ❌ Bad: "This is simple, I'll just..."
-AI: Let me quickly copy this file...
-
-# ✅ Good: Consistent use of tools
-file-tool copy src dest --verify
-```
-
----
-
-## Quick Examples
-
-**Before (Prompt-Driven):** AI manually creates JSON, runs inconsistent commands, formats output differently each time.
-
-**After (CLI-First):**
-```bash
-# Evaluation system
-evals run --use-case newsletter-summary --model claude-3-5-sonnet --json
-
-# Blog publishing
-blog-publish ./posts/my-post.md --verify
-
-# API integration
-llcli --date today --json | jq '.items'
-```
-
-**Benefits:** Reproducible, testable, version-controlled, AI just orchestrates.
-
----
-
-## Related Documentation
-
-- **CONSTITUTION.md** - Core CLI-First principle
-- **stack-preferences.md** - TypeScript over Python, Bun for runtimes
-- **testing-guide.md** - How to test CLI tools
+- `CONSTITUTION.md` — CLI-First as a core operating principle
+- `stack-preferences.md` — TypeScript > Python, Bun > npm
+- `testing-guide.md` — how to test CLI tools

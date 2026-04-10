@@ -1,12 +1,11 @@
 # Skill Archetype Templates
 
-Complete directory structure templates for each archetype.
+Directory structure and SKILL.md templates for each archetype.
 
 ---
 
 ## Minimal Skill (1-3 workflows)
 
-### Directory Structure
 ```
 skill-name/
 ├── SKILL.md
@@ -78,7 +77,6 @@ Examples: "actual user phrases", "variations", "synonyms"
 
 ## Standard Skill (3-15 workflows)
 
-### Directory Structure
 ```
 skill-name/
 ├── SKILL.md
@@ -165,7 +163,6 @@ Examples: "user phrases", "variations"
 
 ## Complex Skill (15+ workflows)
 
-### Directory Structure
 ```
 skill-name/
 ├── SKILL.md
@@ -260,15 +257,11 @@ Examples: "user phrases"
 
 ## Core Principles
 
-[If CONSTITUTION.md exists, reference it]
-
 READ: `CONSTITUTION.md` for guiding principles
 
 ---
 
 ## Methodology
-
-[If METHODOLOGY.md exists, reference it]
 
 READ: `METHODOLOGY.md` for process details
 
@@ -312,7 +305,7 @@ READ: `METHODOLOGY.md` for process details
 
 ---
 
-## Key Differences Between Archetypes
+## Archetype Comparison
 
 | Aspect | Minimal | Standard | Complex |
 |--------|---------|----------|---------|
@@ -326,28 +319,9 @@ READ: `METHODOLOGY.md` for process details
 | State | None | Optional | Often yes |
 | Tools | None | Optional | Often yes |
 
----
+## Selection Rules
 
-## Choosing the Right Archetype
-
-**Start with Minimal if:**
-- Single clear purpose
-- Few workflows
-- Simple activation
-
-**Upgrade to Standard when:**
-- Multiple related workflows
-- Need better organization
-- Want external references
-
-**Upgrade to Complex when:**
-- Many workflows need categorization
-- Complex multi-stage processes
-- Need philosophy/methodology docs
-- Sophisticated state management
-
-**Never:**
-- Over-engineer (start Minimal, upgrade if needed)
-- Skip Workflow Routing section
-- Leave workflows orphaned
-- Forget comprehensive activation triggers
+- **Start Minimal.** Upgrade only if needed.
+- **Upgrade to Standard** when multiple related workflows need organization or external references.
+- **Upgrade to Complex** when workflows need categorization, multi-stage processes, or philosophy/methodology docs.
+- **Never** skip Workflow Routing, leave workflows orphaned, or over-engineer triggers.
