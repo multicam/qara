@@ -78,6 +78,9 @@ Execution dispatch (recommended by readiness assessment):
 - 3+ independent phases → `turbo: implement {plan-file}`
 - PRD with user stories → `drive:` (separate track, not plan-consuming)
 
+Quality enforcement per mode (gap matrix, coverage definition, `/implement_plan → drive` migration decision):
+→ READ `.claude/context/execution-modes-quality.md`
+
 Plan naming: `domain--specific-feature-vN.md` (e.g., `planning-ux--unified-lifecycle-v1.md`)
 
 ---
