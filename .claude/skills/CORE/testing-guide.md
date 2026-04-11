@@ -70,7 +70,7 @@ describe('feature', () => {
 
 **Vertical slices, not horizontal:** One test at a time. RED→GREEN→REFACTOR per scenario. Never write all tests first then all implementation.
 
-For the full TDD workflow (activation, phase enforcement, mutation testing, escalation): invoke the `tdd-qa` skill or **READ** `tdd-qa/workflows/tdd-cycle.md`.
+For the full TDD workflow (activation, phase enforcement, mutation testing, escalation): invoke the `tdd-qa` skill or **READ** `../tdd-qa/workflows/tdd-cycle.md`.
 
 ---
 

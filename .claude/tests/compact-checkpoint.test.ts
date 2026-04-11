@@ -12,6 +12,9 @@ import { tmpdir } from "os";
 
 const TEST_SESSIONS_DIR = join(tmpdir(), `checkpoint-test-${process.pid}`);
 process.env.SESSIONS_STATE_DIR = TEST_SESSIONS_DIR;
+// Isolate from live mode-state.json so the test doesn't fail when an actual
+// cruise/drive/turbo session is running on the host.
+process.env.MODE_STATE_FILE = join(TEST_SESSIONS_DIR, "mode-state.json");
 
 // Dynamic import after env setup
 const { saveCheckpoint, loadCheckpoint, clearCheckpoint, formatCheckpointSummary } =

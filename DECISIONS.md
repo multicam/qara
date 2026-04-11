@@ -4,6 +4,61 @@ Append-only record of architectural and design decisions. Memory files capture *
 
 ---
 
+## 2026-04-11 — Tool test coverage scorer: 4-rule strict detection with transitive credit
+
+**Chosen:** `isToolCovered()` in `cc-upgrade/scripts/shared.ts` evaluates four rules in order with short-circuiting and cycle-safe memoization: (A) co-located `stem.test.ts`, (B) centralized `.claude/tests/stem.test.ts`, (C) `-lib.ts` whose `foo.ts` companion is covered, (D) `-lib.ts` with an import edge to a covered sibling. Both the base analyzer (`analyzeTddCompliance`) and the PAI extension (`analyzeTddCompliancePAI`) use it. Ships with 9 unit tests covering all 4 rules plus cycle safety.
+
+**Alternatives evaluated:**
+- **Loose heuristic** (any sibling test in same dir counts) — gameable (one stub test grants credit to the whole directory), would hide real gaps.
+- **Pure 1:1 stem matching** (status quo before this change) — under-reports by 47 percentage points; Qara's real coverage was 29/30 = 97% but the scorer saw 15/30 = 50%. Two blind spots: the centralized `.claude/tests/` location (7 files invisible) and transitive coverage via sibling CLIs (7 more invisible).
+- **True coverage via `bun test --coverage` parsing** — most accurate but expensive per-audit-run, couples the scorer to runtime output format, and requires orchestration the analyzer currently avoids.
+- **Single relaxation: add centralized location only** — would close 7 of 14 blind spots but not the transitive `-lib.ts` cases (miner-lib, skill-pulse-lib, generate-image-lib, etc.).
+
+**Why strict-with-transitive won:**
+
+The plan's #2 design decision was explicitly strict over lax (JM's preference: "Rule D requires BOTH an import edge AND a covered importer"). Strictness prevents the same-dir-blanket exemption that would let a single stub test grant coverage credit to arbitrary neighbors. Transitive credit is still honest because it requires a real import edge — the lib is actually exercised when the tested CLI runs.
+
+Rule D regex `(?:from|import)\s+['"]\.\/<stem>(\.ts)?['"]` tolerates both `from './foo-lib'` and bare `import './foo-lib'` (side-effect imports), with or without explicit `.ts` suffix. Both forms appear in Qara. An earlier iteration of the regex only matched `from` syntax and missed miner-trace-lib's imports — caught by the TDD cycle's RED phase.
+
+Cycle safety: the memo map is seeded with `false` for the current node before recursing, so `a-lib ← b-lib ← a-lib` terminates cleanly at `false` rather than infinite recursion. Nine unit tests, including one explicitly for mutual imports.
+
+**Paired change — `analyzeContext` progressive disclosure broadened**: credits any of three signals (classic `context/references/` subdir, any skill with `references/` subdir, or context files using `**READ:?**` directives). The old check only credited signal #1, which Qara doesn't use but every skill does.
+
+**Paired change — `mode-state.ts` STATE_FILE env-overridable**: `MODE_STATE_FILE` env var lets tests isolate from live cruise/drive/turbo state. Without this, `compact-checkpoint.test.ts` fails when a real session is running on the host (the test expected `cp.mode === null` but `readModeState()` returned the live cruise state). Fixed in mode-state.ts and consumed by the test.
+
+**Impact:**
+- PAI audit score: **185/194 → 194/194 (100%)**. CONTEXT 10/15 → 15/15, TDDCOMPLIANCE 18/20 → 20/20, TDDCOMPLIANCEPAI 18/20 → 20/20.
+- Tool coverage: reported `15/30 (50%)` → `30/30 (100%)` after the scorer fix + one real new test (`screenshot-analyze.test.ts`, 16 tests).
+- Test count: 1563 → 1588 (+25: 9 isToolCovered, 16 screenshot-analyze).
+- Two pre-existing issues fixed as side quests during Phase 3's verifier gate: a `cli-examples-basic ⇄ cli-examples-advanced` mutual-See cycle and a stale bare-path reference in `CORE/testing-guide.md:73` that the old graph walker missed because it had a relative-paiDir bug.
+
+**Trade-offs:**
+- The strict rule is still a heuristic, not a proof of coverage. A `-lib.ts` imported by a tested CLI gets credit even if the test only exercises a thin slice of the CLI's public API. Acceptable — the alternative (parsing real coverage output) is an order of magnitude more work for marginal honesty.
+- The scorer now reads every sibling `.ts` file for each `-lib.ts` check (Rule D). For Qara's 30 tool files, this adds ~100 ms to the audit run. Negligible.
+- The import-detection regex is deliberately narrow (same-dir only). If a tool is imported from outside its directory, Rule D will not credit it. In Qara, all `-lib.ts` consumers are same-dir siblings, so this is fine. If cross-dir imports appear, the rule needs expansion.
+
+**Revisit if:**
+- A new skill adds a `-lib.ts` imported from outside its tool directory (e.g., from `scripts/` to `hooks/lib/`) — Rule D will fail silently and the file will appear as uncovered. Extend to walk parent directories.
+- `bun test --coverage` becomes fast and stable enough to parse directly, at which point the heuristic can be retired in favor of actual runtime coverage.
+- The plan's Rule C/D strictness produces false negatives in practice (a `-lib.ts` that exists for code organization reasons, not because a sibling imports it). Unlikely — that's just dead code.
+- More than one loose-heuristic request comes in asking for "why isn't my lib counted?" — the strict rule is the right default, but escape hatches may be needed for edge cases.
+
+**Files touched by this decision:**
+- `.claude/skills/cc-upgrade/scripts/shared.ts` — `isToolCovered()` added (~65 lines)
+- `.claude/skills/cc-upgrade/scripts/shared.test.ts` — 9 new tests
+- `.claude/skills/cc-upgrade/scripts/analyse-claude-folder.ts` — wired `isToolCovered`, added `walkToolSources` single-walk helper, broadened `analyzeContext` to 3 signals
+- `.claude/skills/cc-upgrade-pai/scripts/analyse-pai.ts` — grep target updated for new finding wording
+- `.claude/hooks/lib/mode-state.ts` — `MODE_STATE_FILE` env override
+- `.claude/tests/compact-checkpoint.test.ts` — uses the env override
+- `.claude/skills/devtools-mcp/tools/screenshot-analyze.ts` — 7 exports + `isDirectRun` guard
+- `.claude/tests/screenshot-analyze.test.ts` — new, 16 tests with mocked Ollama
+- `.claude/skills/CORE/testing-guide.md` — stale path fix at line 73 (side quest)
+- `.claude/skills/system-create-cli/references/cli-examples-advanced.md` — cycle break (side quest)
+
+**Plan file:** `thoughts/shared/plans/tdd-qa--coverage-and-scorer-gaps-v1.md`
+
+---
+
 ## 2026-04-11 — CC v2.1.85 conditional `if` field evaluated, not adopted
 
 **Chosen:** Keep existing hook architecture (tight matchers + in-script fast-paths). Do NOT migrate hooks to the per-handler `if` field introduced in CC v2.1.85.

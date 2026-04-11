@@ -1,6 +1,6 @@
 # CLI Generation Examples — Patterns, Testing, Docs
 
-Shared patterns, tier decision matrix, test examples, and documentation templates. See `cli-examples-basic.md` for Examples 1-6.
+Shared patterns, tier decision matrix, test examples, and documentation templates. Examples 1-6 live in the basic examples reference (same directory).
 
 ---
 

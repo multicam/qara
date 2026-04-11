@@ -8,17 +8,57 @@
  */
 
 import { existsSync, readFileSync, readdirSync } from 'fs';
-import { join } from 'path';
+import { basename, join } from 'path';
 import {
     type AnalysisResult,
     type AnalyzerFunction,
     emptyResult,
     findFiles,
     getSkillDirs,
+    isToolCovered,
     parseSkillFrontmatter,
     runAnalysis,
     formatReport,
 } from './shared.ts';
+
+// --- Internal helpers ---
+
+interface ToolCoverageSummary {
+    total: number;
+    tested: number;
+    uncovered: string[]; // relative labels like "skill/sub/file.ts"
+}
+
+/**
+ * Single-walk accounting for all tool/script sources under a skills dir.
+ * Returns total, tested count, and a list of uncovered relative labels —
+ * eliminates the former double-iteration (count, then re-walk for specifics).
+ */
+function walkToolSources(skillsRoot: string, centralTestsDir: string): ToolCoverageSummary {
+    const summary: ToolCoverageSummary = { total: 0, tested: 0, uncovered: [] };
+    if (!existsSync(skillsRoot)) return summary;
+    const memo = new Map<string, boolean>();
+
+    for (const skill of readdirSync(skillsRoot)) {
+        for (const sub of ['tools', 'scripts']) {
+            const dir = join(skillsRoot, skill, sub);
+            if (!existsSync(dir)) continue;
+            let files: string[];
+            try { files = readdirSync(dir); } catch { continue; }
+            for (const f of files) {
+                if (!(f.endsWith('.ts') || f.endsWith('.js'))) continue;
+                if (f.endsWith('.test.ts') || f.endsWith('.test.js')) continue;
+                summary.total++;
+                if (isToolCovered(join(dir, f), centralTestsDir, memo)) {
+                    summary.tested++;
+                } else {
+                    summary.uncovered.push(`${skill}/${sub}/${f}`);
+                }
+            }
+        }
+    }
+    return summary;
+}
 
 // --- Exported analyzers (reusable by extensions) ---
 
@@ -189,9 +229,50 @@ export function analyzeContext(basePath: string): AnalysisResult {
         results.recommendations.push(`Split ${oversized} oversized file(s)`);
     }
 
+    // Progressive disclosure — credit any of three signals:
+    //   1. context/references/ subdir (classic UFC)
+    //   2. any skill has a references/ subdir
+    //   3. context .md files use READ directives
+    let progressiveDisclosureSignal = false;
+    let signalSource = '';
+
     if (existsSync(join(contextPath, 'references'))) {
+        progressiveDisclosureSignal = true;
+        signalSource = 'context/references/';
+    }
+
+    if (!progressiveDisclosureSignal) {
+        const skillsDir = join(basePath, '.claude', 'skills');
+        if (existsSync(skillsDir)) {
+            try {
+                const skills = readdirSync(skillsDir);
+                const withRefs = skills.filter(s => existsSync(join(skillsDir, s, 'references')));
+                if (withRefs.length > 0) {
+                    progressiveDisclosureSignal = true;
+                    signalSource = `${withRefs.length} skill(s) with references/`;
+                }
+            } catch { /* skip */ }
+        }
+    }
+
+    if (!progressiveDisclosureSignal) {
+        for (const file of mdFiles) {
+            try {
+                const content = readFileSync(file, 'utf-8');
+                if (/\*\*READ:?\*\*|→\s*READ:?|->\s*READ:?/.test(content)) {
+                    progressiveDisclosureSignal = true;
+                    signalSource = `${basename(file)} uses READ directives`;
+                    break;
+                }
+            } catch { /* skip */ }
+        }
+    }
+
+    if (progressiveDisclosureSignal) {
         results.score += 5;
-        results.findings.push('OK: Progressive disclosure (references/)');
+        results.findings.push(`OK: Progressive disclosure detected (${signalSource})`);
+    } else {
+        results.recommendations.push('Use progressive disclosure: references/ subdir or READ directives in context');
     }
 
     return results;
@@ -280,17 +361,18 @@ export function analyzeTddCompliance(basePath: string): AnalysisResult {
         results.recommendations.push('Add test script to package.json or configure bunfig.toml [test]');
     }
 
-    // 3. Co-located tests for hooks (4 pts)
+    // 3. Hook test coverage (4 pts) — uses isToolCovered to accept both
+    // co-located and centralized `.claude/tests/` test locations.
     const hooksDir = join(claudeDir, 'hooks');
+    const centralTestsDir = join(claudeDir, 'tests');
     if (existsSync(hooksDir)) {
         const hookScripts = readdirSync(hooksDir).filter(f =>
             (f.endsWith('.ts') || f.endsWith('.js')) && !f.endsWith('.test.ts') && !f.endsWith('.test.js')
         );
-        const hookTests = readdirSync(hooksDir).filter(f => f.endsWith('.test.ts') || f.endsWith('.test.js'));
-        const hooksTested = hookScripts.filter(h => {
-            const base = h.replace(/\.(ts|js)$/, '');
-            return hookTests.some(t => t.startsWith(base));
-        });
+        const memo = new Map<string, boolean>();
+        const hooksTested = hookScripts.filter(h =>
+            isToolCovered(join(hooksDir, h), centralTestsDir, memo)
+        );
 
         if (hookScripts.length > 0) {
             const pct = Math.round((hooksTested.length / hookScripts.length) * 100);
@@ -309,40 +391,25 @@ export function analyzeTddCompliance(basePath: string): AnalysisResult {
         }
     }
 
-    // 4. Co-located tests for tools (4 pts)
+    // 4. Tool test coverage (4 pts) — single walk using isToolCovered which
+    // recognizes centralized tests and sibling-CLI transitive coverage.
     const skillsDir = join(claudeDir, 'skills');
     if (existsSync(skillsDir)) {
-        let totalTools = 0;
-        let testedTools = 0;
-        for (const skillDir of readdirSync(skillsDir)) {
-            const toolsDir = join(skillsDir, skillDir, 'tools');
-            const scriptsDir = join(skillsDir, skillDir, 'scripts');
-            for (const dir of [toolsDir, scriptsDir]) {
-                if (!existsSync(dir)) continue;
-                try {
-                    const files = readdirSync(dir);
-                    const sources = files.filter(f => (f.endsWith('.ts') || f.endsWith('.js')) && !f.endsWith('.test.ts') && !f.endsWith('.test.js'));
-                    const tests = files.filter(f => f.endsWith('.test.ts') || f.endsWith('.test.js'));
-                    for (const src of sources) {
-                        totalTools++;
-                        const base = src.replace(/\.(ts|js)$/, '');
-                        if (tests.some(t => t.startsWith(base))) testedTools++;
-                    }
-                } catch {}
-            }
-        }
-
-        if (totalTools > 0) {
-            const pct = Math.round((testedTools / totalTools) * 100);
-            if (testedTools === totalTools) {
+        const cov = walkToolSources(skillsDir, centralTestsDir);
+        if (cov.total > 0) {
+            const pct = Math.round((cov.tested / cov.total) * 100);
+            if (cov.tested === cov.total) {
                 results.score += 4;
-                results.findings.push(`OK: ${testedTools}/${totalTools} tools/scripts have co-located tests (100%)`);
-            } else if (testedTools > 0) {
+                results.findings.push(`OK: ${cov.tested}/${cov.total} tools/scripts covered by tests (100%)`);
+            } else if (cov.tested > 0) {
                 results.score += 2;
-                results.findings.push(`OK: ${testedTools}/${totalTools} tools/scripts have co-located tests (${pct}%)`);
+                results.findings.push(`OK: ${cov.tested}/${cov.total} tools/scripts covered by tests (${pct}%)`);
+                const preview = cov.uncovered.slice(0, 5).join(', ');
+                const more = cov.uncovered.length > 5 ? ` (+${cov.uncovered.length - 5} more)` : '';
+                results.recommendations.push(`Add tests for: ${preview}${more}`);
             } else {
-                results.findings.push('NO: No tools/scripts have co-located tests');
-                results.recommendations.push('Add .test.ts files for skill tools and scripts');
+                results.findings.push('NO: No tools/scripts have test coverage');
+                results.recommendations.push('Add tests for skill tools and scripts');
             }
         }
     }

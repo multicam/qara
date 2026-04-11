@@ -68,7 +68,10 @@ const EXTENSION_DEFAULTS: Record<ModeName, { maxExtensions: number; extensionSiz
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
-const STATE_FILE = join(STATE_DIR, "mode-state.json");
+// Allow tests to override via env var. Without this, any test that constructs
+// isolated fixtures will still see the live mode-state.json when a real
+// cruise/drive/turbo session is running, which breaks their isolation assumptions.
+const STATE_FILE = process.env.MODE_STATE_FILE || join(STATE_DIR, "mode-state.json");
 const TTL_MS = 4 * 60 * 60 * 1000; // 4 hours
 const VALID_MODES: ModeName[] = ["drive", "cruise", "turbo"];
 

@@ -25,7 +25,7 @@ interface AnalysisResult {
     model: string;
 }
 
-function parseIssues(response: string, passPhrase: string): { issues: string[]; passed: boolean } {
+export function parseIssues(response: string, passPhrase: string): { issues: string[]; passed: boolean } {
     const issues = response
         .split('\n')
         .filter(l => l.trim().startsWith('*') || l.trim().startsWith('-'))
@@ -34,7 +34,7 @@ function parseIssues(response: string, passPhrase: string): { issues: string[]; 
     return { issues, passed };
 }
 
-function printResults(results: AnalysisResult[], jsonOutput: boolean, summaryNoun: string): void {
+export function printResults(results: AnalysisResult[], jsonOutput: boolean, summaryNoun: string): void {
     if (jsonOutput) {
         console.log(JSON.stringify(results, null, 2));
     } else {
@@ -47,7 +47,7 @@ function printResults(results: AnalysisResult[], jsonOutput: boolean, summaryNou
     }
 }
 
-async function ollamaVision(
+export async function ollamaVision(
     prompt: string,
     images: string[],
     model: string = DEFAULT_MODEL,
@@ -68,11 +68,11 @@ async function ollamaVision(
     return data.message.content;
 }
 
-function imageToBase64(filepath: string): string {
+export function imageToBase64(filepath: string): string {
     return readFileSync(filepath).toString('base64');
 }
 
-function findImages(dir: string): string[] {
+export function findImages(dir: string): string[] {
     if (!existsSync(dir)) return [];
     const files: string[] = [];
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -86,7 +86,7 @@ function findImages(dir: string): string[] {
     return files;
 }
 
-async function analyzeSingle(filepath: string, model: string): Promise<AnalysisResult> {
+export async function analyzeSingle(filepath: string, model: string): Promise<AnalysisResult> {
     const b64 = imageToBase64(filepath);
     const response = await ollamaVision(
         'Analyze this webpage screenshot. Flag: layout breaks, overlapping elements, text readability issues, broken images, dark mode contrast problems. If everything looks fine, say "No visual issues." Max 5 bullets. No preamble.',
@@ -97,7 +97,7 @@ async function analyzeSingle(filepath: string, model: string): Promise<AnalysisR
     return { file: filepath, passed, issues, model };
 }
 
-async function compareImages(
+export async function compareImages(
     baselinePath: string,
     currentPath: string,
     model: string,
@@ -113,7 +113,7 @@ async function compareImages(
     return { file: currentPath, passed, issues, model };
 }
 
-async function main(): Promise<void> {
+export async function main(): Promise<void> {
     const args = process.argv.slice(2);
 
     if (args.includes('--help') || args.includes('-h') || args.length === 0) {
@@ -193,4 +193,10 @@ async function main(): Promise<void> {
     }
 }
 
-main();
+// Direct-run guard — prevents main() from executing during test imports.
+// Matches the pattern used in cc-version-check.ts and analyse-pai.ts.
+const isDirectRun = import.meta.path === Bun.main ||
+    process.argv[1]?.endsWith('screenshot-analyze.ts');
+if (isDirectRun) {
+    main().catch(err => { console.error(err); process.exit(1); });
+}

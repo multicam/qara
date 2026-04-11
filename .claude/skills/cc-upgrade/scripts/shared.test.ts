@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, test, beforeEach, afterEach } from 'bun:test';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
@@ -6,6 +6,7 @@ import {
     emptyResult,
     findFiles,
     getSkillDirs,
+    isToolCovered,
     parseSkillFrontmatter,
     runAnalysis,
     formatReport,
@@ -162,5 +163,96 @@ describe('formatReport', () => {
         expect(output).toContain('7/10');
         expect(output).toContain('70%');
         expect(output).toContain('OK: test');
+    });
+});
+
+describe('isToolCovered', () => {
+    let root: string;
+    let toolsDir: string;
+    let centralTestsDir: string;
+
+    // Fixture helpers — keep tests declarative, eliminate repeated filesystem scaffolding
+    const tool = (name: string, content = 'export {};') =>
+        writeFileSync(join(toolsDir, name), content);
+    const importsLib = (lib: string) => `import './${lib}';\nexport {};`;
+    const colocatedTest = (stem: string) =>
+        writeFileSync(join(toolsDir, `${stem}.test.ts`), 'test("", () => {});');
+    const centralTest = (stem: string) =>
+        writeFileSync(join(centralTestsDir, `${stem}.test.ts`), 'test("", () => {});');
+    const covered = (stem: string) =>
+        isToolCovered(join(toolsDir, `${stem}.ts`), centralTestsDir);
+
+    beforeEach(() => {
+        root = mkdtempSync(join(tmpdir(), 'cov-'));
+        toolsDir = join(root, 'skill-x', 'tools');
+        centralTestsDir = join(root, 'tests');
+        mkdirSync(toolsDir, { recursive: true });
+        mkdirSync(centralTestsDir, { recursive: true });
+    });
+
+    afterEach(() => { rmSync(root, { recursive: true, force: true }); });
+
+    test('Rule A: same-directory .test.ts', () => {
+        tool('foo.ts');
+        colocatedTest('foo');
+        expect(covered('foo')).toBe(true);
+    });
+
+    test('Rule B: centralized test location', () => {
+        tool('bar.ts');
+        centralTest('bar');
+        expect(covered('bar')).toBe(true);
+    });
+
+    test('Rule C: -lib.ts whose stem.ts companion is covered', () => {
+        tool('baz.ts', importsLib('baz-lib'));
+        tool('baz-lib.ts');
+        centralTest('baz');
+        expect(covered('baz-lib')).toBe(true);
+    });
+
+    test('Rule D: -lib.ts imported by covered sibling with different name', () => {
+        // miner-lib.ts ← imported by introspect-miner.ts ← centrally tested
+        tool('miner-lib.ts');
+        tool('introspect-miner.ts', importsLib('miner-lib'));
+        centralTest('introspect-miner');
+        expect(covered('miner-lib')).toBe(true);
+    });
+
+    test('Rule D: explicit .ts extension in import string', () => {
+        // analyse-pai.ts uses `from './analyse-pai-lib.ts'` style
+        tool('dep-lib.ts');
+        tool('importer.ts', `import { x } from './dep-lib.ts';\nexport {};`);
+        colocatedTest('importer');
+        expect(covered('dep-lib')).toBe(true);
+    });
+
+    test('Rule D transitive: two-hop import chain to a covered CLI', () => {
+        // Real-world analogue: miner-mode-lib ← miner-trace-lib ← introspect-miner.
+        // Synthetic fixture uses generic names to mirror the graph shape.
+        tool('leaf-lib.ts');
+        tool('middle-lib.ts', importsLib('leaf-lib'));
+        tool('root-cli.ts', importsLib('middle-lib'));
+        centralTest('root-cli');
+        expect(covered('leaf-lib')).toBe(true);
+    });
+
+    test('uncovered source returns false', () => {
+        tool('lonely.ts');
+        expect(covered('lonely')).toBe(false);
+    });
+
+    test('non-lib file gets no transitive credit', () => {
+        // screenshot-analyze.ts case: not *-lib.ts, so Rules C/D do not apply
+        tool('screenshot-analyze.ts');
+        tool('other.ts', importsLib('screenshot-analyze'));
+        centralTest('other');
+        expect(covered('screenshot-analyze')).toBe(false);
+    });
+
+    test('cycle-safe: mutual imports terminate', () => {
+        tool('a-lib.ts', importsLib('b-lib'));
+        tool('b-lib.ts', importsLib('a-lib'));
+        expect(covered('a-lib')).toBe(false);
     });
 });

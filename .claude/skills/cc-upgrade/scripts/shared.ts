@@ -5,7 +5,7 @@
  */
 
 import { existsSync, readFileSync, readdirSync, statSync } from 'fs';
-import { join } from 'path';
+import { basename, dirname, join } from 'path';
 
 // --- Types ---
 
@@ -64,6 +64,80 @@ export function getSkillDirs(skillsPath: string): string[] {
     return readdirSync(skillsPath, { withFileTypes: true })
         .filter(d => d.isDirectory())
         .map(d => d.name);
+}
+
+/**
+ * Determine whether a tool source file is covered by tests.
+ *
+ * Four rules, evaluated in order with short-circuit. Memoized and cycle-safe.
+ *
+ *   A) same-dir `stem.test.ts` (or `.test.js`) exists
+ *   B) centralized `<centralTestsDir>/stem.test.ts` exists
+ *   C) file is `foo-lib.ts` and its `foo.ts` sibling is covered (recursive)
+ *   D) file is `foo-lib.ts` and some sibling `.ts` file imports it AND that
+ *      sibling is itself covered (strict: both an import edge AND coverage)
+ *
+ * Rule D regex tolerates bare `from './foo-lib'` AND explicit-extension
+ * `from './foo-lib.ts'` since both styles exist in the Qara codebase.
+ *
+ * Cycle safety: the memo map is seeded with `false` for the current node
+ * before recursing, so mutual imports terminate cleanly rather than recurse
+ * infinitely.
+ */
+export function isToolCovered(
+    sourceFile: string,
+    centralTestsDir: string,
+    memo: Map<string, boolean> = new Map(),
+): boolean {
+    if (memo.has(sourceFile)) return memo.get(sourceFile)!;
+    memo.set(sourceFile, false); // assume false to break cycles
+
+    const dir = dirname(sourceFile);
+    const base = basename(sourceFile);
+    const stem = base.replace(/\.(ts|js)$/, '');
+
+    // Single write point for memo+return — prevents 4× set/return copy-paste
+    // that creeps in when each rule inlines its own terminator.
+    const hit = (): true => { memo.set(sourceFile, true); return true; };
+
+    // Rule A: co-located test
+    if (existsSync(join(dir, `${stem}.test.ts`)) || existsSync(join(dir, `${stem}.test.js`))) return hit();
+
+    // Rule B: centralized tests directory
+    if (existsSync(centralTestsDir) && (
+        existsSync(join(centralTestsDir, `${stem}.test.ts`)) ||
+        existsSync(join(centralTestsDir, `${stem}.test.js`))
+    )) return hit();
+
+    // Rules C & D only apply to -lib.ts modules
+    if (stem.endsWith('-lib')) {
+        // Rule C: companion {stem-without-lib}.ts is covered
+        const companion = stem.slice(0, -'-lib'.length);
+        const companionPath = join(dir, `${companion}.ts`);
+        if (existsSync(companionPath) && isToolCovered(companionPath, centralTestsDir, memo)) return hit();
+
+        // Rule D: any sibling .ts file that imports this lib AND is itself covered.
+        // Regex tolerates:
+        //   - `from './foo-lib'` and `from './foo-lib.ts'`  (named/default imports, re-exports)
+        //   - `import './foo-lib'` and `import './foo-lib.ts'`  (bare side-effect imports)
+        // `analyse-pai.ts` uses the explicit-.ts style, and bare imports appear in test
+        // fixtures and side-effect-only modules.
+        try {
+            const importRegex = new RegExp(`(?:from|import)\\s+['"]\\.\\/${stem}(\\.ts)?['"]`);
+            const siblings = readdirSync(dir).filter(f =>
+                f.endsWith('.ts') && !f.endsWith('.test.ts') && f !== base
+            );
+            for (const sibling of siblings) {
+                const siblingPath = join(dir, sibling);
+                let content: string;
+                try { content = readFileSync(siblingPath, 'utf-8'); } catch { continue; }
+                if (!importRegex.test(content)) continue;
+                if (isToolCovered(siblingPath, centralTestsDir, memo)) return hit();
+            }
+        } catch { /* dir unreadable — skip */ }
+    }
+
+    return false;
 }
 
 /** Check if a SKILL.md has valid frontmatter (returns { valid, name, context }) */

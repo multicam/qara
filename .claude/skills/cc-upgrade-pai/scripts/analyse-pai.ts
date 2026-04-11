@@ -120,8 +120,12 @@ export function analyzeTddCompliancePAI(paiPath: string): AnalysisResult {
         }
     }
 
-    // 5. Tool test coverage (3 pts) — reuses base finding
-    const toolFinding = base.findings.find(f => f.includes('tools/scripts have co-located'));
+    // 5. Tool test coverage (3 pts) — reuses base finding.
+    // Accept either legacy "have co-located tests" or current "covered by tests" phrasing.
+    const toolFinding = base.findings.find(f =>
+        f.includes('tools/scripts covered by tests') ||
+        f.includes('tools/scripts have co-located')
+    );
     if (toolFinding && toolFinding.includes('100%')) {
         results.score += 3;
         results.findings.push('OK: 100% tool/script test coverage');
