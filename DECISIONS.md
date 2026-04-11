@@ -4,6 +4,55 @@ Append-only record of architectural and design decisions. Memory files capture *
 
 ---
 
+## 2026-04-11 — CC v2.1.85 conditional `if` field evaluated, not adopted
+
+**Chosen:** Keep existing hook architecture (tight matchers + in-script fast-paths). Do NOT migrate hooks to the per-handler `if` field introduced in CC v2.1.85.
+
+**Alternatives:**
+- Migrate every tool-event hook to `if`-filtered variants with glob patterns (e.g., `"Bash(rm *)"`, `"Edit(*.ts)"`)
+- Split multi-responsibility hooks into many narrow `if`-filtered handlers
+- Adopt `if` only for new hooks, leave existing ones alone
+
+**Why NOT adopted:**
+
+Measured baseline (7-day window, 19,681 tool calls):
+- ~5,477 hook spawns/day total
+- Per-hook real wall-time (measured via `/usr/bin/time`, 5 samples): bun hooks ~20ms, shell hooks ~10ms
+- Total daily hook overhead: ~100 seconds/day (~1.7 min/day, ~50 min/month)
+
+Per-hook analysis:
+1. **rtk-rewrite.sh** (Bash matcher) — already filters via rtk's own exit codes. `if` can't express "all Bash except trivial" without negation. Glob patterns can't target the no-rewrite set.
+2. **pre-tool-use-security.ts** (Bash matcher) — 30+ dangerous-command regex patterns including complex lookaheads (`/rm\s+(-[rfRF]+\s+)*\/(?!tmp\b|home\b)/`). Glob patterns cannot express these. Narrowing the `if` would lose security coverage — non-negotiable.
+3. **pre-tool-use-tdd.ts** (Write/Edit/MultiEdit) — has a fast-path that exits in ~20ms when no TDD state exists. Narrowing to source extensions saves ~5s/day. The source-file bug (see below) is better fixed in-script.
+4. **pre-tool-use-quality.ts** (Write/Edit/MultiEdit) — runs read-before-edit enforcement (load-bearing per #42796) on ALL file types. Cannot narrow without losing coverage.
+5. **post-tool-use.ts** (`*` matcher) — logs every tool call to `tool-usage.jsonl`; introspection miner depends on full log. Cannot narrow.
+6. **post-tool-failure.ts / permission-denied.ts** — fire on rare events (failures, denials) and need full coverage.
+
+Qara's hook architecture is already well-optimized: tool-type matchers are tight (`Bash`, `Write`, `Edit`, `MultiEdit`, not `*` where avoidable), hooks with fast-paths short-circuit in <20ms, broad `*` matchers exist only where full coverage is a requirement (logging, audit, security). The `if` field offers the most leverage for hooks that are broadly-matched AND have no fast-path AND only care about a narrow glob-expressible subset — none of Qara's existing hooks meet all three criteria.
+
+Realistic savings if `if` were adopted for TDD hook narrowing: **~5 seconds/day** (=2.5 minutes/month). Not worth the settings.json complexity or the maintenance cost of per-handler `if` entries.
+
+**Trade-offs:**
+- Miss out on the ~5 seconds/day TDD savings. Acceptable — that's noise compared to the ~$30-60/month saved from today's model-tier downgrade.
+- Future hooks must still evaluate `if` applicability at authoring time. Added to `hook-authoring` skill as a required check.
+
+**What this evaluation DID produce:**
+1. **TDD hook correctness fix** (committed 2026-04-11): `pre-tool-use-tdd.ts` previously denied non-source file edits during RED phase because `isTestFile(.md) = false`. Editing `README.md` or `package.json` during RED phase was being denied with "cannot edit source file" which is wrong — docs and configs are not part of the TDD cycle. Added a `SOURCE_EXTENSIONS` gate (.ts/.tsx/.js/.jsx/.mjs/.cjs/.svelte/.py/.rb/.go/.rs/.java/.kt/.php) so TDD enforcement only applies to behavioral source. 6 new tests added, 1557 tests pass.
+2. **hook-authoring skill updated** with `if` field documentation and a "when to use it" decision matrix for future hook authors.
+
+**Revisit if:**
+- CC adds negation or alternation to permission rule syntax (e.g., `Bash(!git *)` or `Edit(*.{ts,tsx})`).
+- A new hook is authored that genuinely satisfies: broad matcher + no fast-path + narrow glob-expressible subset. Use `if` from the start for those.
+- The hook-overhead wall-time grows substantially (>5 minutes/day) — re-measure and re-evaluate.
+- CC `/cost` per-model breakdown reveals hook-execution overhead on cache-read tokens we haven't been tracking.
+
+**Files touched by this decision:**
+- `.claude/hooks/pre-tool-use-tdd.ts` — source-extension gate added
+- `.claude/hooks/pre-tool-use-tdd.test.ts` — 6 new tests for non-source RED behavior
+- `.claude/skills/hook-authoring/SKILL.md` — `if` field documentation + authoring checklist
+
+---
+
 ## 2025-12-15 — Hooks use readFileSync(0) for stdin
 
 **Chosen:** `readFileSync(0, 'utf-8')` for all hook stdin reading

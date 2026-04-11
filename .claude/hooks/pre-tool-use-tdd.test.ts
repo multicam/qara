@@ -141,6 +141,35 @@ describe("pre-tool-use-tdd.ts", () => {
       const { decision } = parseHookDecision(result.stdout);
       expect(decision).toBe("allow");
     });
+
+    // --- Non-source files (docs, configs) — must be allowed during RED ---
+    // TDD enforcement is about source code, not documentation or configuration.
+    // Editing README.md during RED phase is not "cheating the cycle".
+
+    async function expectDecision(input: object, expected: "allow" | "deny") {
+      const result = await runHook(input);
+      expect(result.exitCode).toBe(0);
+      const { decision } = parseHookDecision(result.stdout);
+      expect(decision).toBe(expected);
+    }
+
+    const multiEdit = (paths: string[]) => ({
+      tool_name: "MultiEdit",
+      tool_input: { edits: paths.map((p) => ({ file_path: p, old_string: "a", new_string: "b" })) },
+    });
+
+    it("should allow Write to a markdown file", () => expectDecision(writeInput("/tmp/docs/README.md"), "allow"));
+    it("should allow Edit to a markdown file", () => expectDecision(editInput("/tmp/docs/architecture.md"), "allow"));
+    it("should allow Write to a JSON config file", () => expectDecision(writeInput("/tmp/foo/package.json"), "allow"));
+    it("should allow Edit to a YAML config file", () => expectDecision(editInput("/tmp/foo/config.yml"), "allow"));
+    it("should allow Edit to a .gitignore", () => expectDecision(editInput("/tmp/foo/.gitignore"), "allow"));
+
+    it("should allow MultiEdit on docs + configs (no source)", () =>
+      expectDecision(multiEdit(["/tmp/docs/README.md", "/tmp/foo/config.yml"]), "allow"));
+
+    // Mixed batch: docs are fine but touching a source file during RED still blocks
+    it("should DENY MultiEdit mixing .md docs with .ts source", () =>
+      expectDecision(multiEdit(["/tmp/docs/README.md", "/tmp/src/auth.ts"]), "deny"));
   });
 
   describe("GREEN phase", () => {

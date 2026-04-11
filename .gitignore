@@ -16,4 +16,7 @@ thoughts/
 
 .venv
 
+# Runtime artifacts from cc-upgrade-pai gap-tracker (regenerated on demand)
+.claude/skills/cc-upgrade-pai/references/gap-manifest.json
+
 # TDD baselines and mutation testing → global gitignore (~/.gitignore_global)

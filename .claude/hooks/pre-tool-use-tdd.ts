@@ -28,6 +28,14 @@ interface HookInput {
   tool_input: Record<string, unknown>;
 }
 
+// TDD enforcement applies only to behavioral source code. Docs, configs,
+// data files, and build artifacts are not part of the test-first cycle.
+const SOURCE_EXTENSIONS = /\.(ts|tsx|js|jsx|mjs|cjs|svelte|py|rb|go|rs|java|kt|php)$/i;
+
+function isSourceFile(filePath: string): boolean {
+  return SOURCE_EXTENSIONS.test(filePath);
+}
+
 // ─── Output helpers ─────────────────────────────────────────────────────────
 
 function allow(context?: string): void {
@@ -135,10 +143,18 @@ function main(): void {
       return;
     }
 
-    // Check each file path
+    // Source-extension gate: TDD enforcement only applies to behavioral source.
+    // Docs, configs, data files, and build artifacts are always allowed.
+    // Filter to source paths; if none remain, allow the whole batch.
+    const sourcePaths = filePaths.filter(isSourceFile);
+    if (sourcePaths.length === 0) {
+      return;
+    }
+
+    // Check each source file path
     let advisoryContext: string | undefined;
 
-    for (const filePath of filePaths) {
+    for (const filePath of sourcePaths) {
       const isTest = isTestFile(filePath);
 
       if (state.phase === "RED") {

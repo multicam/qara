@@ -47,6 +47,57 @@ description: |
 }
 ```
 
+### Handler schema (per hook entry)
+
+```json
+{
+  "type": "command",
+  "if": "Bash(git *)",        // optional, CC v2.1.85+ — see below
+  "command": "path/to/script.sh",
+  "timeout": 1000,
+  "statusMessage": "...",      // optional spinner text
+  "once": false,               // optional: run once per session
+  "async": false               // optional: run in background
+}
+```
+
+### Conditional `if` field (CC v2.1.85+)
+
+Glob pattern using permission-rule syntax. If the condition doesn't match, the hook never spawns — zero process overhead. **Tool events only** (`PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `PermissionDenied`, `PermissionRequest`). Single-pattern; no regex, no negation, no alternation.
+
+**Use `if` when ALL of these are true:**
+
+| Criterion | Why |
+|---|---|
+| Matcher is broad (`*` or whole tool type) | Tight matchers already filter at the outer level |
+| No in-script fast-path possible | If the hook can short-circuit quickly itself, bun startup (~20ms) is the floor — `if` saves only that floor |
+| Hook only cares about a narrow glob-expressible subset | `if` uses glob patterns; complex regex patterns can't migrate |
+| Missing the filter would cost measurable wall-time | Measure actual per-hook `time` before optimizing |
+
+**Do NOT use `if` when:**
+- The matcher is already tool-type-specific (`Bash`, `Write`, etc.)
+- The hook needs full coverage for audit/logging (`post-tool-use.ts`, `post-tool-failure.ts`)
+- The filter logic needs regex, lookahead, or negation (security hooks)
+- The hook has a sub-20ms fast-path — `if` saves process startup (~20ms), not script time
+
+**Examples:**
+
+```json
+// GOOD: new hook that only cares about rm commands
+{ "type": "command", "if": "Bash(rm *)", "command": "${PAI_DIR}/hooks/block-rm.sh" }
+
+// GOOD: new hook that only cares about .ts edits
+{ "type": "command", "if": "Edit(*.ts)", "command": "${PAI_DIR}/hooks/ts-lint.sh" }
+
+// BAD: hook already filters in-script, minimal savings
+{ "type": "command", "if": "Edit(*.ts)", "command": "${PAI_DIR}/hooks/pre-tool-use-tdd.ts" }
+
+// BAD: security coverage loss
+{ "type": "command", "if": "Bash(rm *)", "command": "${PAI_DIR}/hooks/security.ts" }
+```
+
+See `DECISIONS.md 2026-04-11 — CC v2.1.85 conditional `if` field evaluated, not adopted` for why none of Qara's existing hooks use `if`.
+
 ---
 
 ## I/O Contract
@@ -104,6 +155,7 @@ const sessionFile = `${PAI_DIR}/state/sessions/${input.session_id}.json`;
 6. **Log errors to stderr** — `console.error`, not `console.log`. stdout is reserved for hook output JSON.
 7. **Security regex:** ALWAYS_BLOCKED patterns must NOT use `$` anchor alone — use `(;|&&|\|\||$)` to cover chained commands.
 8. **Session debounce:** lockfiles must include session ID to avoid cross-session interference.
+9. **Evaluate `if` field at authoring time** — if the hook is a tool event AND matches the "use `if`" criteria above, use it from the start. Retrofitting is cheap but measuring shows it rarely pays off after-the-fact (see DECISIONS.md 2026-04-11).
 
 ---
 
