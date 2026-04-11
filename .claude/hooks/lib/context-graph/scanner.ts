@@ -175,14 +175,14 @@ export function discoverNodes(paiDir: string): ContextNode[] {
 
 // Reference patterns — cover all routing syntaxes used across skills
 //
-// READ variants:
+// READ variants (colon optional to tolerate both **READ:** and **READ** styles):
 //   → **READ:** `path`         (CORE style, with backticks)
+//   **READ** `path`            (CORE SKILL.md Documentation Index style)
 //   → **READ:** path           (system-create-skill style, no backticks)
 //   -> **READ:** path          (hook-authoring style, ASCII arrow)
 //   **READ:** `path`           (humaniser style, no arrow)
-//   read `path`                (humaniser lowercase)
-const READ_BACKTICK = /\*\*READ:\*\*\s*`([^`]+)`/gi;
-const READ_ARROW_BARE = /(?:→|->)\s*\*\*READ:\*\*\s+([^\s`][^\s]*)/g;
+const READ_BACKTICK = /\*\*READ:?\*\*\s*`([^`]+)`/gi;
+const READ_ARROW_BARE = /(?:→|->)\s*\*\*READ:?\*\*\s+([^\s`][^\s]*)/g;
 
 // Route to: `path` (system-create-cli style)
 const ROUTE_PATTERN = /\*\*Route to:\*\*\s*`([^`]+)`/g;
@@ -369,6 +369,11 @@ export function extractReferences(
  * Scan all nodes and extract all edges
  */
 export function scanAll(paiDir: string): { nodes: ContextNode[]; edges: ContextEdge[] } {
+  // Normalize paiDir to absolute so node IDs and edge targets share the same path form.
+  // Without this, CLI callers passing a relative --pai-dir produce node IDs keyed on
+  // relative paths while edge targets (from resolve()) are absolute — causing
+  // reverseAdjacency to never match and every file to look orphaned.
+  paiDir = resolve(paiDir);
   const skillsDir = join(paiDir, 'skills');
   const nodes = discoverNodes(paiDir);
   const edges: ContextEdge[] = [];

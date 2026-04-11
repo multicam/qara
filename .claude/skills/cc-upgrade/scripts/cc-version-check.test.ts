@@ -1,10 +1,14 @@
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, test, beforeEach, afterEach } from 'bun:test';
 import {
     parseVersion,
     compareVersions,
     FEATURE_REQUIREMENTS,
     generateReport,
+    checkFeatureUsage,
 } from './cc-version-check.ts';
+import { mkdtempSync, rmSync, writeFileSync, mkdirSync } from 'fs';
+import { tmpdir } from 'os';
+import { join } from 'path';
 
 describe('parseVersion', () => {
     test('parses simple version', () => {
@@ -89,5 +93,77 @@ describe('generateReport', () => {
             r.message.includes('2.0+')
         );
         expect(hasUpgradeRec).toBe(true);
+    });
+
+    test('does not recommend undetectable features when missing', () => {
+        // lsp, desktopApp, bedrockSupport, etc. are marked detectable: false —
+        // they're environment/CLI-only and we can't prove non-use from files.
+        const report = generateReport('2.1.101', '/usr/local/bin/claude', '/tmp');
+        const undetectableNames = ['lsp', 'desktopApp', 'vscodeExtension', 'bedrockSupport', 'vertexSupport'];
+        const noiseRecs = report.recommendations.filter(r =>
+            r.feature && undetectableNames.includes(r.feature)
+        );
+        expect(noiseRecs.length).toBe(0);
+    });
+});
+
+describe('checkFeatureUsage content detection', () => {
+    let tmpRoot: string;
+    let claudeDir: string;
+
+    beforeEach(() => {
+        tmpRoot = mkdtempSync(join(tmpdir(), 'cc-version-check-'));
+        claudeDir = join(tmpRoot, '.claude');
+        mkdirSync(claudeDir);
+        mkdirSync(join(claudeDir, 'agents'));
+        mkdirSync(join(claudeDir, 'skills'));
+        mkdirSync(join(claudeDir, 'commands'));
+        writeFileSync(join(claudeDir, 'settings.json'), JSON.stringify({ hooks: {} }));
+    });
+
+    afterEach(() => {
+        rmSync(tmpRoot, { recursive: true, force: true });
+    });
+
+    test('detects modelRouting from agent frontmatter', () => {
+        writeFileSync(
+            join(claudeDir, 'agents', 'engineer.md'),
+            '---\nname: engineer\nmodel: sonnet\n---\nBody'
+        );
+        const usage = checkFeatureUsage(tmpRoot);
+        expect(usage.modelRouting).toBe(true);
+    });
+
+    test('does not detect modelRouting without per-agent model field', () => {
+        writeFileSync(
+            join(claudeDir, 'agents', 'engineer.md'),
+            '---\nname: engineer\n---\nBody'
+        );
+        const usage = checkFeatureUsage(tmpRoot);
+        expect(usage.modelRouting).toBeFalsy();
+    });
+
+    test('detects webSearch from skill content', () => {
+        mkdirSync(join(claudeDir, 'skills', 'research'));
+        writeFileSync(
+            join(claudeDir, 'skills', 'research', 'SKILL.md'),
+            '---\nname: research\n---\nUses WebSearch for fallback.'
+        );
+        const usage = checkFeatureUsage(tmpRoot);
+        expect(usage.webSearch).toBe(true);
+    });
+
+    test('detects askUserQuestion from command files', () => {
+        writeFileSync(
+            join(claudeDir, 'commands', 'interview.md'),
+            'Interview flow uses AskUserQuestion to gather structured input.'
+        );
+        const usage = checkFeatureUsage(tmpRoot);
+        expect(usage.askUserQuestion).toBe(true);
+    });
+
+    test('detects mergedSkillsCommands when both dirs exist', () => {
+        const usage = checkFeatureUsage(tmpRoot);
+        expect(usage.mergedSkillsCommands).toBe(true);
     });
 });

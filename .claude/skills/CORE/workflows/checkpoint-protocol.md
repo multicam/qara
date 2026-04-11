@@ -16,17 +16,9 @@ CC 2.0+ auto-checkpoints before file modifications. Use `/rewind` to recover.
 
 ## Auto-Checkpoints
 
-CC checkpoints before:
-- File modifications (Write, Edit)
-- Destructive bash (rm, git reset, etc.)
-- Multi-file refactoring
-- Git history-modifying ops
+CC checkpoints automatically before file modifications (Write, Edit, NotebookEdit). There is no API for named or explicit checkpoints — the CLI snapshots on every file-touching turn, and `/rewind` shows the list. Treat checkpoint creation as free and automatic; your job is knowing *when to rewind*, not when to create.
 
-## Explicit Checkpoints
-
-Request at milestones: `"Create a checkpoint before we begin the migration"`
-
-Use before: experimental changes, DB migrations, multi-step refactors, anything irreversible outside git.
+For anything outside the file system (DB, external APIs, pushed git), CC can't help — see Limitations below.
 
 ---
 
@@ -101,12 +93,15 @@ For `git rebase`, `git reset --hard`, `git push --force`, `git clean -fd`:
 
 ## Hook Integration
 
-- `pre-tool-use-security.ts` logs to `memory/security-checks.jsonl` and CC auto-checkpoints before dangerous ops
-- Stop hook may suggest `/rewind` on repeated failures or destructive-op errors
-- Events logged to `state/checkpoint-events.jsonl`:
+Two hooks complement CC's built-in checkpointing:
+
+- **`pre-tool-use-security.ts`** — logs destructive-op decisions to `state/security-checks.jsonl` (block/allow + reason). Does NOT trigger CC's checkpoint; CC's auto-checkpoint runs before file writes regardless.
+- **`post-tool-failure.ts`** — on rate-limit detection, calls `saveCheckpoint()` (working-memory snapshot, not a CC /rewind point) and appends to `state/checkpoint-events.jsonl`:
   ```json
-  {"timestamp": "2026-01-12T10:30:00Z", "event": "pre_destructive", "operation": "rm -rf dist/", "session_id": "abc123"}
+  {"timestamp": "2026-04-11T10:30:00Z", "event_type": "rate_limit_detected", "session_id": "abc123"}
   ```
+
+These are advisory trails — the authoritative file-recovery mechanism is always `/rewind`.
 
 ---
 
@@ -136,10 +131,9 @@ For `git rebase`, `git reset --hard`, `git push --force`, `git clean -fd`:
 
 ## Rules
 
-1. Trust auto-checkpoints — don't over-checkpoint
-2. Name explicit checkpoints descriptively
-3. Test `/rewind` early
-4. Checkpoints are file-based, not system-wide
+1. Trust auto-checkpoints — CC handles the snapshot side, you handle the rewind decision
+2. Test `/rewind` early in unfamiliar codebases so you know the restore cadence
+3. Checkpoints are file-based, not system-wide — DB/API/network state is yours to manage
 
 ---
 

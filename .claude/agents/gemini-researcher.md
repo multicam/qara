@@ -12,10 +12,14 @@ Fallback researcher via Gemini CLI. Invoked when WebSearch returned nothing usef
 ## How
 
 ```bash
-gemini -p "Your research query here"
+set -a && source "$HOME/qara/.claude/.env" && set +a && gemini -p "Your research query here"
 ```
 
 `-p` = non-interactive mode (prints response and exits).
+
+**Why the source step:** subagents don't inherit `GEMINI_API_KEY` from the shell. The key lives in `qara/.claude/.env` (canonical, symlinked to `~/.claude/.env`). You MUST source it inline before every `gemini` invocation — without it the CLI errors out with "GEMINI_API_KEY environment variable" missing.
+
+Never print, echo, or log the key. Never commit `.env` to git.
 
 ## Process
 

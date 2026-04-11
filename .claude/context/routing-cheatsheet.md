@@ -138,8 +138,8 @@ Use via `Task` tool with `subagent_type`. Parallelize when tasks are independent
 | Agent | Model | Typical trigger |
 |-------|-------|----------------|
 | `architect` | opus | PRD creation, system design, technical specs, implementation planning |
-| `critic` | opus | Pre-implementation plan review, risk check |
-| `verifier` | opus | Post-implementation acceptance, quality gates |
+| `critic` | sonnet (→opus on 3rd retry) | Pre-implementation plan review, risk check |
+| `verifier` | sonnet (→opus on 3rd retry) | Post-implementation acceptance, quality gates |
 | `reviewer` | opus | Code review: correctness, security, perf, maintainability |
 | `designer` | opus | UX/UI, typography, visual polish (loads frontend-design skill) |
 | `engineer` | sonnet | Code implementation, debugging, optimization, testing |

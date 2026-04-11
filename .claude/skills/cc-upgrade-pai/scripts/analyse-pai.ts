@@ -244,6 +244,28 @@ export function analyzeModeSystem(paiPath: string): AnalysisResult {
         results.recommendations.push('Add compact-checkpoint.ts + pre-compact.ts for state recovery');
     }
 
+    // 7. Stop hook with mode continuation (3 pts) — the control-flow seam that
+    // makes persistent modes work: Stop reads mode-state and decides to continue
+    // or deactivate. Without this, modes can't persist across model turns.
+    const stopHookPath = join(claudeDir, 'hooks', 'stop-hook.ts');
+    if (existsSync(stopHookPath)) {
+        try {
+            const stopContent = readFileSync(stopHookPath, 'utf-8');
+            if (/mode-?state|readModeState|modeState/i.test(stopContent)) {
+                results.score += 3;
+                results.findings.push('OK: Stop hook wires mode continuation (Factor 8: own control flow)');
+            } else {
+                results.findings.push('WARN: stop-hook.ts present but does not reference mode-state');
+                results.recommendations.push('Wire Stop hook to mode-state for mode continuation loop');
+            }
+        } catch {
+            results.findings.push('WARN: Could not read stop-hook.ts');
+        }
+    } else {
+        results.findings.push('--: No stop-hook.ts');
+        results.recommendations.push('Add stop-hook.ts reading mode-state for continuation loop');
+    }
+
     return results;
 }
 
