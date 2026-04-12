@@ -50,6 +50,10 @@ interface SecurityCheck {
     risk: string;
     decision: string;
     session_id: string;
+    // Added 2026-04-12: "test" for synthetic events fired by
+    // pre-tool-use-security.test.ts; "live" for real commands. Legacy rows
+    // predating the field are treated as "live" by the miner filter.
+    source?: 'test' | 'live';
 }
 
 type TranscriptContentBlock = { type: string; text?: string; [key: string]: unknown };
@@ -115,6 +119,10 @@ interface DailyReport {
     };
     cc_version: string | null;
     baseline: Baseline | null;
+    escalations?: {
+        total: number;
+        by_agent: Record<string, number>;
+    };
 }
 
 interface WeeklyReport {
@@ -281,6 +289,29 @@ function collectCheckpointEvents(targetDate: string): CheckpointEventSummary {
     return { total: entries.length, by_type };
 }
 
+// Escalation tracking: counts subagent stop events whose result_summary starts
+// with [ESCALATED]. Used to measure whether the sonnet-tier safety net (3rd-retry
+// model override) actually fires in practice.
+interface SubagentEvent {
+    timestamp: string;
+    event: string;
+    session_id?: string;
+    agent_type?: string;
+    result_summary?: string;
+}
+
+function collectEscalations(targetDate: string): { total: number; by_agent: Record<string, number> } {
+    const entries = readJsonlFile<SubagentEvent>(join(STATE_DIR, 'subagent-tracking.jsonl'))
+        .filter(e => isTimestampOnDate(e.timestamp, targetDate))
+        .filter(e => e.event === 'stop' && (e.result_summary || '').trimStart().startsWith('[ESCALATED]'));
+    const by_agent: Record<string, number> = {};
+    for (const e of entries) {
+        const key = e.agent_type || 'unknown';
+        by_agent[key] = (by_agent[key] || 0) + 1;
+    }
+    return { total: entries.length, by_agent };
+}
+
 // filterTestNoise, findTranscriptsForDate, extractCorrections, extractCCVersion
 // → extracted to miner-transcript-lib.ts, re-exported above
 
@@ -421,6 +452,7 @@ export {
     collectCheckpoints,
     collectSecurity,
     collectCheckpointEvents,
+    collectEscalations,
     // Git
     getGitActivity,
     // Session detection

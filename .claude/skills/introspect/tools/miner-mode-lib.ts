@@ -202,18 +202,14 @@ function computeTDDMetrics(entries: TDDEnforcementEntry[]): TDDMetrics {
         }
     }
 
+    // A cycle = RED → GREEN transition. REFACTOR is not logged by the TDD hook,
+    // so the old REFACTOR-gated counter was structurally unreachable.
     let cycleCount = 0;
     let lastPhase = '';
-    let seenGreenAfterRed = false;
 
     for (const entry of sorted) {
-        if (entry.phase === 'RED' && lastPhase !== 'RED') {
-            seenGreenAfterRed = false;
-        } else if (entry.phase === 'GREEN' && lastPhase === 'RED') {
-            seenGreenAfterRed = true;
-        } else if (entry.phase === 'REFACTOR' && seenGreenAfterRed) {
+        if (entry.phase === 'GREEN' && lastPhase === 'RED') {
             cycleCount++;
-            seenGreenAfterRed = false;
         }
         lastPhase = entry.phase;
     }

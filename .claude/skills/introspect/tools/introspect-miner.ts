@@ -30,6 +30,7 @@ import {
     collectCheckpoints,
     collectSecurity,
     collectCheckpointEvents,
+    collectEscalations,
     // Transcript mining
     findTranscriptsForDate,
     extractCorrections,
@@ -196,6 +197,9 @@ function runDaily(targetDate: string, projectDir?: string): DailyReport {
     // Checkpoint events
     const checkpoint_events = collectCheckpointEvents(targetDate);
 
+    // Escalation tracking (subagent [ESCALATED] markers)
+    const escalations = collectEscalations(targetDate);
+
     // Git
     const git = getGitActivity(targetDate);
 
@@ -257,6 +261,7 @@ function runDaily(targetDate: string, projectDir?: string): DailyReport {
         git,
         cc_version: ccVersion,
         baseline,
+        escalations,
         session_traces,
         recovery_patterns,
         repeated_failures,

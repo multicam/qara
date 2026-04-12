@@ -88,16 +88,30 @@ function assistantHadAction(assistantSnippet: string): boolean {
 // ---------------------------------------------------------------------------
 
 function filterTestNoise(entries: SecurityCheck[]): SecurityCheck[] {
-    const bySecond = new Map<string, SecurityCheck[]>();
+    // Preferred: explicit source="test" flag emitted by the security hook when
+    // QARA_TEST_RUN=1 (set by pre-tool-use-security.test.ts).
+    // Fallback: legacy rows without a source field fall back to the old
+    // ≤3-BLOCK/sec burst heuristic for backward compat.
+    const [tagged, legacy] = [[] as SecurityCheck[], [] as SecurityCheck[]];
     for (const e of entries) {
+        if (e.source === 'test' || e.source === 'live') tagged.push(e);
+        else legacy.push(e);
+    }
+
+    const taggedLive = tagged.filter(e => e.source === 'live');
+
+    const bySecond = new Map<string, SecurityCheck[]>();
+    for (const e of legacy) {
         const sec = e.timestamp.slice(0, 19);
         const group = bySecond.get(sec) || [];
         group.push(e);
         bySecond.set(sec, group);
     }
-    return [...bySecond.values()]
+    const legacyLive = [...bySecond.values()]
         .filter(group => group.filter(e => e.decision === 'BLOCKED').length <= 3)
         .flat();
+
+    return [...taggedLive, ...legacyLive];
 }
 
 // ---------------------------------------------------------------------------

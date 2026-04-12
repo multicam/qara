@@ -14,8 +14,10 @@ import {
 
 const HOOK = join(import.meta.dir, "pre-tool-use-security.ts");
 
+// Tag every logged event with source="test" so the miner can filter
+// these canonical deny-list vectors out of production BLOCKED rates.
 function runHook(input: object | string) {
-  return runHookBase(HOOK, input);
+  return runHookBase(HOOK, input, { env: { QARA_TEST_RUN: "1" } });
 }
 
 describe("pre-tool-use-security.ts", () => {

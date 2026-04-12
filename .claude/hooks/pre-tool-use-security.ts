@@ -83,6 +83,7 @@ function logSecurityCheck(
       risk,
       decision,
       session_id: getSessionId(),
+      source: process.env.QARA_TEST_RUN ? "test" : "live",
     });
   } catch {
     // Non-critical — don't let logging failure block execution
