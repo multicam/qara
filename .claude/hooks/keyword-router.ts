@@ -92,6 +92,48 @@ function suggestMode(prompt: string): string | null {
   return null;
 }
 
+// ─── Delegation Nudge ──────────────────────────────────────────────────
+// Counts distinct imperative verbs in the prompt. A prompt naming 3+ distinct
+// action verbs is a strong signal for parallel-agent delegation, even if it
+// doesn't trip a mode trigger.
+
+// Note: "test" is deliberately excluded — it's ambiguous as verb vs noun
+// ("update the test" is one task, not two). "run" catches "run the tests".
+const IMPERATIVE_VERBS = /\b(fix|check|read|run|verify|review|analyze|search|look|find|update|add|remove|write|create|build|explain|audit|assess|improve|investigate|debug|refactor|implement|trace|extract|document|generate|deploy|install|configure|rename|delete|inspect|scan|validate|measure|compare)\b/gi;
+
+export function countDistinctImperatives(prompt: string): number {
+  const found = new Set<string>();
+  let m: RegExpExecArray | null;
+  const re = new RegExp(IMPERATIVE_VERBS.source, "gi");
+  while ((m = re.exec(prompt.toLowerCase())) !== null) {
+    found.add(m[1]);
+  }
+  return found.size;
+}
+
+export function shouldNudgeDelegation(prompt: string): boolean {
+  if (countDistinctImperatives(prompt) >= 3) return true;
+  const listItems = (prompt.match(/^\s*(?:[-*]|\d+[.)])\s+\w/gm) || []).length;
+  if (listItems >= 3) return true;
+  if (
+    /\b(three|four|five|[3-9])\s+(?:files?|topics?|areas?|items?|things?|tasks?|parts?|subtasks?)\b/i.test(
+      prompt,
+    )
+  ) {
+    return true;
+  }
+  const paths = (prompt.match(/\/[\w./-]+\.\w+/g) || []).length;
+  if (paths >= 4) return true;
+  return false;
+}
+
+const DELEGATION_NUDGE_TEXT =
+  "Delegation opportunity: this prompt names 3+ distinct tasks. " +
+  "Spawn parallel agents (codebase-analyzer, engineer, reviewer) in a single message " +
+  "rather than solo execution. If the work is genuinely multi-phase, consider " +
+  "`turbo:` (parallel dispatch), `cruise:` (phased), or `drive:` (PRD-driven). " +
+  "Baseline delegation target is ~1.8% of tool calls.";
+
 // ─── Main ───────────────────────────────────────────────────────────────────
 
 function main() {
@@ -212,7 +254,16 @@ function main() {
         process.stdout.write(JSON.stringify({
           result: `<system-reminder>This task might benefit from \`${suggestion} mode\`. Say \`${suggestion}: [your task]\` to activate.</system-reminder>`,
         }));
+        process.exit(0);
       }
+    }
+
+    // Still no suggestion — check for delegation opportunity on any non-trivial
+    // prompt outside of mode execution. Advisory only; never blocks.
+    if (sanitized.length > 80 && !readModeState() && shouldNudgeDelegation(sanitized)) {
+      process.stdout.write(JSON.stringify({
+        result: `<system-reminder>${DELEGATION_NUDGE_TEXT}</system-reminder>`,
+      }));
     }
 
     process.exit(0);
@@ -222,4 +273,6 @@ function main() {
   }
 }
 
-main();
+const isDirectRun =
+  import.meta.path === Bun.main || process.argv[1]?.endsWith("keyword-router.ts");
+if (isDirectRun) main();

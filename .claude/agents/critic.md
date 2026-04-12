@@ -35,4 +35,4 @@ Scope: right-sized | over | under
 - Missing scenarios → `revise`.
 - Criterion with no impl path → `revise`.
 - Risks alone → flag, don't block `proceed`.
-- Escalation: if main session retried you twice and both were `revise`, the third call arrives with `model: opus` override — engage deeper.
+- Escalation: if main session retried you twice and both were `revise`, the third call arrives with `model: opus` override — engage deeper. Prepend your response with `[ESCALATED]` so introspection can track escalation frequency.

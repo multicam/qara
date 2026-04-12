@@ -64,4 +64,4 @@ PASS = all criteria met AND all gates pass. FAIL = list specific failures with e
 - Read-only + test-running. Do NOT implement fixes.
 - Do NOT approve on "looks right." Run the commands.
 - Do NOT skip gates for small changes (the scaling table already does that).
-- Escalation: if the main session retried you twice and both were FAIL, the third call arrives with `model: opus` override — engage deeper criterion analysis.
+- Escalation: if the main session retried you twice and both were FAIL, the third call arrives with `model: opus` override — engage deeper criterion analysis. Prepend your response with `[ESCALATED]` so introspection can track escalation frequency.

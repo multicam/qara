@@ -13,11 +13,11 @@ When to delegate to agents and how to use them effectively.
 | Implement from spec | `engineer` | sonnet | Code, tests, debugging |
 | Trivial edit (rename, import fix) | `engineer-low` | haiku | Fast path for small changes |
 | Cross-cutting refactor / new abstraction | `engineer-high` | opus | Deep reasoning, architectural changes |
-| Review code quality | `reviewer` | opus | Security, perf, correctness |
+| Review code quality | `reviewer` | **sonnet** | Security, perf, correctness. Opus escalation on 3rd retry. |
 | Quick pass/fail review on small diffs | `reviewer-low` | sonnet | Routine correctness checks |
 | Review plan before impl | `critic` | **sonnet** | Scenario coverage, scope, risks. Opus escalation on 3rd retry. |
 | Verify impl meets criteria | `verifier` | **sonnet** | Fresh evidence, quality gates. Opus escalation on 3rd retry. |
-| Find + analyze thoughts/ docs | `thoughts-analyzer` | sonnet | Discovery + insight extraction |
+| Find + analyze thoughts/ docs | `thoughts-analyzer` | **haiku** | Discovery + insight extraction. Task is grep+summarize, haiku sufficient. |
 | Web research (primary) | `claude-researcher` | haiku | First-line web research via WebSearch |
 | Web research fallback | `gemini-researcher` | haiku | When WebSearch fails |
 
@@ -33,7 +33,9 @@ When to delegate to agents and how to use them effectively.
 - Override `reviewer` to sonnet for quick pass/fail checks on small diffs (or use `reviewer-low` directly)
 - Never override researchers — they're already haiku (cheapest tier)
 
-**Critic + verifier escalation (2026-04-11):** `critic` and `verifier` default to sonnet. If the first two calls return `revise`/`FAIL` and the main session issues a third retry, **the third call MUST include `model: opus` override on the Task tool.** This gives sonnet first-pass coverage at 5× lower cost while preserving opus-level judgment when the sonnet tier struggles. Critic/verifier agent prompts reference this escalation explicitly.
+**Critic + verifier + reviewer escalation (2026-04-12):** `critic`, `verifier`, and `reviewer` all default to sonnet. If the first two calls return `revise`/`FAIL`/`request changes` and the main session issues a third retry, **the third call MUST include `model: opus` override on the Task tool.** This gives sonnet first-pass coverage at ~5× lower cost while preserving opus-level judgment when the sonnet tier struggles. All three agents reference this escalation explicitly and prepend `[ESCALATED]` to their response so the introspection miner's `escalations` field can track safety-net usage. If escalations stay at zero for 2+ weeks, the safety net is either unnecessary or broken — either outcome informs the next tier decision.
+
+**Delegation nudge (2026-04-12):** `keyword-router.ts` now emits a `<system-reminder>` on any out-of-mode prompt containing ≥3 distinct imperative verbs (or ≥3 list items, or ≥4 file paths, or an explicit enumeration cue like "three files"). The nudge says: "spawn parallel agents rather than solo execution". Added after delegation_pct drifted below 1.8% baseline for two consecutive days. The heuristic is mutually exclusive with `suggestMode` — mode triggers still win.
 
 ## Parallel Execution
 

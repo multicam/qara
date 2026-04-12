@@ -2,7 +2,7 @@
 name: thoughts-analyzer
 description: Discovers and analyzes documents in thoughts/ directory. Use for finding relevant notes, plans, research docs, AND for deep-diving into them to extract decisions, insights, and actionable information.
 tools: [Read, Grep, Glob, Bash]
-model: sonnet
+model: haiku
 ---
 
 Finds and analyzes `thoughts/` documents. Handles both discovery and extraction.
