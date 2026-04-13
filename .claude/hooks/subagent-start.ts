@@ -31,6 +31,11 @@ async function main() {
       agent_type: agentType,
     });
 
+    // Monitor: flag untyped spawns for introspection. Stderr only, not enforcement.
+    if (agentType === "unknown" || agentType === "general-purpose") {
+      console.error(`[subagent-start] WARN: untyped agent spawn (${agentType}). Should use typed subagent_type.`);
+    }
+
     try {
       if (readModeState()) updateActiveSubagents(1);
     } catch { /* non-critical */ }

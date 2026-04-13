@@ -131,6 +131,15 @@ Default to **Micro** or **Standard**. Scale up only when complexity demands it.
 
 Parallelize when possible — launch multiple agents in a single message.
 
+### Delegation Discipline (TOKEN COST)
+
+These rules reduce token consumption by ensuring work runs at the cheapest sufficient tier:
+
+1. **Always specify `subagent_type`.** Never spawn a bare Agent without it. `general-purpose` inherits opus and has no specialized prompt — most expensive and least effective option.
+2. **Always pass `model:` when spawning Explore agents.** Use `model: "sonnet"` for standard exploration, `model: "haiku"` for quick file searches. Explore inherits parent (opus) by default.
+3. **Delegate, don't accumulate.** Before doing 3+ sequential reads/greps on a side-topic, spawn a typed subagent instead. Each subagent gets a fresh context — its intermediate results don't bloat the main session. Less tokens for fluff, more tokens for thinking.
+4. **Match tier to task.** File search → haiku. Code analysis → sonnet. Architectural judgment → opus. When in doubt, start cheapest and escalate on failure.
+
 ---
 
 **End of CORE skill.**

@@ -77,10 +77,13 @@ describe("PreCompact Hook", () => {
     expect(existsSync(cpPath)).toBe(true);
   });
 
-  it("should not emit reminder when no meaningful state exists", async () => {
+  it("should emit delegation advice even when no meaningful state exists", async () => {
     const result = await runHook({ session_id: "pre-compact-test-session" });
-    // No mode, TDD, PRD, or working memory = no output
-    expect(result.stdout).toBe("");
+    // No mode/TDD/PRD state, but delegation advice always fires on compaction
+    expect(result.stdout).toContain("delegate");
+    expect(result.stdout).toContain("subagent_type");
+    const parsed = JSON.parse(result.stdout);
+    expect(parsed).toHaveProperty("result");
   });
 
   it("should emit reminder when working memory exists", async () => {

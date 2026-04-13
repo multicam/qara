@@ -25,7 +25,7 @@ task({
 ```typescript
 // Spotcheck synthesis
 task({
-  agent: "agent",
+  agent: "codebase-analyzer",
   task: `SPOTCHECK: Synthesize exploration findings.
 
 Create:

@@ -24,7 +24,7 @@ Get independent perspectives from multiple models on the same question, then syn
 ### Workflow
 
 1. **Frame the question** — extract the core question from JM's prompt
-2. **Dispatch to Claude** — spawn a researcher/engineer subagent with the question
+2. **Dispatch to Claude** — spawn a `claude-researcher` (haiku) subagent with the question
 3. **Dispatch to Gemma 4** — call `mcp__ollama-local__ollama_chat` with the same question
 4. **Synthesize** — compare both responses:
    - Agreements (high confidence)

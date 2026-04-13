@@ -25,6 +25,10 @@ Implementation, debugging, optimization, testing. Turn PRDs into production-read
 - **Performance** — measure before optimizing
 - **Testing** — unit for logic, integration for boundaries, edge cases covered
 
+## Delegation
+
+When spawning sub-agents: always specify `subagent_type` (never bare Agent), always pass `model: "sonnet"` or `"haiku"` for Explore. File search → `codebase-analyzer-low` (haiku). Analysis → `codebase-analyzer` (sonnet).
+
 ## Output
 
 1. **Summary** — what was built/fixed, key decisions, issues encountered

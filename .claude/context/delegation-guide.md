@@ -21,6 +21,26 @@ When to delegate to agents and how to use them effectively.
 | Web research (primary) | `claude-researcher` | haiku | First-line web research via WebSearch |
 | Web research fallback | `gemini-researcher` | haiku | When WebSearch fails |
 
+## Built-in Agent Cost Rules
+
+CC's built-in agent types (Explore, Plan, general-purpose) inherit the parent session's model — usually opus. This makes them the most expensive spawn option per token.
+
+| Built-in type | Inherits | Rule |
+|---|---|---|
+| `general-purpose` | parent (opus) | **NEVER use.** Always specify `subagent_type`. |
+| `Explore` | parent (opus) | **Always pass `model: "sonnet"`** (or `"haiku"` for quick file searches). Explore does grep/glob/read — sonnet is sufficient. |
+| `Plan` | parent (opus) | Acceptable at opus for complex planning. For quick specs, use `architect-low` (sonnet) instead. |
+
+**Cost per call** (rough, ~40k input + 8k output):
+
+| Tier | Input | Output | Total/call |
+|---|---|---|---|
+| opus | $0.60 | $0.60 | **$1.20** |
+| sonnet | $0.12 | $0.12 | **$0.24** |
+| haiku | $0.03 | $0.03 | **$0.06** |
+
+An Explore agent at opus costs 20x more than `codebase-analyzer-low` at haiku for the same file search.
+
 ## Model Tier Strategy
 
 - **haiku** — Fast, cheap lookups (locating files, fallback searches)
@@ -49,6 +69,16 @@ Launch independent agents in a **single message** with multiple `Task` tool call
 **Must be sequential:**
 - `architect` → then `engineer` (need the spec first)
 - `engineer` → then `reviewer` (need the code first)
+
+## When to Delegate vs Do Inline
+
+**Delegate** when the subtask needs 5+ tool calls, OR when working on 2+ independent concerns. Each subagent runs in a fresh context — intermediate results don't bloat the main session.
+
+**Do inline** when the subtask is 1-3 tool calls on the current topic. Prompt cache amortizes the cost, and subagent spawn overhead (~30k tokens) would exceed the savings.
+
+**Token math:** A 10-tool-call subtask done inline adds ~50k tokens to context, re-read on every subsequent turn. Over 20 turns: 1M extra input tokens. Delegated: main session sees ~2k summary — saving ~980k tokens.
+
+**Rule of thumb:** 3+ sequential Read/Grep calls on a DIFFERENT topic from current work = delegation opportunity. Spawn `codebase-analyzer` (sonnet) or `codebase-analyzer-low` (haiku).
 
 ## Review Agent Disambiguation
 

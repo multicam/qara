@@ -27,14 +27,24 @@ async function main() {
 
     const checkpoint = saveCheckpoint(sessionId);
 
+    const delegationAdvice =
+      "DELEGATION DISCIPLINE: Context is being compressed — intermediate results have accumulated. " +
+      "For remaining work, delegate subtasks to typed subagents (always specify subagent_type, never use general-purpose). " +
+      "Pass model: 'sonnet' or 'haiku' when spawning Explore agents. " +
+      "Less tokens for fluff, more tokens for thinking.";
+
     // Only emit reminder if there was meaningful state to preserve
     const hasState = checkpoint.mode || checkpoint.tddState || checkpoint.prdProgress || checkpoint.workingMemory;
     if (hasState) {
       const summary = formatCheckpointSummary(checkpoint);
-      const result = JSON.stringify({
-        result: `<system-reminder>CHECKPOINT SAVED before context compression.\n\n${summary}\n\nYour working memory and mode state have been preserved. Continue working.</system-reminder>`,
-      });
-      process.stdout.write(result);
+      process.stdout.write(JSON.stringify({
+        result: `<system-reminder>CHECKPOINT SAVED before context compression.\n\n${summary}\n\n${delegationAdvice}\n\nYour working memory and mode state have been preserved. Continue working.</system-reminder>`,
+      }));
+    } else {
+      // No checkpoint state — still emit delegation advice
+      process.stdout.write(JSON.stringify({
+        result: `<system-reminder>${delegationAdvice}</system-reminder>`,
+      }));
     }
   } catch (error) {
     console.error("PreCompact checkpoint error:", error);
