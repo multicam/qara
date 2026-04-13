@@ -14,7 +14,7 @@ import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { generateTabTitle, setTerminalTabTitle } from './lib/tab-titles';
 import { STATE_DIR, getSessionId } from './lib/pai-paths';
-import { appendJsonl } from './lib/jsonl-utils';
+import { appendJsonl, truncate } from './lib/jsonl-utils';
 import { getISOTimestamp } from './lib/datetime-utils';
 import { classifyTopic } from './lib/trace-utils';
 import { readModeState, isModeActive, incrementIteration, deactivateWithReason, extendIterations } from './lib/mode-state';
@@ -85,7 +85,7 @@ async function main() {
       timestamp: getISOTimestamp(),
       session_id: getSessionId(),
       stop_reason: stopReason,
-      summary: title || lastMessage.substring(0, 200),
+      summary: title || truncate(lastMessage, 200),
       message_len: lastMessage.length,
       has_code_blocks: /```/.test(lastMessage),
       topic_hint: classifyTopic(lastMessage),

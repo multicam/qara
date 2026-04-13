@@ -1,13 +1,13 @@
 /**
- * JSONL Utilities
+ * JSONL Utilities + Hook Helpers
  *
- * Shared functions for appending to JSONL (JSON Lines) files.
- * Handles directory creation and atomic writes.
+ * Shared functions for appending to JSONL files, parsing hook stdin,
+ * and resolving session IDs. Used by all 17+ hooks.
  */
 
-import { appendFileSync } from 'fs';
+import { readFileSync, appendFileSync } from 'fs';
 import { dirname } from 'path';
-import { ensureDir } from './pai-paths';
+import { ensureDir, getSessionId } from './pai-paths';
 
 /**
  * Append a JSON object as a line to a JSONL file
@@ -35,4 +35,26 @@ export function truncate(str: string | undefined, maxLen: number = 500): string 
     if (str.length <= maxLen) return str;
     if (maxLen <= TRUNCATION_SUFFIX.length) return str.substring(0, maxLen);
     return str.substring(0, maxLen - TRUNCATION_SUFFIX.length) + TRUNCATION_SUFFIX;
+}
+
+/**
+ * Parse hook stdin as JSON. Returns null if stdin is empty or unparseable.
+ * Replaces the 12-hook pattern: readFileSync(0) + trim check + JSON.parse.
+ */
+export function parseStdin<T = Record<string, unknown>>(): T | null {
+    try {
+        const input = readFileSync(0, 'utf-8');
+        if (!input.trim()) return null;
+        return JSON.parse(input) as T;
+    } catch {
+        return null;
+    }
+}
+
+/**
+ * Resolve session ID from parsed hook data, falling back to env/default.
+ * Replaces the 6-hook pattern: parsed.session_id || getSessionId().
+ */
+export function resolveSessionId(data: Record<string, unknown>): string {
+    return (data?.session_id as string) || getSessionId();
 }

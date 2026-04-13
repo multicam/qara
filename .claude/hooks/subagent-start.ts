@@ -6,22 +6,20 @@
  * and increments activeSubagents in mode state if a mode is active.
  */
 
-import { readFileSync } from "fs";
 import { join } from "path";
-import { STATE_DIR, getSessionId } from "./lib/pai-paths";
-import { appendJsonl } from "./lib/jsonl-utils";
+import { STATE_DIR } from "./lib/pai-paths";
+import { appendJsonl, parseStdin, resolveSessionId } from "./lib/jsonl-utils";
 import { getISOTimestamp } from "./lib/datetime-utils";
 import { readModeState, updateActiveSubagents } from "./lib/mode-state";
 
-async function main() {
+function main() {
   try {
-    const input = readFileSync(0, "utf-8");
-    if (!input.trim()) process.exit(0);
+    const data = parseStdin();
+    if (!data) process.exit(0);
 
-    const data = JSON.parse(input);
-    const sessionId = data.session_id || getSessionId();
-    const agentId = data.agent_id || "unknown";
-    const agentType = data.agent_type || "unknown";
+    const sessionId = resolveSessionId(data);
+    const agentId = (data.agent_id as string) || "unknown";
+    const agentType = (data.agent_type as string) || "unknown";
 
     appendJsonl(join(STATE_DIR, "subagent-tracking.jsonl"), {
       timestamp: getISOTimestamp(),

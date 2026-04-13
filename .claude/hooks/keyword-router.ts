@@ -15,7 +15,7 @@ import { join } from "path";
 import { SKILLS_DIR, STATE_DIR, getSessionId } from "./lib/pai-paths";
 import { writeModeState, clearModeState, readModeState } from "./lib/mode-state";
 import type { ModeName } from "./lib/mode-state";
-import { appendJsonl } from "./lib/jsonl-utils";
+import { appendJsonl, truncate } from "./lib/jsonl-utils";
 import { getISOTimestamp } from "./lib/datetime-utils";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -230,7 +230,7 @@ function main() {
             timestamp: getISOTimestamp(),
             event: "activated",
             mode: routeName,
-            task_context: taskContext.substring(0, 200),
+            task_context: truncate(taskContext, 200),
             session_id: getSessionId(),
           });
         }

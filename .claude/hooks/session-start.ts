@@ -23,6 +23,7 @@ import { appendJsonl } from './lib/jsonl-utils';
 import { getISOTimestamp } from './lib/datetime-utils';
 
 const DEBOUNCE_MS = 2000;
+const LEDGER_TTL_MS = 86400000; // 24 hours
 const sessionId = getSessionId();
 const LOCKFILE = join(tmpdir(), `pai-session-start-${sessionId}.lock`);
 
@@ -131,7 +132,7 @@ async function main() {
         const now = Date.now();
         for (const dir of readdirSync(sessionsDir)) {
           const ledger = join(sessionsDir, dir, 'files-read.txt');
-          if (existsSync(ledger) && now - statSync(ledger).mtimeMs > 86400000) {
+          if (existsSync(ledger) && now - statSync(ledger).mtimeMs > LEDGER_TTL_MS) {
             unlinkSync(ledger);
           }
         }

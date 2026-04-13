@@ -6,26 +6,23 @@
  * Logs denied permissions for introspection analysis and security auditing.
  */
 
-import { readFileSync } from "fs";
 import { join } from "path";
-import { STATE_DIR, getSessionId } from "./lib/pai-paths";
-import { appendJsonl } from "./lib/jsonl-utils";
+import { STATE_DIR } from "./lib/pai-paths";
+import { appendJsonl, parseStdin, resolveSessionId, truncate } from "./lib/jsonl-utils";
 import { getISOTimestamp } from "./lib/datetime-utils";
 
-async function main() {
+function main() {
   try {
-    const input = readFileSync(0, "utf-8");
-    if (!input.trim()) process.exit(0);
+    const parsed = parseStdin();
+    if (!parsed) process.exit(0);
 
-    const parsed = JSON.parse(input);
-    const toolName = parsed.tool_name || "unknown";
-    const toolInput = parsed.tool_input || {};
-    const sessionId = parsed.session_id || getSessionId();
+    const toolName = (parsed.tool_name as string) || "unknown";
+    const toolInput = (parsed.tool_input as Record<string, string>) || {};
 
     // Extract command summary for Bash, file path for file ops
     let summary = "";
     if (toolName === "Bash") {
-      summary = (toolInput.command || "").substring(0, 200);
+      summary = truncate(toolInput.command, 200);
     } else if (toolInput.file_path) {
       summary = toolInput.file_path;
     }
@@ -34,7 +31,7 @@ async function main() {
       timestamp: getISOTimestamp(),
       tool: toolName,
       summary,
-      session_id: sessionId,
+      session_id: resolveSessionId(parsed),
     });
   } catch {
     // Never exit(1) from a hook

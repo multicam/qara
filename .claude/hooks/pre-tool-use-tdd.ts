@@ -18,7 +18,7 @@ import { readFileSync } from "fs";
 import { join } from "path";
 import { STATE_DIR, getSessionId } from "./lib/pai-paths";
 import { readTDDState, isTestFile } from "./lib/tdd-state";
-import { appendJsonl } from "./lib/jsonl-utils";
+import { appendJsonl, truncate } from "./lib/jsonl-utils";
 import { getISOTimestamp } from "./lib/datetime-utils";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -89,7 +89,7 @@ function logDecision(
   try {
     appendJsonl(join(STATE_DIR, "tdd-enforcement.jsonl"), {
       timestamp: getISOTimestamp(),
-      file_path: filePath.substring(0, 200),
+      file_path: truncate(filePath, 200),
       phase,
       is_test_file: isTest,
       decision,

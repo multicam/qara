@@ -446,6 +446,7 @@ export {
     isTimestampOnDate,
     isTimestampInRange,
     getDateRange,
+    getNextDay,
     // Log collection
     collectJsonl,
     collectToolUsage,

@@ -9,7 +9,7 @@
 import { readFileSync } from "fs";
 import { join } from "path";
 import { STATE_DIR, getSessionId } from './lib/pai-paths';
-import { appendJsonl } from './lib/jsonl-utils';
+import { appendJsonl, truncate } from './lib/jsonl-utils';
 import { getISOTimestamp } from './lib/datetime-utils';
 
 // Dangerous patterns that require human approval
@@ -78,7 +78,7 @@ function logSecurityCheck(
     const logFile = join(STATE_DIR, "security-checks.jsonl");
     appendJsonl(logFile, {
       timestamp: getISOTimestamp(),
-      operation: operation.substring(0, 200),
+      operation: truncate(operation, 200),
       pattern_matched: pattern,
       risk,
       decision,

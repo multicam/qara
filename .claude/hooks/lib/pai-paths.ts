@@ -138,16 +138,7 @@ export function loadEnv(): void {
     }
 }
 
-/**
- * Generate a standardized artifact path for cross-provider outputs, research, etc.
- * Convention: thoughts/shared/artifacts/{skill}-{slug}-{timestamp}.md
- */
-export function getArtifactPath(skill: string, slug: string): string {
-    const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-    const dir = join(THOUGHTS_DIR, 'shared', 'artifacts');
-    ensureDir(dir);
-    return join(dir, `${skill}-${slug}-${ts}.md`);
-}
+// getArtifactPath removed 2026-04-13 (dead export — zero consumers)
 
 // Auto-load .env on module import
 loadEnv();

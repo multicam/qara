@@ -11,6 +11,7 @@ import {
     isTimestampOnDate,
     getSydneyDate,
     getDateRange,
+    getNextDay,
     DEFAULT_PROJECT_DIR,
     type TranscriptMessage,
     type CorrectionCandidate,
@@ -117,12 +118,6 @@ function filterTestNoise(entries: SecurityCheck[]): SecurityCheck[] {
 // ---------------------------------------------------------------------------
 // Transcript discovery and mining
 // ---------------------------------------------------------------------------
-
-function getNextDay(dateStr: string): string {
-    const d = new Date(dateStr + 'T00:00:00Z');
-    d.setDate(d.getDate() + 1);
-    return d.toISOString().slice(0, 10);
-}
 
 function findTranscriptsForDate(targetDate: string, projectDir: string = DEFAULT_PROJECT_DIR): string[] {
     if (!existsSync(projectDir)) return [];

@@ -12,7 +12,7 @@
 import { readFileSync, existsSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { STATE_DIR, ensureDir, getSessionId } from './lib/pai-paths';
-import { appendJsonl } from './lib/jsonl-utils';
+import { appendJsonl, parseStdin, truncate } from './lib/jsonl-utils';
 import { getISOTimestamp } from './lib/datetime-utils';
 import { saveCheckpoint } from './lib/compact-checkpoint';
 
@@ -42,13 +42,12 @@ function writeTracking(tracking: FailureTracking): void {
 
 async function main() {
   try {
-    const input = readFileSync(0, 'utf-8');
-    if (!input.trim()) process.exit(0);
+    const parsed = parseStdin();
+    if (!parsed) process.exit(0);
 
-    const parsed = JSON.parse(input);
-    const toolName = parsed.tool_name || 'unknown';
+    const toolName = (parsed.tool_name as string) || 'unknown';
     const error = parsed.error || parsed.tool_error || '';
-    const errorStr = typeof error === 'string' ? error.substring(0, 500) : JSON.stringify(error).substring(0, 500);
+    const errorStr = truncate(typeof error === 'string' ? error : JSON.stringify(error), 500);
 
     // Rate limit early detection — immediate, no threshold wait (#42796 defense)
     const rateLimitPattern = /\b429\b|rate.?limit|quota.?exceed|too many requests|insufficient balance|throttl/i;

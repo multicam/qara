@@ -8,22 +8,14 @@
  * Output: system-reminder confirming state was preserved.
  */
 
-import { readFileSync } from "fs";
 import { saveCheckpoint, formatCheckpointSummary } from "./lib/compact-checkpoint";
+import { parseStdin, resolveSessionId } from "./lib/jsonl-utils";
 import { getSessionId } from "./lib/pai-paths";
 
 async function main() {
   try {
-    // PreCompact provides: session_id, transcript_path
-    const input = readFileSync(0, "utf-8");
-    let sessionId = getSessionId();
-
-    if (input.trim()) {
-      try {
-        const parsed = JSON.parse(input);
-        if (parsed.session_id) sessionId = parsed.session_id;
-      } catch { /* use env fallback */ }
-    }
+    const parsed = parseStdin();
+    const sessionId = parsed ? resolveSessionId(parsed) : getSessionId();
 
     const checkpoint = saveCheckpoint(sessionId);
 

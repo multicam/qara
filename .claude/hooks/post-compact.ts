@@ -7,25 +7,17 @@
  * recovery context so Claude can resume seamlessly.
  */
 
-import { readFileSync } from "fs";
 import { join } from "path";
 import { STATE_DIR, getSessionId } from "./lib/pai-paths";
-import { appendJsonl } from "./lib/jsonl-utils";
+import { appendJsonl, parseStdin, resolveSessionId } from "./lib/jsonl-utils";
 import { getISOTimestamp } from "./lib/datetime-utils";
 import { loadCheckpoint, formatCheckpointSummary } from "./lib/compact-checkpoint";
 import { readModeState } from "./lib/mode-state";
 
 async function main() {
   try {
-    const input = readFileSync(0, "utf-8");
-    let sessionId = getSessionId();
-
-    if (input.trim()) {
-      try {
-        const parsed = JSON.parse(input);
-        if (parsed.session_id) sessionId = parsed.session_id;
-      } catch { /* use env fallback */ }
-    }
+    const parsed = parseStdin();
+    const sessionId = parsed ? resolveSessionId(parsed) : getSessionId();
 
     // Load the checkpoint saved by PreCompact
     const checkpoint = loadCheckpoint(sessionId);
