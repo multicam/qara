@@ -50,7 +50,7 @@ function captureRequest(responseBody: unknown): { body: () => any } {
 describe('defaults', () => {
     test('exports expected endpoint and model', () => {
         expect(DEFAULT_ENDPOINT).toBe('http://localhost:11434');
-        expect(DEFAULT_MODEL).toBe('gemma4');
+        expect(DEFAULT_MODEL).toBe('gemma4:latest');
     });
 });
 

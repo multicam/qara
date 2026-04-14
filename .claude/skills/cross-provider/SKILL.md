@@ -19,7 +19,7 @@ Get independent perspectives from multiple models on the same question, then syn
 | Provider | Model | Access | Cost |
 |----------|-------|--------|------|
 | Claude | Opus/Sonnet (subagent) | API | Per-token |
-| Gemma 4 | gemma4 via Ollama | Local (localhost:11434) | $0 |
+| Gemma 4 | gemma4:latest via Ollama | Local (localhost:11434) | $0 |
 
 ### Workflow
 

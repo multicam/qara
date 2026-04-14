@@ -119,22 +119,22 @@ describe('analyzeSingle with mocked Ollama', () => {
 
     test('pass case: Ollama says no issues', async () => {
         ctx.fetchSpy.mockResolvedValue(mockOllamaResponse('No visual issues. All elements render correctly.'));
-        const result = await analyzeSingle(fakeImage(ctx.dir, 'test.png'), 'gemma4');
+        const result = await analyzeSingle(fakeImage(ctx.dir, 'test.png'), 'gemma4:latest');
         expect(result.passed).toBe(true);
         expect(result.issues).toEqual([]);
-        expect(result.model).toBe('gemma4');
+        expect(result.model).toBe('gemma4:latest');
     });
 
     test('fail case: Ollama returns bullet issues', async () => {
         ctx.fetchSpy.mockResolvedValue(mockOllamaResponse('* Header overlaps logo\n* Button text too small'));
-        const result = await analyzeSingle(fakeImage(ctx.dir, 'test.png'), 'gemma4');
+        const result = await analyzeSingle(fakeImage(ctx.dir, 'test.png'), 'gemma4:latest');
         expect(result.passed).toBe(false);
         expect(result.issues).toEqual(['Header overlaps logo', 'Button text too small']);
     });
 
     test('Ollama 500: error propagates', async () => {
         ctx.fetchSpy.mockResolvedValue(new Response('Internal error', { status: 500 }));
-        await expect(analyzeSingle(fakeImage(ctx.dir, 'test.png'), 'gemma4'))
+        await expect(analyzeSingle(fakeImage(ctx.dir, 'test.png'), 'gemma4:latest'))
             .rejects.toThrow(/Ollama vision error: 500/);
     });
 });
@@ -149,7 +149,7 @@ describe('compareImages with mocked Ollama', () => {
     const compareFakePair = () => compareImages(
         fakeImage(ctx.dir, 'base.png'),
         fakeImage(ctx.dir, 'curr.png'),
-        'gemma4',
+        'gemma4:latest',
     );
 
     test('identical screenshots: passes', async () => {

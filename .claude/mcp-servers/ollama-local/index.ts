@@ -16,7 +16,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { z } from 'zod';
 
 const OLLAMA_URL = process.env.OLLAMA_URL || 'http://localhost:11434';
-const DEFAULT_MODEL = process.env.OLLAMA_MODEL || 'gemma4';
+const DEFAULT_MODEL = process.env.OLLAMA_MODEL || 'gemma4:latest';
 
 function textResult(text: string) {
     return { content: [{ type: 'text' as const, text }] };
@@ -49,7 +49,7 @@ server.tool(
     {
         prompt: z.string().describe('The user message to send'),
         system: z.string().optional().describe('Optional system prompt'),
-        model: z.string().optional().describe('Ollama model name (default: gemma4)'),
+        model: z.string().optional().describe('Ollama model name (default: gemma4:latest)'),
     },
     async ({ prompt, system, model }) => {
         const messages: Array<{ role: string; content: string }> = [];
@@ -66,7 +66,7 @@ server.tool(
     {
         text: z.string().describe('Text to summarize'),
         max_bullets: z.number().optional().describe('Maximum bullet points (default: 5)'),
-        model: z.string().optional().describe('Ollama model name (default: gemma4)'),
+        model: z.string().optional().describe('Ollama model name (default: gemma4:latest)'),
     },
     async ({ text, max_bullets, model }) => {
         const n = max_bullets || 5;
@@ -84,7 +84,7 @@ server.tool(
     {
         text: z.string().describe('Text to classify'),
         categories: z.array(z.string()).describe('List of category labels'),
-        model: z.string().optional().describe('Ollama model name (default: gemma4)'),
+        model: z.string().optional().describe('Ollama model name (default: gemma4:latest)'),
     },
     async ({ text, categories, model }) => {
         const result = await ollamaChat(model || DEFAULT_MODEL, [
@@ -101,7 +101,7 @@ server.tool(
     {
         code: z.string().describe('Code diff or snippet to review'),
         context: z.string().optional().describe('Optional context about the code'),
-        model: z.string().optional().describe('Ollama model name (default: gemma4)'),
+        model: z.string().optional().describe('Ollama model name (default: gemma4:latest)'),
     },
     async ({ code, context, model }) => {
         const messages: Array<{ role: string; content: string }> = [
@@ -120,7 +120,7 @@ server.tool(
     {
         image_path: z.string().describe('Absolute path to the image file (PNG/JPEG/WebP)'),
         prompt: z.string().optional().describe('Custom analysis prompt (default: webpage screenshot analysis)'),
-        model: z.string().optional().describe('Ollama model name (default: gemma4)'),
+        model: z.string().optional().describe('Ollama model name (default: gemma4:latest)'),
     },
     async ({ image_path, prompt, model }) => {
         const { readFileSync, existsSync } = await import('fs');

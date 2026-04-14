@@ -13,7 +13,7 @@ OBS_DIR="$HOME/qara/thoughts/shared/introspection/observations"
 OBS_FILE="$OBS_DIR/$DATE.md"
 MINER="$HOME/qara/.claude/skills/introspect/tools/introspect-miner.ts"
 OLLAMA_URL="http://localhost:11434/api/chat"
-MODEL="gemma4"
+MODEL="gemma4:latest"
 LOG_PREFIX="[$(date -Iseconds)] daily-reflect-local:"
 
 mkdir -p "$OBS_DIR"

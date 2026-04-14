@@ -7,7 +7,7 @@
  */
 
 const DEFAULT_ENDPOINT = 'http://localhost:11434';
-const DEFAULT_MODEL = 'gemma4';
+const DEFAULT_MODEL = 'gemma4:latest';
 const DEFAULT_TIMEOUT_MS = 30_000;
 
 interface OllamaMessage {

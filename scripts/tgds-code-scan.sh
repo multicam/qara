@@ -14,7 +14,7 @@ OUTPUT_DIR="$HOME/qara/thoughts/shared/tgds-reviews"
 DATE=$(date +%Y-%m-%d)
 OUTPUT_FILE="$OUTPUT_DIR/$DATE.md"
 OLLAMA_URL="http://localhost:11434/api/chat"
-MODEL="gemma4"
+MODEL="gemma4:latest"
 # Parse --lookback N flag, default 7 days
 LOOKBACK=7
 while [[ $# -gt 0 ]]; do

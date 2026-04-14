@@ -22,7 +22,7 @@
       "args": ["run", "/home/jean-marc/qara/.claude/mcp-servers/ollama-local/index.ts"],
       "env": {
         "OLLAMA_URL": "http://localhost:11434",
-        "OLLAMA_MODEL": "gemma4"
+        "OLLAMA_MODEL": "gemma4:latest"
       }
     }
   }

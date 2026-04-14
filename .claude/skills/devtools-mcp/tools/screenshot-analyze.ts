@@ -15,7 +15,7 @@ import { readFileSync, readdirSync, statSync, existsSync } from 'fs';
 import { join, extname, basename } from 'path';
 
 const OLLAMA_URL = process.env.OLLAMA_URL || 'http://localhost:11434';
-const DEFAULT_MODEL = process.env.OLLAMA_MODEL || 'gemma4';
+const DEFAULT_MODEL = process.env.OLLAMA_MODEL || 'gemma4:latest';
 const IMAGE_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.webp']);
 
 interface AnalysisResult {
@@ -123,7 +123,7 @@ export async function main(): Promise<void> {
         console.log('  bun screenshot-analyze.ts --dir <dir>           Analyze all images in directory');
         console.log('  bun screenshot-analyze.ts --compare --baseline <dir> --current <dir>');
         console.log('Options:');
-        console.log('  --model <name>   Ollama model (default: gemma4)');
+        console.log('  --model <name>   Ollama model (default: gemma4:latest)');
         console.log('  --json           Output as JSON');
         return;
     }
