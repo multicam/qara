@@ -4,6 +4,16 @@
  * Provides typed interfaces for chat, generate, and embed operations.
  * Used by introspection tools, code scanners, and MCP integrations.
  * Fails gracefully when Ollama is not running.
+ *
+ * Known issue — embed():
+ *   /api/embed can return HTTP 500 "model failed to load" even when the
+ *   endpoint is reachable and VRAM is available. Root cause is typically
+ *   a corrupted nomic-embed-text blob or a stale Ollama server state,
+ *   not our code. Recovery (run outside Claude Code):
+ *     ollama rm nomic-embed-text && ollama pull nomic-embed-text
+ *     # or: systemctl restart ollama
+ *   No production code currently depends on embed() — tests mock fetch
+ *   so CI stays green regardless of the local Ollama's embed health.
  */
 
 const DEFAULT_ENDPOINT = 'http://localhost:11434';
