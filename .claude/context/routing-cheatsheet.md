@@ -104,30 +104,33 @@ Invoked as `/command-name` in Claude Code.
 
 All are `user-invocable: true`. Say the skill name or describe the intent.
 
+Post-prune 2026-04-15 — 16 active design skills (was 22). See `DECISIONS.md` for the reasoning.
+
 | Skill | Trigger / intent |
 |-------|-----------------|
+| `impeccable` | Full frontend design workflow. Subcommands: `craft`, `teach`, `extract`. Loaded by `designer` agent |
+| `shape` | Pre-implementation UX/UI planning — discovery interview → design brief |
+| `layout` | Layout and visual rhythm review (renamed from `arrange`) |
 | `adapt` | Adapt design for different screen/device/context |
 | `animate` | Add purposeful animations and micro-interactions |
-| `arrange` | Layout and spatial composition review |
 | `audit` | Design audit — systematic quality review |
 | `bolder` | Make design more confident / less timid |
 | `clarify` | Improve information hierarchy and clarity |
 | `colorize` | Color palette, contrast, and brand alignment |
 | `critique` | Design critique — structured feedback |
-| `delight` | Add delight and polish to interactions |
-| `distill` | Simplify and reduce — remove noise |
-| `extract` | Extract design patterns or reusable components |
-| `frontend-design` | Full frontend design workflow (used by designer agent) |
 | `harden` | Accessibility, performance, resilience |
-| `normalize` | Consistency pass — normalize spacing, type, tokens |
-| `onboard` | Onboarding flow design and review |
 | `optimize` | Performance and render optimization |
-| `overdrive` | Maximum design intensity — full polish sprint |
-| `polish` | Final polish pass before shipping |
+| `polish` | Final polish pass before shipping (absorbs former `normalize` + `onboard`) |
 | `quieter` | Reduce visual noise, improve focus |
-| `teach-impeccable` | Teaching-quality design with impeccable craft |
 | `typeset` | Typography review and correction |
 | `visual-explainer` | Create diagrams and visual explanations |
+
+**Removed** (use the alternatives noted):
+- `frontend-design`, `teach-impeccable` → folded into `impeccable` (craft / teach subcommands)
+- `extract` → use `impeccable extract` subcommand
+- `arrange` → renamed to `layout`
+- `normalize`, `onboard` → absorbed into `polish`
+- `delight`, `distill`, `overdrive` → pruned as redundant with impeccable's scope
 
 ---
 

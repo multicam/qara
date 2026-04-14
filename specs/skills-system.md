@@ -12,71 +12,120 @@ Skills are self-contained knowledge containers with progressive disclosure:
 
 | Type | Behavior | Used By |
 |------|----------|---------|
-| `context: same` | Loads in main conversation | CORE, humaniser |
-| `context: fork` | Isolated subagent execution | All other skills |
+| `context: same` | Loads in main conversation | CORE, grill-me, cross-provider, csf-view, design-it-twice, edit-article |
+| `context: fork` | Isolated subagent execution | All other local + symlinked skills |
 
-## All 17 Active Skills
+## Active Skills (44 total — 2026-04-15 post-prune)
+
+**Breakdown:** 28 local + 16 symlinked external
+
+External skill content is git-tracked at `.claude/skills-external/<name>/`. `~/.agents/skills/` is the `npx skills` CLI cache only. Nightly sync (`scripts/skills-sync-nightly.sh`, cron 02:00) pulls upstream → detects drift via Gemma (structural + semantic) → auto-commits benign changes or writes a review artifact for material ones. Claude's weekly synthesize reads pending reviews and applies philosophy + overlap lenses before adopt/modify/reject.
 
 ### Foundation
 
-**CORE** — `same` context, loaded every session. Identity, routing hub, stack preferences, security, agent roster, response tiers. Key files: CONSTITUTION.md, security-protocols.md, contacts.md.
+**CORE** — `same` context, loaded every session. Identity, routing hub, stack preferences, security, agent roster, response tiers. Has references/ + workflows/.
+
+### Execution Modes (3)
+
+**drive** — PRD-driven persistent execution with TDD cycles, critic/verifier gates, regression checks.
+**cruise** — Phased autonomous execution: Discover → Plan → Implement → Verify with checkpoints.
+**turbo** — Parallel agent dispatch; decomposes tasks, spawns parallel agents, verifies results.
 
 ### Research & Content
 
-**research** — `fork`, sonnet. Multi-source parallel research with 3 modes (quick/standard/extensive). Auto-selects agent by API key: Perplexity > Claude WebSearch > Gemini. 9+ workflows including conduct, claude-research, perplexity-research, interview, youtube, web-scraping.
-
-**thoughts-consolidate** — `fork`, sonnet. Consolidate and clean up thoughts/ files with codebase verification.
+**research** — Multi-source parallel research with extended thinking.
+**thoughts-consolidate** — Consolidate thoughts/ files with codebase verification.
+**diderot** — Knowledge retrieval from JM's Obsidian vault via keyword + semantic search.
+**cross-provider** — Synthesis across Claude subagent + local Gemma 4.
 
 ### Development Tools
 
-**system-create-skill** — `fork`, sonnet. Skill creation with architectural compliance. 4 workflows.
-
-**system-create-cli** — `fork`. TypeScript CLI generation with 3-tier template system. 5 workflows.
-
-**design-implementation** — `fork`. Automated UI dev loop: server + browser + verify + fix. 5 workflows.
-
-**frontend-design** — `fork`, sonnet. Production-grade UI avoiding generic AI aesthetics. Philosophy-driven, no discrete workflows.
-
-**hook-authoring** — `fork`. Hook creation and configuration. 2 workflows.
-
-**prompting** — `fork`. Prompt engineering standards per Anthropic best practices. 2 workflows.
-
-**devtools-mcp** — `fork`. Browser automation via Chrome DevTools MCP.
-
-**live-testing** — `fork`. Live testing workflows.
+**system-create-skill** — Skill creation with architectural compliance.
+**system-create-cli** — TypeScript CLI generation with 3-tier template system.
+**design-implementation** — Automated UI dev loop: server + browser + verify + fix. Delegates to `impeccable` for design work.
+**hook-authoring** — Hook creation and configuration.
+**hook-test** — End-to-end hook health checking and auto-correction.
+**prompting** — Prompt engineering standards per Anthropic best practices.
+**devtools-mcp** — Browser automation via Chrome DevTools MCP.
+**tdd-qa** — TDD and QA architecture — agent-executable blueprints for scenarios, cycles, back-testing, quality gates.
 
 ### Text & Content
 
-**humaniser** — `same`, haiku. Removes 24 categories of AI writing patterns. Inline editing.
-
-**visual-explainer** — `fork`. Visual explanation generation.
+**humaniser** — Removes AI writing patterns.
+**edit-article** — Phase 1-3 editing: DAG restructure, paragraph tightening, humaniser pass.
+**ubiquitous-language** — DDD glossary extraction from conversation.
 
 ### Analysis & Upgrade
 
-**cc-upgrade** — `fork`. Generic Claude Code folder analysis, feature compatibility, 12-factor compliance. Exports 5 analyzers for extension skills.
+**cc-upgrade** — Generic Claude Code folder analysis, feature compatibility, 12-factor compliance.
+**cc-upgrade-pai** — PAI-specific analysis; hosts `skills-detect-lib.ts` and nightly sync helpers.
+**introspect** — Cognitive introspection: daily reflect, weekly synthesize, monthly evolve.
+**grill-me** — Stress-test plans/designs/proposals through relentless questioning. Dependency-graph-aware.
+**design-it-twice** — Generate multiple radically different designs via parallel sub-agents.
 
-**cc-upgrade-pai** — `fork`. PAI-specific analysis, imports 3 base analyzers from cc-upgrade + 5 PAI-specific.
+### Product Work
 
-**hook-test** — `fork`. End-to-end hook health checking and auto-correction.
+**product-shaping** — Problem framing → research → specs.
+**triage-issue** — Investigate bugs → root-cause → GitHub issues with TDD-based fix plans.
+**image** — AI image generation + stock photo sourcing. Smart model routing.
+**csf-view** — Visual canvas (tldraw) for communicating designs to Claude.
 
-### Template
+### Symlinked — Anthropic impeccable family (3)
 
-**example-skill** — `fork`. Template demonstrating Skills-as-Containers pattern. 3 workflows.
+**impeccable** — v2.1.1. Master design skill. Anti-AI-slop patterns, production-grade frontend. Subcommands: `craft` (shape-then-build), `teach` (design context setup), `extract` (reusable components + tokens). Consolidates former frontend-design + teach-impeccable + extract.
+
+**shape** — v2.1.1. Pre-implementation UX/UI planning — discovery interview → design brief.
+
+**layout** — v2.1.1. Layout, spacing, visual rhythm. Renamed from `arrange`.
+
+### Symlinked — nicobailon/visual-explainer (13)
+
+**visual-explainer** — v0.6.3. Generate HTML diagrams, Mermaid, slides, data tables, diff reviews, project recaps. HTML outputs land in `thoughts/shared/diagrams/` via `~/.agent/diagrams` symlink.
+
+**Design sub-skills (12):** adapt, animate, audit, bolder, clarify, colorize, critique, harden, optimize, polish, quieter, typeset.
+
+### Migration & prune history (2026-04-15)
+
+- **Impeccable v2.1.1:** `arrange` → `layout`; `normalize` + `onboard` → absorbed into `polish`; `frontend-design` + `teach-impeccable` → superseded by `impeccable`.
+- **Prune (redundant with impeccable's scope):** `extract` (use `impeccable extract`), `delight`, `distill`, `overdrive` removed.
 
 ## Skill Dependencies
 
 ```
-CORE (foundation)
-├── cc-upgrade → cc-upgrade-pai (imports base analyzers)
-├── design-implementation → frontend-design (design philosophy)
-├── system-create-skill
-├── system-create-cli
-├── hook-authoring → hook-test
-├── prompting
-├── humaniser
-├── devtools-mcp
-├── live-testing
-├── visual-explainer
-├── thoughts-consolidate
-└── example-skill
+CORE (foundation — loads every session)
+├── Execution modes
+│   ├── drive → tdd-qa, critic + verifier agents
+│   ├── cruise → tdd-qa, critic + verifier agents
+│   └── turbo (parallel dispatch)
+├── Development tools
+│   ├── cc-upgrade → cc-upgrade-pai (imports base analyzers)
+│   ├── design-implementation → impeccable (design philosophy)
+│   ├── system-create-skill, system-create-cli
+│   ├── hook-authoring → hook-test
+│   └── tdd-qa (consumed by modes)
+├── Research
+│   ├── research, thoughts-consolidate, diderot
+│   └── cross-provider (Claude + Gemma 4)
+├── Text & Content
+│   ├── humaniser, edit-article, ubiquitous-language
+│   └── image, csf-view
+├── Analysis
+│   ├── introspect (self-audit)
+│   ├── grill-me (plan stress test)
+│   └── design-it-twice (parallel alternatives)
+├── Product
+│   ├── product-shaping, triage-issue
+│   └── impeccable (anchor for 13 visual-explainer sub-skills + shape + layout)
+└── MCP
+    └── devtools-mcp
 ```
+
+## External Skill Sources
+
+See `.claude/skills/cc-upgrade-pai/references/external-skills-registry.md` for detailed provenance, version hashes, migration history, and upstream monitoring cadence.
+
+| Source | Author | Active | Tracking |
+|---|---|---|---|
+| Anthropic impeccable family | Anthropic fork | 3 (impeccable, shape, layout) | Manual (registry-only; outside `npx skills` lock file) |
+| nicobailon/visual-explainer | nicobailon | 13 (visual-explainer + 12 sub-skills) | Lock file + registry |
+| mattpocock/skills | mattpocock | — | Adapted (rewritten for PAI conventions), not symlinked |
