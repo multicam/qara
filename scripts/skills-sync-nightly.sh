@@ -18,6 +18,37 @@ REVIEW_FILE="$REVIEW_DIR/skills-review-$(TZ=Australia/Sydney date +%Y-%m-%d).md"
 LOG_PREFIX="[$(date -Iseconds)] skills-sync:"
 HELPER="$REPO_ROOT/.claude/skills/cc-upgrade-pai/scripts/skills-sync-nightly-helpers.ts"
 
+# Skills excluded from sync. JM's decisions (2026-04-15):
+#   - 5 deprecated by impeccable v2.1.1: arrange, frontend-design, normalize, onboard, teach-impeccable
+#   - 4 found redundant with impeccable: extract (impeccable extract subcommand), delight, distill, overdrive
+# These live in ~/.agents/skills (CLI cache) but must not reach the repo mirror.
+EXCLUDED_SKILLS=(
+    arrange
+    frontend-design
+    normalize
+    onboard
+    teach-impeccable
+    extract
+    delight
+    distill
+    overdrive
+)
+
+# Build rsync --exclude flags
+RSYNC_EXCLUDES=()
+for s in "${EXCLUDED_SKILLS[@]}"; do
+    RSYNC_EXCLUDES+=(--exclude="$s/" --exclude="$s")
+done
+
+# Helper for the detection loop (bash's `for` should skip excluded dirs)
+is_excluded() {
+    local name="$1"
+    for s in "${EXCLUDED_SKILLS[@]}"; do
+        [ "$s" = "$name" ] && return 0
+    done
+    return 1
+}
+
 mkdir -p "$REVIEW_DIR"
 cd "$REPO_ROOT"
 
@@ -37,6 +68,11 @@ for skill_dir in "$UPSTREAM_DIR"/*/; do
     old_dir="$MIRROR_DIR/$skill_name"
     new_dir="${skill_dir%/}"
 
+    # Skip excluded skills (deprecated or redundant)
+    if is_excluded "$skill_name"; then
+        continue
+    fi
+
     # Quick short-circuit: if directories are byte-identical, skip detection.
     if [ -d "$old_dir" ] && diff -qr "$old_dir" "$new_dir" >/dev/null 2>&1; then
         continue
@@ -55,7 +91,8 @@ if [ ${#CHANGED_SKILLS[@]} -eq 0 ]; then
 fi
 
 # 3. Bulk-mirror upstream into the repo (single atomic operation).
-rsync -a --delete "$UPSTREAM_DIR/" "$MIRROR_DIR/"
+# --delete removes anything in mirror that's not in upstream OR excluded → keeps ghosts out.
+rsync -a --delete "${RSYNC_EXCLUDES[@]}" "$UPSTREAM_DIR/" "$MIRROR_DIR/"
 
 # 4. Per-skill: commit benign OR write review entry.
 FLAGGED_ANY=0

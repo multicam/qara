@@ -1,1 +1,0 @@
-../../frontend-design/reference/spatial-design.md
