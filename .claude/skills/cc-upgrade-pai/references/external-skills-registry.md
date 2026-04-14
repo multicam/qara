@@ -9,10 +9,21 @@ Last reviewed: 2026-04-15
 
 ## Tracking Infrastructure
 
+As of 2026-04-15, external skill content is **git-tracked inside the qara repo** at `.claude/skills-external/`. The upstream `~/.agents/skills/` tree is still populated by the `npx skills` CLI but now serves as a cache, not the canonical copy. Drift detection runs nightly via `scripts/skills-sync-nightly.sh` and surfaces material changes for weekly Claude review.
+
 | Component | Location | Purpose |
 |-----------|----------|---------|
-| Lock file | `~/.agents/.skill-lock.json` | Version tracking, hashes, timestamps |
-| Skills directory | `~/.agents/skills/` | Canonical location for external skills |
+| **Canonical skill content** | `.claude/skills-external/<name>/` | Git-tracked mirror — source of truth |
+| Upstream CLI cache | `~/.agents/skills/<name>/` | Written by `npx skills`; mirrored nightly into repo |
+| Lock file | `~/.agents/.skill-lock.json` | Vercel CLI's own version tracking (read-only to us) |
+| Project symlinks | `.claude/skills/<name>` → `../skills-external/<name>` | What CC discovers |
+| HTML diagrams (visual-explainer) | `thoughts/shared/diagrams/` (via `~/.agent/diagrams` symlink) | Git-tracked in thoughts repo |
+| Nightly sync | `scripts/skills-sync-nightly.sh` | `npx skills update -y` → rsync → detect (structural + Gemma) → auto-commit or flag |
+| Weekly review | `~/.claude/scripts/introspect-synthesize.sh` | Claude applies philosophy + overlap lenses to flagged items |
+| Detection lib | `.claude/skills/cc-upgrade-pai/scripts/skills-detect-lib.ts` | Pure logic, unit-tested |
+| Review artifacts | `thoughts/shared/introspection/skills-review-YYYY-MM-DD.md` | Flagged diffs pending Claude verdict |
+| Review log | `~/.claude/state/digests/skills-sync.log` | Nightly sync outcomes |
+| Cron | `0 2 * * *` invokes `skills-sync-nightly.sh` | Daily upstream pull + drift check |
 | Symlinks | `.claude/skills/<name>` → `../../.agents/skills/<name>` | Project-level access |
 | Update script | `~/update-skills.sh` | Interactive update via `npx skills` CLI |
 | Skills CLI | `npx skills` (Vercel Labs) | Install, list, check, update |

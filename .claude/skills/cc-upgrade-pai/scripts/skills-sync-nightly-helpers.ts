@@ -20,11 +20,12 @@ async function main() {
     if (cmd === 'detect') {
         const oldDir = arg('--old');
         const newDir = arg('--new');
+        const skipSemantic = process.argv.includes('--skip-semantic');
         if (!oldDir || !newDir) {
-            console.error('Usage: detect --old <dir> --new <dir>');
+            console.error('Usage: detect --old <dir> --new <dir> [--skip-semantic]');
             process.exit(1);
         }
-        const result = await detectChanges({ oldSkillDir: oldDir, newSkillDir: newDir });
+        const result = await detectChanges({ oldSkillDir: oldDir, newSkillDir: newDir, skipSemantic });
         console.log(JSON.stringify(result));
         return;
     }

@@ -339,6 +339,9 @@ cd $PAI_DIR/.claude/hooks && bun test --coverage
 
 # External skills analysis
 bun run .claude/skills/cc-upgrade/scripts/analyse-external-skills.ts $PAI_DIR
+
+# External skills drift check (run nightly via cron; callable on demand)
+bash scripts/skills-sync-nightly.sh
 ```
 
 ## OMC Monitoring
@@ -375,4 +378,5 @@ When new features detected:
    - Load `hook-test` skill workflow (`${PAI_DIR}/skills/hook-test/workflows/test-and-fix.md`) — execute all 8 steps
    - `bun run test`
    - `bun run .claude/hooks/lib/context-graph/cli.ts audit --pai-dir .claude` (broken refs, cycles, orphans)
+   - Check pending external-skill reviews: `ls thoughts/shared/introspection/skills-review-*.md 2>/dev/null`
    - Do NOT report success until all validations pass
