@@ -3,10 +3,10 @@ name: design-implementation
 context: fork
 description: |
   Automated UI development loop: dev server + browser + implement + verify + fix.
-  Launches dev server, implements via frontend-design skill, checks for errors
+  Launches dev server, implements via impeccable skill, checks for errors
   (console, TypeScript, network), and iterates up to 5 times.
   USE WHEN: "implement next feature", "implement [description]", "verify the UI".
-  NOT for one-off design/code tasks — use frontend-design directly for those.
+  NOT for one-off design/code tasks — use impeccable directly for those.
   **Triggers:**
   - "implement next feature", "implement the hero section"
   - "verify this implementation", "check the UI"
@@ -92,7 +92,7 @@ Edit `config.json` in this skill directory:
 
 | Skill/Agent | When Used |
 |-------------|-----------|
-| `frontend-design` | Initial implementation |
+| `impeccable` | Initial implementation |
 | `engineer` agent | Escalate complex bugs |
 
 ---

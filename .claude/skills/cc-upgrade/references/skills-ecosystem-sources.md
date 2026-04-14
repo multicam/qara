@@ -85,9 +85,7 @@ Prefer curated sources below.
 ### Nico Bailón Visual-Explainer Detail
 
 **Core skill:** visual-explainer (generates HTML diagrams, Mermaid, slides, data tables)
-**Design sub-skills (22):** adapt, animate, arrange, audit, bolder, clarify, colorize,
-critique, delight, distill, extract, frontend-design, harden, normalize, onboard,
-optimize, overdrive, polish, quieter, teach-impeccable, typeset
+**Design sub-skills (post impeccable v2.1.1 migration, 18):** impeccable (consolidates frontend-design + teach-impeccable + extract), shape, layout (was arrange), polish (absorbs normalize + onboard), adapt, animate, audit, bolder, clarify, colorize, critique, delight, distill, harden, optimize, overdrive, quieter, typeset
 
 **Philosophy:** Anti-AI-slop design, context-first, progressive disclosure, accessibility-first.
 **Install:** `npx skills@latest add nicobailon/visual-explainer`

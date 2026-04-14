@@ -23,6 +23,7 @@
 | JSON path search | `jsongrep` (`jg`) | `jq` (for search) | DFA-compiled, O(1)/node |
 | GitHub ops | `gh` | browser | Native CLI, scriptable |
 | Fuzzy finder | `fzf` | - | Interactive |
+| LLM token counting | `tokenu` | manual estimate | `du`-like, per-file/dir, model-aware |
 
 ---
 
@@ -41,6 +42,9 @@ curl -fsSL https://bun.sh/install | bash
 # Python
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
+# LLM tooling (npm-distributed, install to user prefix)
+npm install -g --prefix=$HOME/.local tokenu
+
 # Rust toolchain (if needed)
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
@@ -58,6 +62,9 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 **Development:**
 - gh (GitHub CLI), ast-grep, jsongrep, markdownlint-cli2
 
+**LLM/Token Tooling:**
+- tokenu (token counting per file/dir, like `du` for LLM tokens)
+
 **AI Agents:**
 - Claude Code (primary), Gemini CLI
 
@@ -66,7 +73,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ## Quick Verification
 
 ```bash
-fd --version && rg --version && sd --version && bat --version && eza --version && delta --version && hyperfine --version && sg --version && jg --version && gh --version
+fd --version && rg --version && sd --version && bat --version && eza --version && delta --version && hyperfine --version && sg --version && jg --version && gh --version && tokenu --version
 ```
 
 ---

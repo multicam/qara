@@ -3,7 +3,7 @@
 Comprehensive documentation of all externally-installed skills in the PAI ecosystem.
 Maintained as part of `cc-upgrade-pai`. Updated during each external skills deep analysis.
 
-Last reviewed: 2026-04-09
+Last reviewed: 2026-04-15
 
 ---
 
@@ -16,6 +16,48 @@ Last reviewed: 2026-04-09
 | Symlinks | `.claude/skills/<name>` → `../../.agents/skills/<name>` | Project-level access |
 | Update script | `~/update-skills.sh` | Interactive update via `npx skills` CLI |
 | Skills CLI | `npx skills` (Vercel Labs) | Install, list, check, update |
+
+---
+
+## Source 0: Anthropic impeccable (v2.1.1 migration — added 2026-04-15)
+
+**Author:** Anthropic (fork of their frontend-design skill)
+**Distribution:** Manual install into `~/.agents/skills/` (not currently tracked in `.skill-lock.json`)
+**License:** Apache 2.0
+**Installed:** 2026-04-15 (via manual placement, cleanup script auto-run)
+
+### Migration event (2026-04-15)
+
+The impeccable v2.1.1 release **consolidated and renamed** several visual-explainer design sub-skills. A `<post-update-cleanup>` block in `impeccable/SKILL.md` invoked `scripts/cleanup-deprecated.mjs`, which removed 5 deprecated symlinks on first invocation.
+
+| Deprecated skill | Replacement | Notes |
+|---|---|---|
+| `frontend-design` | `impeccable` (as master skill) | All design context now lives under impeccable |
+| `teach-impeccable` | `/impeccable teach` subcommand | Setup folded into argument dispatcher |
+| `arrange` | `layout` (renamed) | Functionality unchanged |
+| `normalize` | `polish` (absorbed) | Consistency checks merged into polish |
+| `onboard` | `polish` / `impeccable` (absorbed) | Onboarding patterns distributed across broader skills |
+
+### Skills Provided (3 skills)
+
+| Skill | Purpose | Context | Version |
+|---|---|---|---|
+| `impeccable` | Master design skill — craft/teach/extract subcommands, anti-AI-slop patterns, design context gathering | fork | 2.1.1 |
+| `shape` | Pre-implementation UX/UI planning — discovery interview → design brief | fork | 2.1.1 |
+| `layout` | Layout and visual rhythm review (replaces `arrange`) | fork | 2.1.1 |
+
+### PAI integration
+
+- `designer` agent updated to load `impeccable` (was `frontend-design`)
+- `design-implementation` skill references updated
+- `routing-cheatsheet.md` + `delegation-guide.md` updated
+- Test files `pai-validation.test.ts` + `skills-validation.test.ts` updated
+- `skills-ecosystem-sources.md` updated with new sub-skill count
+
+### Open items
+
+1. **Lock file drift:** `~/.agents/.skill-lock.json` only tracks `visual-explainer`. The 3 impeccable-family skills are not registered — decide between re-installing via `npx skills` (if source published there) or manual registry-only tracking.
+2. **Provenance:** SKILL.md notes "Based on Anthropic's frontend-design skill. See NOTICE.md" — upstream canonical repo unconfirmed.
 
 ---
 
@@ -209,4 +251,5 @@ All upstream skills evaluated. Redundant entries (write-a-prd, prd-to-issues, gi
 | 2026-04-09 | Routine deep analysis. **mattpocock:** No new commits since `651eab0` (2026-04-01). 21 entries (19 skills + LICENSE + README). All PAI adaptations current. Registry updated: `refactor-plan` and `prd-to-plan` now marked RETIRED (were missing strikethrough). **visual-explainer:** v0.6.3 confirmed current (last commit `9a97a58` 2026-03-29, lock hash `339a338e9e2`). Stars: 7,376 (+249). Forks: 501. 22 sub-skills installed, all symlinks intact. **OMC:** v4.11.2 (2026-04-08), active development — installer dedup fix, setup regression tests, worktree project identifier fix, HUD plugin root env var. No new patterns relevant to PAI. **Context graph:** 0 broken local refs, 0 circular deps. 1 cosmetic upstream ref persists (`slide-patterns.md` without `references/` prefix). **Infrastructure:** 14 hook scripts, 14 hook libs + context-graph/, 10 CC hook events, 15 agents, 28 local + 22 symlinked = 50 skills. MEMORY.md skill count corrected 51→50 (28 local + 22 symlinked). **Tests:** 1,461 pass (61 files, +93 tests, +6 files since 2026-04-06). **awesome-agent-skills:** 3 new PRs since last audit (Qdrant, Resend, Courier skills) — no PAI-relevant additions. No action items. | cc-upgrade-pai deep analysis |
 | 2026-04-10 | Routine deep analysis. **mattpocock:** No new commits since `651eab0` (2026-04-01). 21 entries (19 skills + LICENSE + README). All PAI adaptations current. **visual-explainer:** v0.6.3 confirmed current (last commit `9a97a58` 2026-03-29, lock hash `339a338e9e2`). Stars: 7,396 (+20). Forks: 503 (+2). 22 sub-skills installed, all 22 symlinks verified resolving. **OMC:** v4.11.4 (2026-04-09), bug-fix-only releases (v4.11.3-4) — preemptive-compaction fallback, keyword-detector false-positive narrowing, hook .json/.jsonl extension check fix. Keyword-detector narrowing is relevant pattern but PAI's keyword-routes.json already uses strict patterns (word boundary + colon/mode/this); no action needed. **Context graph:** 188 nodes, 167 edges. 0 broken refs, 0 circular deps. Prior cosmetic upstream ref (`slide-patterns.md`) now resolved — all upstream SKILL.md refs use correct `./references/` prefix. **Infrastructure:** 14 hook scripts, 14 hook libs + context-graph/, 10 CC hook events, 15 agents, 28 local + 22 symlinked = 50 skills. All counts match MEMORY.md. **Tests:** 1,461 pass (61 files), stable since 2026-04-09. **awesome-agent-skills:** 3 new PRs merged 2026-04-04 (Qdrant, Resend, Courier) — no PAI-relevant additions. No action items. | cc-upgrade-pai deep analysis |
 | 2026-04-10 | Deep analysis (session 2). **mattpocock:** No new commits since `651eab0` (2026-04-01). 21 entries (19 skills + LICENSE + README). All PAI adaptations current. **visual-explainer:** v0.6.3 confirmed current (last commit `9a97a58` 2026-03-29, lock hash `339a338e9e2`). Stars: 7,396. Forks: 503. 22 sub-skills installed, all 22 symlinks verified resolving. **OMC:** v4.11.4 (2026-04-09), no new commits since last audit. **Context graph:** 0 broken refs, 0 circular deps. `slide-patterns.md` cosmetic ref fully resolved upstream. **Infrastructure CORRECTED:** 18 production hook scripts (+4 since 2026-04-09: permission-denied.ts, post-compact.ts, stop-failure.ts, task-created.ts). 14 hook libs + context-graph/ (unchanged). 14 CC hook events (+4: PermissionDenied, PostCompact, StopFailure, TaskCreated). 15 agents. 28 local + 22 symlinked = 50 skills. Prior audits undercounted — MEMORY.md needs update. **Tests:** 1,511 pass (67 files, +50 tests, +6 files since 2026-04-09). **Validation:** validate-skills.sh 0 errors, check-references.sh 51 refs checked/0 broken. **awesome-agent-skills:** No new PRs since 2026-04-04. No action items beyond MEMORY.md correction. | cc-upgrade-pai deep analysis |
+| 2026-04-15 | **MAJOR: Impeccable v2.1.1 migration.** Three new skills installed at `~/.agents/skills/`: `impeccable` (21.5K), `shape` (5.1K), `layout` (7.2K — renamed from arrange). Cleanup script `impeccable/scripts/cleanup-deprecated.mjs` auto-ran during audit and removed 5 deprecated symlinks: `frontend-design`, `teach-impeccable`, `arrange`, `normalize`, `onboard`. `designer.md` agent updated to load `impeccable` (was `frontend-design`). `design-implementation` skill refs updated. `routing-cheatsheet.md`, `delegation-guide.md`, `pai-validation.test.ts`, `skills-validation.test.ts`, `skills-ecosystem-sources.md` all updated. **Upstream status:** mattpocock unchanged since `651eab0` (2026-04-01). visual-explainer v0.6.3 (last commit `9a97a58` 2026-03-29). OMC v4.11.6 (2026-04-13). **Infrastructure:** 18 hook scripts, 14 hook libs, 14 CC events, 15 agents, 28 local + 20 symlinked = **48 skills** (down from 50 post-cleanup). **Context graph:** 206 nodes, 167 edges, 0 broken refs, 0 cycles. **Tests:** 1637 pass (77 files, +49 tests since 2026-04-11). **Audit score:** 194/194 (100%). **Open items:** `.skill-lock.json` only tracks visual-explainer — impeccable-family skills installed outside npx skills CLI, lock file not updated. SKILL.md post-fix validation step was pointing at non-existent `scripts/validate-skills.sh` + `scripts/check-references.sh` — replaced with context-graph CLI command. | cc-upgrade-pai impeccable migration |
 | 2026-04-11 | Scorer-fix cruise: `tdd-qa--coverage-and-scorer-gaps-v1.md`. **analyse-claude-folder.ts scorer rebuilt** — 4-rule `isToolCovered()` helper added to `shared.ts` (co-located / centralized / stem-companion / sibling-import-transitive), wired into hook + tool checks. Broadened `analyzeContext` to 3 progressive-disclosure signals. Closed under-reporting bug where the scorer saw 50% tool coverage while reality was 97%. **New test** `screenshot-analyze.test.ts` (16 tests, centralized location, mocked Ollama via `spyOn(globalThis, 'fetch')` — all three CLI modes covered). **Structural guard** added to `screenshot-analyze.ts` (7 exports + `isDirectRun` check matching cc-version-check.ts pattern) so test imports don't trigger `main()`. **Test isolation fix**: `mode-state.ts` STATE_FILE env-overridable via `MODE_STATE_FILE` — fixes `compact-checkpoint.test.ts` failing when a real cruise session is active on host. **Side quests caught by Phase 3 verifier**: stale `tdd-qa/workflows/tdd-cycle.md` path in `CORE/testing-guide.md:73` (should have been `../tdd-qa/...`), and a `cli-examples-basic ⇄ cli-examples-advanced` mutual-See cycle — both pre-existing, both fixed. **PAI audit: 185/194 (95%) → 194/194 (100%)**. CONTEXT 10/15 → 15/15. TDDCOMPLIANCE 18/20 → 20/20. TDDCOMPLIANCEPAI 18/20 → 20/20. MODESYSTEM steady at 20/20. **Tests:** 1,563 → 1,588 (+25: 9 scorer unit tests + 16 screenshot-analyze tests). **Context graph:** 190 nodes, 144 edges (was 145), 0 broken refs, 0 circular deps. **Infrastructure unchanged:** 18 hook scripts, 14 hook libs, 14 CC events, 15 agents, 28 local + 22 symlinked = 50 skills. No upstream changes this session. See `DECISIONS.md` for the full architectural rationale. | cc-upgrade-pai scorer fix + new test |

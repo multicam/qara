@@ -54,7 +54,7 @@ Read the actual SKILL.md for each. Don't rely on names alone.
 
 **Specific checks:**
 
-1. **Foundation (frontend-design, teach-impeccable):** aligned with `designer` agent? `.impeccable.md` generated? Anti-AI-slop matches PAI aesthetic?
+1. **Foundation (impeccable — consolidates frontend-design + teach-impeccable + extract):** aligned with `designer` agent? `.impeccable.md` generated? Anti-AI-slop matches PAI aesthetic? `shape` skill used for pre-implementation planning?
 2. **Design creation (animate, arrange, typeset, clarify, colorize, delight):** used in any frontend work? Conflicts with TS > Python? Could a subset suffice?
 3. **Design evaluation (audit, critique, optimize, polish, harden):** `audit` collides with cc-upgrade `audit` workflow — routing clear? `critique` overlaps with `grill-me` — boundary defined? Could some merge?
 4. **Amplification (bolder, quieter):** usage frequency? Single skill with mode parameter?

@@ -67,7 +67,7 @@ Required:
 | Agent hierarchy | `.claude/context/delegation-guide.md` | Escalation paths |
 | Spotcheck | Commands | Post-delegation verification |
 
-### 4. Hook Library (14 scripts, 14 libs + context-graph/)
+### 4. Hook Library (18 scripts, 14 libs + context-graph/)
 
 ```
 .claude/hooks/
@@ -99,8 +99,12 @@ Required:
 ├── subagent-start.ts
 ├── subagent-stop.ts          # Deliverable recording
 ├── pre-compact.ts            # PreCompact: state checkpoint
+├── post-compact.ts           # PostCompact: state recovery
 ├── stop-hook.ts              # Stop: mode continuation, memory injection
-└── config-change.ts
+├── stop-failure.ts           # StopFailure: crash logging
+├── config-change.ts          # ConfigChange: settings sync
+├── permission-denied.ts      # PermissionDenied: logging
+└── task-created.ts           # TaskCreated: subagent tracking
 ```
 
 Required:
@@ -370,5 +374,5 @@ When new features detected:
 9. **Post-fix validation (MANDATORY):**
    - Load `hook-test` skill workflow (`${PAI_DIR}/skills/hook-test/workflows/test-and-fix.md`) — execute all 8 steps
    - `bun run test`
-   - `scripts/validate-skills.sh`, `scripts/check-references.sh`
+   - `bun run .claude/hooks/lib/context-graph/cli.ts audit --pai-dir .claude` (broken refs, cycles, orphans)
    - Do NOT report success until all validations pass

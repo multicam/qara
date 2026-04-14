@@ -32,7 +32,7 @@ bun ${SKILL_DIR}/tools/playwright-runner.ts capture \
 
 ### 4. Implement Feature
 
-Delegate to `frontend-design` skill or implement directly:
+Delegate to `impeccable` skill or implement directly:
 - Create/modify component files
 - Add imports
 - Style with Tailwind (or project CSS system)
@@ -142,6 +142,6 @@ ${ANY_ISSUES_OR_OBSERVATIONS}
 
 | Skill/Agent | Usage |
 |-------------|-------|
-| `frontend-design` | Delegate complex component design |
+| `impeccable` | Delegate complex component design |
 | `fix-errors` workflow | Handle verification failures |
 | `engineer` agent | Escalate complex bugs |

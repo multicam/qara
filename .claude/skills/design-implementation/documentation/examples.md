@@ -160,6 +160,6 @@ Fix: Change flex direction or adjust order
 
 ## Integration with Other Skills
 
-- **frontend-design** — delegates complex component design, returns for verification
+- **impeccable** — delegates complex component design, returns for verification
 - **engineer** — escalates bugs beyond visual (state management, data flow)
 - **design-iterator** — refinement loops ("iterate on this hero section 5 times")
