@@ -67,8 +67,22 @@ The impeccable v2.1.1 release **consolidated and renamed** several visual-explai
 
 ### Open items
 
-1. **Lock file drift:** `~/.agents/.skill-lock.json` only tracks `visual-explainer`. The 3 impeccable-family skills are not registered — decide between re-installing via `npx skills` (if source published there) or manual registry-only tracking.
-2. **Provenance:** SKILL.md notes "Based on Anthropic's frontend-design skill. See NOTICE.md" — upstream canonical repo unconfirmed.
+1. **Provenance:** SKILL.md notes "Based on Anthropic's frontend-design skill. See NOTICE.md" — upstream canonical repo unconfirmed.
+
+## Tracking model (resolved 2026-04-15)
+
+**Decision:** PAI maintains its own canonical copies of all non-visual-explainer externals under `.claude/skills-external/<name>/` (git-tracked). `~/.agents/.skill-lock.json` tracks only `visual-explainer` — the other 15 externals (3 impeccable-family + 12 Anthropic design skills) are **deliberately not** registered with the `npx skills` CLI.
+
+**Why:** re-registering via `npx skills install` would re-download from upstream and replace our git-tracked copies, wiping any PAI-specific modifications. Our nightly sync (`scripts/skills-sync-nightly.sh`) handles drift detection via structural diff + Gemma 4 semantic classification, which covers the update-tracking need without owning the install path.
+
+**Canonical locations:**
+- Source of truth: `.claude/skills-external/<name>/` (git-tracked)
+- CC discovery: `.claude/skills/<name>` → `../skills-external/<name>` (symlinks)
+- `~/.agents/skills/` is the `npx skills` cache — used only for `visual-explainer`; other entries may exist as copies but are not authoritative.
+
+**Drift detection:** `scripts/skills-sync-nightly.sh` (cron 02:00) → `npx skills update -y` → per-skill detection against repo copy. Benign changes auto-commit; flagged changes go to `thoughts/shared/introspection/skills-review-YYYY-MM-DD.md` for weekly Claude review. See `skills-detect-lib.ts` for the detection logic.
+
+**When to add a new external:** copy upstream content into `.claude/skills-external/<name>/`, add symlink in `.claude/skills/<name>`, update this registry. Do NOT run `npx skills install` for PAI-tracked externals.
 
 ---
 
