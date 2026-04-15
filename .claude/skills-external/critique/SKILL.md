@@ -222,3 +222,4 @@ After presenting the summary, tell the user:
 
 > You can ask me to run these one at a time, all at once, or in any order you prefer.
 >
+> Re-run `/critique` after fixes to see your score improve.
