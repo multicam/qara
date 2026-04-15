@@ -1,7 +1,7 @@
 # Feature: Hook System
 
 ## Context
-18 hooks across 14 CC events manage session lifecycle, security enforcement, TDD discipline, quality checks, logging, tab titles, subagent tracking, context compaction, permission denial handling, stop failures, task creation, and config tracking. Each hook is individually tested — these scenarios cover cross-hook behavior and edge cases.
+19 hooks across 14 CC events manage session lifecycle, security enforcement, TDD discipline, quality checks, logging, tab titles, subagent tracking, context compaction, permission denial handling, stop failures, task creation, config tracking, and prompt-injection defense on external-content tools (WebFetch/WebSearch). Each hook is individually tested — these scenarios cover cross-hook behavior and edge cases.
 
 ## Scenarios
 

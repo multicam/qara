@@ -1,0 +1,47 @@
+{
+  // Project-local jcodemunch-mcp config (qara).
+  //
+  // ─── IMPORTANT: server-scoped vs per-index split (v1.44.0 gotcha) ──────────
+  // Confirmed 2026-04-15 via direct Python inspection of
+  //   /home/jean-marc/.local/share/uv/tools/jcodemunch-mcp/lib/.../server.py:1853
+  // tool_profile, use_ai_summaries, allow_remote_summarizer, compact_schemas
+  // are SERVER-SCOPED — read at list_tools time, BEFORE the MCP server knows
+  // which project will call which tool. Setting them in this project config
+  // is a NO-OP at boot. They ONLY take effect when set in the GLOBAL config
+  // at `~/.code-index/config.jsonc`. Qara's global config now carries them.
+  //
+  // Settings that ARE honored from this project config:
+  //   - trusted_folders      (absolute paths only; "." and "./" rewritten to root)
+  //   - extra_ignore_patterns (gitignore-style; NOT "exclude")
+  //   - languages            (parser selection at index time)
+  //   - max_folder_files, max_results, path_map, architecture.*, etc.
+  //
+  // Kept below as defense-in-depth in case upstream fixes per-project
+  // override semantics. Harmless when ignored, authoritative if honored.
+  // ──────────────────────────────────────────────────────────────────────────
+  "tool_profile": "standard",
+  "compact_schemas": true,
+  "use_ai_summaries": false,
+  "allow_remote_summarizer": false,
+
+  // Absolute path required by v1.44.0. Restricts `index_folder` to this repo.
+  "trusted_folders": ["/home/jean-marc/qara"],
+
+  // v1.44.0 schema field is `extra_ignore_patterns` (gitignore-style),
+  // NOT `exclude`. These paths must never enter the symbol index:
+  //   thoughts/  — private research notes (TGDS-strategic)
+  //   purgatory/ — archived dead code, noise
+  //   .claude/state/ — session JSONL logs
+  //   .claude/skills-external/ — third-party code, not ours
+  "extra_ignore_patterns": [
+    "thoughts/",
+    "purgatory/",
+    ".claude/state/",
+    ".claude/skills-external/",
+    "node_modules/",
+    "dist/",
+    ".git/"
+  ],
+
+  "languages": ["typescript", "javascript", "python", "markdown"]
+}

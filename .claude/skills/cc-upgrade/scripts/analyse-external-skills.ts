@@ -284,14 +284,24 @@ export const analyzeSkillQuality: AnalyzerFunction = (basePath: string): Analysi
     result.findings.push(`${withScripts.length}/${skills.length} external skills include scripts/`);
   }
 
-  // Check context type distribution
+  // Check context type distribution — only report declared (non-missing) types.
+  // Missing context: field is common in external skills and is already covered
+  // by the "All external skills use context: fork" inference earlier in this analyzer.
   const contextDist = new Map<string, number>();
+  let missingContext = 0;
   for (const skill of skills) {
-    const ctx = skill.frontmatter.context || "unknown";
+    const ctx = skill.frontmatter.context;
+    if (!ctx) {
+      missingContext++;
+      continue;
+    }
     contextDist.set(ctx, (contextDist.get(ctx) || 0) + 1);
   }
   for (const [ctx, count] of contextDist) {
     result.findings.push(`Context type '${ctx}': ${count} skill(s)`);
+  }
+  if (missingContext > 0) {
+    result.findings.push(`${missingContext}/${skills.length} external skill(s) omit context: field (defaults to fork)`);
   }
   result.score += 5;
 

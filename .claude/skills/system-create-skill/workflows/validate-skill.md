@@ -8,7 +8,21 @@ Audit an existing skill for compliance with canonical PAI architectural standard
 
 ---
 
-## Step 1: Read Canonical Architecture
+## Step 1: Run Automated Validator
+
+```bash
+bun run ${PAI_DIR}/skills/system-create-skill/scripts/validate-skill.ts <skill-dir>
+```
+
+Parse the JSON output on stdout. If exit code is non-zero, report the `violations` array. Each violation has `rule`, `severity` (`error` or `warning`), and `detail`.
+
+Automated checks cover: name format + reserved words, description length caps, combined description + when_to_use cap, SKILL.md body line count, Workflow Routing placement, orphan files, route count vs workflow count, and activation trigger coverage. Exit 0 = no errors (warnings allowed). Exit 1 = errors found. Exit 2 = internal error.
+
+Continue to the prose checks below for judgment-based compliance categories the script does not cover (CORE duplication, archetype match, agent compatibility).
+
+---
+
+## Step 2: Read Canonical Architecture
 
 ```
 ${PAI_DIR}/skills/CORE/skill-structure.md
@@ -19,7 +33,7 @@ Extract: 3 archetypes, mandatory requirements, routing rules, naming conventions
 
 ---
 
-## Step 2: Identify Target Skill
+## Step 3: Identify Target Skill
 
 If user specifies name: `${PAI_DIR}/skills/[skill-name]/`.
 If user says "validate this skill": check current directory for SKILL.md.
@@ -30,7 +44,7 @@ test -f ${PAI_DIR}/skills/[skill-name]/SKILL.md && echo "✅ Skill found"
 
 ---
 
-## Step 3: Structural Validation [Score: X/10]
+## Step 4: Structural Validation [Score: X/10]
 
 ```bash
 tree ${PAI_DIR}/skills/[skill-name]/
@@ -49,7 +63,7 @@ Checks:
 
 ---
 
-## Step 4: Routing Validation [Score: X/10]
+## Step 5: Routing Validation [Score: X/10]
 
 **YAML frontmatter:**
 - [ ] `name:` and `description:` present
@@ -71,7 +85,7 @@ find ${PAI_DIR}/skills/[skill-name]/workflows/ -name "*.md" -type f | wc -l
 
 ---
 
-## Step 5: Activation Triggers Validation [Score: X/10]
+## Step 6: Activation Triggers Validation [Score: X/10]
 
 Check "When to Activate This Skill" covers 8 categories:
 
@@ -88,7 +102,7 @@ Target: ≥5/8 categories. Includes casual phrasing and natural variations.
 
 ---
 
-## Step 6: Documentation Validation [Score: X/10]
+## Step 7: Documentation Validation [Score: X/10]
 
 ```bash
 find ${PAI_DIR}/skills/[skill-name]/ -name "*.md" -type f
@@ -103,7 +117,7 @@ Flag orphan files (unreferenced) and broken links (references to non-existent fi
 
 ---
 
-## Step 7: Integration & Quality Validation [Score: X/10 each]
+## Step 8: Integration & Quality Validation [Score: X/10 each]
 
 **Integration:**
 - No duplication of CORE context
@@ -118,7 +132,7 @@ Flag orphan files (unreferenced) and broken links (references to non-existent fi
 
 ---
 
-## Step 8: Generate Validation Report
+## Step 9: Generate Validation Report
 
 ```markdown
 # Skill Validation Report: [skill-name]

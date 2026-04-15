@@ -4,6 +4,23 @@ Directory structure and SKILL.md templates for each archetype.
 
 ---
 
+## Constraints (all archetypes)
+
+### Length Limits
+- SKILL.md body (post-frontmatter): **≤ 500 lines** (Anthropic best practice for cross-surface portability)
+- `description`: **≤ 1,024 chars** (hard spec limit; exceeding this breaks CC listing and cross-tool portability)
+- `description` + `when_to_use` combined: **≤ 1,536 chars** (CC listing cap)
+
+Use `when_to_use:` as an extension field when description alone isn't enough for trigger coverage, but keep the combined total under 1,536 chars.
+
+### Naming
+Prefer **gerund form**: `processing-pdfs`, `analyzing-spreadsheets`, `generating-reports`. Nouns are also accepted (`research`, `introspect`), but gerunds signal action intent more clearly to the routing layer. Rules: lowercase kebab-case only, ≤ 64 chars, no reserved words (`anthropic`, `claude`).
+
+### Validation
+Run `bun run scripts/validate-skill.ts <skill-dir>` to check all constraints automatically before deploying or updating a skill.
+
+---
+
 ## Minimal Skill (1-3 workflows)
 
 ```

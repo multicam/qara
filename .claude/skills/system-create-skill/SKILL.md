@@ -14,20 +14,20 @@ description: |
 Every skill creation/update request MUST follow architectural compliance validation. `${PAI_DIR}/skills/CORE/skill-structure.md` is the single source of truth — read it before any operation.
 
 **Create skill:** "create skill", "new skill", "build skill", "skill for X"
-→ READ `${PAI_DIR}/skills/CORE/skill-structure.md`
-→ READ `${PAI_DIR}/skills/system-create-skill/workflows/create-skill.md`
+→ **READ:** `${PAI_DIR}/skills/CORE/skill-structure.md`
+→ **READ:** `${PAI_DIR}/skills/system-create-skill/workflows/create-skill.md`
 
 **Validate skill:** "validate skill", "check skill compliance", "audit skill"
-→ READ `${PAI_DIR}/skills/CORE/skill-structure.md`
-→ READ `${PAI_DIR}/skills/system-create-skill/workflows/validate-skill.md`
+→ **READ:** `${PAI_DIR}/skills/CORE/skill-structure.md`
+→ **READ:** `${PAI_DIR}/skills/system-create-skill/workflows/validate-skill.md`
 
 **Update skill:** "update skill", "refactor skill", "add workflow to skill"
-→ READ `${PAI_DIR}/skills/CORE/skill-structure.md`
-→ READ `${PAI_DIR}/skills/system-create-skill/workflows/update-skill.md`
+→ **READ:** `${PAI_DIR}/skills/CORE/skill-structure.md`
+→ **READ:** `${PAI_DIR}/skills/system-create-skill/workflows/update-skill.md`
 
 **Canonicalize skill:** "canonicalize skill", "rebuild skill to standards", "fix skill compliance"
-→ READ `${PAI_DIR}/skills/CORE/skill-structure.md`
-→ READ `${PAI_DIR}/skills/system-create-skill/workflows/canonicalize-skill.md`
+→ **READ:** `${PAI_DIR}/skills/CORE/skill-structure.md`
+→ **READ:** `${PAI_DIR}/skills/system-create-skill/workflows/canonicalize-skill.md`
 
 ---
 

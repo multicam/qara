@@ -14,7 +14,7 @@ const DEFAULTS = {
 } as const;
 
 function loadConfig(): Config {
-  const envPath = join(homedir(), '.claude', '.env');
+  const envPath = join(process.env.PAI_DIR ?? join(homedir(), '.claude'), '.env');
   try {
     const envContent = readFileSync(envPath, 'utf-8');
     const apiKey = envContent
@@ -219,6 +219,26 @@ async function readJsonFile<T>(path: string): Promise<T> {
   }
 }
 ```
+
+---
+
+## 11. Direct-Run Guard (`import.meta.main`)
+
+Prevents CLI side effects when the file is imported in tests. Without this guard, `bun test` importing the CLI module triggers real execution.
+
+```typescript
+const isDirectRun = import.meta.path === Bun.main
+  || process.argv[1]?.endsWith('<name>.ts');
+
+if (isDirectRun) {
+  main().catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+}
+```
+
+Replace `<name>.ts` with the actual filename. Place this block at the bottom of the file — after all function declarations, before any test-only exports.
 
 ---
 

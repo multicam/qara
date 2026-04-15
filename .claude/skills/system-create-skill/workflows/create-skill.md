@@ -148,6 +148,8 @@ Verify: Skill loads SKILL.md → routes to correct workflow → executes steps.
 
 **One Source of Truth:** `${PAI_DIR}/skills/CORE/skill-structure.md`
 
+**8-category activation pattern reference:** `${PAI_DIR}/skills/system-create-skill/references/skill-patterns-reference.md`
+
 ---
 
 ## Related Workflows

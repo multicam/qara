@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
-import { existsSync, mkdirSync, rmdirSync, writeFileSync, unlinkSync, readFileSync } from 'fs';
+import { existsSync, mkdirSync, rmdirSync, writeFileSync, unlinkSync, readFileSync, lstatSync, readlinkSync, symlinkSync } from 'fs';
 import { join } from 'path';
 import {
   PAI_DIR,
@@ -171,6 +171,40 @@ describe('PAI Paths', () => {
     const REAL_ENV_PATH = join(PAI_DIR, '.env');
     const BACKUP_ENV_PATH = join(PAI_DIR, '.env.backup.test');
 
+    // Preserve symlink-vs-regular-file identity of REAL_ENV_PATH across
+    // every test. Without this, the sequence `unlinkSync + writeFileSync`
+    // used by afterEach silently converts a symlink into a regular file,
+    // and the home `~/.claude/.env` symlink keeps getting clobbered by
+    // CI/test runs. Root-cause fix for the recurring regression.
+    let envWasSymlink = false;
+    let envSymlinkTarget = '';
+
+    beforeEach(() => {
+      envWasSymlink = false;
+      envSymlinkTarget = '';
+      try {
+        if (existsSync(REAL_ENV_PATH)) {
+          const s = lstatSync(REAL_ENV_PATH);
+          if (s.isSymbolicLink()) {
+            envWasSymlink = true;
+            envSymlinkTarget = readlinkSync(REAL_ENV_PATH);
+          }
+          if (!existsSync(BACKUP_ENV_PATH)) {
+            // readFileSync follows symlinks → we capture target content
+            writeFileSync(BACKUP_ENV_PATH, readFileSync(REAL_ENV_PATH));
+          }
+          if (envWasSymlink) {
+            // Remove the symlink so test writes don't modify the target.
+            unlinkSync(REAL_ENV_PATH);
+            writeFileSync(REAL_ENV_PATH, readFileSync(BACKUP_ENV_PATH));
+          }
+        }
+      } catch {
+        // Non-fatal — if backup fails, individual tests that do their own
+        // backup (e.g. the "missing .env file" test) still work.
+      }
+    });
+
     afterEach(() => {
       // Clean up test env file
       try {
@@ -197,6 +231,19 @@ describe('PAI Paths', () => {
       delete process.env.TEST_VAR_COMMENT;
       delete process.env.TEST_VAR_EMPTY;
       delete process.env.TEST_VAR_HOME;
+
+      // Restore the symlink if REAL_ENV_PATH was one to start with.
+      // We do this AFTER content restore so the symlink points to a
+      // target that already has the correct restored content.
+      try {
+        if (envWasSymlink && envSymlinkTarget) {
+          if (existsSync(REAL_ENV_PATH)) unlinkSync(REAL_ENV_PATH);
+          symlinkSync(envSymlinkTarget, REAL_ENV_PATH);
+        }
+      } catch {
+        // Ignore — worst case the symlink stays as a regular file; next
+        // session-start hook (or manual symlink re-establishment) fixes.
+      }
     });
 
     it('should handle missing .env file gracefully', () => {

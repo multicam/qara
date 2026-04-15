@@ -4,6 +4,59 @@ Append-only record of architectural and design decisions. Memory files capture *
 
 ---
 
+## 2026-04-15 — Skill/CLI creator alignment with Anthropic open standard + skill-creator
+
+**Chosen:** Layer Anthropic's cross-surface compliance rules (hard length caps, gerund naming preference) on top of PAI's compliance-first skill architecture via an executable validator, and fill the CLI-scaffolder gap in Anthropic's ecosystem with Agent SDK + MCP + plugin-bundled distribution templates inside `system-create-cli`. Extract shared validation logic into `.claude/hooks/lib/skill-validator-lib.ts` for reuse across both skills.
+
+**Three workstreams, all landed:**
+- **W1 — `system-create-skill`**: new `scripts/validate-skill.ts` (131 lines after W3 refactor, imports from `skill-validator-lib.ts`); new `scripts/package-skill.ts` (72 lines, zips skill to `.skill`); updated `references/archetype-templates.md` with 500-line body cap / 1,024-char description cap / 1,536-char combined cap / gerund-form naming; updated `workflows/validate-skill.md` to invoke the script as Step 1. 16 unit tests cover all violation rules.
+- **W2 — `system-create-cli`**: demoted Tier 3 (oclif) from the table to a "beyond the tiers" callout (section renamed "Three-Tier" → "Template Tiers"); added `workflows/create-ai-cli.md` for Claude Agent SDK scaffolding (with Gemma 4 local fallback via `ollama-client.ts`); added `workflows/create-mcp-cli.md` for MCP server scaffolding; added `references/ai-cli-patterns.md` covering SDK, MCP, and plugin-bundled distribution; added `patterns.md` Pattern 11 (direct-run guard `import.meta.main`); fixed `~/.claude/.env` → `${PAI_DIR}/.env` inconsistency across the skill. 6 smoke tests cover the output contracts.
+- **W3 — shared lib**: extracted `.claude/hooks/lib/skill-validator-lib.ts` (335 lines) with pure functions (parseFrontmatter, validateFrontmatter, validateBodyLineCount, validateRoutingSection, scanOrphans, validateRouteCount, scanActivationTriggers). 34 unit tests cover each function directly. Refactored W1's validator from 362 → 131 lines (64% reduction). Zero behavior change — all 16 W1 tests stay green.
+
+**Alternatives evaluated:**
+
+- **Open-standard export mode** (strip `${PAI_DIR}`, rename `workflows/` → `scripts/` at export time to produce spec-compliant `.skill` zips portable to Codex/Gemini/Cursor) — rejected. JM's skills live in Qara; portability is a hypothetical need. Adding an export pipeline doubles the testing surface for zero confirmed demand.
+- **Adopt Anthropic's full eval framework** (F1 description optimizer loop, grader/comparator/analyzer subagents, eval JSON schema, HTML review viewer) — rejected. Hand-tuned descriptions + the 8-category activation pattern yield good triggering at PAI's ~44-skill scale. The F1 loop's marginal value is low below ~60 skills and high above. Revisit if skill count crosses 60.
+- **Rename `workflows/` → `scripts/` across all skills** to align with Anthropic's canonical directory name — rejected. Breaks every existing skill's internal cross-references, every routing path, and every validator rule. Qara's `workflows/` convention is tied to the Workflow Routing section ordering, which is a PAI-specific architectural choice. Keep as overlay.
+- **Bundle the two skills into a Claude Code plugin** (`.claude-plugin/plugin.json` manifest, distribute via `~/.claude/plugins/`) — rejected. PAI is not a plugin distribution; skills live in-repo. The `ai-cli-patterns.md` reference documents the plugin pattern for generated CLIs, which is where plugin bundling actually matters.
+- **Write validator in TypeScript as-a-hook** vs as a CLI script — validator is a CLI script (invoked from `workflows/validate-skill.md` Step 1), not a hook. Hooks run on CC events; validators run on demand.
+
+**Why compliance-first + lean enforcement won:**
+
+PAI's skill framework is already compliance-first (archetypes, routing-first ordering, zero-tolerance for orphans). Anthropic's skill-creator is eval-first (interview, measure, iterate). These are complementary, not contradictory. The pragmatic move was to adopt Anthropic's *rules that produce measurable compliance gains* (length caps stop silent portability breakage, gerund naming improves triggering consistency) without adopting the *full eval infrastructure* that duplicates work the 8-category pattern already does at PAI's scale. The shared library (W3) prevents the two validators from drifting as the rule set evolves.
+
+**Tier 3 demotion rationale:**
+
+`system-create-cli` advertised three tiers but only shipped templates for Tier 1 (llcli) and Tier 2 (Commander). Tier 3 (oclif) existed as reference-only documentation that described migration paths without providing scaffolding. Users asking for an enterprise-scale CLI would get a stub, not a workflow. Demoting to a callout below the tier list makes the skill's actual capability honest: generate Tier 1 or Tier 2; for oclif-scale work, leave the skill.
+
+**Impact:**
+
+- Tests: 1,655 → 1,711 (+56: 16 validate-skill + 34 skill-validator-lib + 6 create-cli-smoke)
+- Hook libs: 13 → 14 (added `skill-validator-lib.ts`)
+- Files changed: 16 (11 created, 5 modified) across `system-create-skill`, `system-create-cli`, `.claude/hooks/lib/`, `.claude/tests/`
+- Audit score: 194/194 holds
+- Self-validation: both skills pass their own rules (dogfooded)
+- Validator runtime: ~50ms on a typical skill (well under human perception threshold)
+- PAI's skills now have a runnable compliance check, not just prose guidance
+
+**Trade-offs:**
+
+- The `scanActivationTriggers` heuristic (8 seed-word categories, warn if <5 match) is a proxy, not a measurement. A skill that triggers badly but contains 5 of the seed words still passes. This is intentional — a real trigger-accuracy measurement would require the F1 loop the plan deliberately skipped. If trigger drift becomes observable in session logs, revisit.
+- The shared lib assumes all three skills sharing validators (`system-create-skill`, future `system-create-cli` self-validator, potential `cc-upgrade-pai` cross-checks) want identical rule semantics. If one skill later needs a different rule threshold, either add a parameter or stop sharing that function.
+- The Tier 3 callout loses information about oclif's migration path from Tier 2. `tier-comparison.md` no longer has Tier 2→3 migration guidance. Acceptable — users at that scale have oclif docs; they don't need PAI to re-document them.
+- `create-ai-cli.md` assumes the user has `@anthropic-ai/claude-agent-sdk` authentication set up. Doesn't explain ANTHROPIC_API_KEY setup. Fine for JM's environment; might confuse a first-time reader.
+
+**Revisit if:**
+
+- Skill count grows past 60 — consider adopting the F1 description optimizer.
+- JM's skills need to run on Codex/Gemini/Cursor — add open-standard export mode to `package-skill.ts`.
+- A third skill needs to share validation logic — factor out more helpers from the lib.
+- The Agent SDK ships a first-party `create-claude-agent` scaffolder — evaluate whether `create-ai-cli.md` should delegate to it.
+
+Plan file: `thoughts/shared/plans/tooling--align-skill-cli-creators-with-anthropic-v1.md`. Implementation via `cruise: implement` (W1 → W2 → W3, with verification gate between each).
+
+---
+
 ## 2026-04-11 — Tool test coverage scorer: 4-rule strict detection with transitive credit
 
 **Chosen:** `isToolCovered()` in `cc-upgrade/scripts/shared.ts` evaluates four rules in order with short-circuiting and cycle-safe memoization: (A) co-located `stem.test.ts`, (B) centralized `.claude/tests/stem.test.ts`, (C) `-lib.ts` whose `foo.ts` companion is covered, (D) `-lib.ts` with an import edge to a covered sibling. Both the base analyzer (`analyzeTddCompliance`) and the PAI extension (`analyzeTddCompliancePAI`) use it. Ships with 9 unit tests covering all 4 rules plus cycle safety.
@@ -390,3 +443,46 @@ Plus the earlier planning+dev pipeline trim (10 files, ~−350 lines).
 **Why:** Post-mortem discovered split-brain: post-tool-use hook was writing to `~/.claude/state/tool-usage.jsonl` (14k entries) while `qara/.claude/state/tool-usage.jsonl` (6.8k entries) was stale since April 3. The introspection miner was reading from the correct file (`~/.claude/state/` via pai-paths.ts default), but the split caused confusion during debugging and the qara copy was dead weight. Merged both JSONL files (deduped: 20,871 tool-usage + 10,179 security-checks), moved all subdirs (agents, archive, digests, errors, sessions) and remaining state files to qara.
 **Trade-offs:** State files are now in the git repo (risk of accidental commits of large JSONL). Mitigated by `.gitignore` awareness — state files should be gitignored.
 **Revisit if:** State files grow too large for the repo, or CC gains native state directory configuration.
+
+---
+
+## 2026-04-15 — jcodemunch-mcp adopted (Python policy exception)
+
+**Chosen:** Install `jcodemunch-mcp==1.44.0` as the 5th MCP server. Pinned via `uv tool install`, registered in canonical `.claude/mcp.json`, locked to `tool_profile: "standard"` with BM25-only (no AI summaries, no ONNX embeddings, no Groq). Project config at `qara/.jcodemunch.jsonc` with absolute `trusted_folders` and `extra_ignore_patterns` covering `thoughts/`, `purgatory/`, `.claude/state/`, `.claude/skills-external/`.
+
+**Alternatives:** stay with existing `codebase-analyzer-*` agents only; adopt Serena MCP; wait for a TypeScript port.
+
+**Why the Python exception:** no TypeScript port of tree-sitter symbol-retrieval tooling at this capability level. The `find_importers`, `get_blast_radius`, `plan_refactoring`, `get_call_hierarchy` tools provide structural queries that grep+read cannot produce deterministically. The claimed ~95% token reduction is worth empirically testing (Phase 4 of the integration plan has the benchmark gate).
+
+**Boundary:** this exception is scoped to _this single MCP server_. The rule "TypeScript > Python" stands for all future tooling decisions.
+
+**License posture:** installed as non-commercial for evaluation. jcodemunch is dual-licensed; commercial (profit-generating) use requires paid tier (Builder $79 / Studio $349 / Platform $1,999). **JM authorized TGDS-code use for the Phase 4 benchmark window (2026-04-15).** Rationale: the benchmark needs real codebases to validate the ~95% token claim, and TGDS repos are the primary real workload. Builder tier ($79) required before jcodemunch becomes part of sustained TGDS workflow (post-benchmark adoption decision). Tracked in MEMORY.md.
+
+**Trade-offs:** adds a Python runtime dependency, a single-maintainer external project (mitigated by version pin + easy removal), and potential for schema drift across versions. `full` tool profile and AI summaries are deliberately excluded until one-week outbound-traffic audit + empirical token-reduction benchmark pass.
+
+**Revisit if:** benchmark fails (< 50% token reduction on 5+ real tasks); outbound-traffic audit shows non-localhost connections; maintainer disappears; a TypeScript-native equivalent emerges.
+
+**Files touched:** `.claude/mcp.json` (+1 server), `.jcodemunch.jsonc` (new), `.claude/context/delegation-guide.md` (+1 section), `MEMORY.md` (count 4→5), `~/.code-index/config.jsonc` (+server-scoped security posture — see addendum below).
+
+**Addendum (2026-04-15, same-day): v1.44.0 config-split gotcha discovered during in-session verification.**
+
+Server-scoped keys (`tool_profile`, `use_ai_summaries`, `allow_remote_summarizer`, `compact_schemas`, `disabled_tools`) are read at `list_tools` time by the MCP server, BEFORE any per-project context exists (`server.py:1853`, `config_module.get("tool_profile", "full")`). Project-level `.jcodemunch.jsonc` **cannot override these** — they live in a per-project cache (`_PROJECT_CONFIGS[repo_key]`) that's only consulted during `index_folder` calls, not during tool enumeration.
+
+Fix applied: moved the 4 server-scoped keys into the global `~/.code-index/config.jsonc`. Verified via direct Python import:
+- `cfg.load_config(); cfg.get('tool_profile')` → `'standard'` ✓
+- `cfg.get('use_ai_summaries')` → `False` ✓
+- `cfg.get('allow_remote_summarizer')` → `False` ✓
+
+Also verified via stdio MCP probe: `tools/list` returned 43 tools (standard profile) with `audit_agent_config` correctly hidden (full-profile-only).
+
+Secondary finding: `jcodemunch-mcp config` CLI has a **display bug** — it reads `JCODEMUNCH_USE_AI_SUMMARIES` env var for display (defaulting to `"true"`) while tagging the output `[config]`. The actual runtime behavior reads config correctly. Do not trust the `config` CLI's display for `use_ai_summaries` on v1.44.0; verify via direct import or server stdio probe.
+
+Tertiary finding: Phase 2 `.claude/mcp.json` edit was necessary but NOT sufficient. CC also requires the server name in `.claude/settings.json` → `enabledMcpjsonServers` whitelist (project scope uses an explicit allowlist, not a blocklist). Initial restart showed `jcodemunch` absent from `claude mcp list` output. Fix: add `"jcodemunch"` to the whitelist; one more CC restart picks it up. Lesson for future MCP additions: always edit BOTH `mcp.json` (server definition) AND `settings.json.enabledMcpjsonServers` (whitelist entry).
+
+Quaternary finding (same day, post-retries): `.claude/mcp.json` was **never being read by CC at all**. Symlink audit revealed `~/.claude/{settings.json,CLAUDE.md,state}` are symlinked to `qara/.claude/*` but `~/.claude/mcp.json` was never created as a symlink (nor would it help — CC reads user-scope MCP config from `~/.claude.json`, not `~/.claude/mcp.json`). Project-scope MCP config is read from `<project-root>/.mcp.json`, NOT `<project-root>/.claude/mcp.json`. Our "canonical" `.claude/mcp.json` had been dead cruft since root `.mcp.json` was removed — meaning `brave-devtools` and `ollama-local` were silently broken the entire time they appeared to be "registered". Only `mattermost` (in `~/.claude.json` global scope) and `context7`/`chrome-devtools` (accidentally registered in `~/.claude.json` local scope via `claude mcp add` in some past session) actually loaded.
+
+**Migration (2026-04-15):** moved all project-scoped server definitions to `/home/jean-marc/qara/.mcp.json` (standard CC location). Used `claude mcp remove -s local` to clean `~/.claude.json` qara project block of `jcodemunch`/`context7`/`chrome-devtools` (replaced by the new `.mcp.json` entries). Backed up `~/.claude.json` → `~/.claude.json.backup-pre-mcp-migration-20260415-120239` before changes. Archived old `.claude/mcp.json` → `purgatory/mcp-config-pre-migration-2026-04-15/mcp.json`. Updated `settings.json.enabledMcpjsonServers` to mirror exactly the 4 names now in `.mcp.json`. CC picked up the new `.mcp.json` **live** (no restart required) — all 5 servers (4 project + 1 global) report `✓ Connected` in `claude mcp list`. First time `brave-devtools` and `ollama-local` have ever actually been working.
+
+**Durable lesson:** project-scope MCP config lives at `<project-root>/.mcp.json` (git-trackable, reviewable), NOT `<project-root>/.claude/mcp.json`. The `enabledMcpjsonServers` whitelist in `settings.json` governs which `.mcp.json` servers are active. Adding a new MCP means: update BOTH files + they're tracked in the same commit.
+
+**TGDS license update (same-day):** JM authorized TGDS-code use during the Phase 4 benchmark window; Builder tier ($79) gate now applies to the post-benchmark sustained-adoption decision, not first TGDS commit. See MEMORY.md for active recall.

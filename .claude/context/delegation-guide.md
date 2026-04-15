@@ -80,6 +80,16 @@ Launch independent agents in a **single message** with multiple `Task` tool call
 
 **Rule of thumb:** 3+ sequential Read/Grep calls on a DIFFERENT topic from current work = delegation opportunity. Spawn `codebase-analyzer` (sonnet) or `codebase-analyzer-low` (haiku).
 
+## MCP Tools (jcodemunch)
+
+`jcodemunch` MCP exposes tree-sitter-backed structural tools (`search_symbols`, `get_symbol_source`, `get_file_outline`, `find_importers`, `get_call_hierarchy`, `get_blast_radius`, `get_dependency_cycles`, `plan_refactoring`, `get_changed_symbols`, etc.). Locked to `tool_profile: "standard"` and BM25-only (no AI summaries, no external calls).
+
+**Prefer MCP over agents for:** precise symbol lookups, "find callers of X", "show me the body of function Y", blast-radius / impact questions, dependency-cycle detection, git-diff-to-symbol mapping, refactoring planning.
+
+**Prefer `codebase-analyzer` / `codebase-analyzer-low` agents for:** narrative multi-file synthesis, "explain how auth works across the system", questions that need summarization rather than raw structural data.
+
+**Token math:** MCP tools return only the relevant symbol (bytes). Agents spawn a fresh context (~30k tokens) and return a summary. For single-symbol questions MCP is ~20× cheaper; for 5+ file narrative synthesis, the agent's summarization pays for the spawn overhead.
+
 ## Review Agent Disambiguation
 
 | Agent | When | What it checks |

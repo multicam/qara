@@ -55,7 +55,8 @@ These phrases invoke the named skill when spoken naturally.
 | `humaniser` | "humanise this", "remove AI patterns", "make this sound natural" |
 | `tdd-qa` | "run TDD", "write scenarios", "backtest", "set up testing", "run the pyramid", "verify E2E", "init testing", "quality gates" |
 | `hook-authoring` | "create hook", "hook system", "modify hooks", "add hook" |
-| `system-create-skill` | "create skill", "new skill", "build skill", "make skill", "skill for X", "Create-A-Skill" |
+| `system-create-skill` | "create skill", "new skill", "build skill", "make skill", "skill for X", "Create-A-Skill", "validate skill", "audit skill" |
+| `system-create-cli` | "create CLI", "build command-line tool", "make CLI for X", "generate CLI", "add command to CLI", "upgrade CLI", "add tests to CLI", "publish CLI", "wrap Claude in a CLI", "AI CLI", "Claude-powered CLI", "expose CLI as MCP", "MCP server CLI" |
 | `ubiquitous-language` | "define terms", "glossary", "ubiquitous language", "domain terminology", "what do we call X", "clarify naming", "DDD" |
 | `cc-upgrade` | "audit this CC setup", "check CC compatibility", "optimize .claude/ folder" |
 
@@ -155,7 +156,7 @@ Use via `Task` tool with `subagent_type`. Parallelize when tasks are independent
 
 ## 7. Hook Events
 
-14 CC hook events registered in `settings.json`. 18 hook scripts total. Runs in order listed for each event.
+14 CC hook events registered in `settings.json`. 19 hook scripts total (added `post-tool-use-sanitize.ts` 2026-04-15 — WebFetch/WebSearch prompt-injection defense). Runs in order listed for each event.
 
 | Event | Scripts | What it does |
 |-------|---------|-------------|

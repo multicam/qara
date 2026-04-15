@@ -31,6 +31,22 @@ Progressive disclosure: SKILL.md routes to workflows, workflows reference docs, 
 4. **Every workflow file routed** - No orphaned workflows
 5. **Every file linked** from SKILL.md body - No invisible files
 
+### Length & Schema Caps (Anthropic open standard + PAI enforcement)
+
+Enforced by `.claude/skills/system-create-skill/scripts/validate-skill.ts` (run as Step 1 of `workflows/validate-skill.md`):
+
+| Rule | Cap | Source |
+|------|-----|--------|
+| `name` | ≤ 64 chars, kebab-case, no "anthropic"/"claude" | agentskills.io open standard + platform.claude.com |
+| `description` | ≤ 1,024 chars | Anthropic Agent Skills spec (hard limit) |
+| `description` + `when_to_use` (combined) | ≤ 1,536 chars | Claude Code listing cap |
+| SKILL.md body | ≤ 500 lines | Anthropic best practice (authoring guide) |
+| Reference file ToC threshold | Any file >100 lines gets a ToC | Anthropic best practice |
+
+**Naming convention:** gerund form preferred (`processing-pdfs`, `analyzing-spreadsheets`) — noun phrases acceptable but gerunds favored. Avoid vague names (`helper`, `utils`).
+
+Run the validator before committing skill changes: `bun run .claude/skills/system-create-skill/scripts/validate-skill.ts <skill-dir>`. Exit 0 = pass, 1 = violations, 2 = internal error. JSON output to stdout, human summary to stderr.
+
 ### SKILL.md Section Order:
 
 ```

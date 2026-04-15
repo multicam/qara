@@ -168,8 +168,14 @@ export function analyzeImpact(graph: ContextGraph, filePath: string): ImpactRepo
 }
 
 /**
- * Detect circular dependencies using Tarjan's SCC algorithm
- * Returns arrays of node IDs forming each cycle (SCCs with size > 1)
+ * Detect circular dependencies using Tarjan's SCC algorithm.
+ *
+ * Only considers load-order edges (READ, INVOKE) — these represent actual
+ * "must load A before B" dependencies. SEE/TABLE edges are informational
+ * documentation cross-references (bullet lists, prose mentions) where mutual
+ * reference is a feature, not a cycle.
+ *
+ * Returns arrays of node IDs forming each cycle (SCCs with size > 1).
  */
 export function detectCycles(graph: ContextGraph): string[][] {
   let index = 0;
@@ -186,7 +192,9 @@ export function detectCycles(graph: ContextGraph): string[][] {
     stack.push(v);
     onStack.add(v);
 
-    const edges = graph.adjacency.get(v) || [];
+    const edges = (graph.adjacency.get(v) || []).filter(
+      e => e.type === 'READ' || e.type === 'INVOKE'
+    );
     for (const edge of edges) {
       const w = edge.target;
       // Only consider edges to nodes that exist in the graph

@@ -6,18 +6,18 @@ Detailed comparison of the three CLI complexity tiers.
 
 ## Decision Matrix
 
-| Factor | Tier 1 | Tier 2 | Tier 3 |
-|---|---|---|---|
-| Commands | 2-10 | 10-30 | 30+ |
-| Complexity | Simple | Moderate | High |
-| Subcommands | No | Yes | Yes |
-| Plugins | No | Possible | Built-in |
-| Help | Manual | Auto | Auto |
-| Learning curve | Low | Medium | High |
-| Dev speed | Fast | Medium | Slow |
-| Dependencies | 0 | 1 | Many |
-| Startup time | ~10ms | ~30ms | ~100ms |
-| Idle memory | ~15MB | ~25MB | ~50MB |
+| Factor | Tier 1 | Tier 2 |
+|---|---|---|
+| Commands | 2-10 | 10+ |
+| Complexity | Simple | Moderate-High |
+| Subcommands | No | Yes |
+| Plugins | No | Possible |
+| Help | Manual | Auto |
+| Learning curve | Low | Medium |
+| Dev speed | Fast | Medium |
+| Dependencies | 0 | 1 |
+| Startup time | ~10ms | ~30ms |
+| Idle memory | ~15MB | ~25MB |
 
 Performance differences are negligible for interactive CLIs.
 
@@ -112,19 +112,7 @@ program.parse();
 
 ---
 
-## Tier 3: oclif (Enterprise)
-
-**Reference only — ~5% of CLIs.** Full enterprise framework with plugin ecosystem and auto-docs.
-
-**Strengths:** enterprise-tested, rich plugin ecosystem, auto-generated docs, comprehensive test utilities.
-**Limits:** heavy framework, complex setup, slow development, over-engineered for most.
-**Best for:** Heroku CLI, Salesforce CLI, Twilio CLI scale projects.
-
-**95% of CLIs don't need this.** Even complex tools work well with Commander.js. Only consider oclif if:
-- Building the next Heroku CLI
-- Need plugin marketplace
-- Managing 50+ commands
-- Have a dedicated CLI team
+**Enterprise-scale CLIs beyond Tier 2** (20+ commands, plugin marketplace, dedicated CLI team) → use `oclif` directly, outside this skill's scope.
 
 ---
 
@@ -144,14 +132,6 @@ program.parse();
 
 **Effort:** 2-4 hours for typical CLI. See `../workflows/upgrade-tier.md`.
 
-### Tier 2 → Tier 3
-
-**When:** commands exceed 30, need plugin marketplace, enterprise requirements.
-
-**Steps:** oclif generator → port commands → setup plugin infra → comprehensive testing → update docs.
-
-**Effort:** 1-2 weeks. Rarely justified — Commander.js scales to 50+ commands.
-
 ---
 
 ## Adding a New Command
@@ -169,11 +149,6 @@ program
   .command('newcmd <arg>')
   .description('New command')
   .action(handleNewCmd);
-```
-
-**Tier 3** (~10 min, template overhead):
-```bash
-oclif generate command newcmd
 ```
 
 ---
@@ -198,17 +173,7 @@ it('executes command', async () => {
 });
 ```
 
-**Tier 3:**
-```typescript
-import { test } from '@oclif/test';
-describe('list command', () => {
-  test.stdout().command(['list']).it('lists items', ctx => {
-    expect(ctx.stdout).to.contain('items');
-  });
-});
-```
-
-All tiers testable. Tier 1 simplest, Tier 3 has most utilities.
+Both tiers are straightforward to test. Tier 1 is simplest — no framework overhead.
 
 ---
 
@@ -219,12 +184,13 @@ function selectTier(req: {
   commandCount: number;
   needsSubcommands: boolean;
   needsPlugins: boolean;
-  teamSize: number;
   complexity: 'low' | 'medium' | 'high';
-}): 1 | 2 | 3 {
-  if (req.commandCount > 30 || req.needsPlugins || req.teamSize > 3) return 3;
-  if (req.commandCount > 10 || req.needsSubcommands || req.complexity === 'high') return 2;
-  return 1;
+}): 'tier1-llcli' | 'tier2-commander' {
+  // Enterprise-scale (20+ commands, plugin marketplace) → oclif directly, outside this skill's scope
+  if (req.commandCount > 10 || req.needsSubcommands || req.complexity === 'high') {
+    return 'tier2-commander';
+  }
+  return 'tier1-llcli';
 }
 ```
 
@@ -234,6 +200,6 @@ function selectTier(req: {
 
 - **Tier 1 (llcli-style)** — quick CLIs, simple automation, API clients, file processors, <10 commands
 - **Tier 2 (Commander)** — 10+ commands, subcommand groups, auto-help, complex options
-- **Tier 3 (oclif)** — enterprise scale, plugin marketplace, 30+ commands, dedicated team
+- **oclif (out of scope)** — enterprise scale, plugin marketplace, 30+ commands, dedicated team
 
 Start simple, escalate only when justified. The llcli pattern solves 80% of CLI needs.

@@ -9,9 +9,15 @@
 
 Symlinks (canonical in qara, symlinked from ~/.claude/):
 - `~/.claude/settings.json` -> `qara/.claude/settings.json`
-- `~/.claude/.env` -> `qara/.claude/.env`
+- `~/.claude/CLAUDE.md` -> `qara/.claude/CLAUDE.md`
+- `~/.claude/.env` -> `qara/.claude/.env` (root cause of repeated regression fixed 2026-04-15 — see DECISIONS.md + MEMORY.md)
 - `~/.claude/state` -> `qara/.claude/state`
 - `~/.claude/RTK.md` -> `qara/.claude/RTK.md`
+- `~/.claude/context` -> `qara/.claude/context`
+
+**Not symlinked** (intentional / cruft):
+- `~/.claude.json` — CC's user-scope monolithic config, stores per-project state + global MCP servers. Cannot be symlinked (contains data for all projects).
+- `qara/.claude/mcp.json` — archived 2026-04-15 to `purgatory/mcp-config-pre-migration-2026-04-15/` (CC never read it; canonical MCP config moved to project-root `.mcp.json`).
 
 ## Environment Variables (settings.json)
 
@@ -38,7 +44,7 @@ Symlinks (canonical in qara, symlinked from ~/.claude/):
 | `showTurnDuration` | true |
 | `effortLevel` | high |
 | `enableAllProjectMcpServers` | false |
-| `enabledMcpjsonServers` | brave-devtools, context7, mattermost |
+| `enabledMcpjsonServers` | brave-devtools, context7, ollama-local, jcodemunch (4 — mirrors `.mcp.json`; `mattermost` is global-scope so not whitelisted here) |
 
 ## Status Line (statusline-command.sh)
 
@@ -47,13 +53,22 @@ Symlinks (canonical in qara, symlinked from ~/.claude/):
 
 ## MCP Servers
 
-Configured via `.claude/mcp.json`. Credentials in `.claude/.env` (gitignored).
+**Project-scope config:** `qara/.mcp.json` at repo root (the location CC actually reads). Whitelisted via `enabledMcpjsonServers` in `settings.json`.
+**Global-scope config:** `~/.claude.json` top-level `mcpServers` block (for servers used across all projects).
+**Credentials:** `.claude/.env` (gitignored; symlinked from `~/.claude/.env`).
 
-| Server | Transport | Purpose |
-|--------|-----------|---------|
-| `brave-devtools` | npx | Browser automation via Chrome DevTools |
-| `context7` | npx | Live library documentation (9k+ libraries) |
-| `mattermost` | npx | Team chat integration |
+| Server | Scope | Transport | Purpose |
+|--------|-------|-----------|---------|
+| `brave-devtools` | project `.mcp.json` | npx `chrome-devtools-mcp-for-brave@0.4.2` | Browser automation via Brave/Chrome DevTools |
+| `context7` | project `.mcp.json` | npx `@upstash/context7-mcp@2.1.7` | Live library documentation (9k+ libraries) |
+| `ollama-local` | project `.mcp.json` | bun `.claude/mcp-servers/ollama-local/index.ts` | Local Gemma 4 (chat, summarize, classify, review, analyze_image) |
+| `jcodemunch` | project `.mcp.json` | `uv tool run jcodemunch-mcp` | Token-efficient tree-sitter symbol retrieval (Python policy exception; `tool_profile=standard`, local-only BM25; non-commercial license + TGDS-eval authorization) |
+| `mattermost` | global `~/.claude.json` | npx `@dakatan/mcp-mattermost@0.0.5` | Team chat integration (usable across all projects) |
+
+**Adding a new MCP server** requires editing BOTH:
+1. `qara/.mcp.json` — server command + args + env
+2. `qara/.claude/settings.json` → `enabledMcpjsonServers` allowlist
+CC re-reads `.mcp.json` live on save; no restart needed.
 
 ## Git Configuration
 

@@ -194,6 +194,11 @@ const INVOKE_PATTERN = /→\s*\*\*INVOKE\s+SKILL:\*\*\s*`?(\S+?)`?(?:\s|$)/g;
 const SEE_PATTERN = /[Ss]ee\s+`([^`]+\.md)`/g;
 const TABLE_PATTERN = /\|\s*[^|]+\s*\|\s*`([^`]+\.(?:md|ts))`\s*\|/g;
 
+// Bullet-list references common in Extended Context sections:
+//   - `workflows/create-cli.md` — description
+//   * `references/tier-comparison.md`: description
+const BULLET_REF_PATTERN = /^\s*[-*]\s+`([^`]+\.md)`/gm;
+
 /**
  * Resolve a reference path to an absolute path
  *
@@ -348,6 +353,13 @@ export function extractReferences(
     for (const match of line.matchAll(SEE_PATTERN)) {
       const target = resolveReference(match[1], filePath, paiDir, skillsDir);
       if (target) addEdge(target, 'SEE', lineNumber);
+    }
+
+    // Bullet-list references (Extended Context style) — only emit edges for paths that exist
+    // to avoid false positives from prose examples that happen to use bullets with backticks.
+    for (const match of line.matchAll(BULLET_REF_PATTERN)) {
+      const target = resolveReference(match[1], filePath, paiDir, skillsDir);
+      if (target && existsSync(target)) addEdge(target, 'SEE', lineNumber);
     }
 
     // Table entries: | Topic | `file.md` or `file.ts` | ... |

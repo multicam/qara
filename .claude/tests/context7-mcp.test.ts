@@ -4,7 +4,10 @@ import { join } from 'path';
 import { execSync } from 'child_process';
 
 const QARA_DIR = join(process.env.HOME || '', 'qara');
-const MCP_JSON = join(QARA_DIR, '.claude', 'mcp.json');
+// Canonical project-scope MCP config is `.mcp.json` at the repo root
+// (the location CC actually reads). `.claude/mcp.json` was dead cruft
+// and was archived 2026-04-15. See DECISIONS.md quaternary finding.
+const MCP_JSON = join(QARA_DIR, '.mcp.json');
 const SETTINGS_JSON = join(QARA_DIR, '.claude', 'settings.json');
 
 describe('Context7 MCP Configuration', () => {

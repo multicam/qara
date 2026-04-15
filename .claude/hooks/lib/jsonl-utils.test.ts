@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, afterAll } from 'bun:test';
-import { existsSync, readFileSync, unlinkSync, mkdirSync, rmdirSync } from 'fs';
+import { existsSync, readFileSync, unlinkSync, mkdirSync, rmdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { appendJsonl, truncate } from './jsonl-utils';
@@ -61,6 +61,66 @@ describe('appendJsonl', () => {
     const file = join(TEST_DIR, 'nested', 'deep', 'test.jsonl');
     appendJsonl(file, { nested: true });
     expect(existsSync(file)).toBe(true);
+  });
+});
+
+describe('parseStdin', () => {
+  const libPath = join(import.meta.dir, 'jsonl-utils.ts');
+
+  async function runWithStdin(stdin: string): Promise<string> {
+    const code = `import { parseStdin } from "${libPath}"; console.log(JSON.stringify(parseStdin()));`;
+    const proc = Bun.spawn({
+      cmd: ['bun', '-e', code],
+      stdin: 'pipe',
+      stdout: 'pipe',
+      stderr: 'pipe',
+    });
+    proc.stdin.write(stdin);
+    proc.stdin.end();
+    await proc.exited;
+    return (await new Response(proc.stdout).text()).trim();
+  }
+
+  it('returns null for empty stdin', async () => {
+    expect(await runWithStdin('')).toBe('null');
+  });
+
+  it('returns null for whitespace-only stdin', async () => {
+    expect(await runWithStdin('   \n\t  ')).toBe('null');
+  });
+
+  it('returns null for malformed JSON (catch branch)', async () => {
+    expect(await runWithStdin('{not valid json')).toBe('null');
+  });
+
+  it('returns parsed object for valid JSON', async () => {
+    expect(await runWithStdin('{"foo":"bar","n":42}')).toBe('{"foo":"bar","n":42}');
+  });
+
+  it('returns null when stdin is closed in-process (bun test default)', async () => {
+    const { parseStdin } = await import('./jsonl-utils');
+    const result = parseStdin();
+    expect(result).toBeNull();
+  });
+});
+
+describe('resolveSessionId', () => {
+  it('returns session_id when present on data', async () => {
+    const { resolveSessionId } = await import('./jsonl-utils');
+    expect(resolveSessionId({ session_id: 'abc-123' })).toBe('abc-123');
+  });
+
+  it('falls back to getSessionId when data lacks session_id', async () => {
+    const { resolveSessionId } = await import('./jsonl-utils');
+    const result = resolveSessionId({});
+    expect(typeof result).toBe('string');
+    expect(result.length).toBeGreaterThan(0);
+  });
+
+  it('falls back when data is null-prototype object without session_id', async () => {
+    const { resolveSessionId } = await import('./jsonl-utils');
+    const result = resolveSessionId({ other: 'field' } as Record<string, unknown>);
+    expect(typeof result).toBe('string');
   });
 });
 

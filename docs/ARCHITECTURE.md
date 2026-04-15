@@ -67,6 +67,6 @@ Launch N agents (each with full context)
 
 ## Current System
 
-- 50 skills (28 local + 22 symlinked), 15 custom agents (10 base + 5 tiered), 18 hooks (14 CC events)
+- 44 skills (28 local + 16 symlinked), 15 custom agents (10 base + 5 tiered), 19 hooks (14 CC events), 5 MCP servers (4 project + 1 global)
 - CORE skill auto-loads at session start
 - See CORE SKILL.md Documentation Index for reference files

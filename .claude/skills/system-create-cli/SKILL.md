@@ -17,12 +17,14 @@ Generate production-ready TypeScript CLIs (Bun + strict TS) following the llcli 
 | "upgrade CLI", "migrate to Commander" | `workflows/upgrade-tier.md` |
 | "add tests to CLI", "test scaffolding" | `workflows/add-testing.md` |
 | "publish CLI", "distribute CLI", "standalone binary" | `workflows/setup-distribution.md` |
+| "wrap Claude in a CLI", "AI CLI", "Claude-powered CLI", "CLI that calls Claude" | `workflows/create-ai-cli.md` |
+| "expose CLI as MCP", "make CLI callable by Claude", "MCP server CLI" | `workflows/create-mcp-cli.md` |
 
 Also activate on context clues: user describes repetitive API calls, complex bash scripts, or missing official CLIs.
 
-## Three-Tier Template System
+## Template Tiers
 
-**Tier 1 — llcli-style (DEFAULT, ~80%)**
+**Tier 1 — llcli-style (DEFAULT, ~85%)**
 - Manual `process.argv` parsing, zero deps, ~300-400 lines
 - Use for: 2-10 commands, simple flags, JSON output, no subcommands
 
@@ -30,8 +32,7 @@ Also activate on context clues: user describes repetitive API calls, complex bas
 - Framework parsing, subcommands, auto-help
 - Use for: 10+ commands needing grouping, complex nested options, plugin architecture
 
-**Tier 3 — oclif (reference only, ~5%)**
-- Enterprise scale (Heroku, Salesforce CLI level). Documentation only, no templates.
+**Beyond the tiers:** for Heroku/Salesforce-scale CLIs (20+ commands, plugin architecture, telemetry), use `oclif` directly — out of scope for this skill.
 
 See `references/tier-comparison.md` for detailed comparison and migration paths.
 
@@ -62,9 +63,12 @@ See `references/tier-comparison.md` for detailed comparison and migration paths.
 - `workflows/upgrade-tier.md` — Tier 1 → 2 migration
 - `workflows/add-testing.md` — `bun:test` suite generation
 - `workflows/setup-distribution.md` — publish / binary / symlink
+- `workflows/create-ai-cli.md` — scaffold a Claude Agent SDK CLI
+- `workflows/create-mcp-cli.md` — scaffold an MCP server CLI
 - `references/tier-comparison.md` — detailed tier comparison + decision algorithm
+- `references/ai-cli-patterns.md` — Claude SDK, MCP server, and plugin-bundled distribution patterns
 - `references/cli-examples-basic.md` + `cli-examples-advanced.md` — 6 worked examples, patterns, testing, docs templates
-- `patterns.md` — reusable TypeScript CLI patterns (config, error handling, signals, Zod)
+- `patterns.md` — reusable TypeScript CLI patterns (config, error handling, signals, Zod, direct-run guard)
 
 ## Quality Gates
 
