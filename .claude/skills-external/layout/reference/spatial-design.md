@@ -1,1 +1,0 @@
-../../impeccable/reference/spatial-design.md
