@@ -18,6 +18,13 @@ interface ToolEntry {
     tool: string;
     error: boolean;
     timestamp: string;
+    /**
+     * First-class field added 2026-04-15 (cruise--audit-fixes-v1 P0.2).
+     * Populated by `post-tool-use.ts` for `Agent`/`Task` tool calls.
+     * Legacy rows (pre-2026-04-15) may have this missing; use
+     * `resolveSubagentType()` below to recover from `input_summary`.
+     */
+    subagent_type?: string | null;
 }
 
 interface ToolEntryWithSummary extends ToolEntry {
@@ -201,12 +208,57 @@ function readActiveHintsFromFile(introspectionDir: string): string[] {
 }
 
 // ---------------------------------------------------------------------------
+// resolveSubagentType + computeAgentBreakdown (2026-04-15: cruise--audit-fixes-v1)
+// ---------------------------------------------------------------------------
+
+/**
+ * Recover subagent_type from a tool-usage row.
+ *
+ * Prefers the first-class `subagent_type` field (populated by post-tool-use.ts
+ * from 2026-04-15 onwards). Falls back to parsing `input_summary` for legacy
+ * rows — the extractor at `trace-utils.ts:extractInputSummary` emits
+ * `"type: <name>"` at the START of the summary for Agent calls, so an anchored
+ * regex with a token-shape guard recovers legacy data without false positives
+ * from mid-description prose like `"Handle font-type: serif case"`.
+ *
+ * Only consults the row's fallback if `tool === "Agent" || tool === "Task"`.
+ * Returns `null` when the type can't be determined.
+ */
+function resolveSubagentType(row: ToolEntryWithSummary): string | null {
+    if (typeof row.subagent_type === 'string' && row.subagent_type.length > 0) {
+        return row.subagent_type;
+    }
+    if (row.tool !== 'Agent' && row.tool !== 'Task') return null;
+    const summary = row.input_summary;
+    if (!summary) return null;
+    // Anchored to summary start + token shape guard.
+    const match = summary.match(/^type:\s*([a-z][a-z0-9-]+)/);
+    return match ? match[1] : null;
+}
+
+/**
+ * Count Agent/Task calls by subagent_type (using the fallback resolver).
+ * `undefined` key groups rows whose type couldn't be recovered.
+ */
+function computeAgentBreakdown(entries: ToolEntryWithSummary[]): Record<string, number> {
+    const counts: Record<string, number> = {};
+    for (const e of entries) {
+        if (e.tool !== 'Agent' && e.tool !== 'Task') continue;
+        const t = resolveSubagentType(e) ?? 'unknown';
+        counts[t] = (counts[t] ?? 0) + 1;
+    }
+    return counts;
+}
+
+// ---------------------------------------------------------------------------
 // Exports
 // ---------------------------------------------------------------------------
 
 export {
     computeHintCompliance,
     computeQualityMetrics,
+    computeAgentBreakdown,
+    resolveSubagentType,
     readActiveHints,
     readActiveHintsFromFile,
     type ToolEntry,

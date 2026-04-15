@@ -77,9 +77,8 @@ Spawn `critic` (Task tool, `subagent_type: critic`, runs at sonnet). Prompt incl
 
 Parse response:
 - `proceed` → step 2
-- `revise` → extract issues, revise approach, re-spawn critic. Max 2 revisions.
-- Third rejection → write `problems.md` "Critic rejected 3x for Phase {N}: {last feedback}". Third critic call MUST use `model: opus` override (escalation).
-- Still rejected after opus-tier retry → deactivate `critic-rejected`, escalate to JM.
+- `revise` → extract issues, revise approach, re-spawn critic.
+  Call critic up to 3 times total per phase: attempts 1 and 2 at sonnet (agent default), attempt 3 with `model: opus` override on the Task tool (critic prepends `[ESCALATED]` in its response). After the 3rd rejection: write `problems.md` "Critic rejected 3x for Phase {N}: {last feedback}", deactivate `critic-rejected`, escalate to JM.
 
 ### 2. TDD Cycle (conditional)
 
@@ -97,7 +96,9 @@ Skip TDD for docs-only, config-only, or non-source phases.
 
 ### 3. Quality Sniff Pass
 
-`git diff --name-only HEAD` → list changed behavioral-source files. For each: read, apply the sniff test:
+**Skip this step if `git diff --name-only HEAD` returns no behavioral-source files** (`.ts .tsx .js .jsx .svelte`, excluding tests, configs, docs, `purgatory/`, `thoughts/`). Docs-only and config-only phases have nothing to sniff.
+
+Otherwise: `git diff --name-only HEAD` → list changed behavioral-source files. For each: read, apply the sniff test:
 
 > "Would un-smell, un-slop, un-stale, refactor-for-DRY find anything?"
 
@@ -112,9 +113,8 @@ Spawn `verifier` (sonnet). Prompt includes:
 
 Parse response:
 - All `PASS` → step 5
-- Any `FAIL` → extract, fix, re-spawn verifier. Max 3 attempts per phase.
-- Third failure → write `problems.md`. Third verifier call MUST use `model: opus` override.
-- Still failing → deactivate `verifier-rejected`, escalate.
+- Any `FAIL` → extract, fix, re-spawn verifier.
+  Call verifier up to 3 times per phase: attempts 1 and 2 at sonnet, attempt 3 with `model: opus` override (verifier prepends `[ESCALATED]`). After the 3rd failure: write `problems.md`, deactivate `verifier-rejected`, escalate.
 
 ### 5. Mutate plan.md — Batched Checkbox Tick
 

@@ -22,6 +22,8 @@
 import { existsSync, readFileSync, unlinkSync } from "fs";
 import { join } from "path";
 import { STATE_DIR, getSessionId, atomicWriteJson } from "./pai-paths";
+import { appendJsonl } from "./jsonl-utils";
+import { getISOTimestamp } from "./datetime-utils";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -262,12 +264,31 @@ export function appendCompletedSubagent(id: string): void {
 
 /**
  * Clear mode state entirely (removes file).
+ *
+ * If an active mode exists, emits a `deactivated` event to `mode-changes.jsonl`
+ * with `reason: "cleared"` before unlinking — mirrors the canonical shape
+ * used by `keyword-router.ts` and `stop-hook.ts`. Closes the telemetry gap
+ * where direct `bun mode-state.ts clear` calls (which this CLI's `clear`
+ * subcommand routes to) orphan-ended without logging.
  */
 export function clearModeState(): void {
   try {
+    const prior = existsSync(STATE_FILE)
+      ? (JSON.parse(readFileSync(STATE_FILE, "utf-8")) as ModeState | null)
+      : null;
+    if (prior?.active) {
+      appendJsonl(join(STATE_DIR, "mode-changes.jsonl"), {
+        timestamp: getISOTimestamp(),
+        event: "deactivated",
+        mode: prior.mode,
+        reason: "cleared",
+        iterations: prior.iteration,
+        session_id: getSessionId(),
+      });
+    }
     if (existsSync(STATE_FILE)) unlinkSync(STATE_FILE);
   } catch {
-    // Ignore — file may already be gone
+    // Fail-open — never block on logging or file-system hiccups
   }
 }
 

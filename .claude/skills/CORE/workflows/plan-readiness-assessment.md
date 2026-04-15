@@ -18,9 +18,11 @@ Check for required sections (from plan-template.md):
 - [ ] What We're NOT Doing (explicit scope boundary)
 - [ ] Implementation Approach (strategy + reasoning)
 - [ ] At least one Phase with changes and success criteria
+- [ ] Phases use canonical `## Phase N:` heading format (cruise plan-entry regex: `^## Phase \d+:`)
+- [ ] Each phase has a `#### Automated Verification:` subsection with at least one `- [ ]` bullet
 - [ ] Testing Strategy
 
-Missing sections = **NEEDS WORK**. Missing Overview or Phases = **UNDERCOOKED**.
+Missing sections = **NEEDS WORK**. Missing Overview or Phases = **UNDERCOOKED**. Phase-heading format or `#### Automated Verification:` subsection missing = **NEEDS WORK** (cruise plan-entry will otherwise hit `plan-structure-ambiguous` mid-execution and STOP).
 
 ### 2. Specificity
 

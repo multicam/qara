@@ -347,6 +347,52 @@ describe("Mode State Management", () => {
       clearModeState(); // Should not throw
       clearModeState(); // Double clear should not throw
     });
+
+    it("should emit a `deactivated` event to mode-changes.jsonl when clearing an active mode", () => {
+      const { readFileSync: rfs } = require("fs");
+      const { join: j } = require("path");
+      const { STATE_DIR: SD } = require("../hooks/lib/pai-paths");
+      const changesLog = j(SD, "mode-changes.jsonl");
+      const beforeCount = existsSync(changesLog)
+        ? rfs(changesLog, "utf-8").split("\n").filter(Boolean).length
+        : 0;
+
+      writeModeState({
+        mode: "cruise",
+        taskContext: "telemetry test",
+        acceptanceCriteria: "clear emits deactivated event",
+        skillPath: "/tmp/c.md",
+      });
+
+      clearModeState();
+
+      const afterLines = rfs(changesLog, "utf-8").split("\n").filter(Boolean);
+      expect(afterLines.length).toBe(beforeCount + 1);
+      const last = JSON.parse(afterLines[afterLines.length - 1]);
+      expect(last.event).toBe("deactivated");
+      expect(last.reason).toBe("cleared");
+      expect(last.mode).toBe("cruise");
+      expect(last.timestamp).toBeDefined();
+    });
+
+    it("should NOT emit when clearing a non-existent state (no active mode)", () => {
+      const { readFileSync: rfs } = require("fs");
+      const { join: j } = require("path");
+      const { STATE_DIR: SD } = require("../hooks/lib/pai-paths");
+      const changesLog = j(SD, "mode-changes.jsonl");
+
+      clearModeState(); // ensure no state
+      const beforeCount = existsSync(changesLog)
+        ? rfs(changesLog, "utf-8").split("\n").filter(Boolean).length
+        : 0;
+
+      clearModeState(); // second clear with nothing to log
+
+      const afterCount = existsSync(changesLog)
+        ? rfs(changesLog, "utf-8").split("\n").filter(Boolean).length
+        : 0;
+      expect(afterCount).toBe(beforeCount);
+    });
   });
 
   // ─── CLI ─────────────────────────────────────────────────────────────────

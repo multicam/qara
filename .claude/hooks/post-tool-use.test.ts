@@ -80,6 +80,47 @@ describe("post-tool-use.ts", () => {
       const last = getLastLogLine(LOG_FILE);
       expect(last!.session_id).toBeDefined();
     });
+
+    it("should record subagent_type as top-level field for Agent tool calls", async () => {
+      const before = getLogLineCount(LOG_FILE);
+      await runHook({
+        tool_name: "Agent",
+        tool_input: { subagent_type: "critic", description: "review plan phase 1" },
+        was_error: false,
+      });
+      await waitForLogLineCount(LOG_FILE, before + 1);
+
+      const last = getLastLogLine(LOG_FILE);
+      expect(last!.tool).toBe("Agent");
+      expect(last!.subagent_type).toBe("critic");
+    });
+
+    it("should record subagent_type for Task tool calls too", async () => {
+      const before = getLogLineCount(LOG_FILE);
+      await runHook({
+        tool_name: "Task",
+        tool_input: { subagent_type: "verifier", description: "verify phase complete" },
+        was_error: false,
+      });
+      await waitForLogLineCount(LOG_FILE, before + 1);
+
+      const last = getLastLogLine(LOG_FILE);
+      expect(last!.tool).toBe("Task");
+      expect(last!.subagent_type).toBe("verifier");
+    });
+
+    it("should leave subagent_type null for non-Agent/Task tools", async () => {
+      const before = getLogLineCount(LOG_FILE);
+      await runHook({
+        tool_name: "Read",
+        tool_input: { file_path: "/tmp/x.md" },
+        was_error: false,
+      });
+      await waitForLogLineCount(LOG_FILE, before + 1);
+
+      const last = getLastLogLine(LOG_FILE);
+      expect(last!.subagent_type).toBeNull();
+    });
   });
 
   describe("error resilience", () => {

@@ -1,5 +1,11 @@
 import { describe, test, expect } from 'bun:test';
-import { computeHintCompliance, readActiveHints, computeQualityMetrics } from '../skills/introspect/tools/miner-hint-lib';
+import {
+    computeHintCompliance,
+    readActiveHints,
+    computeQualityMetrics,
+    computeAgentBreakdown,
+    resolveSubagentType,
+} from '../skills/introspect/tools/miner-hint-lib';
 import type { ToolEntryWithSummary } from '../skills/introspect/tools/miner-hint-lib';
 
 // ---------------------------------------------------------------------------
@@ -178,5 +184,95 @@ describe('computeQualityMetrics', () => {
         const m = computeQualityMetrics(entries);
         expect(m.read_edit_ratio).toBe(0);
         expect(m.edits_without_read_pct).toBe(0);
+    });
+});
+
+// ---------------------------------------------------------------------------
+// resolveSubagentType + computeAgentBreakdown
+// cruise--audit-fixes-v1 P0.2 — forward-clean + legacy fallback
+// ---------------------------------------------------------------------------
+
+describe('resolveSubagentType', () => {
+    const mk = (overrides: Partial<ToolEntryWithSummary>): ToolEntryWithSummary => ({
+        tool: 'Agent',
+        error: false,
+        timestamp: '2026-04-15T00:00:00Z',
+        ...overrides,
+    });
+
+    test('prefers first-class subagent_type field when present', () => {
+        const row = mk({ subagent_type: 'critic', input_summary: 'type: verifier something' });
+        expect(resolveSubagentType(row)).toBe('critic'); // first-class wins over summary
+    });
+
+    test('falls back to input_summary for legacy Agent row', () => {
+        const row = mk({ subagent_type: null, input_summary: 'type: critic review plan phase 1' });
+        expect(resolveSubagentType(row)).toBe('critic');
+    });
+
+    test('falls back for Task tool too', () => {
+        const row = mk({ tool: 'Task', subagent_type: undefined, input_summary: 'type: engineer-low fix typo' });
+        expect(resolveSubagentType(row)).toBe('engineer-low');
+    });
+
+    test('returns null for non-Agent/Task tools even if input_summary contains "type:"', () => {
+        const row = mk({ tool: 'Bash', subagent_type: null, input_summary: 'command: grep "type: foo" file.txt' });
+        expect(resolveSubagentType(row)).toBeNull();
+    });
+
+    test('regex is anchored to start — rejects mid-description "type:" in descriptions', () => {
+        // Agent row where description happened to contain "type:" mid-prose.
+        // trace-utils emits "type: <name>" at START only, so an anchored regex
+        // matches real data and rejects this spoofed prose.
+        const row = mk({ subagent_type: null, input_summary: 'Analyze font-type: serif usage in design' });
+        expect(resolveSubagentType(row)).toBeNull();
+    });
+
+    test('returns null when subagent_type missing and no input_summary', () => {
+        const row = mk({ subagent_type: null, input_summary: undefined });
+        expect(resolveSubagentType(row)).toBeNull();
+    });
+
+    test('empty subagent_type falls through to summary', () => {
+        const row = mk({ subagent_type: '', input_summary: 'type: architect design review' });
+        expect(resolveSubagentType(row)).toBe('architect');
+    });
+});
+
+describe('computeAgentBreakdown', () => {
+    const mk = (tool: string, subagent_type: string | null | undefined, input_summary?: string, ts = '2026-04-15T00:00:00Z'): ToolEntryWithSummary => ({
+        tool,
+        error: false,
+        timestamp: ts,
+        subagent_type: subagent_type ?? undefined,
+        input_summary,
+    });
+
+    test('counts by resolved subagent_type across mixed new + legacy rows', () => {
+        const entries: ToolEntryWithSummary[] = [
+            mk('Agent', 'critic'),                                // new field
+            mk('Agent', 'critic'),
+            mk('Agent', null, 'type: verifier something'),        // legacy fallback
+            mk('Task',  null, 'type: engineer fix bug'),          // legacy Task
+            mk('Agent', null, 'type: critic review'),             // legacy critic
+            mk('Read',  null, 'file: /tmp/x'),                    // ignored (not Agent/Task)
+            mk('Bash',  null, 'command: ls'),                     // ignored
+        ];
+        const counts = computeAgentBreakdown(entries);
+        expect(counts).toEqual({ critic: 3, verifier: 1, engineer: 1 });
+    });
+
+    test('unresolvable Agent rows land in "unknown" bucket', () => {
+        const entries: ToolEntryWithSummary[] = [
+            mk('Agent', null, undefined),           // no fallback possible
+            mk('Agent', null, 'description: blah'),  // no "type:" prefix
+            mk('Agent', 'critic'),                  // resolves
+        ];
+        const counts = computeAgentBreakdown(entries);
+        expect(counts).toEqual({ unknown: 2, critic: 1 });
+    });
+
+    test('empty entries yields empty breakdown', () => {
+        expect(computeAgentBreakdown([])).toEqual({});
     });
 });
