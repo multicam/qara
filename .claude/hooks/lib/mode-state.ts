@@ -96,6 +96,12 @@ function readRaw(): ModeState | null {
   }
 }
 
+/**
+ * TODO(2026-04-15 session-id): the `state.sessionId !== "unknown"` wildcard
+ * escape is debt from the pre-2026-04-15 era; see the equivalent note in
+ * tdd-state.ts. Remove once `isValid`/`readModeState` accept an explicit
+ * `currentSession` plumbed from the hook stdin payload.
+ */
 function isValid(state: ModeState): boolean {
   const expires = new Date(state.expiresAt).getTime();
   if (Date.now() > expires) return false;
@@ -273,10 +279,12 @@ export function appendCompletedSubagent(id: string): void {
  */
 export function clearModeState(): void {
   try {
-    const prior = existsSync(STATE_FILE)
-      ? (JSON.parse(readFileSync(STATE_FILE, "utf-8")) as ModeState | null)
-      : null;
-    if (prior?.active) {
+    // readRaw() wraps JSON.parse in its own try/catch and returns null for
+    // corrupt/malformed/inactive/missing. Using it here ensures the unlink
+    // below ALWAYS runs — pre-fix, an inline JSON.parse threw before the
+    // unlink and left the corrupt file blocking re-activation indefinitely.
+    const prior = readRaw();
+    if (prior) {
       // The mode state itself records who owns it; prefer that over the
       // ambient env fallback (which would return "unknown" in most hook
       // subprocesses since CC doesn't export CLAUDE_SESSION_ID).

@@ -375,6 +375,22 @@ describe("Mode State Management", () => {
       expect(last.timestamp).toBeDefined();
     });
 
+    it("should unlink the state file even when its contents are unparseable JSON", () => {
+      // Regression guard: pre-fix, clearModeState() parsed STATE_FILE inline with
+      // a raw JSON.parse that threw on corruption, caught by the outer try/catch
+      // — but because the unlinkSync ran AFTER the parse, the corrupt file was
+      // never cleaned up and permanently blocked mode re-activation.
+      // Fix: route through readRaw() which wraps parse in its own try/catch.
+      const statePath = getStateFilePath();
+      mkdirSync(join(statePath, ".."), { recursive: true });
+      writeFileSync(statePath, "{not: valid: json at all");
+      expect(existsSync(statePath)).toBe(true);
+
+      clearModeState(); // must not throw, and must unlink
+
+      expect(existsSync(statePath)).toBe(false);
+    });
+
     it("should NOT emit when clearing a non-existent state (no active mode)", () => {
       const { readFileSync: rfs } = require("fs");
       const { join: j } = require("path");

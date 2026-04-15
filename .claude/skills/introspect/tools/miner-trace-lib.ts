@@ -198,6 +198,14 @@ function hasSimilarFailureInput(a: string, b: string): boolean {
  * heuristic (imported SESSION_GAP_MS). All other session_ids are grouped
  * directly.
  *
+ * NOTE (2026-04-15): after the session_id-from-stdin fix (commit b05d443 +
+ * resolveSessionId hardening), new log rows always carry a real session_id.
+ * The "unknown" branch here only fires on HISTORICAL rows written before the
+ * fix. When all rows pre-dating 2026-04-15 age out of the miner's scan window
+ * (typically 90 days), the unknownEntries path becomes unreachable — at that
+ * point, delete it along with the `|| 'unknown'` defaults scattered across
+ * miner-sequence-lib / miner-hint-lib.
+ *
  * Returns [] for empty input or when no entries have input_summary (backward
  * compatibility with pre-enrichment data).
  */

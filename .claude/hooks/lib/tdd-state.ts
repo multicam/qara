@@ -127,13 +127,20 @@ export function clearTDDState(): void {
 
 /**
  * Validate state: checks TTL and session match.
+ *
+ * TODO(2026-04-15 session-id): the `state.sessionId !== "unknown"` wildcard
+ * escape is debt from the pre-2026-04-15 era when writes silently produced
+ * "unknown" session IDs. It preserves compat with state files written before
+ * the b05d443 fix AND with hook subprocesses where `getSessionId()` still
+ * returns "unknown" (CC doesn't export CLAUDE_SESSION_ID to subprocesses).
+ * Long-term: change `readTDDState`/`isStateValid` to accept an explicit
+ * `currentSession` param plumbed from stdin payload via resolveSessionId(),
+ * then delete the wildcard. Tracked in thoughts/shared/plans/infra--hook-session-id-v1.md.
  */
 export function isStateValid(state: TDDState): boolean {
-  // Check TTL
   const expires = new Date(state.expiresAt).getTime();
   if (Date.now() > expires) return false;
 
-  // Check session
   const currentSession = getSessionId();
   if (state.sessionId !== currentSession && state.sessionId !== "unknown")
     return false;

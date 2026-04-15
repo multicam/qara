@@ -180,7 +180,10 @@ describe("hook session_id flow", () => {
           if (!existsSync(logPath)) return;
           const last = getLastLogLine(logPath);
           if (last && last.session_id !== undefined) {
-            expect([ENV_SID, "unknown"]).toContain(last.session_id);
+            // Strict: env fallback must return ENV_SID exactly. "unknown" in this
+            // path is a regression — it means resolveSessionId silently bypassed
+            // the env lookup (the pre-fix bug). Accept ENV_SID only.
+            expect(last.session_id).toBe(ENV_SID);
           }
         });
       }

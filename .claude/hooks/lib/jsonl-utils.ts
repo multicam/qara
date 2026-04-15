@@ -7,7 +7,7 @@
 
 import { readFileSync, appendFileSync } from 'fs';
 import { dirname } from 'path';
-import { ensureDir, getSessionId } from './pai-paths';
+import { ensureDir } from './pai-paths';
 
 /**
  * Append a JSON object as a line to a JSONL file
@@ -52,9 +52,33 @@ export function parseStdin<T = Record<string, unknown>>(): T | null {
 }
 
 /**
- * Resolve session ID from parsed hook data, falling back to env/default.
- * Replaces the 6-hook pattern: parsed.session_id || getSessionId().
+ * Resolve session ID from parsed hook data.
+ *
+ * Priority:
+ *   1. `data.session_id` (stdin payload — CC's canonical source)
+ *   2. `CLAUDE_SESSION_ID` or `SESSION_ID` env var, IF set to a real value
+ *   3. Literal 'unknown' sentinel — but with a stderr warning first
+ *
+ * The env-var step used to go through `getSessionId()`, which silently
+ * returned `'unknown'` when the env was unset (CC does NOT export
+ * `CLAUDE_SESSION_ID` to hook subprocesses). That behavior made every
+ * hook log `session_id: "unknown"` — parallel sessions trampled each
+ * other in `state/sessions/unknown/`. Commit b05d443 routed the stdin
+ * path through hooks; this function now refuses to let 'unknown' sneak
+ * in as a silent env value — it must be an explicit last resort with
+ * a visible warning.
  */
 export function resolveSessionId(data: Record<string, unknown>): string {
-    return (data?.session_id as string) || getSessionId();
+    const fromData = data?.session_id;
+    if (typeof fromData === 'string' && fromData.length > 0) return fromData;
+
+    const fromEnv = process.env.CLAUDE_SESSION_ID || process.env.SESSION_ID;
+    if (fromEnv && fromEnv.length > 0 && fromEnv !== 'unknown') return fromEnv;
+
+    console.error(
+        '[resolveSessionId] session_id missing from stdin payload and ' +
+        'CLAUDE_SESSION_ID/SESSION_ID env unset (or literal "unknown"). ' +
+        'Falling back to "unknown" — collisions in state/sessions/unknown/ possible.'
+    );
+    return 'unknown';
 }

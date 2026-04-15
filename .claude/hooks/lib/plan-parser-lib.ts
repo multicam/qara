@@ -11,36 +11,39 @@
  * Side effects: none except cache I/O in `readPlanCache` / `writePlanCache`.
  */
 
-import { existsSync, readFileSync, writeFileSync } from "fs";
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from "fs";
 import { dirname } from "path";
-import { mkdirSync } from "fs";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
-export interface AutomatedItem {
+/**
+ * A checklist bullet — used for both automated and manual verification items.
+ * Single type (rather than two identical interfaces) because neither section
+ * has distinguishing structure; "section" is a Phase-level property, not an
+ * item-level one.
+ *
+ * `line` is the absolute 0-indexed line number within the full plan text.
+ * Tick functions write `lines[item.line]` directly — they do NOT match by
+ * bullet text (identical bullets in the same phase would collide).
+ */
+export interface ChecklistItem {
   text: string;
   done: boolean;
-  /**
-   * Absolute 0-indexed line number within the full plan text.
-   * Tick functions write `lines[item.line]` directly — they do NOT match
-   * by bullet text (identical bullets in the same phase would collide).
-   */
   line: number;
 }
 
-export interface ManualItem {
-  text: string;
-  done: boolean;
-  line: number;
-}
+/** @deprecated Use ChecklistItem. Retained for zero-cost back-compat. */
+export type AutomatedItem = ChecklistItem;
+/** @deprecated Use ChecklistItem. Retained for zero-cost back-compat. */
+export type ManualItem = ChecklistItem;
 
 export interface Phase {
   n: number;
   title: string;
   line_start: number;
   line_end: number;
-  automated: AutomatedItem[];
-  manual: ManualItem[];
+  automated: ChecklistItem[];
+  manual: ChecklistItem[];
 }
 
 export interface PlanCache {
@@ -75,8 +78,8 @@ function collectBullets(
   lines: string[],
   startLine: number,
   maxLine: number
-): { text: string; done: boolean; line: number }[] {
-  const out: { text: string; done: boolean; line: number }[] = [];
+): ChecklistItem[] {
+  const out: ChecklistItem[] = [];
   for (let i = startLine; i <= maxLine; i++) {
     const line = lines[i];
     if (line === undefined) break;
@@ -119,8 +122,8 @@ export function parsePlanPhases(planText: string): Phase[] {
     const line_end = h + 1 < headings.length ? headings[h + 1].line - 1 : lines.length - 1;
 
     // Find the Automated Verification + Manual Verification markers within body
-    let automated: AutomatedItem[] = [];
-    let manual: ManualItem[] = [];
+    let automated: ChecklistItem[] = [];
+    let manual: ChecklistItem[] = [];
     for (let i = line_start + 1; i <= line_end; i++) {
       if (AUTOMATED_MARKER.test(lines[i])) {
         automated = collectBullets(lines, i + 1, line_end);
@@ -145,6 +148,20 @@ export function findCurrentPhase(phases: Phase[]): Phase | null {
 }
 
 /**
+ * Options for tick functions.
+ *
+ * `phases` — pre-parsed phase list. When provided, `tickInSection` skips its
+ * internal `parsePlanPhases()` call and uses the caller's data directly.
+ * Required for correctness when the caller has pre-processed or filtered
+ * phases (without this, the internal reparse would produce different line
+ * numbers than what the caller has). Also avoids a redundant O(N) parse for
+ * callers who already have the phases in hand.
+ */
+export interface TickOptions {
+  phases?: Phase[];
+}
+
+/**
  * Tick the automated-verification bullets at the given absolute line numbers.
  * No-op for:
  *   - phase numbers that don't exist
@@ -154,28 +171,31 @@ export function findCurrentPhase(phases: Phase[]): Phase | null {
 export function tickAutomatedCheckboxes(
   planText: string,
   phaseN: number,
-  lineNumbers: number[]
+  lineNumbers: number[],
+  opts?: TickOptions
 ): string {
-  return tickInSection(planText, phaseN, lineNumbers, "automated");
+  return tickInSection(planText, phaseN, lineNumbers, "automated", opts);
 }
 
 /** Analogous to tickAutomatedCheckboxes but for the manual-verification block. */
 export function tickManualCheckboxes(
   planText: string,
   phaseN: number,
-  lineNumbers: number[]
+  lineNumbers: number[],
+  opts?: TickOptions
 ): string {
-  return tickInSection(planText, phaseN, lineNumbers, "manual");
+  return tickInSection(planText, phaseN, lineNumbers, "manual", opts);
 }
 
 function tickInSection(
   planText: string,
   phaseN: number,
   lineNumbers: number[],
-  section: "automated" | "manual"
+  section: "automated" | "manual",
+  opts?: TickOptions
 ): string {
   const text = normalize(planText);
-  const phases = parsePlanPhases(text);
+  const phases = opts?.phases ?? parsePlanPhases(text);
   const phase = phases.find((p) => p.n === phaseN);
   if (!phase) return text;
 

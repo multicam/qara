@@ -14,7 +14,8 @@
 
 import { existsSync, readFileSync, writeFileSync, appendFileSync, mkdirSync, renameSync } from "fs";
 import { join } from "path";
-import { getSessionsDir, getSessionId as _getSessionId } from "./pai-paths";
+import { getSessionsDir, getSessionId } from "./pai-paths";
+
 const MEMORY_FILES = ["learnings.md", "decisions.md", "issues.md", "problems.md"] as const;
 type MemoryFile = (typeof MEMORY_FILES)[number];
 type MemoryCategory = "learning" | "decision" | "issue" | "problem";
@@ -27,10 +28,6 @@ const CATEGORY_TO_FILE: Record<MemoryCategory, MemoryFile> = {
 };
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
-
-function getSessionId(): string {
-  return _getSessionId();
-}
 
 function getTimestamp(): string {
   const formatter = new Intl.DateTimeFormat("en-AU", {

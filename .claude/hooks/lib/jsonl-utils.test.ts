@@ -105,22 +105,69 @@ describe('parseStdin', () => {
 });
 
 describe('resolveSessionId', () => {
+  // Scoped env + console.error snapshot; restore on teardown. Lets us assert
+  // fallback chain and warning behavior without leaking state between tests.
+  function withEnvSpy(overrides: Record<string, string | undefined>) {
+    const prev: Record<string, string | undefined> = {};
+    for (const k of Object.keys(overrides)) {
+      prev[k] = process.env[k];
+      if (overrides[k] === undefined) delete process.env[k];
+      else process.env[k] = overrides[k]!;
+    }
+    const prevErr = console.error;
+    const warnings: string[] = [];
+    console.error = (...args: unknown[]) => { warnings.push(args.join(' ')); };
+    return {
+      warnings,
+      restore() {
+        console.error = prevErr;
+        for (const k of Object.keys(prev)) {
+          if (prev[k] === undefined) delete process.env[k];
+          else process.env[k] = prev[k]!;
+        }
+      },
+    };
+  }
+
   it('returns session_id when present on data', async () => {
     const { resolveSessionId } = await import('./jsonl-utils');
     expect(resolveSessionId({ session_id: 'abc-123' })).toBe('abc-123');
   });
 
-  it('falls back to getSessionId when data lacks session_id', async () => {
+  it('returns env CLAUDE_SESSION_ID when stdin has no session_id', async () => {
     const { resolveSessionId } = await import('./jsonl-utils');
-    const result = resolveSessionId({});
-    expect(typeof result).toBe('string');
-    expect(result.length).toBeGreaterThan(0);
+    const ctx = withEnvSpy({ CLAUDE_SESSION_ID: 'real-uuid-fallback', SESSION_ID: undefined });
+    try { expect(resolveSessionId({})).toBe('real-uuid-fallback'); }
+    finally { ctx.restore(); }
   });
 
-  it('falls back when data is null-prototype object without session_id', async () => {
+  it('rejects literal "unknown" as env fallback value', async () => {
+    // Regression guard: the pre-fix bug was getSessionId() silently returning
+    // 'unknown' when CC didn't export CLAUDE_SESSION_ID. After the fix, env='unknown'
+    // is treated as unset (equivalent to nothing) and produces a loud warning.
     const { resolveSessionId } = await import('./jsonl-utils');
-    const result = resolveSessionId({ other: 'field' } as Record<string, unknown>);
-    expect(typeof result).toBe('string');
+    const ctx = withEnvSpy({ CLAUDE_SESSION_ID: 'unknown', SESSION_ID: 'unknown' });
+    try {
+      expect(resolveSessionId({})).toBe('unknown');
+      expect(ctx.warnings.join('\n')).toMatch(/resolveSessionId/);
+    } finally { ctx.restore(); }
+  });
+
+  it('emits stderr warning when falling through to "unknown"', async () => {
+    const { resolveSessionId } = await import('./jsonl-utils');
+    const ctx = withEnvSpy({ CLAUDE_SESSION_ID: undefined, SESSION_ID: undefined });
+    try {
+      expect(resolveSessionId({ other: 'field' })).toBe('unknown');
+      expect(ctx.warnings.length).toBeGreaterThan(0);
+      expect(ctx.warnings.join('\n')).toMatch(/session_id missing/i);
+    } finally { ctx.restore(); }
+  });
+
+  it('rejects empty-string session_id in data (falls through to env)', async () => {
+    const { resolveSessionId } = await import('./jsonl-utils');
+    const ctx = withEnvSpy({ CLAUDE_SESSION_ID: 'env-sid', SESSION_ID: undefined });
+    try { expect(resolveSessionId({ session_id: '' })).toBe('env-sid'); }
+    finally { ctx.restore(); }
   });
 });
 
