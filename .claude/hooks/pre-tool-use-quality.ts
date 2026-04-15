@@ -14,10 +14,12 @@
 
 import { readFileSync, existsSync } from "fs";
 import { join } from "path";
-import { getSessionsDir, getSessionId } from "./lib/pai-paths";
+import { getSessionsDir } from "./lib/pai-paths";
+import { resolveSessionId } from "./lib/jsonl-utils";
 import { readTDDState } from "./lib/tdd-state";
 
 interface HookInput {
+  session_id?: string;
   tool_name: string;
   tool_input: Record<string, unknown>;
 }
@@ -77,6 +79,7 @@ function main(): void {
   try {
     const input = readFileSync(0, "utf-8");
     const hookData: HookInput = JSON.parse(input);
+    const sid = resolveSessionId(hookData as unknown as Record<string, unknown>);
 
     // TDD-phase aware: skip during GREEN (focus on making tests pass)
     const tddState = readTDDState();
@@ -88,7 +91,7 @@ function main(): void {
     const filePath = hookData.tool_input.file_path as string | undefined;
     if (filePath && existsSync(filePath) && !isReadExempt(filePath)) {
       try {
-        const ledgerPath = join(getSessionsDir(), getSessionId(), 'files-read.txt');
+        const ledgerPath = join(getSessionsDir(), sid, 'files-read.txt');
         let wasRead = true; // fail open
         if (existsSync(ledgerPath)) {
           const lines = readFileSync(ledgerPath, 'utf-8').split('\n');

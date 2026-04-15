@@ -277,13 +277,16 @@ export function clearModeState(): void {
       ? (JSON.parse(readFileSync(STATE_FILE, "utf-8")) as ModeState | null)
       : null;
     if (prior?.active) {
+      // The mode state itself records who owns it; prefer that over the
+      // ambient env fallback (which would return "unknown" in most hook
+      // subprocesses since CC doesn't export CLAUDE_SESSION_ID).
       appendJsonl(join(STATE_DIR, "mode-changes.jsonl"), {
         timestamp: getISOTimestamp(),
         event: "deactivated",
         mode: prior.mode,
         reason: "cleared",
         iterations: prior.iteration,
-        session_id: getSessionId(),
+        session_id: prior.sessionId || getSessionId(),
       });
     }
     if (existsSync(STATE_FILE)) unlinkSync(STATE_FILE);

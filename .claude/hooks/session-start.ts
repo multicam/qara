@@ -15,17 +15,15 @@
 import { existsSync, readFileSync, writeFileSync, readdirSync, statSync, unlinkSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
-import { SKILLS_DIR, QARA_DIR, STATE_DIR, getSessionId, getSessionsDir } from './lib/pai-paths';
+import { SKILLS_DIR, QARA_DIR, STATE_DIR, getSessionsDir } from './lib/pai-paths';
 import { setTerminalTabTitle } from './lib/tab-titles';
 import { readTDDStateRaw, clearTDDState, isStateValid } from './lib/tdd-state';
 import { loadCheckpoint, clearCheckpoint, formatCheckpointSummary } from './lib/compact-checkpoint';
-import { appendJsonl } from './lib/jsonl-utils';
+import { appendJsonl, resolveSessionId } from './lib/jsonl-utils';
 import { getISOTimestamp } from './lib/datetime-utils';
 
 const DEBOUNCE_MS = 2000;
 const LEDGER_TTL_MS = 86400000; // 24 hours
-const sessionId = getSessionId();
-const LOCKFILE = join(tmpdir(), `pai-session-start-${sessionId}.lock`);
 
 /**
  * Check if this is a subagent session
@@ -37,20 +35,21 @@ function isSubagentSession(): boolean {
 }
 
 /**
- * Check if we're within the debounce window
+ * Check if we're within the debounce window for the given lockfile.
+ * Lockfile path is session-scoped so parallel CC sessions don't collide.
  */
-function shouldDebounce(): boolean {
+function shouldDebounce(lockfile: string): boolean {
   try {
-    if (existsSync(LOCKFILE)) {
-      const lockTime = parseInt(readFileSync(LOCKFILE, 'utf-8'), 10);
+    if (existsSync(lockfile)) {
+      const lockTime = parseInt(readFileSync(lockfile, 'utf-8'), 10);
       if (Date.now() - lockTime < DEBOUNCE_MS) {
         return true;
       }
     }
-    writeFileSync(LOCKFILE, Date.now().toString());
+    writeFileSync(lockfile, Date.now().toString());
     return false;
   } catch {
-    try { writeFileSync(LOCKFILE, Date.now().toString()); } catch {}
+    try { writeFileSync(lockfile, Date.now().toString()); } catch {}
     return false;
   }
 }
@@ -108,8 +107,19 @@ async function main() {
       process.exit(0);
     }
 
+    // Resolve session id from stdin payload (CC's canonical surface), falling
+    // back to CLAUDE_SESSION_ID env or "unknown". Parse defensively — some
+    // SessionStart trigger sources may fire without a payload.
+    let parsed: Record<string, unknown> = {};
+    try {
+      const input = readFileSync(0, 'utf-8');
+      if (input.trim()) parsed = JSON.parse(input);
+    } catch { /* no stdin or malformed — fall through to env/default */ }
+    const sessionId = resolveSessionId(parsed);
+    const lockfile = join(tmpdir(), `pai-session-start-${sessionId}.lock`);
+
     // Debounce duplicate events
-    if (shouldDebounce()) {
+    if (shouldDebounce(lockfile)) {
       console.error('Debouncing duplicate SessionStart');
       process.exit(0);
     }

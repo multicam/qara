@@ -23,8 +23,8 @@
 
 import { readFileSync } from "fs";
 import { join } from "path";
-import { STATE_DIR, getSessionId } from "./lib/pai-paths";
-import { appendJsonl } from "./lib/jsonl-utils";
+import { STATE_DIR } from "./lib/pai-paths";
+import { appendJsonl, resolveSessionId } from "./lib/jsonl-utils";
 import { getISOTimestamp } from "./lib/datetime-utils";
 import {
   detectReservedTags,
@@ -32,6 +32,7 @@ import {
 } from "./lib/tool-output-sanitizer-lib";
 
 interface PostToolInput {
+  session_id?: string;
   tool_name: string;
   tool_input: Record<string, unknown>;
   tool_output?: string;
@@ -74,7 +75,7 @@ function main(): void {
       const logFile = join(STATE_DIR, "tool-injection-attempts.jsonl");
       appendJsonl(logFile, {
         timestamp: getISOTimestamp(),
-        session_id: getSessionId(),
+        session_id: resolveSessionId(data as unknown as Record<string, unknown>),
         tool: data.tool_name,
         input_summary: inputSummary,
         detections: result.detections.map((d) => ({

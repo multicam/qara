@@ -8,12 +8,13 @@
 
 import { join } from 'path';
 import { readFileSync, existsSync, appendFileSync } from 'fs';
-import { STATE_DIR, getSessionsDir, ensureDir, getSessionId } from './lib/pai-paths';
-import { appendJsonl } from './lib/jsonl-utils';
+import { STATE_DIR, getSessionsDir, ensureDir } from './lib/pai-paths';
+import { appendJsonl, resolveSessionId } from './lib/jsonl-utils';
 import { getISOTimestamp } from './lib/datetime-utils';
 import { extractInputSummary, extractErrorDetail } from './lib/trace-utils';
 
 interface PostToolInput {
+  session_id?: string;
   tool_name: string;
   tool_input: Record<string, unknown>;
   tool_output?: string;
@@ -28,6 +29,7 @@ async function main(): Promise<void> {
 
     const hookData: PostToolInput = JSON.parse(input);
     const { tool_name, tool_input, tool_output, was_error } = hookData;
+    const sid = resolveSessionId(hookData as unknown as Record<string, unknown>);
 
     const logFile = join(STATE_DIR, 'tool-usage.jsonl');
 
@@ -35,7 +37,7 @@ async function main(): Promise<void> {
       timestamp: getISOTimestamp(),
       tool: tool_name,
       error: was_error || false,
-      session_id: getSessionId(),
+      session_id: sid,
       input_summary: extractInputSummary(tool_name, tool_input || {}),
       // Surface subagent_type as a first-class field for Agent/Task calls.
       // Previously only recoverable by parsing input_summary — 42% of agent
@@ -56,7 +58,7 @@ async function main(): Promise<void> {
       const filePath = (tool_input || {}).file_path as string;
       if (filePath) {
         try {
-          const sessionDir = join(getSessionsDir(), getSessionId());
+          const sessionDir = join(getSessionsDir(), sid);
           ensureDir(sessionDir);
           const ledgerPath = join(sessionDir, 'files-read.txt');
           appendFileSync(ledgerPath, filePath + '\n');

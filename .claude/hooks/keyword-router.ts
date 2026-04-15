@@ -12,10 +12,10 @@
 
 import { readFileSync, existsSync } from "fs";
 import { join } from "path";
-import { SKILLS_DIR, STATE_DIR, getSessionId } from "./lib/pai-paths";
+import { SKILLS_DIR, STATE_DIR } from "./lib/pai-paths";
 import { writeModeState, clearModeState, readModeState } from "./lib/mode-state";
 import type { ModeName } from "./lib/mode-state";
-import { appendJsonl, truncate } from "./lib/jsonl-utils";
+import { appendJsonl, truncate, resolveSessionId } from "./lib/jsonl-utils";
 import { getISOTimestamp } from "./lib/datetime-utils";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -141,7 +141,7 @@ function main() {
     const input = readFileSync(0, "utf-8");
     if (!input.trim()) process.exit(0);
 
-    let parsed: { prompt?: string };
+    let parsed: { prompt?: string; session_id?: string };
     try {
       parsed = JSON.parse(input);
     } catch {
@@ -150,6 +150,8 @@ function main() {
 
     const prompt = parsed.prompt || "";
     if (!prompt) process.exit(0);
+
+    const sid = resolveSessionId(parsed as unknown as Record<string, unknown>);
 
     const routes = loadRoutes();
     const sanitized = sanitizePrompt(prompt);
@@ -175,7 +177,7 @@ function main() {
               mode: priorState.mode,
               reason: "cancelled",
               iterations: priorState.iteration,
-              session_id: getSessionId(),
+              session_id: sid,
             });
           }
           process.exit(0);
@@ -220,6 +222,7 @@ function main() {
             taskContext,
             acceptanceCriteria: "task complete",
             skillPath,
+            sessionId: sid,
             prdPath,
             planPath,
             maxIterations: route.modeDefaults?.maxIterations ?? 50,
@@ -231,7 +234,7 @@ function main() {
             event: "activated",
             mode: routeName,
             task_context: truncate(taskContext, 200),
-            session_id: getSessionId(),
+            session_id: sid,
           });
         }
 

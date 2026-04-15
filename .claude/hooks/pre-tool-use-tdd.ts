@@ -16,14 +16,15 @@
 
 import { readFileSync } from "fs";
 import { join } from "path";
-import { STATE_DIR, getSessionId } from "./lib/pai-paths";
+import { STATE_DIR } from "./lib/pai-paths";
 import { readTDDState, isTestFile } from "./lib/tdd-state";
-import { appendJsonl, truncate } from "./lib/jsonl-utils";
+import { appendJsonl, truncate, resolveSessionId } from "./lib/jsonl-utils";
 import { getISOTimestamp } from "./lib/datetime-utils";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 interface HookInput {
+  session_id?: string;
   tool_name: string;
   tool_input: Record<string, unknown>;
 }
@@ -84,7 +85,8 @@ function logDecision(
   phase: string,
   isTest: boolean,
   decision: "allow" | "deny" | "ask",
-  reason: string
+  reason: string,
+  sessionId: string,
 ): void {
   try {
     appendJsonl(join(STATE_DIR, "tdd-enforcement.jsonl"), {
@@ -94,7 +96,7 @@ function logDecision(
       is_test_file: isTest,
       decision,
       reason,
-      session_id: getSessionId(),
+      session_id: sessionId,
     });
   } catch {
     // Non-critical — don't let logging failure affect enforcement
@@ -129,6 +131,7 @@ function main(): void {
   try {
     const input = readFileSync(0, "utf-8");
     const hookData: HookInput = JSON.parse(input);
+    const sid = resolveSessionId(hookData as unknown as Record<string, unknown>);
 
     // Fast path: check TDD state before anything else
     const state = readTDDState();
@@ -161,12 +164,12 @@ function main(): void {
         if (!isTest) {
           // RED phase: source file edit → deny
           const reason = `TDD enforcement: phase is RED — write the failing test first. Cannot edit source file: ${filePath}`;
-          logDecision(filePath, state.phase, isTest, "deny", reason);
+          logDecision(filePath, state.phase, isTest, "deny", reason, sid);
           deny(reason);
           return;
         }
         // RED phase + test file → allow (correct behavior)
-        logDecision(filePath, state.phase, isTest, "allow", "test file edit during RED");
+        logDecision(filePath, state.phase, isTest, "allow", "test file edit during RED", sid);
       } else if (state.phase === "GREEN") {
         // GREEN: both allowed, but detect test shrinking (Kent Beck 2026:
         // agents delete tests to make them pass)
@@ -177,19 +180,19 @@ function main(): void {
             const oldLines = oldStr.split("\n").length;
             const newLines = newStr.split("\n").length;
             if (oldLines > newLines + 2) {
-              logDecision(filePath, state.phase, isTest, "ask", "test shrinking detected during GREEN");
+              logDecision(filePath, state.phase, isTest, "ask", "test shrinking detected during GREEN", sid);
               ask(`This edit removes ${oldLines - newLines} lines from a test file during GREEN phase. Verify you are not weakening tests to make them pass.\nFile: ${filePath}`);
               return;
             }
           }
-          logDecision(filePath, state.phase, isTest, "allow", "test file edit during GREEN (advisory)");
+          logDecision(filePath, state.phase, isTest, "allow", "test file edit during GREEN (advisory)", sid);
           advisoryContext = "TDD: Phase is GREEN. Minimal test changes only — focus on implementation.";
         } else {
-          logDecision(filePath, state.phase, isTest, "allow", "source file edit during GREEN");
+          logDecision(filePath, state.phase, isTest, "allow", "source file edit during GREEN", sid);
         }
       } else {
         // REFACTOR: everything allowed
-        logDecision(filePath, state.phase, isTest, "allow", `edit during REFACTOR`);
+        logDecision(filePath, state.phase, isTest, "allow", `edit during REFACTOR`, sid);
       }
     }
 

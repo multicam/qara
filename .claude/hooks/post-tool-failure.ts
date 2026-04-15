@@ -11,8 +11,8 @@
 
 import { readFileSync, existsSync, writeFileSync } from 'fs';
 import { join } from 'path';
-import { STATE_DIR, ensureDir, getSessionId } from './lib/pai-paths';
-import { appendJsonl, parseStdin, truncate } from './lib/jsonl-utils';
+import { STATE_DIR, ensureDir } from './lib/pai-paths';
+import { appendJsonl, parseStdin, truncate, resolveSessionId } from './lib/jsonl-utils';
 import { getISOTimestamp } from './lib/datetime-utils';
 import { saveCheckpoint } from './lib/compact-checkpoint';
 
@@ -45,6 +45,7 @@ async function main() {
     const parsed = parseStdin();
     if (!parsed) process.exit(0);
 
+    const sid = resolveSessionId(parsed);
     const toolName = (parsed.tool_name as string) || 'unknown';
     const error = parsed.error || parsed.tool_error || '';
     const errorStr = truncate(typeof error === 'string' ? error : JSON.stringify(error), 500);
@@ -53,11 +54,11 @@ async function main() {
     const rateLimitPattern = /\b429\b|rate.?limit|quota.?exceed|too many requests|insufficient balance|throttl/i;
     if (rateLimitPattern.test(errorStr)) {
       try {
-        saveCheckpoint(getSessionId());
+        saveCheckpoint(sid);
         appendJsonl(join(STATE_DIR, 'checkpoint-events.jsonl'), {
           timestamp: getISOTimestamp(),
           event_type: 'rate_limit_detected',
-          session_id: getSessionId(),
+          session_id: sid,
           tool: toolName,
         });
       } catch { /* checkpoint failure non-critical */ }
@@ -92,7 +93,7 @@ async function main() {
       tool: toolName,
       error: errorStr,
       consecutive,
-      session_id: getSessionId(),
+      session_id: sid,
     });
 
     // Escalate at threshold

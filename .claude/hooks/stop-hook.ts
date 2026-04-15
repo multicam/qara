@@ -13,15 +13,15 @@
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { generateTabTitle, setTerminalTabTitle } from './lib/tab-titles';
-import { STATE_DIR, getSessionId } from './lib/pai-paths';
-import { appendJsonl, truncate } from './lib/jsonl-utils';
+import { STATE_DIR } from './lib/pai-paths';
+import { appendJsonl, truncate, resolveSessionId } from './lib/jsonl-utils';
 import { getISOTimestamp } from './lib/datetime-utils';
 import { classifyTopic } from './lib/trace-utils';
 import { readModeState, isModeActive, incrementIteration, deactivateWithReason, extendIterations } from './lib/mode-state';
 import type { ModeState } from './lib/mode-state';
 import { formatMemoryForInjection } from './lib/working-memory';
 
-function emitContinuation(modeState: ModeState): void {
+function emitContinuation(modeState: ModeState, sessionId: string): void {
   let skillContent = '';
   if (modeState.skillPath && existsSync(modeState.skillPath)) {
     skillContent = readFileSync(modeState.skillPath, 'utf-8');
@@ -38,7 +38,7 @@ function emitContinuation(modeState: ModeState): void {
 
   let memorySection = '';
   try {
-    const mem = formatMemoryForInjection();
+    const mem = formatMemoryForInjection(sessionId);
     if (mem) memorySection = `\n\n${mem}`;
   } catch { /* non-critical */ }
 
@@ -64,6 +64,7 @@ async function main() {
     if (!input.trim()) process.exit(0);
 
     const parsed = JSON.parse(input);
+    const sid = resolveSessionId(parsed);
     const lastMessage = parsed.last_assistant_message;
 
     if (!lastMessage) process.exit(0);
@@ -83,7 +84,7 @@ async function main() {
     // Persist session checkpoint for resume capability (Factor 6)
     appendJsonl(join(STATE_DIR, 'session-checkpoints.jsonl'), {
       timestamp: getISOTimestamp(),
-      session_id: getSessionId(),
+      session_id: sid,
       stop_reason: stopReason,
       summary: title || truncate(lastMessage, 200),
       message_len: lastMessage.length,
@@ -138,13 +139,13 @@ async function main() {
             const updated = readModeState();
             if (updated) {
               incrementIteration();
-              emitContinuation(updated);
+              emitContinuation(updated, sid);
             }
           }
         } else {
           // Normal continuation: increment iteration, inject skill content
           incrementIteration();
-          emitContinuation(modeState);
+          emitContinuation(modeState, sid);
         }
       }
     } catch {

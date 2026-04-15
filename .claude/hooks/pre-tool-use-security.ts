@@ -8,8 +8,8 @@
 
 import { readFileSync } from "fs";
 import { join } from "path";
-import { STATE_DIR, getSessionId } from './lib/pai-paths';
-import { appendJsonl, truncate } from './lib/jsonl-utils';
+import { STATE_DIR } from './lib/pai-paths';
+import { appendJsonl, truncate, resolveSessionId } from './lib/jsonl-utils';
 import { getISOTimestamp } from './lib/datetime-utils';
 
 // Dangerous patterns that require human approval
@@ -64,6 +64,7 @@ const ALWAYS_BLOCKED: RegExp[] = [
 ];
 
 interface HookInput {
+  session_id?: string;
   tool_name: string;
   tool_input: Record<string, unknown>;
 }
@@ -72,7 +73,8 @@ function logSecurityCheck(
   operation: string,
   pattern: string,
   risk: string,
-  decision: string
+  decision: string,
+  sessionId: string,
 ): void {
   try {
     const logFile = join(STATE_DIR, "security-checks.jsonl");
@@ -82,7 +84,7 @@ function logSecurityCheck(
       pattern_matched: pattern,
       risk,
       decision,
-      session_id: getSessionId(),
+      session_id: sessionId,
       source: process.env.QARA_TEST_RUN ? "test" : "live",
     });
   } catch {
@@ -183,12 +185,14 @@ async function main(): Promise<void> {
     }
 
     const result = checkCommand(command);
+    const sid = resolveSessionId(hookData as unknown as Record<string, unknown>);
 
     logSecurityCheck(
       command,
       result.pattern || "none",
       result.risk || "none",
-      result.status
+      result.status,
+      sid,
     );
 
     const additionalContext = generateAdditionalContext(command);
