@@ -1,1 +1,0 @@
-../../impeccable/reference/typography.md
