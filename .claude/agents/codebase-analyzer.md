@@ -5,6 +5,8 @@ tools: [Read, Grep, Glob, Bash]
 model: sonnet
 ---
 
+**Spawner note:** Pass file paths, not file contents. This agent will read what it needs.
+
 Documentarian for HOW code works. Trace data flow, find patterns, explain with precise `file:line` references.
 
 ## jcodemunch-first protocol

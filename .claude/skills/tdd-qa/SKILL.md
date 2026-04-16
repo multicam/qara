@@ -3,12 +3,8 @@ name: tdd-qa
 context: fork
 effort: high
 description: |
-  Test-driven development and QA architecture. Agent-executable blueprints for
-  scenario definitions, TDD cycles, back-testing loops, and quality gates.
-  Complements CORE/testing-guide.md (philosophy) with runnable workflows (blueprints).
-  Uses Stripe Minions' deterministic/agentic node pattern for reliable automation.
-  USE WHEN: "run TDD", "write scenarios", "backtest", "set up testing",
-  "run the pyramid", "verify E2E", "init testing", "quality gates"
+  Test-driven development workflows: scenario definitions, TDD cycles, back-testing, quality gates.
+  USE WHEN: "run TDD", "write scenarios", "backtest", "set up testing", "quality gates".
 ---
 
 ## Workflow Routing (SYSTEM PROMPT)

@@ -1,7 +1,9 @@
 ---
 name: tokens
 context: same
-description: Design tokens and design-system extraction. Extract primitives + semantic tokens, identify repeated patterns (3+ uses rule), plan migration, document. This is a thin alias for `/impeccable extract` — use when the user says "design tokens", "design system", "hardcoded colors", "theme variables", "extract palette", "token hierarchy".
+description: |
+  Design tokens and design-system extraction. Thin alias for /impeccable extract.
+  USE WHEN: "design tokens", "design system", "hardcoded colors", "extract palette".
 version: 1.0.0
 user-invocable: true
 argument-hint: "[target]"

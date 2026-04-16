@@ -2,11 +2,8 @@
 name: introspect
 context: fork
 description: |
-  Cognitive introspection. Mines session logs, extracts observations, synthesizes
-  patterns, proposes memory/infrastructure improvements.
-  Three cadences: daily reflect, weekly synthesize, monthly evolve.
-  USE WHEN: "daily reflect", "introspect", "mine logs", "weekly synthesize",
-  "monthly evolve", "self-audit", "what patterns do you see", "review sessions"
+  Mine session logs, extract patterns, propose improvements. Three cadences: daily, weekly, monthly.
+  USE WHEN: "daily reflect", "introspect", "mine logs", "weekly synthesize", "monthly evolve".
 ---
 
 ## Workflow Routing

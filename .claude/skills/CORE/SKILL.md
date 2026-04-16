@@ -3,10 +3,8 @@ name: CORE
 context: same
 keep-coding-instructions: true
 description: |
-  Qara (Personal AI Infrastructure) - Jean-Marc Giorgi's AI System.
-  Loads automatically at session start. Provides identity, operating principles,
-  workflow routing, stack preferences, and security protocols.
-  USE WHEN: Always active - core system identity and behavior.
+  Qara (Personal AI Infrastructure) — JM's AI system. Identity, routing, stack preferences, security.
+  USE WHEN: Always active — core system identity and behavior.
 env:
   CURRENT_SESSION: ${CLAUDE_SESSION_ID}
 ---
@@ -62,16 +60,8 @@ env:
 → **READ:** `${PAI_DIR}/skills/CORE/workflows/plan-readiness-assessment.md`
 → Apply assessment to the plan file in context, present verdict + routing recommendation
 
-**When ultraplan completes (plan teleported back to terminal):**
-→ Treat as a new plan entry point. Apply readiness assessment (READ `${PAI_DIR}/skills/CORE/workflows/plan-readiness-assessment.md`).
-→ Suggest rename to `domain--feature-vN.md` if needed.
-→ **Ultraplan policy:** Always teleport back to local terminal. Do not use "Approve and execute on web". Local quality gates (grill-me, readiness assessment, mode infrastructure) must be in the loop.
-
-**When user says "drive:", "drive mode", "cruise:", "cruise mode", "turbo:", "turbo mode":**
-→ **Handled by keyword-router hook** (auto-activates mode + injects skill)
-
-**When user says "stop mode", "exit mode", "mode off", "cancel mode":**
-→ **Handled by keyword-router hook** (deactivates active mode, stops continuation loop)
+**Mode activation/deactivation** ("drive:", "cruise:", "turbo:", "stop mode", etc.):
+→ Handled by keyword-router hook (auto-activates/deactivates mode + injects skill)
 
 ---
 
@@ -79,13 +69,9 @@ env:
 
 **READ** `.claude/context/routing-cheatsheet.md` for all routing triggers, documentation paths, skill triggers, and agent selection.
 
-**READ** `.claude/context/design-skills-map.md` for the design-skill landscape, pipeline, and lifecycle coverage (20 skills, consolidated 2026-04-16).
+Design skills and recipes load via keyword-router on design tasks — see `design-skills-map.md` and `design-cookbook.md` in `.claude/context/`.
 
-**READ** `.claude/context/design-cookbook.md` for 15 recipes covering common design tasks (feature build, critique → fix, tune, typography, tokens, flows, responsive, a11y, performance, states, pre-ship).
-
-**First-touch for code exploration:** `jcodemunch` MCP before Grep/Read on `.ts`/`.py`/`.js` files. See `.claude/context/delegation-guide.md` §"MCP Tools (jcodemunch)" for the full tool→situation map and `.claude/context/routing-cheatsheet.md` §6a for the quick reference.
-
-Execution modes (drive, cruise, turbo) compose skills — e.g., drive uses tdd-qa, critic, and verifier. Modes are activated via keyword triggers.
+Execution modes (drive, cruise, turbo) compose skills and are activated via keyword triggers.
 
 ---
 
@@ -139,12 +125,10 @@ Parallelize when possible — launch multiple agents in a single message.
 
 ### Delegation Discipline (TOKEN COST)
 
-These rules reduce token consumption by ensuring work runs at the cheapest sufficient tier:
-
-1. **Always specify `subagent_type`.** Never spawn a bare Agent without it. `general-purpose` inherits opus and has no specialized prompt — most expensive and least effective option.
-2. **Always pass `model:` when spawning Explore agents.** Use `model: "sonnet"` for standard exploration, `model: "haiku"` for quick file searches. Explore inherits parent (opus) by default.
-3. **Delegate, don't accumulate.** Before doing 3+ sequential reads/greps on a side-topic, spawn a typed subagent instead. Each subagent gets a fresh context — its intermediate results don't bloat the main session. Less tokens for fluff, more tokens for thinking.
-4. **Match tier to task.** File search → haiku. Code analysis → sonnet. Architectural judgment → opus. When in doubt, start cheapest and escalate on failure.
+1. Always specify `subagent_type` — never general-purpose (inherits opus, no specialized prompt).
+2. Always pass `model:` for Explore agents — sonnet default, haiku for file search.
+3. Delegate 3+ sequential reads/greps to subagents — fresh context, no main-session bloat.
+4. Match tier to task: haiku (search) → sonnet (analysis) → opus (architecture).
 
 ---
 

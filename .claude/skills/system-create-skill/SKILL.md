@@ -3,10 +3,8 @@ name: system-create-skill
 context: fork
 model: sonnet
 description: |
-  Skill creation and validation framework ensuring compliance with PAI architectural standards.
-
-  USE WHEN user says "create skill", "create a skill", "new skill", "build skill",
-  "make skill", "skill for X", "Create-A-Skill", or any request to create new PAI skills.
+  Skill creation and validation ensuring PAI architectural compliance.
+  USE WHEN: "create skill", "new skill", "build skill", "skill for X".
 ---
 
 ## Workflow Routing (SYSTEM PROMPT)

@@ -2,11 +2,8 @@
 name: ubiquitous-language
 context: fork
 description: |
-  Extract and formalize domain terminology from conversation into a consistent glossary.
-  DDD-inspired ubiquitous language extraction. Produces UBIQUITOUS_LANGUAGE.md.
-  Adapted from mattpocock/skills (upstream commit eebfb3c, 2026-03-26).
-  USE WHEN: "define terms", "glossary", "ubiquitous language", "domain terminology",
-  "what do we call X", "clarify naming", "DDD", "domain model vocabulary"
+  Extract domain terminology from conversation into a consistent glossary (UBIQUITOUS_LANGUAGE.md).
+  USE WHEN: "define terms", "glossary", "ubiquitous language", "domain terminology".
 ---
 
 ## Workflow Routing (SYSTEM PROMPT)

@@ -1,7 +1,9 @@
 ---
 name: flows
 context: same
-description: User flow, user journey, and information architecture work. Map journeys, audit IA, diff flows, design navigation structure. Use when the user says "user flow", "user journey", "information architecture", "navigation design", "site map", "IA", "nav structure", "menu hierarchy", or needs to map how users move through a product vs. how one feature works.
+description: |
+  User flow, journey, and information architecture work. Map journeys, audit IA, design navigation.
+  USE WHEN: "user flow", "user journey", "information architecture", "navigation design".
 version: 1.0.0
 user-invocable: true
 argument-hint: "[journey-map|ia-audit|flow-diff] [target]"

@@ -2,13 +2,8 @@
 name: edit-article
 context: same
 description: |
-  Edit and improve articles, docs, or specs through structural analysis and prose
-  tightening. Phase 1: map information dependencies as a DAG, reorder sections.
-  Phase 2: rewrite each section for clarity with strict paragraph limits.
-  Phase 3: humaniser pass to strip AI writing patterns.
-  USE WHEN: JM says "edit this article", "tighten this", "restructure this doc",
-  "improve this spec", "revise this", or wants structural + prose editing.
-  NOT for quick AI-pattern removal only — use humaniser directly for that.
+  Structural editing for articles, docs, and specs. Reorders sections, tightens prose, strips AI patterns.
+  USE WHEN: "edit this article", "tighten this", "restructure this doc".
 ---
 
 ## Workflow Routing (SYSTEM PROMPT)

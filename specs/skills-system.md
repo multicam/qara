@@ -15,9 +15,9 @@ Skills are self-contained knowledge containers with progressive disclosure:
 | `context: same` | Loads in main conversation | CORE, grill-me, cross-provider, csf-view, design-it-twice, edit-article |
 | `context: fork` | Isolated subagent execution | All other local + symlinked skills |
 
-## Active Skills (44 total — 2026-04-15 post-prune)
+## Active Skills (34 total — 2026-04-16 post-optimization)
 
-**Breakdown:** 28 local + 16 symlinked external
+**Breakdown:** 32 local + 2 symlinked external (harden, visual-explainer)
 
 External skill content is git-tracked at `.claude/skills-external/<name>/`. `~/.agents/skills/` is the `npx skills` CLI cache only. Nightly sync (`scripts/skills-sync-nightly.sh`, cron 02:00) pulls upstream → detects drift via Gemma (structural + semantic) → auto-commits benign changes or writes a review artifact for material ones. Claude's weekly synthesize reads pending reviews and applies philosophy + overlap lenses before adopt/modify/reject.
 

@@ -4,8 +4,7 @@ context: fork
 model: sonnet
 description: |
   Browser automation via Chrome DevTools MCP. Direct tool access.
-  USE WHEN: "browser test", "take screenshot", "devtools", "smoke test",
-  "debug console", "visual test", "accessibility check", "performance trace"
+  USE WHEN: "browser test", "take screenshot", "devtools", "smoke test".
 ---
 
 # DevTools MCP

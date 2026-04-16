@@ -2,10 +2,8 @@
 name: hook-test
 context: fork
 description: |
-  Test all PAI hooks end-to-end and auto-correct common issues.
-  Runs each hook with mock stdin, validates exit codes, output format, and settings sync.
-  Fixes: wrong stdin pattern, missing error handling, settings desync, broken imports.
-  USE WHEN: "test hooks", "hook health check", "fix hooks", "hooks broken"
+  Test all PAI hooks end-to-end and auto-correct common issues. Validates exit codes, output, settings.
+  USE WHEN: "test hooks", "hook health check", "fix hooks", "hooks broken".
 ---
 
 ## Workflow Routing (SYSTEM PROMPT)

@@ -4,11 +4,8 @@ context: fork
 model: sonnet
 effort: low
 description: |
-  Consolidate and clean up thoughts/ files. Takes a list of file paths,
-  verifies against current codebase, and produces a single clean document.
-  Single file = cleanup only. Multiple files = merge + cleanup.
-  USE WHEN: "consolidate thoughts", "clean up thoughts", "merge thoughts files",
-  "clean this thoughts file", "consolidate these".
+  Consolidate and clean up thoughts/ files. Single file = cleanup. Multiple = merge + cleanup.
+  USE WHEN: "consolidate thoughts", "clean up thoughts", "merge thoughts files".
 allowed-tools:
   - Read
   - Write

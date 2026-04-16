@@ -1,7 +1,9 @@
 ---
 name: impeccable-typeset
 context: same
-description: Typography repair — fix font choices, hierarchy, sizing, weight, and readability so text feels intentional. Use when the user mentions fonts, type, typography, text hierarchy, readability, sizing feels off, or wants more polished, intentional type. Local wrapper that runs typography diagnosis per impeccable/reference/typography.md.
+description: |
+  Typography repair — fix font choices, hierarchy, sizing, weight, and readability.
+  USE WHEN: "fonts", "type", "typography", "text hierarchy", "sizing feels off".
 version: 1.0.0
 user-invocable: true
 argument-hint: "[target]"

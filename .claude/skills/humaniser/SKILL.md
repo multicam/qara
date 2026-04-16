@@ -3,9 +3,7 @@ name: humaniser
 context: fork
 model: haiku
 description: |
-  Edit existing text to remove AI-generated writing patterns. Detects and fixes:
-  inflated symbolism, promotional language, em dash overuse, rule of three,
-  AI vocabulary, negative parallelisms, conjunctive phrases.
+  Remove AI-generated writing patterns: inflated symbolism, promotional language, em dashes, AI vocab.
   USE WHEN: "humanise this", "remove AI patterns", "make this sound natural".
 allowed-tools:
   - Read

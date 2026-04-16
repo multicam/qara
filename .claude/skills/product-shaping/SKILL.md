@@ -3,9 +3,8 @@ name: product-shaping
 context: fork
 model: opus
 description: |
-  Product shaping workflow — from problem framing through research and specs.
-  USE WHEN: scoping a new product or feature, writing specs, researching competitors,
-  gathering user evidence, auditing a codebase for existing infrastructure.
+  Product shaping — problem framing through research and specs.
+  USE WHEN: scoping a feature, writing specs, researching competitors, auditing infrastructure.
 triggers:
   - "product-shaping"
   - "shape"

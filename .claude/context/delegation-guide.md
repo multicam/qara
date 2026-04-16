@@ -126,12 +126,36 @@ Launch independent agents in a **single message** with multiple `Task` tool call
 6. **Quality gate** → `verifier` after implementation (acceptance + test gates), then `reviewer` for code quality
 7. **Research needed** → `claude-researcher` first, then `gemini-researcher` as fallback
 
-## Task Packaging
+## Task Packaging — Briefing Packet Format
 
-**Minimum viable task:**
-- What to do (objective)
-- What files to touch
-- How to verify success
+Every agent prompt should contain these sections in order:
+
+1. **Objective** (1-2 sentences) — What to accomplish and why
+2. **File pointers** — Paths to read, NOT inline content. The agent will read them itself.
+   - `Read: /path/to/file.ts (lines 50-80)` — specific range when you know it
+   - `Search: pattern in .claude/hooks/` — when the agent needs to find it
+3. **Constraints** — What NOT to do, scope boundaries
+4. **Return format** — What the response should contain
+
+**Rules:**
+- **Pass paths, not content.** Never paste file contents into agent prompts. The agent has Read/Grep/jcodemunch — let it fetch what it needs with fresh context.
+- **One objective per agent.** If you have 3 objectives, spawn 3 agents.
+- **Cap background to 3 sentences.** The agent doesn't need your full conversation history.
+
+**Good:**
+```
+Objective: Fix the off-by-one error in pagination. The last page shows 0 results.
+Files: src/api/paginate.ts (the calculateOffset function around L45), src/api/paginate.test.ts
+Constraints: Don't change the API response shape. Fix the math only.
+Return: The fix diff + which test cases you added.
+```
+
+**Bad:**
+```
+Here's the full file content of paginate.ts: [800 lines pasted]
+And here's the test file: [400 lines pasted]
+There's a bug somewhere in the pagination logic, can you look into it?
+```
 
 ## Model Tier Escalation
 

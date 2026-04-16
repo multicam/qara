@@ -3,12 +3,8 @@ name: triage-issue
 context: fork
 effort: low
 description: |
-  Investigate reported problems, identify root causes, and create GitHub issues
-  with TDD-based fix plans. Supports single bugs and batch sessions with
-  blocking relationships and dependency ordering.
-  Adapted from mattpocock/skills (upstream 1325b14 triage-issue + 6a87ed0 qa + 651eab0 github-triage).
-  USE WHEN: "triage this bug", "investigate issue", "file a bug", "root cause analysis",
-  "batch triage", "QA session", "I have a pile of issues"
+  Investigate bugs, identify root causes, create GitHub issues with TDD fix plans. Single or batch mode.
+  USE WHEN: "triage this bug", "investigate issue", "file a bug", "batch triage".
 ---
 
 ## Workflow Routing

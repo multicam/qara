@@ -2,11 +2,8 @@
 name: diderot
 context: fork
 description: |
-  Knowledge retrieval from JM's Obsidian vault (Diderot). Searches 4,000+ notes
-  across all vault folders using keyword and semantic vector search, then
-  synthesizes answers grounded in vault content with source citations.
-  USE WHEN: "ask diderot", "diderot search", "check my notes", "what do I know about",
-  "vault search", "in my knowledge base", "find notes about", "what have I saved about"
+  Knowledge retrieval from JM's Obsidian vault. Keyword and semantic search across all folders.
+  USE WHEN: "ask diderot", "check my notes", "vault search", "what do I know about".
 ---
 
 ## Workflow Routing (SYSTEM PROMPT)

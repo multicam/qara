@@ -2,13 +2,8 @@
 name: image
 context: same
 description: |
-  AI image generation and stock photo sourcing for TGDS and general PAI use.
-  Smart model routing, per-project gallery output, metadata tracking.
-  Supports Flux, Nano Banana Pro (Gemini), GPT-Image-1, and Unsplash.
-  USE WHEN: "generate image", "create graphic", "hero image", "blog image",
-  "UI mockup", "wireframe", "infographic", "social card", "brand asset",
-  "stock photo", "unsplash", "teaching diagram", "visual", "illustration",
-  "create a visual", "make an image", "design a graphic"
+  AI image generation and stock photo sourcing. Smart model routing across Flux, GPT-Image-1, Unsplash.
+  USE WHEN: "generate image", "hero image", "stock photo", "create a visual".
 ---
 
 ## Workflow Routing (SYSTEM PROMPT)

@@ -4,6 +4,25 @@ Append-only record of architectural and design decisions. Memory files capture *
 
 ---
 
+## 2026-04-16 — Context pointer migration (memory, skills, delegation)
+
+**Problem:** MEMORY.md at 28.7KB was truncating (limit ~24.4KB). Always-loaded context was ~39KB (~9,770 tokens). Research (22 Diderot articles + 10 web sources) confirmed: pointers beat payloads, quality degrades ~40% when context doubles (Anthropic), "remember why not what" took recall from 60→93% (El Fassi), "map not manual" (OpenAI Codex team).
+
+**Actions:**
+- MEMORY.md: 28.7KB/116 lines → 1.7KB/35 lines. Extracted 3 topic files (hook-dev-rules, symlink-topology, mcp-config). Deleted all derivable inventory and historical entries.
+- CORE SKILL.md: 8.0KB → 6.3KB. Removed ultraplan policy, design-specific pointers, redundant mode routing.
+- 27 skill descriptions trimmed to ≤200 chars (10.7KB → 5.7KB total).
+- PreCompact hook: added Hermes-pattern memory flush prompt before compaction.
+- delegation-guide.md: replaced 3-bullet Task Packaging with briefing packet template (4-section format + good/bad examples + "pass paths not content" rule).
+- 3 agent files (engineer, engineer-high, codebase-analyzer): added spawner note.
+- 17 broken symlinks deleted from .claude/skills/ (adapt, animate, audit, bolder, clarify, colorize, critique, delight, distill, impeccable, layout, optimize, overdrive, polish, quieter, shape, typeset).
+- skills-validation.test.ts: NON_SKILL_DIRS exclusion for thoughts/ (fixed 7 pre-existing failures).
+- Cache stability: MEMORY.md session-boundary write rule codified.
+
+**Net:** ~33.6KB (~8,400 tokens) savings per session. Skill count: 44 → 34 (32 local + 2 symlinked). Plan: `thoughts/shared/plans/infra--memory-pointer-migration-v1.md`. Research: `thoughts/shared/plans/research--pointers-in-context-memory-v1.md`.
+
+---
+
 ## 2026-04-16 — jcodemunch activation audit + Phase 4 benchmark scaffold
 
 **Audit finding:** 16 sessions elapsed since 2026-04-15 jcodemunch activation. **Zero** real `mcp__jcodemunch__*` tool invocations — every string match in `tool-usage.jsonl` was a grep command or `ToolSearch` query about the tool, not a call. Index cache `~/.code-index/local-lib-38808468.db` (364 KB, 446 symbols, scoped to `.claude/hooks/lib/` only) was created 2026-04-15 11:36 during activation probe and never touched again.

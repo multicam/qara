@@ -2,11 +2,8 @@
 name: grill-me
 context: same
 description: |
-  Stress-test a plan, design, or proposal through relentless systematic questioning.
-  Treats the design as a dependency graph — resolves interconnected decisions sequentially,
-  not as a flat checklist. Explores the codebase to answer questions instead of guessing.
-  USE WHEN: JM says "grill me", "stress-test this", "poke holes", "challenge this",
-  "what am I missing", "devil's advocate", or wants intensive feedback on a plan.
+  Stress-test a plan or design through systematic questioning. Resolves decisions as a dependency graph.
+  USE WHEN: "grill me", "stress-test this", "poke holes", "devil's advocate".
 ---
 
 ## Workflow Routing (SYSTEM PROMPT)

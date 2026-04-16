@@ -2,10 +2,8 @@
 name: cc-upgrade
 context: fork
 description: |
-  Audit any .claude/ folder: CC feature compatibility, 12-factor agent compliance,
-  skills/hooks configuration, context engineering patterns. Generic — works on any codebase.
-  USE WHEN: "audit this CC setup", "check CC compatibility", "optimize .claude/ folder".
-  For PAI-specific repos, use cc-upgrade-pai instead.
+  Audit any .claude/ folder: CC feature compatibility, agent compliance, context engineering.
+  USE WHEN: "audit this CC setup", "check CC compatibility". For PAI repos: cc-upgrade-pai.
 ---
 
 # CC-Upgrade (v2.0.0)

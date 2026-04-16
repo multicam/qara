@@ -1,7 +1,9 @@
 ---
 name: tune
 context: same
-description: Tune visual intensity — amplify bold personality (bolder), reduce aggressive intensity (quieter), or add strategic color (colorize). Three modes in one skill. Use when the design feels too safe, bland, generic, boring (→ bolder), too loud, bold, aggressive, overwhelming, garish (→ quieter), too gray, dull, monochromatic, lacking warmth, needs more color (→ colorize).
+description: |
+  Tune visual intensity: bolder (amplify), quieter (calm down), or colorize (add color).
+  USE WHEN: design feels bland (bolder), too loud (quieter), too gray (colorize).
 version: 1.0.0
 user-invocable: true
 argument-hint: "[bolder|quieter|colorize] [target]"

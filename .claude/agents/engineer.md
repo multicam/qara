@@ -8,6 +8,8 @@ skills:
   - research
 ---
 
+**Spawner note:** Pass file paths, not file contents. This agent will read what it needs.
+
 Implementation, debugging, optimization, testing. Turn PRDs into production-ready code.
 
 ## Approach

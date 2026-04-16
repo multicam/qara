@@ -46,19 +46,11 @@ flows               ← product-scoped journeys, IA, navigation (distinct from s
 - `image` — AI image generation / stock sourcing.
 - `csf-view` — tldraw canvas input.
 
-**Symlinks to `skills-external/`:** 12 active (down from 16)
-- `impeccable` — hub skill (craft / teach / extract modes). Owns the reference library.
-- `shape` — feature-scoped UX discovery + design brief.
-- `layout` — spatial rhythm + composition.
-- `critique` — UX review (heuristics, personas, quality scoring).
-- `audit` — technical review (a11y, performance, theming).
-- `polish` — pre-ship quality pass. Also owns state-coverage (empty/loading/error) verification per the 2026-04-16 routing.
-- `animate` — motion + micro-interactions.
-- `adapt` — responsive / cross-device.
-- `clarify` — UX copy (error messages, labels, empty-state formula).
+**Symlinks to `skills-external/`:** 2 active
 - `harden` — resilience (a11y, i18n, edge cases).
-- `optimize` — performance (bundle, render, images).
 - `visual-explainer` — diagrams + visual explainers.
+
+**Reference-only (in `skills-external/`, no `.claude/skills/` symlink):** impeccable, shape, layout, critique, audit, polish, animate, adapt, clarify, optimize. Content preserved for `designer` agent and reference reads but no direct skill activation path.
 
 **Removed (symlinks only; upstream preserved in `skills-external/`):**
 - `bolder`, `quieter`, `colorize` → merged into `tune`.
@@ -82,21 +74,23 @@ flows               ← product-scoped journeys, IA, navigation (distinct from s
 
 | Stage | Skill(s) | Status |
 |---|---|---|
-| Problem framing | `shape` | ✓ |
+| Problem framing | `shape`° | ref-only |
 | Research / inspiration | — | **parked gap** |
-| Concept exploration | `design-it-twice`, `csf-view` | thin |
-| Wireframe / shape | `shape`, `csf-view` | ✓ |
-| Visual design | `impeccable`, `layout`, `tune`, `image` | ✓ |
-| Motion | `animate` + `motion-design.md` | ✓ |
-| Implementation | `design-implementation`, `impeccable craft` | ✓ |
-| Critique / review | `critique`, `audit` | ✓ |
-| Polish | `polish`, `clarify`, `harden` | ✓ (polish also covers state verification via routing) |
-| Accessibility | `harden`, `audit`, `adapt` | thin but adequate |
-| Responsive | `adapt` + `responsive-design.md` | ✓ |
-| Performance | `optimize` | ✓ |
-| User flow / IA | `flows` | ✓ (new) |
-| Design tokens | `tokens` alias → `/impeccable extract` | ✓ (surfaced) |
+| Concept exploration | `design-it-twice`, `csf-view` | ✓ |
+| Wireframe / shape | `shape`°, `csf-view` | ref-only + active |
+| Visual design | `impeccable`°, `layout`°, `tune`, `image` | ref-only + active |
+| Motion | `animate`° + `motion-design.md` | ref-only |
+| Implementation | `design-implementation`, `impeccable`° craft | ✓ (designer agent loads impeccable) |
+| Critique / review | `critique`°, `audit`° | ref-only |
+| Polish | `polish`°, `clarify`°, `harden` | ref-only + active |
+| Accessibility | `harden`, `audit`°, `adapt`° | active + ref-only |
+| Responsive | `adapt`° + `responsive-design.md` | ref-only |
+| Performance | `optimize`° | ref-only |
+| User flow / IA | `flows` | ✓ |
+| Design tokens | `tokens` alias → `/impeccable extract` | ✓ |
 | Post-ship iteration | — | **parked gap** |
+
+° = reference-only (in `skills-external/`, no `.claude/skills/` activation). Accessible via `designer` agent or direct Read.
 
 ---
 

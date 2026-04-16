@@ -17,8 +17,9 @@ echo ""
 for skill_dir in "$PAI_DIR/skills"/*/; do
     skill_name=$(basename "$skill_dir")
     
-    # Skip hidden directories
+    # Skip hidden directories and non-skill storage dirs
     [[ "$skill_name" == .* ]] && continue
+    [[ "$skill_name" == "thoughts" ]] && continue
     
     echo "Checking: $skill_name"
     

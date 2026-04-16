@@ -48,13 +48,16 @@ function parseSkillMd(content: string): SkillFrontmatter | null {
   };
 }
 
+/** Directories inside skills/ that are storage, not skills */
+const NON_SKILL_DIRS = new Set(['thoughts']);
+
 /**
  * Get all skill directories
  */
 function getSkillDirs(): string[] {
   return readdirSync(SKILLS_DIR).filter((f) => {
     const fullPath = join(SKILLS_DIR, f);
-    if (f.startsWith('.')) return false;
+    if (f.startsWith('.') || NON_SKILL_DIRS.has(f)) return false;
     try {
       const stat = lstatSync(fullPath);
       if (stat.isSymbolicLink()) {

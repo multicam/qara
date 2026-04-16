@@ -2,11 +2,8 @@
 name: design-it-twice
 context: same
 description: |
-  Generate multiple radically different designs for a module, API, data model, or
-  architecture using parallel sub-agents. Each agent works under a different constraint
-  to force genuine variety. Presents, compares, and synthesizes the best approach.
-  USE WHEN: JM says "design it twice", "explore alternatives", "compare approaches",
-  "what are my options", "interface design", or wants to avoid committing to the first idea.
+  Generate multiple radically different designs using parallel agents under different constraints.
+  USE WHEN: "design it twice", "explore alternatives", "compare approaches", "what are my options".
 ---
 
 ## Workflow Routing (SYSTEM PROMPT)

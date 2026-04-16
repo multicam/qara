@@ -110,31 +110,22 @@ Invoked as `/command-name` in Claude Code.
 
 All are `user-invocable: true`. Say the skill name or describe the intent.
 
-**Post-consolidation 2026-04-16 — 20 active design skills (12 symlinked + 8 local).** See `.claude/context/design-skills-map.md` for the full landscape, pipeline, and lifecycle coverage.
+**Post-optimization 2026-04-16 — 10 active design skills (2 symlinked + 8 local).** 10 former symlinks (impeccable, shape, layout, adapt, animate, audit, clarify, critique, optimize, polish) removed from `.claude/skills/` — content preserved in `skills-external/` for reference but no activation path. See `.claude/context/design-skills-map.md` for the full landscape.
 
 **Pipeline source of truth:** `.claude/skills-external/impeccable/reference/craft.md` (5-step build methodology).
 
 | Skill | Origin | Trigger / intent |
 |-------|--------|-----------------|
-| `impeccable` | symlink | Hub skill. Subcommands: `craft`, `teach`, `extract`. Owns the reference library. Loaded by `designer` agent. |
-| `shape` | symlink | Feature-scoped UX planning — discovery interview → design brief |
-| `layout` | symlink | Layout and visual rhythm review (renamed from `arrange`) |
-| `adapt` | symlink | Adapt design for different screen/device/context |
-| `animate` | symlink | Add purposeful animations and micro-interactions |
-| `audit` | symlink | Technical quality audit (a11y, performance, theming) |
-| `clarify` | symlink | UX copy: error messages, labels, empty-state formula |
-| `critique` | symlink | UX review — heuristics, personas, quality scoring |
 | `harden` | symlink | Accessibility, performance, resilience |
-| `optimize` | symlink | Performance and render optimization |
-| `polish` | symlink | Final polish pass + state coverage (empty/loading/error) |
 | `visual-explainer` | symlink | Create diagrams and visual explanations |
-| `tune` | **local** | Intensity dispatcher (bolder/quieter/colorize modes). Consolidated 2026-04-16. |
-| `impeccable-typeset` | **local** | Typography wrapper over `impeccable/reference/typography.md`. Consolidated 2026-04-16. |
-| `tokens` | **local** | Thin alias for `/impeccable extract`. Added 2026-04-16. |
-| `flows` | **local** | Product-scoped journeys, IA, navigation. Added 2026-04-16 (real gap). |
+| `tune` | local | Intensity dispatcher (bolder/quieter/colorize modes) |
+| `impeccable-typeset` | local | Typography wrapper over `impeccable/reference/typography.md` |
+| `tokens` | local | Thin alias for `/impeccable extract` |
+| `flows` | local | Product-scoped journeys, IA, navigation |
 | `design-it-twice` | local | Parallel-agent module design (software-biased) |
 | `design-implementation` | local | Automated dev-server + browser-verify loop |
 | `image` | local | AI image generation / stock sourcing |
+| `csf-view` | local | Visual canvas (tldraw) for design communication |
 | `csf-view` | local | tldraw canvas input |
 
 **Removed** (2026-04-16 consolidation):

@@ -2,10 +2,8 @@
 name: csf-view
 context: same
 description: |
-  Visual canvas (tldraw) for communicating designs, ideas, and flows to Claude.
-  Saves canvas state as JSON to thoughts/shared/views/. Claude reads and
-  interprets the visual context for any active workflow.
-  USE WHEN: "csf-view", "open canvas", "visual shaping", "tldraw", "draw it"
+  Visual canvas (tldraw) for communicating designs and flows. Saves to thoughts/shared/views/.
+  USE WHEN: "csf-view", "open canvas", "visual shaping", "tldraw".
 ---
 
 ## Workflow Routing (SYSTEM PROMPT)
