@@ -28,7 +28,7 @@ Qara is Jean-Marc Giorgi's Personal AI Infrastructure (PAI) — a `.claude/` dir
 ```
 ~/qara/                          # Repository root
 ├── .claude/                     # PAI configuration (symlinked to ~/.claude/)
-│   ├── skills/                  # 34 skill containers (32 local + 2 symlinked)
+│   ├── skills/                  # 37 skill containers (35 local + 2 symlinked)
 │   │   └── CORE/               # Foundation skill (always loaded)
 │   ├── hooks/                   # 19 event hooks (14 CC events)
 │   │   └── lib/                # 14 shared TypeScript utilities + context-graph/

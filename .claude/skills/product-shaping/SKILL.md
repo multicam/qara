@@ -7,9 +7,7 @@ description: |
   USE WHEN: scoping a feature, writing specs, researching competitors, auditing infrastructure.
 triggers:
   - "product-shaping"
-  - "shape"
   - "spec"
-  - "new feature"
   - "scope this"
   - "research competitors"
   - "user evidence"

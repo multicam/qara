@@ -27,9 +27,7 @@ If the scope is a single feature ("plan this feature", "UX for this button"), re
 
 ## MANDATORY PREPARATION
 
-Invoke `/impeccable` for the Context Gathering Protocol. Flow work produces generic output without project context — who uses this product, what jobs they do, what the brand/tone is.
-
-Read `.impeccable.md` or run `/impeccable teach` if no Design Context is loaded.
+Design Context must be loaded (see CORE's Design Context Session Guard). Flow work produces generic output without project context — who uses this product, what jobs they do, what the brand/tone is. If not loaded, run `/impeccable teach` first.
 
 Additionally gather before flow work:
 - **Current flow** — what exists today (if anything)
@@ -143,7 +141,8 @@ Flow work usually precedes or follows other skills:
 - Before: `/shape` for feature-level UX planning (if the journey surfaces new features).
 - Parallel: `/impeccable teach` to ensure Design Context covers the product-level tone.
 - After: `/impeccable craft` or `design-implementation` to build the screens the journey visits.
-- Review: `/critique` for UX review of journey copy and emotional arc; `/audit` for technical navigation concerns.
+- Review: `/review` for UX review of journey copy and emotional arc, and technical navigation concerns.
+- Diagrams: For complex journeys or IA trees with 5+ nodes, use `/visual-explainer` to produce navigable HTML diagrams instead of ASCII.
 
 ## Non-goals
 

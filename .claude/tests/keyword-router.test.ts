@@ -350,29 +350,29 @@ describe("Keyword Router", () => {
     });
   });
 
-  // ─── Tokens alias routes (Phase 5) ──────────────────────────────────────
+  // ─── Design-system routes (replaces tokens) ──────────────────────────────
 
-  describe("tokens alias routes", () => {
+  describe("design-system routes", () => {
     beforeEach(() => {
-      createSkill("tokens", "# Tokens Alias\nDelegates to /impeccable extract for design-system work.");
+      createSkill("design-system", "# Design System\nCreate, consume, extract, enforce design systems.");
     });
 
-    it("should route 'design tokens' to tokens", async () => {
+    it("should route 'design tokens' to design-system", async () => {
       const result = await runRouter({ prompt: "extract design tokens from this repo" });
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain("Tokens Alias");
+      expect(result.stdout).toContain("Design System");
     });
 
-    it("should route 'design system' to tokens", async () => {
+    it("should route 'design system' to design-system", async () => {
       const result = await runRouter({ prompt: "we need to build a design system here" });
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain("Tokens Alias");
+      expect(result.stdout).toContain("Design System");
     });
 
-    it("should route 'hardcoded colors' to tokens", async () => {
+    it("should route 'hardcoded colors' to design-system", async () => {
       const result = await runRouter({ prompt: "these hardcoded colors are everywhere" });
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain("Tokens Alias");
+      expect(result.stdout).toContain("Design System");
     });
   });
 
@@ -417,35 +417,119 @@ describe("Keyword Router", () => {
     });
   });
 
-  // ─── State-phrase routes to polish (Phase 7: replaces killed `states` skill) ─
+  // ─── Review routes (absorbs critique, audit, state phrases) ─────────────
 
-  describe("polish state routes", () => {
+  describe("review routes", () => {
     beforeEach(() => {
-      createSkill("polish", "# Polish Skill\nFinal pre-ship quality pass including state coverage.");
+      createSkill("review", "# Review Skill\nCombined UX + technical design review.");
     });
 
-    it("should route 'empty state' to polish", async () => {
+    it("should route 'empty state' to review", async () => {
       const result = await runRouter({ prompt: "how should I design the empty state" });
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain("Polish Skill");
+      expect(result.stdout).toContain("Review Skill");
     });
 
-    it("should route 'loading state' to polish", async () => {
+    it("should route 'loading state' to review", async () => {
       const result = await runRouter({ prompt: "add a loading state to the dashboard" });
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain("Polish Skill");
+      expect(result.stdout).toContain("Review Skill");
     });
 
-    it("should route 'skeleton screen' to polish", async () => {
+    it("should route 'skeleton screen' to review", async () => {
       const result = await runRouter({ prompt: "design the skeleton screen" });
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain("Polish Skill");
+      expect(result.stdout).toContain("Review Skill");
     });
 
-    it("should route 'error state' to polish", async () => {
+    it("should route 'error state' to review", async () => {
       const result = await runRouter({ prompt: "improve the error state appearance" });
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain("Polish Skill");
+      expect(result.stdout).toContain("Review Skill");
+    });
+
+    it("should route 'critique' to review", async () => {
+      const result = await runRouter({ prompt: "critique this design" });
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Review Skill");
+    });
+
+    it("should route 'audit' to review", async () => {
+      const result = await runRouter({ prompt: "audit the accessibility" });
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Review Skill");
+    });
+  });
+
+  // ─── Enhance routes ─────────────────────────────────────────────────────
+
+  describe("enhance routes", () => {
+    beforeEach(() => {
+      createSkill("enhance", "# Enhance Skill\nLayout, motion, responsive, performance improvements.");
+    });
+
+    it("should route 'fix the layout' to enhance", async () => {
+      const result = await runRouter({ prompt: "fix the layout on this page" });
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Enhance Skill");
+    });
+
+    it("should route 'add animation' to enhance", async () => {
+      const result = await runRouter({ prompt: "add animation to the hero section" });
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Enhance Skill");
+    });
+
+    it("should route 'bundle size' to enhance", async () => {
+      const result = await runRouter({ prompt: "the bundle size is too large" });
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Enhance Skill");
+    });
+  });
+
+  // ─── Finish routes ──────────────────────────────────────────────────────
+
+  describe("finish routes", () => {
+    beforeEach(() => {
+      createSkill("finish", "# Finish Skill\nPre-ship polish + copy clarity pass.");
+    });
+
+    it("should route 'polish' to finish", async () => {
+      const result = await runRouter({ prompt: "polish this before shipping" });
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Finish Skill");
+    });
+
+    it("should route 'pre-ship' to finish", async () => {
+      const result = await runRouter({ prompt: "pre-ship review for this feature" });
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Finish Skill");
+    });
+
+    it("should route 'clarify' to finish", async () => {
+      const result = await runRouter({ prompt: "clarify the error messages" });
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Finish Skill");
+    });
+  });
+
+  // ─── Design-research routes ─────────────────────────────────────────────
+
+  describe("design-research routes", () => {
+    beforeEach(() => {
+      createSkill("design-research", "# Design Research\nMood boards, competitive analysis, inspiration.");
+    });
+
+    it("should route 'mood board' to design-research", async () => {
+      const result = await runRouter({ prompt: "create a mood board for the rebrand" });
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Design Research");
+    });
+
+    it("should route 'competitive analysis' to design-research", async () => {
+      const result = await runRouter({ prompt: "do a competitive analysis of payment apps" });
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Design Research");
     });
   });
 });

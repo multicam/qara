@@ -97,6 +97,10 @@ Often the best design combines insights from multiple options:
 - **Implementing** — This skill is about **shape**, not implementation. Don't write code.
 - **Effort-based evaluation** — Don't rank by implementation difficulty. Rank by design quality.
 
+## Hand-off
+
+- Diagrams: For side-by-side design comparisons, use `/visual-explainer` to produce visual comparison pages instead of text-only tables.
+
 ## Attribution
 
 Adapted from [mattpocock/skills](https://github.com/mattpocock/skills) `design-an-interface` skill.

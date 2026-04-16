@@ -52,11 +52,12 @@
       "\\bfix (?:the )?typography\\b",
       "\\btype hierarchy (?:broken|off|wrong|muddy)\\b",
       "\\breadability (?:issues?|problems?)\\b",
-      "\\bfont (?:choice|selection|pairing) (?:off|wrong|bad)\\b"
+      "\\bfont (?:choice|selection|pairing) (?:off|wrong|bad)\\b",
+      "\\btypeset\\b"
     ],
     "skill": "impeccable-typeset"
   },
-  "tokens": {
+  "design-system": {
     "patterns": [
       "\\bdesign tokens?\\b",
       "\\bdesign system\\b",
@@ -65,9 +66,12 @@
       "\\bextract (?:the )?(?:palette|tokens?|design system)\\b",
       "\\btoken hierarchy\\b",
       "\\bprimitive (?:vs|and) semantic tokens?\\b",
-      "\\bbuild (?:a |the )?design system\\b"
+      "\\bbuild (?:a |the )?design system\\b",
+      "\\bDESIGN\\.md\\b",
+      "\\bbrand system\\b",
+      "\\benforce (?:the )?design (?:system|tokens)\\b"
     ],
-    "skill": "tokens"
+    "skill": "design-system"
   },
   "flows": {
     "patterns": [
@@ -85,8 +89,14 @@
     ],
     "skill": "flows"
   },
-  "polish": {
+  "review": {
     "patterns": [
+      "\\bcritique\\b",
+      "\\baudit\\b",
+      "\\bdesign review\\b",
+      "\\bUX review\\b",
+      "\\btechnical review\\b",
+      "\\bis this shippable\\b",
       "\\bempty state\\b",
       "\\bloading state\\b",
       "\\bskeleton screen\\b",
@@ -95,6 +105,49 @@
       "\\bno.?results? (?:state|screen)\\b",
       "\\bzero.?data (?:state|screen)\\b"
     ],
-    "skill": "polish"
+    "skill": "review"
+  },
+  "enhance": {
+    "patterns": [
+      "\\bfix (?:the )?(?:layout|spacing|rhythm|grid)\\b",
+      "\\bvisual hierarchy\\b",
+      "\\bcomposition\\b",
+      "\\badd (?:animation|motion|micro.?interaction|transition)\\b",
+      "\\bmake (?:it |this )?responsive\\b",
+      "\\bbreakpoint\\b",
+      "\\bmobile (?:layout|first|view)\\b",
+      "\\bCore Web Vitals\\b",
+      "\\bbundle size\\b",
+      "\\bjank\\b",
+      "\\bload time\\b",
+      "\\brendering (?:performance|issues)\\b"
+    ],
+    "skill": "enhance"
+  },
+  "finish": {
+    "patterns": [
+      "\\bpolish\\b",
+      "\\bfinal pass\\b",
+      "\\bpre.?ship\\b",
+      "\\bship.?ready\\b",
+      "\\bfinal quality\\b",
+      "\\bclarify\\b",
+      "\\bUX copy\\b",
+      "\\bmicrocopy\\b"
+    ],
+    "skill": "finish"
+  },
+  "design-research": {
+    "patterns": [
+      "\\bmood ?board\\b",
+      "\\bcompetitive analysis\\b",
+      "\\bdesign research\\b",
+      "\\bfind references\\b",
+      "\\binspiration\\b",
+      "\\bwhat does .+ look like\\b",
+      "\\bresearch (?:this |the )?design\\b",
+      "\\bdesign direction\\b"
+    ],
+    "skill": "design-research"
   }
 }

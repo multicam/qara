@@ -4,6 +4,24 @@ Append-only record of architectural and design decisions. Memory files capture *
 
 ---
 
+## 2026-04-16 — Design skills pipeline-stage consolidation (v1.1)
+
+**Problem:** 10 reference-only design skills had no activation path (no symlinks in `.claude/skills/`). Research/inspiration lifecycle gap existed. No DESIGN.md support. `tokens` was a thin alias with no brand-from-zero capability.
+
+**Sources studied:** VoltAgent awesome-design-md (66 DESIGN.md files, 51K stars, Google Stitch spec), recursive-mode (audited-phase engineering workflow), Diderot vault (22 articles + 10 web sources on design skill architecture, Designpowers 10-agent team, "skill architecture over individual skills" pattern).
+
+**Actions:**
+- Created 3 pipeline-stage skills absorbing 8 reference-only skills: `review` (critique+audit), `enhance` (layout+animate+adapt+optimize), `finish` (polish+clarify).
+- Created `design-system` skill subsuming `tokens` — 4 modes: generate (DESIGN.md from websites via devtools-mcp), consume, extract, enforce.
+- Created `design-research` skill filling the research/inspiration gap — 3 modes: moodboard, competitive, inspiration.
+- Removed `tokens` skill. Deleted 17 broken Factory symlinks.
+- Updated keyword-routes.json (5 new route groups), tests (57 keyword + 91 validation = 148 pass), design-skills-map.md (full rewrite), design-cookbook.md (18 recipes, all re-keyed), routing-cheatsheet.md, 4 spec/architecture docs.
+- Updated flows/SKILL.md and impeccable-typeset/SKILL.md hand-off sections to use new skill names.
+
+**Net:** 15 active design skills (13 local + 2 symlinked). 0 reference-only. 1 lifecycle gap remaining (post-ship, parked Q3 2026). DESIGN.md first-class support. Plan: `.factory/specs/2026-04-16-design-skills-enhancement-plan-v1-1-refined.md`.
+
+---
+
 ## 2026-04-16 — Context pointer migration (memory, skills, delegation)
 
 **Problem:** MEMORY.md at 28.7KB was truncating (limit ~24.4KB). Always-loaded context was ~39KB (~9,770 tokens). Research (22 Diderot articles + 10 web sources) confirmed: pointers beat payloads, quality degrades ~40% when context doubles (Anthropic), "remember why not what" took recall from 60→93% (El Fassi), "map not manual" (OpenAI Codex team).

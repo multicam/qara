@@ -23,11 +23,7 @@ Three-mode dispatcher. Select by argument; infer from phrasing if missing.
 
 If phrasing is ambiguous (e.g. "make it better"), ask the user which direction.
 
-Every mode begins with MANDATORY PREPARATION below.
-
-## MANDATORY PREPARATION
-
-Invoke `/impeccable` — it contains the **Context Gathering Protocol** and design doctrine. If `.impeccable.md` is missing and loaded instructions lack a Design Context section, you MUST run `/impeccable teach` before proceeding.
+Every mode requires Design Context loaded (see CORE's Design Context Session Guard).
 
 ## Mode selection
 
@@ -79,6 +75,7 @@ Understand context: brand personality, purpose (marketing vs tool vs dashboard),
 
 ### Anti-patterns (bolder-specific AI slop)
 
+These extend the canonical AI Slop Test in `impeccable` (consult it for the full checklist):
 - Cyan/purple gradients (the AI default)
 - Glassmorphism
 - Neon accents on dark backgrounds
@@ -213,8 +210,7 @@ Additionally gather: existing brand colors.
 ## Hand-off
 
 After tuning, recommend next steps:
-- `/critique` — UX review of the tuned design
-- `/audit` — technical quality check (a11y, performance, theming)
-- `/polish` — final pre-ship pass
+- `/review` — UX + technical review of the tuned design
+- `/finish` — pre-ship quality pass
 
 Doctrine source of truth is always `impeccable/reference/*.md`. This skill dispatches procedure; it does not own rules.

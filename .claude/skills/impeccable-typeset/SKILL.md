@@ -21,7 +21,7 @@ The procedure below runs in order: assess → plan → improve → verify.
 
 ## MANDATORY PREPARATION
 
-Invoke `/impeccable` — it contains the **Context Gathering Protocol** and shared design doctrine. If `.impeccable.md` is missing and loaded instructions lack a Design Context section, you MUST run `/impeccable teach` first.
+Design Context must be loaded (see CORE's Design Context Session Guard). If not loaded, run `/impeccable teach` first.
 
 Additionally consult `impeccable/reference/typography.md` for: modular scale ratios, font pairing, `font-display` strategies, fluid vs fixed type (apps vs marketing), OpenType features, accessibility.
 
@@ -77,9 +77,8 @@ Consult `impeccable/reference/typography.md` for scale details and pairing optio
 ## Hand-off
 
 After typography pass, recommend:
-- `/layout` — if spatial rhythm also needs work
-- `/critique` — UX review including type
-- `/audit` — technical quality including a11y contrast and font performance
-- `/polish` — pre-ship final pass
+- `/enhance layout` — if spatial rhythm also needs work
+- `/review` — UX + technical review including a11y contrast and font performance
+- `/finish` — pre-ship final pass
 
 Doctrine source of truth: `impeccable/reference/typography.md`.

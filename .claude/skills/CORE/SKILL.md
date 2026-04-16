@@ -73,6 +73,16 @@ Design skills and recipes load via keyword-router on design tasks — see `desig
 
 Execution modes (drive, cruise, turbo) compose skills and are activated via keyword triggers.
 
+### Design Context Session Guard
+
+Before activating any design skill, check if Design Context is loaded. A design skill is any skill that begins with "MANDATORY PREPARATION — invoke /impeccable." The check:
+
+1. Is there a `## Design Context` section in the currently loaded instructions, OR does `.impeccable.md` exist in the project root?
+2. If yes: Design Context is loaded. Skip the preparation preamble and proceed directly.
+3. If no: Run `/impeccable teach` (reads `skills-external/impeccable/SKILL.md` teach mode) before proceeding. Do this **once per session**, not per skill invocation.
+
+Individual design skills reference this guard instead of repeating the full preparation protocol.
+
 ---
 
 ## 🛠️ Stack Preferences (Always Active)

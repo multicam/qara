@@ -36,9 +36,10 @@ Preserve aspect ratios. Prefer WebP/AVIF for web, PNG for transparency.
 ## When to use this agent vs skills directly
 
 - Quick Opus-grade take on a design → this agent
-- Structured UX critique → `/critique`
-- Technical quality audit → `/audit`
+- Structured UX + technical review → `/review`
 - Build a feature → `/impeccable craft` or `design-implementation`
-- Polish pass before ship → `/polish`
-- Design-system / tokens work → `/impeccable extract` (or `/tokens` alias, added Phase 5)
-- User flows / IA → `/flows` (added Phase 6)
+- Pre-ship quality pass → `/finish`
+- Design-system / tokens / DESIGN.md → `/design-system`
+- Layout / motion / responsive / performance → `/enhance`
+- User flows / IA → `/flows`
+- Design research / mood boards → `/design-research`

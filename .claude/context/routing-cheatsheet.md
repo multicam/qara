@@ -15,10 +15,13 @@ Activated by `UserPromptSubmit` hook before CORE routing evaluates. Takes preced
 | `turbo` | `\bturbo mode\b` · `\bturbo:\s` · `\bturbo this\b` | Activates turbo mode (maxIter:30, ext:1×5) + injects turbo skill |
 | `stop-mode` | `\bstop mode\b` · `\bexit mode\b` · `\bmode off\b` · `\bcancel mode\b` | Deactivates any active mode |
 | `tune` | `\btoo loud\b` · `\btoo bold\b` · `\btoo safe\b` · `\btoo bland\b` · `\btoo gray\b` · `\btoo monochromatic\b` · `\bmake it bolder\b` · `\btone (?:it\|this) down\b` · `\bmore colorf?ul\b` · `\bneeds? (?:more )?color\b` · `\blacks? personality\b` | Injects `tune` skill (intensity dispatcher: bolder/quieter/colorize) |
-| `impeccable-typeset` | `\btypography (?:off\|wrong\|broken)\b` · `\bfonts? look wrong\b` · `\bfix typography\b` · `\btype hierarchy broken\b` · `\breadability issues\b` | Injects `impeccable-typeset` local wrapper |
-| `tokens` | `\bdesign tokens?\b` · `\bdesign system\b` · `\bhardcoded colors?\b` · `\btheme variables?\b` · `\bextract palette\b` · `\btoken hierarchy\b` | Injects `tokens` alias (delegates to `/impeccable extract`) |
+| `impeccable-typeset` | `\btypography (?:off\|wrong\|broken)\b` · `\bfonts? look wrong\b` · `\bfix typography\b` · `\btype hierarchy broken\b` · `\breadability issues\b` · `\btypeset\b` | Injects `impeccable-typeset` local wrapper |
+| `design-system` | `\bdesign tokens?\b` · `\bdesign system\b` · `\bhardcoded colors?\b` · `\btheme variables?\b` · `\bextract palette\b` · `\btoken hierarchy\b` · `\bDESIGN\.md\b` | Injects `design-system` skill (generate/consume/extract/enforce) |
 | `flows` | `\buser (?:flow\|journey)\b` · `\binformation architecture\b` · `\bIA audit\b` · `\bnav(?:igation)? structure\b` · `\bsite ?map\b` · `\bmenu hierarchy\b` | Injects `flows` skill (product-scoped journeys, IA, navigation) |
-| `polish` (state phrases) | `\bempty state\b` · `\bloading state\b` · `\bskeleton screen\b` · `\berror state\b` · `\bfirst.?run\b` · `\bno.?results?\b` · `\bzero.?data\b` | Injects `polish` skill (state coverage replaces killed `states` skill) |
+| `review` | `\bcritique\b` · `\baudit\b` · `\bdesign review\b` · `\bUX review\b` · `\bis this shippable\b` · `\bempty state\b` · `\bloading state\b` · `\berror state\b` | Injects `review` skill (UX + technical dual-assessment) |
+| `enhance` | `\bfix (?:the )?(?:layout\|spacing\|rhythm\|grid)\b` · `\badd animation\b` · `\bmake responsive\b` · `\bCore Web Vitals\b` · `\bbundle size\b` | Injects `enhance` skill (layout/motion/responsive/performance) |
+| `finish` | `\bpolish\b` · `\bfinal pass\b` · `\bpre.?ship\b` · `\bship.?ready\b` · `\bclarify\b` · `\bUX copy\b` · `\bmicrocopy\b` | Injects `finish` skill (polish + copy clarity) |
+| `design-research` | `\bmood ?board\b` · `\bcompetitive analysis\b` · `\bdesign research\b` · `\binspiration\b` · `\bdesign direction\b` | Injects `design-research` skill (moodboard/competitive/inspiration) |
 
 **Examples:** `"drive: implement the auth flow"` · `"cruise this"` · `"the hero is too loud"` · `"fix the typography"` · `"extract design tokens"` · `"map the user journey"`
 
@@ -110,34 +113,43 @@ Invoked as `/command-name` in Claude Code.
 
 All are `user-invocable: true`. Say the skill name or describe the intent.
 
-**Post-optimization 2026-04-16 — 10 active design skills (2 symlinked + 8 local).** 10 former symlinks (impeccable, shape, layout, adapt, animate, audit, clarify, critique, optimize, polish) removed from `.claude/skills/` — content preserved in `skills-external/` for reference but no activation path. See `.claude/context/design-skills-map.md` for the full landscape.
+**Post-consolidation v1.1 2026-04-16 — 15 active design skills (2 symlinked + 13 local).** Pipeline-stage skills (review, enhance, finish) absorb 8 former reference-only skills. design-system subsumes tokens. design-research fills the research/inspiration gap. See `.claude/context/design-skills-map.md` for the full landscape.
+
+**Design Context Session Guard:** CORE checks for Design Context once per session. Individual skills reference this guard instead of repeating the full preparation protocol.
 
 **Pipeline source of truth:** `.claude/skills-external/impeccable/reference/craft.md` (5-step build methodology).
 
 | Skill | Origin | Trigger / intent |
 |-------|--------|-----------------|
-| `harden` | symlink | Accessibility, performance, resilience |
-| `visual-explainer` | symlink | Create diagrams and visual explanations |
+| `review` | local | UX + technical design review. Dual-assessment, scored dimensions. |
+| `enhance` | local | Layout, motion, responsive, performance improvements (thin dispatcher) |
+| `finish` | local | Pre-ship polish + copy clarity (default runs both) |
+| `design-system` | local | DESIGN.md generate/consume, token extract, compliance enforce |
+| `design-research` | local | Mood boards, competitive analysis, inspiration |
 | `tune` | local | Intensity dispatcher (bolder/quieter/colorize modes) |
 | `impeccable-typeset` | local | Typography wrapper over `impeccable/reference/typography.md` |
-| `tokens` | local | Thin alias for `/impeccable extract` |
 | `flows` | local | Product-scoped journeys, IA, navigation |
 | `design-it-twice` | local | Parallel-agent module design (software-biased) |
 | `design-implementation` | local | Automated dev-server + browser-verify loop |
+| `product-shaping` | local | Problem framing through research and specs |
 | `image` | local | AI image generation / stock sourcing |
 | `csf-view` | local | Visual canvas (tldraw) for design communication |
-| `csf-view` | local | tldraw canvas input |
+| `harden` | symlink | Accessibility, performance, resilience |
+| `visual-explainer` | symlink | Create diagrams and visual explanations |
 
-**Removed** (2026-04-16 consolidation):
-- `bolder`, `quieter`, `colorize` → merged into `tune` (use `/tune bolder|quieter|colorize`)
-- `typeset` → wrapped by `impeccable-typeset` (use `/impeccable-typeset`)
+**Pipeline-stage consolidation (2026-04-16 v1.1):**
+- `critique` + `audit` → `review` (ux/technical/full sub-modes)
+- `layout` + `animate` + `adapt` + `optimize` → `enhance` (layout/motion/responsive/performance sub-modes)
+- `polish` + `clarify` → `finish` (polish/copy sub-modes)
+- `tokens` → `design-system` (generate/consume/extract/enforce modes)
 
 **Removed (earlier rounds):**
-- `frontend-design`, `teach-impeccable` → folded into `impeccable` (craft / teach subcommands)
-- `extract` → use `impeccable extract` subcommand (or `/tokens` alias)
-- `arrange` → renamed to `layout`
-- `normalize`, `onboard` → absorbed into `polish`
-- `delight`, `distill`, `overdrive` → pruned as redundant with impeccable's scope
+- `bolder`, `quieter`, `colorize` → merged into `tune`
+- `typeset` → wrapped by `impeccable-typeset`
+- `frontend-design`, `teach-impeccable` → folded into `impeccable`
+- `arrange` → renamed to `layout` → absorbed into `enhance`
+- `normalize`, `onboard` → absorbed into `polish` → absorbed into `finish`
+- `delight`, `distill`, `overdrive` → pruned as redundant
 
 ---
 
