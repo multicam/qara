@@ -144,6 +144,40 @@ Required:
 - [ ] verifier.md: quality gate suite (bun test, tsc, baseline)
 - [ ] No overlap; disambiguation in delegation-guide
 
+### 4c. MCP Servers — jcodemunch audit
+
+Validates jcodemunch MCP configuration, indexing state, and wiring into code-exploration workflows. Added 2026-04-16 after activation audit found 0 invocations across 16 sessions post-activation.
+
+**Checks (max 20 pts):**
+
+| Check | Evidence |
+|---|---|
+| `.mcp.json` contains `jcodemunch` entry | 2 pts |
+| `enabledMcpjsonServers` whitelist includes `jcodemunch` | 2 pts |
+| `.jcodemunch.jsonc` has `trusted_folders` + `extra_ignore_patterns` | 2 pts |
+| Index db exists in `~/.code-index/` for this repo | 3 pts |
+| Index fresh (<7 days old) | 2 pts |
+| ≥3 of 4 code-exploration agents reference jcodemunch | up to 3 pts |
+| Both `delegation-guide.md` + `routing-cheatsheet.md` cover jcodemunch | up to 2 pts |
+| ≥1 real invocation in `~/.claude/state/tool-usage.jsonl` | 2 pts |
+| Benchmark protocol documented (`thoughts/shared/benchmarks/jcodemunch-phase4.md`) | 2 pts |
+
+**Rationale:** The tool is only useful if (a) registered, (b) indexed, (c) surfaced in agent definitions so Claude reaches for it. Zero-invocation after activation is the strongest signal that surfacing is the bottleneck — this check flags it.
+
+**Run:**
+```bash
+bun run .claude/skills/cc-upgrade-pai/scripts/analyse-pai.ts . 2>&1 | grep -A 20 "mcpJcodemunch"
+```
+
+**Quick status (manual):**
+```bash
+grep -c '"tool":"mcp__jcodemunch__' ~/.claude/state/tool-usage.jsonl  # invocation count
+ls -la ~/.code-index/*.db 2>/dev/null                                  # index freshness
+claude mcp list 2>&1 | grep jcodemunch                                 # connection status
+```
+
+If invocation count is 0 and surfacing is green, run the Phase 4 benchmark in `thoughts/shared/benchmarks/jcodemunch-phase4.md` to decide adoption vs revert.
+
 ### 5. Context Engineering (UFC)
 
 | Pattern | Implementation |
@@ -155,15 +189,15 @@ Required:
 
 ### 6. External Skills (Symlinked)
 
-Managed from `~/.agents/skills/`:
+Canonical copy lives at `.claude/skills-external/<name>/` (git-tracked). `~/.agents/skills/` is the `npx skills` CLI cache only. Project symlinks at `.claude/skills/<name>` point to `../skills-external/<name>`. Nightly sync runs `scripts/skills-sync-nightly.sh`.
 
-| Skill | Source | Local |
-|-------|--------|-------|
-| visual-explainer | `nicobailon/visual-explainer` | `~/.agents/skills/visual-explainer` |
+| Skill | Source | Canonical path |
+|-------|--------|----------------|
+| visual-explainer | `nicobailon/visual-explainer` | `.claude/skills-external/visual-explainer/` |
 
 Update check:
 ```bash
-grep 'version:' ~/.agents/skills/visual-explainer/SKILL.md
+grep 'version:' .claude/skills-external/visual-explainer/SKILL.md
 gh api repos/nicobailon/visual-explainer/releases/latest --jq '.tag_name'
 ```
 
@@ -200,17 +234,17 @@ When upstream changes:
 3. Merge while preserving PAI conventions (frontmatter, routing, references)
 4. Do NOT blindly replace — PAI versions are intentionally different
 
-Visual-explainer update procedure:
+Visual-explainer update procedure: prefer the nightly sync (`scripts/skills-sync-nightly.sh`) which runs `npx skills update -y` → rsync into `.claude/skills-external/` → Gemma/structural diff → auto-commit or flag for review. Manual override if needed:
 ```bash
 git clone --depth 1 https://github.com/nicobailon/visual-explainer.git /tmp/visual-explainer-update
-rsync -av --delete --exclude='.git' /tmp/visual-explainer-update/ ~/.agents/skills/visual-explainer/
+rsync -av --delete --exclude='.git' /tmp/visual-explainer-update/ .claude/skills-external/visual-explainer/
 rm -rf /tmp/visual-explainer-update
-ls -la $(readlink -f ~/.claude/skills/visual-explainer)/SKILL.md
+ls -la $(readlink -f .claude/skills/visual-explainer)/SKILL.md
 ```
 
 Post-update — check for new prompts:
 ```bash
-diff <(ls ~/.agents/skills/visual-explainer/prompts/) <(ls ~/.claude/commands/ | grep -f <(ls ~/.agents/skills/visual-explainer/prompts/))
+diff <(ls .claude/skills-external/visual-explainer/prompts/ 2>/dev/null) <(ls .claude/commands/ | grep -f <(ls .claude/skills-external/visual-explainer/prompts/ 2>/dev/null))
 ```
 
 ## Interactive PAI Audit

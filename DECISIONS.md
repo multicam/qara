@@ -4,6 +4,135 @@ Append-only record of architectural and design decisions. Memory files capture *
 
 ---
 
+## 2026-04-16 — jcodemunch activation audit + Phase 4 benchmark scaffold
+
+**Audit finding:** 16 sessions elapsed since 2026-04-15 jcodemunch activation. **Zero** real `mcp__jcodemunch__*` tool invocations — every string match in `tool-usage.jsonl` was a grep command or `ToolSearch` query about the tool, not a call. Index cache `~/.code-index/local-lib-38808468.db` (364 KB, 446 symbols, scoped to `.claude/hooks/lib/` only) was created 2026-04-15 11:36 during activation probe and never touched again.
+
+**Chosen:** Path A (run the benchmark) + wire jcodemunch into code-exploration surfaces so Claude actually reaches for it.
+
+**Actions taken:**
+- **Indexed the full qara repo:** `local/qara-379c52b4`, 277 files, 3,699 symbols, 1.87s. Languages: typescript (201), json (24), bash (17), vue (27), xml/toml/js/css minor. `extra_ignore_patterns` working correctly — `thoughts/`, `purgatory/`, `skills-external/`, `state/`, `node_modules/`, `dist/`, `.git/` all excluded.
+- **Agent surface updated:** `codebase-analyzer.md`, `codebase-analyzer-low.md`, `engineer.md`, `engineer-high.md` all gained a "jcodemunch-first protocol" section mapping situations → tool calls with Grep/Read as fallback.
+- **Routing surface updated:** `delegation-guide.md` §"MCP Tools (jcodemunch)" expanded with a full situation→tool table; `routing-cheatsheet.md` gained §6a with quick-reference table and repo-id resolution pattern. CORE pointer added.
+- **Benchmark protocol written:** `thoughts/shared/benchmarks/jcodemunch-phase4.md` defines 5 A/B scenarios (S1 caller search, S2 symbol body, S3 blast-radius rename, S4 dead-code audit, S5 markdown prose — where Grep should *win*), measurement rubric (tokens, tool calls, wall time, correctness), acceptance criteria (≥3/5 wins @ ≥50% token reduction = Builder tier approved; <2/5 wins = revert), 1-week schedule Mon-Fri.
+- **Data capture plan:** runs logged to `thoughts/shared/benchmarks/jcodemunch-runs.jsonl`, end-of-week decision doc at `jcodemunch-decision-2026-04-22.md`.
+
+**Why:**
+
+- **Zero-use finding was the strongest possible signal.** Activating a tool, paying the registration cost, and then never calling it for 16 sessions means either (a) no situations matched, (b) situations matched but Claude didn't know to reach for it, or (c) the friction of invoking it (load schemas via ToolSearch, resolve repo, etc.) outweighs the savings. Only (b) is fixable by documentation; (a) and (c) kill the adoption. The surface updates target (b); the benchmark adjudicates (a) vs (c).
+- **Adoption is behavioral, not architectural.** `claude mcp list` was green from day one. Getting Claude to choose MCP over Grep requires explicit first-touch rules in agent definitions (where Claude reads guidance) and delegation surface (where delegation decisions are made). The pre-existing jcodemunch section in `delegation-guide.md` wasn't strong enough — it described the tool without mandating when to reach for it.
+- **Benchmark-before-pay protects the $79 decision.** The ~95% token-reduction marketing claim needs evidence against Qara's actual workload. S1-S4 should win; S5 should lose. If S5 wins somehow, measurement is broken.
+
+**Alternatives considered:**
+
+- **Abandon without benchmark.** Rejected — sunk-cost of the setup was small (1 day), and the surface updates are generally useful for code exploration regardless of whether the tool stays. Worth running the benchmark.
+- **Skip the surfacing; just benchmark via direct prompts.** Rejected — if the surface is wrong, the benchmark measures the wrong thing (Claude's willingness to reach for the tool vs. tool's efficiency). Fix the surface first, then measure use.
+- **Surface via keyword router (like design skills).** Rejected — jcodemunch is a tool, not a skill. Keyword router injects SKILL.md content; jcodemunch isn't a skill. Agent-level guidance is the right abstraction.
+- **Automated re-indexing on commit.** Parked — only interesting if benchmark succeeds and adoption sticks. Manual re-index for now (takes ~2s).
+
+**What didn't change:**
+
+- `.jcodemunch.jsonc` config — already correct (trusted_folders, ignore_patterns, languages, BM25-only posture via global config).
+- MCP registration — already correct (`.mcp.json` + `settings.json.enabledMcpjsonServers` whitelist).
+- License posture — still non-commercial evaluation; Builder tier ($79) decision deferred to 2026-04-22 post-benchmark.
+- TGDS indexing — not done yet. Will index after qara-only Phase 4 results arrive. If qara benchmark fails, TGDS index skipped entirely.
+
+**Impact:**
+
+- 1870 tests still pass, 0 fail.
+- Files modified: 6 (4 agent definitions + 2 context docs + CORE).
+- Files created: 1 (`thoughts/shared/benchmarks/jcodemunch-phase4.md`).
+- qara index: 0 symbols → 3,699 symbols, scoped `hooks/lib/` → full repo.
+- Measurement baseline restart: 0 invocations as of 2026-04-16 07:40. Benchmark target: ≥3 of 5 scenarios win with ≥50% token reduction by 2026-04-22.
+
+**Next milestone:** 2026-04-16 end-of-day decision point (compressed from 2026-04-22 per JM: heavy coding session today provides sufficient organic sample). Either Builder tier adoption + TGDS indexing, or revert.
+
+**Same-day followups (2026-04-16):**
+- **Benchmark protocol compressed** from 1-week to single-day opportunistic schedule. Decision date moved 2026-04-22 → 2026-04-16 EOD.
+- **TDD violation fixed** on `analyzeMcpJcodemunch`: added 17 fixture-based tests + 4 qara integration tests. All 9 check points covered. Tests written after initial impl (violation), then impl preserved because tests locked behavior. **Regression test added** for the relative-path bug below.
+- **DRY refactor** on `analyse-pai-lib.ts`: extracted `readJsonSafe<T>()` and `fileContainsPattern()` helpers. Removed 3 inline try/catch-JSON-parse blocks and one imperative for-loop; replaced with declarative filter. 13-LOC net reduction, same behavior, tests green.
+- **Relative-path bug fixed** in `analyzeMcpJcodemunch`: `paiPath.split('/').pop()` on `.` returned `.`, missing the `qara-*.db` prefix match → emitted bogus "run index_folder" recommendation for an already-indexed repo. Fix: `basename(resolve(paiPath))`. Audit now scores 20/20 on qara regardless of how it's invoked.
+- **TDD scorer convention reinforced:** `-lib.ts` files MUST have `-lib.test.ts` test files for the `isToolCovered` Rule B regex to fire. `miner-skills.test.ts` → `miner-skills-lib.test.ts` rename brought `TDDCOMPLIANCE` from 18/20 to 20/20. Total audit: **214/214 (100%)**.
+
+---
+
+## 2026-04-16 — Design-skills landscape consolidation (plan v1.2)
+
+**Chosen:** Consolidate 4 upstream skills into 2 local surfaces, add 2 new local skills, fix the broken `designer` agent, wire design-skill usage into the introspection miner, and surface impeccable's hidden pipeline via a landscape doc.
+
+Specifically:
+
+- **Merge** `bolder` + `quieter` + `colorize` → `tune` (local thin dispatcher). Three modes (`tune bolder|quieter|colorize`) share MANDATORY PREPARATION, reference `impeccable/reference/*.md` for doctrine, own procedure only. 3 symlinks removed; upstream `skills-external/` preserved; `EXCLUDED_SKILLS` extended.
+- **Wrap** upstream `typeset` → `impeccable-typeset` (local thin wrapper). Procedure preserved; typography doctrine cites `typography.md`. 1 symlink removed.
+- **Add** `tokens` (thin alias, 39 lines) delegating to `/impeccable extract`. Alias exists because "design tokens / design system" is phrase-distant from the word "extract."
+- **Add** `flows` (152 lines). User journey + IA audit + flow diff. Covers the gap between `shape` (feature-scoped) and product-scoped navigation design.
+- **Kill** the proposed `states` skill. Copy already in `impeccable/reference/ux-writing.md`, interaction logic in `interaction-design.md`; state-phrase routing ("empty state / loading state / skeleton / error state / first-run") → `polish`.
+- **Fix** `designer` agent: `skills: [frontend-design]` (broken — renamed to impeccable 2026-04-11) → `skills: [impeccable]` + disambiguation block.
+- **Surface** pipeline via `.claude/context/design-skills-map.md` pointing at `impeccable/reference/craft.md` (the canonical 5-step build methodology) + index entry in CORE + row in routing-cheatsheet. Map does NOT duplicate craft.md.
+- **Introspection wiring:** new `miner-skills-lib.ts` (178 lines) + 13 fixture-based tests. Metrics: `design_skills_used`, `design_chains`, `design_reinvocations`, `design_orphans`, `extract_usage` (direct vs tokens-alias split). TDD — tests written first, verified RED, then implementation, then shared `groupBySessionChrono` helper extracted in REFACTOR pass to address a quality-hook dupe warning.
+- **Keyword routes:** 52 new patterns across 6 route entries (tune, impeccable-typeset, tokens, flows, polish states, +1 mode keyword re-use). 23 new regression tests in `keyword-router.test.ts`.
+
+**Why:**
+
+- **Redundancy discovered in deep impeccable read.** v1 of the plan proposed 3 new skills (`tokens`, `states`, `flows`); deep read of `impeccable/reference/extract.md` (6-step design-system protocol) and `ux-writing.md` + `interaction-design.md` (state copy + interaction logic) showed that `tokens` was re-inventing existing surface and `states` had no genuine gap beyond visual verification (which belongs to `polish`). Only `flows` was a real gap. Shifted from "build new skills" to "surface what's there + close one genuine gap."
+- **colorize duplicates doctrine.** Upstream colorize restates OKLCH ranges and 60-30-10 verbatim from `color-and-contrast.md`. Bolder/quieter/colorize are direction-variants of the same operation (intensity dial). A thin `tune` dispatcher with three modes cuts the surface from 3 invocations to 1 while preserving all activation phrases.
+- **The pipeline is undocumented.** `impeccable/reference/craft.md` IS a full 5-step build methodology (shape → refs → 7-step build → visual loop → present), but it's invisible unless you call `/impeccable craft`. The landscape map surfaces the pointer without duplicating content.
+- **Designer agent was silently broken.** `skills: [frontend-design]` — frontend-design was renamed to `impeccable` 2026-04-11; the agent has been degraded since. Loud at every invocation.
+- **Instrumentation before usage.** We're about to use design skills intensively on TGDS + PAI UI work. Wiring introspection now means real learning signal in 1 week; wiring later means losing the data.
+
+**Alternatives considered:**
+
+- **Keep bolder/quieter/colorize as separate skills.** Rejected — three skills with 95% shared MANDATORY PREPARATION and overlapping doctrine duplication. JM approved the tune merge.
+- **Build a full `tokens` skill with extract+diff+enforce.** Rejected after deep read — `extract.md` already covers extraction; diff/enforce could exist someday but the 60-day horizon ROI is thin compared to `flows` (zero coverage today). JM chose "thin alias" to preserve phrase routing without duplicating.
+- **Build a `states` skill with visual+copy+interaction.** Rejected — would duplicate ~60% of impeccable refs. JM chose "kill, route to polish."
+- **Edit upstream impeccable's SKILL.md to add `typeset` as a core mode.** Rejected — diverges `skills-external/` mirror from `npx skills` upstream, breaks auto-sync. Chose local `impeccable-typeset` wrapper with open-question: contribute upstream PR eventually.
+- **Mode skills (drive/cruise/turbo) UI-detection routing.** Parked per JM — revisit after 2 weeks of instrumented usage.
+
+**What didn't change:**
+
+- Upstream `skills-external/bolder`, `/quieter`, `/colorize`, `/typeset` preserved as audit history (mirror untouched; excluded from symlink layer only).
+- `critique` and `audit` still recommend `/bolder`, `/quieter`, `/colorize` in their prose (upstream; can't diverge). Accept transient inaccuracy — LLM reinterprets via keyword router. Revisit if observed to confuse.
+- `layout`, `typeset`-doctrine-separation, `visual-explainer` + `image` overlap — all left alone as genuinely distinct.
+- `research`/inspiration skill and post-ship iteration skill — parked gaps (lifecycle stages b and m).
+
+**Impact:**
+
+- 1870 tests pass (was 1834), 0 fail. +36 tests across phases 3–9.
+- 12 symlinks in `.claude/skills/` (was 16). 32 canonical local skills (was 28).
+- New files: 4 SKILL.md (tune, impeccable-typeset, tokens, flows), 1 landscape doc, 1 miner lib, 1 test file.
+- `EXCLUDED_SKILLS` in `scripts/skills-sync-nightly.sh`: 13 entries (was 9) — +bolder, +quieter, +colorize, +typeset.
+- 0 new context-graph cycles. 1 pre-existing false-positive in `tune/SKILL.md:186` (same scanner limitation as `layout`/`typeset` — can't resolve cross-skill doctrine pointers).
+- Plan: `thoughts/shared/plans/design--skills-landscape-consolidation-v1.md` (v1.2 canonical-phase structure). Executed end-to-end in single `cruise:` session 2026-04-16.
+
+---
+
+## 2026-04-16 — Prune CC feature registry to features Qara actually uses + complete skill-symlink retarget
+
+**Chosen:** Drop 10 environment-only entries from `cc-version-check.ts` FEATURE_REQUIREMENTS (lsp, chromeIntegration, desktopApp, vscodeExtension, backgroundTasks runtime flag, releaseChannelToggle, enhancedDoctor, extendedHookTimeout, bedrockSupport, vertexSupport) along with their dead detection code (`hooksUseExtendedTimeout` helper + 2 `usage.*` calls). Retain `enterpriseSettings` + `disableBackgroundTasks` as still-plausible future uses. Also complete the 2026-04-15 external-skills migration: retarget 14 symlinks from the broken `../../.agents/skills/<name>` path (resolves to nonexistent `/home/jean-marc/qara/.agents/skills/`) to the canonical `../skills-external/<name>`, and delete 3 redundant symlinks (delight, distill, overdrive) per the impeccable v2.1.1 prune. Delete `.claude/context/tools/lsp-integration.md` — docs for a feature Qara doesn't use.
+
+**Why:**
+
+- **Registry noise.** Every `cc-version-check` run emitted 10 `[OK] [    ]` "available but not in use" rows for features Qara physically cannot use (no VS Code, no desktop app, no Bedrock/Vertex, no Chrome extension, no enterprise `/doctor`, no >60 s hooks). `detectable: false` already suppressed "you should adopt this" recommendations, but the rows themselves remained report clutter. Result: 16 rows now, all genuinely relevant.
+- **Symlink regression.** The 2026-04-15 migration moved canonical external-skill content to `.claude/skills-external/` (git-tracked) and was supposed to retarget every `.claude/skills/<name>` symlink. Fourteen symlinks were missed — they pointed to `../../.agents/skills/<name>` which resolves to a nonexistent path relative to the project root. Audit `analyse-external-skills.ts` flagged them as "17 broken symlinks" (including 3 that should have been deleted entirely). Fix completes the migration and gets the external-skills audit to 46/50.
+- **Deleted 3 because they were already pruned in spirit.** `delight`, `distill`, `overdrive` were listed in `skills-sync-nightly.sh` EXCLUDED_SKILLS on 2026-04-15, so they hadn't been synced into `skills-external/` for a day, but the old broken symlinks were never removed.
+
+**Alternatives considered:**
+
+- **Keep the 10 entries but hide them behind a `--hidden` flag.** Rejected — the `detectable: false` filter already hides recommendations; the rows themselves provide no signal for Qara. Adding a flag would just create two report modes.
+- **Patch `skills-sync-nightly.sh` to run broken-symlink repair.** Considered, rejected as over-engineered. The reaper it already has in lines 103-114 is additive (removes broken, doesn't create); retargeting is a one-time fix, not a recurring cleanup. If future regressions happen, they'll be visible in the external-skills audit.
+- **Leave `lsp-integration.md` in place for hypothetical future LSP adoption.** Rejected — the user explicitly asked to remove references to unused features; keeping a doc for a feature they just deliberately excluded from the registry contradicts the signal. If LSP becomes relevant, the doc can be restored from git.
+
+**What didn't change:**
+
+- `enterpriseSettings` and `disableBackgroundTasks` kept in registry — both `detectable: false`, both plausible someday, neither adds noise.
+- `skills-sync-nightly.sh` unchanged — its EXCLUDED_SKILLS list already covers the 3 deletions, and its reaper doesn't resurrect them.
+- `skills-external/` canonical copies untouched — migration was symlink-only.
+- `pre-tool-use-security.test.ts` left alone (its `/home/user/.agents/skills/old-dir` fixture is illustrative, not tied to Qara layout).
+
+**Impact:** 1834 tests pass (was 1828), 0 fail. Folder audit 90/90, external skills 46/50 (was 45/50). Report length down from 27 rows to 16 — every row now describes something Qara actively uses or might plausibly use. Plan: `thoughts/shared/plans/infra--cc-feature-cleanup-v1.md`.
+
+---
+
 ## 2026-04-15 — Skill/CLI creator alignment with Anthropic open standard + skill-creator
 
 **Chosen:** Layer Anthropic's cross-surface compliance rules (hard length caps, gerund naming preference) on top of PAI's compliance-first skill architecture via an executable validator, and fill the CLI-scaffolder gap in Anthropic's ecosystem with Agent SDK + MCP + plugin-bundled distribution templates inside `system-create-cli`. Extract shared validation logic into `.claude/hooks/lib/skill-validator-lib.ts` for reuse across both skills.

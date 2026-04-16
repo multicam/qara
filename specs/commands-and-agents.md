@@ -29,7 +29,7 @@ Used via `Task` tool with `subagent_type` parameter.
 | `claude-researcher` | haiku | Primary web research via WebSearch/WebFetch |
 | `codebase-analyzer` | sonnet | Traces data flow, finds patterns, explains implementation |
 | `critic` | **sonnet** | Pre-implementation plan review, risk/gap analysis. Opus escalation on 3rd retry. |
-| `designer` | opus | Design review, UX/UI, typography (loads frontend-design skill) |
+| `designer` | opus | Design review, UX/UI, typography (loads `impeccable` skill — fix 2026-04-16) |
 | `engineer` | sonnet | Code implementation, debugging, optimization, testing |
 | `gemini-researcher` | haiku | Fallback when WebSearch fails — uses Gemini CLI |
 | `reviewer` | opus | Code review for correctness, security, performance |

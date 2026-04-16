@@ -18,10 +18,15 @@ REVIEW_FILE="$REVIEW_DIR/skills-review-$(TZ=Australia/Sydney date +%Y-%m-%d).md"
 LOG_PREFIX="[$(date -Iseconds)] skills-sync:"
 HELPER="$REPO_ROOT/.claude/skills/cc-upgrade-pai/scripts/skills-sync-nightly-helpers.ts"
 
-# Skills excluded from sync. JM's decisions (2026-04-15):
+# Skills excluded from sync. JM's decisions:
+#   (2026-04-15)
 #   - 5 deprecated by impeccable v2.1.1: arrange, frontend-design, normalize, onboard, teach-impeccable
 #   - 4 found redundant with impeccable: extract (impeccable extract subcommand), delight, distill, overdrive
-# These live in ~/.agents/skills (CLI cache) but must not reach the repo mirror.
+#   (2026-04-16, design-skills consolidation plan v1.2)
+#   - 3 merged into `tune` local skill (bolder, quieter, colorize are intensity dials)
+#   - 1 absorbed into impeccable-typeset local wrapper (typeset)
+# These live in ~/.agents/skills (CLI cache) but must not reach the repo mirror
+# at skills-external/, and must not get symlinked into .claude/skills/.
 EXCLUDED_SKILLS=(
     arrange
     frontend-design
@@ -32,6 +37,10 @@ EXCLUDED_SKILLS=(
     delight
     distill
     overdrive
+    bolder
+    quieter
+    colorize
+    typeset
 )
 
 # Build rsync --exclude flags
@@ -93,6 +102,25 @@ fi
 # 3. Bulk-mirror upstream into the repo (single atomic operation).
 # --delete removes anything in mirror that's not in upstream OR excluded → keeps ghosts out.
 rsync -a --delete "${RSYNC_EXCLUDES[@]}" "$UPSTREAM_DIR/" "$MIRROR_DIR/"
+
+# 3b. Reap broken symlinks in `.claude/skills/` (activation layer).
+# npx skills install/uninstall churn can leave dangling `.claude/skills/<name>`
+# pointing into `~/.agents/skills/` after a skill is pruned. These fail the
+# skills-validation test and are invisible to rsync (which manages the mirror
+# at `skills-external/`, not the activation symlinks here). Only touch symlinks
+# whose target is non-existent — never a real dir or a valid symlink.
+REAPED=0
+for link in "$REPO_ROOT/.claude/skills/"*; do
+    [ -L "$link" ] || continue
+    [ -e "$link" ] && continue
+    echo "$LOG_PREFIX reaping broken symlink: $(basename "$link") -> $(readlink "$link")"
+    rm -f "$link"
+    REAPED=$((REAPED + 1))
+done
+if [ "$REAPED" -gt 0 ]; then
+    git add -u ".claude/skills/"
+    git commit -m "chore(skills): reap $REAPED broken activation symlink(s)" --no-verify -q || true
+fi
 
 # 4. Per-skill: commit benign OR write review entry.
 FLAGGED_ANY=0

@@ -35,6 +35,7 @@ import {
     analyzeDelegationPatterns,
     analyzeToolIntegration,
     analyzeWorkflowPatterns,
+    analyzeMcpJcodemunch,
 } from './analyse-pai-lib.ts';
 
 // Re-export everything from lib for backward compatibility
@@ -289,6 +290,7 @@ export const PAI_MODULES: Record<string, AnalyzerFunction> = {
     workflowPatterns: analyzeWorkflowPatterns,
     tddCompliancePAI: analyzeTddCompliancePAI,
     modeSystem: analyzeModeSystem,
+    mcpJcodemunch: analyzeMcpJcodemunch,
 };
 
 // --- Main ---

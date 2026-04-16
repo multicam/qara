@@ -14,8 +14,13 @@ Activated by `UserPromptSubmit` hook before CORE routing evaluates. Takes preced
 | `cruise` | `\bcruise mode\b` · `\bcruise:\s` · `\bcruise this\b` | Activates cruise mode (maxIter:20, ext:1×5) + injects cruise skill |
 | `turbo` | `\bturbo mode\b` · `\bturbo:\s` · `\bturbo this\b` | Activates turbo mode (maxIter:30, ext:1×5) + injects turbo skill |
 | `stop-mode` | `\bstop mode\b` · `\bexit mode\b` · `\bmode off\b` · `\bcancel mode\b` | Deactivates any active mode |
+| `tune` | `\btoo loud\b` · `\btoo bold\b` · `\btoo safe\b` · `\btoo bland\b` · `\btoo gray\b` · `\btoo monochromatic\b` · `\bmake it bolder\b` · `\btone (?:it\|this) down\b` · `\bmore colorf?ul\b` · `\bneeds? (?:more )?color\b` · `\blacks? personality\b` | Injects `tune` skill (intensity dispatcher: bolder/quieter/colorize) |
+| `impeccable-typeset` | `\btypography (?:off\|wrong\|broken)\b` · `\bfonts? look wrong\b` · `\bfix typography\b` · `\btype hierarchy broken\b` · `\breadability issues\b` | Injects `impeccable-typeset` local wrapper |
+| `tokens` | `\bdesign tokens?\b` · `\bdesign system\b` · `\bhardcoded colors?\b` · `\btheme variables?\b` · `\bextract palette\b` · `\btoken hierarchy\b` | Injects `tokens` alias (delegates to `/impeccable extract`) |
+| `flows` | `\buser (?:flow\|journey)\b` · `\binformation architecture\b` · `\bIA audit\b` · `\bnav(?:igation)? structure\b` · `\bsite ?map\b` · `\bmenu hierarchy\b` | Injects `flows` skill (product-scoped journeys, IA, navigation) |
+| `polish` (state phrases) | `\bempty state\b` · `\bloading state\b` · `\bskeleton screen\b` · `\berror state\b` · `\bfirst.?run\b` · `\bno.?results?\b` · `\bzero.?data\b` | Injects `polish` skill (state coverage replaces killed `states` skill) |
 
-**Examples:** `"drive: implement the auth flow"` · `"cruise this"` · `"stop mode"`
+**Examples:** `"drive: implement the auth flow"` · `"cruise this"` · `"the hero is too loud"` · `"fix the typography"` · `"extract design tokens"` · `"map the user journey"`
 
 ---
 
@@ -101,34 +106,44 @@ Invoked as `/command-name` in Claude Code.
 
 ---
 
-## 5. Design Skills (symlinked from .agents/skills)
+## 5. Design Skills
 
 All are `user-invocable: true`. Say the skill name or describe the intent.
 
-Post-prune 2026-04-15 — 16 active design skills (was 22). See `DECISIONS.md` for the reasoning.
+**Post-consolidation 2026-04-16 — 20 active design skills (12 symlinked + 8 local).** See `.claude/context/design-skills-map.md` for the full landscape, pipeline, and lifecycle coverage.
 
-| Skill | Trigger / intent |
-|-------|-----------------|
-| `impeccable` | Full frontend design workflow. Subcommands: `craft`, `teach`, `extract`. Loaded by `designer` agent |
-| `shape` | Pre-implementation UX/UI planning — discovery interview → design brief |
-| `layout` | Layout and visual rhythm review (renamed from `arrange`) |
-| `adapt` | Adapt design for different screen/device/context |
-| `animate` | Add purposeful animations and micro-interactions |
-| `audit` | Design audit — systematic quality review |
-| `bolder` | Make design more confident / less timid |
-| `clarify` | Improve information hierarchy and clarity |
-| `colorize` | Color palette, contrast, and brand alignment |
-| `critique` | Design critique — structured feedback |
-| `harden` | Accessibility, performance, resilience |
-| `optimize` | Performance and render optimization |
-| `polish` | Final polish pass before shipping (absorbs former `normalize` + `onboard`) |
-| `quieter` | Reduce visual noise, improve focus |
-| `typeset` | Typography review and correction |
-| `visual-explainer` | Create diagrams and visual explanations |
+**Pipeline source of truth:** `.claude/skills-external/impeccable/reference/craft.md` (5-step build methodology).
 
-**Removed** (use the alternatives noted):
+| Skill | Origin | Trigger / intent |
+|-------|--------|-----------------|
+| `impeccable` | symlink | Hub skill. Subcommands: `craft`, `teach`, `extract`. Owns the reference library. Loaded by `designer` agent. |
+| `shape` | symlink | Feature-scoped UX planning — discovery interview → design brief |
+| `layout` | symlink | Layout and visual rhythm review (renamed from `arrange`) |
+| `adapt` | symlink | Adapt design for different screen/device/context |
+| `animate` | symlink | Add purposeful animations and micro-interactions |
+| `audit` | symlink | Technical quality audit (a11y, performance, theming) |
+| `clarify` | symlink | UX copy: error messages, labels, empty-state formula |
+| `critique` | symlink | UX review — heuristics, personas, quality scoring |
+| `harden` | symlink | Accessibility, performance, resilience |
+| `optimize` | symlink | Performance and render optimization |
+| `polish` | symlink | Final polish pass + state coverage (empty/loading/error) |
+| `visual-explainer` | symlink | Create diagrams and visual explanations |
+| `tune` | **local** | Intensity dispatcher (bolder/quieter/colorize modes). Consolidated 2026-04-16. |
+| `impeccable-typeset` | **local** | Typography wrapper over `impeccable/reference/typography.md`. Consolidated 2026-04-16. |
+| `tokens` | **local** | Thin alias for `/impeccable extract`. Added 2026-04-16. |
+| `flows` | **local** | Product-scoped journeys, IA, navigation. Added 2026-04-16 (real gap). |
+| `design-it-twice` | local | Parallel-agent module design (software-biased) |
+| `design-implementation` | local | Automated dev-server + browser-verify loop |
+| `image` | local | AI image generation / stock sourcing |
+| `csf-view` | local | tldraw canvas input |
+
+**Removed** (2026-04-16 consolidation):
+- `bolder`, `quieter`, `colorize` → merged into `tune` (use `/tune bolder|quieter|colorize`)
+- `typeset` → wrapped by `impeccable-typeset` (use `/impeccable-typeset`)
+
+**Removed (earlier rounds):**
 - `frontend-design`, `teach-impeccable` → folded into `impeccable` (craft / teach subcommands)
-- `extract` → use `impeccable extract` subcommand
+- `extract` → use `impeccable extract` subcommand (or `/tokens` alias)
 - `arrange` → renamed to `layout`
 - `normalize`, `onboard` → absorbed into `polish`
 - `delight`, `distill`, `overdrive` → pruned as redundant with impeccable's scope
@@ -144,13 +159,40 @@ Use via `Task` tool with `subagent_type`. Parallelize when tasks are independent
 | `architect` | opus | PRD creation, system design, technical specs, implementation planning |
 | `critic` | sonnet (→opus on 3rd retry) | Pre-implementation plan review, risk check |
 | `verifier` | sonnet (→opus on 3rd retry) | Post-implementation acceptance, quality gates |
-| `reviewer` | opus | Code review: correctness, security, perf, maintainability |
-| `designer` | opus | UX/UI, typography, visual polish (loads frontend-design skill) |
+| `reviewer` | sonnet (→opus on 3rd retry) | Code review: correctness, security, perf, maintainability |
+| `designer` | opus | UX/UI, typography, visual polish (loads `impeccable` skill — fix 2026-04-16) |
 | `engineer` | sonnet | Code implementation, debugging, optimization, testing |
-| `codebase-analyzer` | sonnet | Trace data flow, explain components with file:line refs |
-| `thoughts-analyzer` | sonnet | Find + analyze thoughts/ docs for insights and decisions |
+| `codebase-analyzer` | sonnet | Trace data flow, explain components with file:line refs (calls jcodemunch MCP first — 2026-04-16) |
+| `thoughts-analyzer` | haiku | Find + analyze thoughts/ docs for insights and decisions |
 | `claude-researcher` | haiku | Primary web research (always try first) |
 | `gemini-researcher` | haiku | Fallback when WebSearch fails or returns stale results |
+
+---
+
+## 6a. MCP Tools for Code Exploration (jcodemunch)
+
+**First-touch for code questions** — use jcodemunch MCP before Grep/Read on `.ts`/`.py`/`.js` files. ~20× cheaper in tokens for symbol queries. Qara repo id: resolve via `mcp__jcodemunch__resolve_repo` (hash is path-deterministic; currently `local/qara-379c52b4` after 2026-04-16 indexing of 277 files / 3,699 symbols).
+
+| Situation | Tool call | Fallback |
+|---|---|---|
+| Where is function X defined? | `search_symbols({query:"X", detail_level:"compact"})` | Grep |
+| Show me the body of function Y | `search_symbols → get_symbol_source(symbol_id)` | Read |
+| Signatures in this file | `get_file_outline({file_path})` | Read |
+| Who calls function Z? | `find_importers` or `get_call_hierarchy(direction:"callers")` | Grep `\bZ\(` |
+| If I change X, what breaks? | `get_blast_radius(symbol_id)` | Grep + Read |
+| Dependency cycles | `get_dependency_cycles()` | — (no simple Grep) |
+| Untested symbols | `get_untested_symbols()` | — |
+| Dead code | `find_dead_code` / `get_dead_code_v2` | — |
+| Safe rename preview | `check_rename_safe(old, new)` | — |
+| What symbols changed in diff | `get_changed_symbols(base, head)` | `git diff` + Read |
+
+**Schema loading:** jcodemunch tool schemas are deferred — if you see them in the "deferred tools" list, call `ToolSearch` with `"select:mcp__jcodemunch__<name>[,<name>...]"` first.
+
+**Re-index after major changes:** `mcp__jcodemunch__index_folder({path:"/home/jean-marc/qara", use_ai_summaries:false})`. Takes ~2s for full qara. Auto-invalidates stale entries.
+
+**Not indexed:** `thoughts/`, `purgatory/`, `.claude/state/`, `.claude/skills-external/`, `node_modules/`, `dist/`, `.git/` (via `.jcodemunch.jsonc` `extra_ignore_patterns`).
+
+**Benchmark window:** 2026-04-16 single-day opportunistic (compressed from 1-week 2026-04-16). Protocol in `thoughts/shared/benchmarks/jcodemunch-phase4.md`. Builder tier ($79) decision end-of-day 2026-04-16 pending benchmark outcome.
 
 ---
 

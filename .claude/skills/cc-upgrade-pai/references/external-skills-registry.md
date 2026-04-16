@@ -3,7 +3,9 @@
 Comprehensive documentation of all externally-installed skills in the PAI ecosystem.
 Maintained as part of `cc-upgrade-pai`. Updated during each external skills deep analysis.
 
-Last reviewed: 2026-04-15
+Last reviewed: 2026-04-16
+
+> **Update 2026-04-16 (plan v1.2 consolidation):** The activation-surface inventory has changed. The upstream `skills-external/` mirror is unchanged (all 16 upstream skills still mirrored for audit history), but `.claude/skills/` symlinks for `bolder`, `quieter`, `colorize`, `typeset` have been **removed** and their functions absorbed into local skills `tune` (bolder+quieter+colorize dispatcher) and `impeccable-typeset` (typeset wrapper). Two additional local skills were added: `tokens` (alias to `/impeccable extract`) and `flows` (user journey + IA). Source-of-truth for the current landscape is `.claude/context/design-skills-map.md`; recipes are in `.claude/context/design-cookbook.md`. The row-by-row tables below remain accurate descriptions of **upstream** content but do not reflect current activation surface — read the map for current state.
 
 ---
 
@@ -24,7 +26,6 @@ As of 2026-04-15, external skill content is **git-tracked inside the qara repo**
 | Review artifacts | `thoughts/shared/introspection/skills-review-YYYY-MM-DD.md` | Flagged diffs pending Claude verdict |
 | Review log | `~/.claude/state/digests/skills-sync.log` | Nightly sync outcomes |
 | Cron | `0 2 * * *` invokes `skills-sync-nightly.sh` | Daily upstream pull + drift check |
-| Symlinks | `.claude/skills/<name>` → `../../.agents/skills/<name>` | Project-level access |
 | Update script | `~/update-skills.sh` | Interactive update via `npx skills` CLI |
 | Skills CLI | `npx skills` (Vercel Labs) | Install, list, check, update |
 
@@ -100,8 +101,8 @@ The impeccable v2.1.1 release **consolidated and renamed** several visual-explai
 
 | Skill | Purpose | Context | PAI Integration |
 |-------|---------|---------|-----------------|
-| **frontend-design** | Core design principles, anti-AI-slop patterns, Context Gathering Protocol, typography/color/layout/motion/interaction/responsive | fork | Loaded by `designer` agent. Foundational — all other design skills reference this. |
-| **teach-impeccable** | One-time setup to gather design context → persists to `.impeccable.md` | fork | Run once per project to establish design guidelines |
+| **impeccable** | Master design skill — consolidates frontend-design + teach-impeccable + extract. Subcommands: `craft` (shape-then-build), `teach` (design context setup), `extract` (reusable components/tokens). | fork | Loaded by `designer` agent. Foundational — all other design skills reference this. |
+| **shape** | Pre-implementation planning — discovery interview + design brief before code is written. | fork | Pairs with `impeccable craft`. |
 
 #### Visual Explanation (1 skill)
 
@@ -109,28 +110,25 @@ The impeccable v2.1.1 release **consolidated and renamed** several visual-explai
 |-------|---------|---------|-----------------|
 | **visual-explainer** | Generate HTML diagrams, Mermaid visualizations, slides, data tables, diff reviews, project recaps | fork | Stand-alone. Used for architecture documentation, visual planning. 8 subcommands. |
 
-#### Design Optimization & Refinement (7 skills)
+#### Design Optimization & Refinement (5 skills)
 
 | Skill | Purpose | Context | PAI Integration |
 |-------|---------|---------|-----------------|
 | **audit** | Comprehensive quality checks — accessibility, performance, theming, responsive, anti-patterns | fork | Run after implementation for quality gate |
 | **optimize** | Performance — Core Web Vitals (LCP, FID/INP, CLS), bundle size, rendering, fonts | fork | Performance-focused, pairs with `harden` |
-| **polish** | Final quality pass — alignment, spacing, typography, interactions, edge cases | fork | Last step before shipping |
+| **polish** | Final quality pass — alignment, spacing, typography, interactions, edge cases. Absorbed `normalize` + `onboard` in v2.1.1. | fork | Last step before shipping |
 | **critique** | Holistic design evaluation — hierarchy, IA, emotional resonance, discoverability | fork | UX quality assessment (vs `audit` for bugs) |
 | **harden** | Resilience — error handling, i18n, text overflow, edge cases, input validation | fork | Defensive quality layer |
-| **extract** | Extract reusable components, design tokens, patterns into design system | fork | Design system creation |
-| **distill** | Strip to essence — remove unnecessary complexity across IA, visual, layout, interaction | fork | Simplification pass |
 
-#### Design Creation & Styling (6 skills)
+#### Design Creation & Styling (5 skills)
 
 | Skill | Purpose | Context | PAI Integration |
 |-------|---------|---------|-----------------|
 | **animate** | Purposeful animations, micro-interactions, timing/easing, accessibility | fork | Motion design specialist |
-| **arrange** | Layout and visual rhythm — spacing systems, grid strategy, hierarchy | fork | Layout specialist |
+| **layout** | Layout and visual rhythm — spacing systems, grid strategy, hierarchy (renamed from `arrange` in v2.1.1) | fork | Layout specialist |
 | **typeset** | Typography — font selection, hierarchy, sizing, readability, consistency | fork | Typography specialist |
 | **clarify** | UX copy — error messages, form labels, button text, help text, microcopy | fork | Writing/copy specialist |
 | **colorize** | Strategic color addition — semantic meaning, accent, backgrounds, data viz | fork | Color strategy specialist |
-| **delight** | Moments of joy — micro-interactions, personality, illustrations, easter eggs | fork | Emotional design layer |
 
 #### Design Amplification (2 skills)
 
@@ -139,14 +137,15 @@ The impeccable v2.1.1 release **consolidated and renamed** several visual-explai
 | **bolder** | Amplify safe/boring designs — typography, color, spatial drama, effects | fork | When design is too conservative |
 | **quieter** | Tone down aggressive designs — desaturate, reduce weight, refine | fork | When design is too intense |
 
-#### Specialized (4 skills)
+#### Specialized (1 skill)
 
 | Skill | Purpose | Context | PAI Integration |
 |-------|---------|---------|-----------------|
 | **adapt** | Responsive adaptation — mobile, tablet, desktop, print, email strategies | fork | Multi-device design |
-| **normalize** | Align feature to design system standards | fork | Design system compliance |
-| **onboard** | Onboarding flows, empty states, first-time user experience | fork | User journey design |
-| **overdrive** | Technically ambitious effects — View Transitions, WebGL, scroll-driven animations | fork | Advanced browser APIs |
+
+#### Pruned 2026-04-15
+
+`extract`, `delight`, `distill`, `overdrive`, `normalize`, `onboard`, `frontend-design`, `teach-impeccable`, `arrange` — removed as redundant with `impeccable` consolidation or absorbed into `polish`/`layout`. See Migration event above.
 
 ### Quality Standards (embedded in all visual-explainer skills)
 
@@ -158,15 +157,13 @@ The impeccable v2.1.1 release **consolidated and renamed** several visual-explai
 ### Dependency Chain
 
 ```
-teach-impeccable (run once)
-  └─→ frontend-design (referenced by ALL design skills)
-        ├─→ audit, critique (evaluation)
-        ├─→ optimize, polish, harden (refinement)
-        ├─→ arrange, typeset, colorize, animate (creation)
-        ├─→ bolder, quieter (amplification)
-        ├─→ adapt, normalize, onboard (specialized)
-        ├─→ extract, distill (system-level)
-        └─→ overdrive (advanced)
+impeccable (master — consolidates frontend-design + teach-impeccable + extract)
+  ├─→ shape (pre-impl planning)
+  ├─→ audit, critique (evaluation)
+  ├─→ optimize, polish, harden (refinement; polish absorbs normalize + onboard)
+  ├─→ layout (renamed from arrange), typeset, colorize, clarify, animate (creation)
+  ├─→ bolder, quieter (amplification)
+  └─→ adapt (specialized)
 
 visual-explainer (stand-alone, no prerequisites)
 ```

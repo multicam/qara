@@ -21,5 +21,80 @@
     "patterns": ["\\bstop mode\\b", "\\bexit mode\\b", "\\bmode off\\b", "\\bcancel mode\\b"],
     "skill": null,
     "deactivatesMode": true
+  },
+  "tune": {
+    "patterns": [
+      "\\btoo loud\\b",
+      "\\btoo bold\\b",
+      "\\btoo safe\\b",
+      "\\btoo bland\\b",
+      "\\btoo gray\\b",
+      "\\btoo grey\\b",
+      "\\btoo monochromatic\\b",
+      "\\bmake it bolder\\b",
+      "\\bmake it quieter\\b",
+      "\\btone it down\\b",
+      "\\btone this down\\b",
+      "\\bmore colorful\\b",
+      "\\bmore color\\b",
+      "\\badd color\\b",
+      "\\bneeds (?:more )?(?:color|warmth|vibrance)\\b",
+      "\\blacks? personality\\b",
+      "\\btoo (?:generic|boring|garish|aggressive|overwhelming)\\b"
+    ],
+    "skill": "tune"
+  },
+  "impeccable-typeset": {
+    "patterns": [
+      "\\btypography (?:off|wrong|broken|issues?|problems?)\\b",
+      "\\bfonts? look (?:wrong|bad|off|generic)\\b",
+      "\\btype (?:is|feels?) (?:bad|off|wrong|generic)\\b",
+      "\\bfix (?:the )?typography\\b",
+      "\\btype hierarchy (?:broken|off|wrong|muddy)\\b",
+      "\\breadability (?:issues?|problems?)\\b",
+      "\\bfont (?:choice|selection|pairing) (?:off|wrong|bad)\\b"
+    ],
+    "skill": "impeccable-typeset"
+  },
+  "tokens": {
+    "patterns": [
+      "\\bdesign tokens?\\b",
+      "\\bdesign system\\b",
+      "\\bhardcoded (?:colors?|values?)\\b",
+      "\\btheme variables?\\b",
+      "\\bextract (?:the )?(?:palette|tokens?|design system)\\b",
+      "\\btoken hierarchy\\b",
+      "\\bprimitive (?:vs|and) semantic tokens?\\b",
+      "\\bbuild (?:a |the )?design system\\b"
+    ],
+    "skill": "tokens"
+  },
+  "flows": {
+    "patterns": [
+      "\\buser flow\\b",
+      "\\buser journey\\b",
+      "\\bjourney map\\b",
+      "\\binformation architecture\\b",
+      "\\bIA audit\\b",
+      "\\bnavigation (?:design|structure)\\b",
+      "\\bnav structure\\b",
+      "\\bmenu hierarchy\\b",
+      "\\bsite ?map\\b",
+      "\\b(?:map|diff) (?:the )?(?:flow|journey)\\b",
+      "\\bflow diff\\b"
+    ],
+    "skill": "flows"
+  },
+  "polish": {
+    "patterns": [
+      "\\bempty state\\b",
+      "\\bloading state\\b",
+      "\\bskeleton screen\\b",
+      "\\berror state\\b",
+      "\\bfirst.?run (?:experience|state)\\b",
+      "\\bno.?results? (?:state|screen)\\b",
+      "\\bzero.?data (?:state|screen)\\b"
+    ],
+    "skill": "polish"
   }
 }

@@ -8,13 +8,13 @@ When to delegate to agents and how to use them effectively.
 |------|-------|-------|-----------|
 | How does code X work? | `codebase-analyzer` | sonnet | Traces data flow, gives file:line refs |
 | Where does X live? (haiku lookup) | `codebase-analyzer-low` | haiku | Fast file discovery + pattern finding |
-| Design review / UI polish | `designer` | opus | Loads frontend-design skill |
+| Design review / UI polish | `designer` | opus | Loads `impeccable` skill (see `design-skills-map.md`) |
 | PRD / system design / planning | `architect` | opus | Loads research skill, reasoning protocol, dependency graphs |
 | Implement from spec | `engineer` | sonnet | Code, tests, debugging |
 | Trivial edit (rename, import fix) | `engineer-low` | haiku | Fast path for small changes |
 | Cross-cutting refactor / new abstraction | `engineer-high` | opus | Deep reasoning, architectural changes |
 | Review code quality | `reviewer` | **sonnet** | Security, perf, correctness. Opus escalation on 3rd retry. |
-| Quick pass/fail review on small diffs | `reviewer-low` | sonnet | Routine correctness checks |
+| Quick pass/fail review on small diffs | `reviewer-low` | haiku | Routine correctness checks |
 | Review plan before impl | `critic` | **sonnet** | Scenario coverage, scope, risks. Opus escalation on 3rd retry. |
 | Verify impl meets criteria | `verifier` | **sonnet** | Fresh evidence, quality gates. Opus escalation on 3rd retry. |
 | Find + analyze thoughts/ docs | `thoughts-analyzer` | **haiku** | Discovery + insight extraction. Task is grep+summarize, haiku sufficient. |
@@ -80,15 +80,33 @@ Launch independent agents in a **single message** with multiple `Task` tool call
 
 **Rule of thumb:** 3+ sequential Read/Grep calls on a DIFFERENT topic from current work = delegation opportunity. Spawn `codebase-analyzer` (sonnet) or `codebase-analyzer-low` (haiku).
 
-## MCP Tools (jcodemunch)
+## MCP Tools (jcodemunch) — use FIRST for code exploration
 
-`jcodemunch` MCP exposes tree-sitter-backed structural tools (`search_symbols`, `get_symbol_source`, `get_file_outline`, `find_importers`, `get_call_hierarchy`, `get_blast_radius`, `get_dependency_cycles`, `plan_refactoring`, `get_changed_symbols`, etc.). Locked to `tool_profile: "standard"` and BM25-only (no AI summaries, no external calls).
+`jcodemunch` MCP exposes tree-sitter-backed structural tools. Locked to `tool_profile: "standard"`, BM25-only, no AI summaries, no external calls. Qara is indexed as `local/qara-*` (resolve via `mcp__jcodemunch__resolve_repo`; hash is path-deterministic).
 
-**Prefer MCP over agents for:** precise symbol lookups, "find callers of X", "show me the body of function Y", blast-radius / impact questions, dependency-cycle detection, git-diff-to-symbol mapping, refactoring planning.
+**First-touch rule for code questions:** before reaching for Grep or Read on a `.ts`/`.py`/`.js` file, try jcodemunch. It returns bytes, not files; ~20× cheaper for symbol queries.
 
-**Prefer `codebase-analyzer` / `codebase-analyzer-low` agents for:** narrative multi-file synthesis, "explain how auth works across the system", questions that need summarization rather than raw structural data.
+| Situation | Call |
+|---|---|
+| "Where is function X defined?" | `search_symbols(query:"X", detail_level:"compact")` |
+| "Show me the body of function Y" | `search_symbols(query:"Y") → get_symbol_source(symbol_id)` |
+| "What are all the exports / methods in this file?" | `get_file_outline(file_path:"...")` |
+| "Who calls function Z?" | `find_importers(symbol_id)` or `get_call_hierarchy(symbol_id, direction:"callers")` |
+| "If I change X, what else breaks?" | `get_blast_radius(symbol_id)` |
+| "Are there dependency cycles?" | `get_dependency_cycles()` |
+| "What symbols changed in the diff?" | `get_changed_symbols(base, head)` |
+| "Which symbols are untested?" | `get_untested_symbols()` |
+| "Plan a safe refactor of X" | `plan_refactoring(symbol_id)` or `check_rename_safe(old, new)` |
+| "Is there dead code?" | `find_dead_code()` / `get_dead_code_v2()` |
+| "Overview of the whole repo" | `summarize_repo()` or `get_repo_outline()` |
 
-**Token math:** MCP tools return only the relevant symbol (bytes). Agents spawn a fresh context (~30k tokens) and return a summary. For single-symbol questions MCP is ~20× cheaper; for 5+ file narrative synthesis, the agent's summarization pays for the spawn overhead.
+**If tools appear as deferred in your tool list:** call `ToolSearch` with `"select:mcp__jcodemunch__<name>[,<name>...]"` to load schemas.
+
+**Prefer `codebase-analyzer` / `codebase-analyzer-low` agents for:** narrative multi-file synthesis, "explain how auth works across the system", questions that need prose summarization rather than raw structural data. Those agents have been updated (2026-04-16) to call jcodemunch internally first, so delegating to them doesn't lose the token savings.
+
+**Token math:** MCP tools return only the relevant symbol (bytes). Agents spawn a fresh context (~30k tokens) and return a summary. Single-symbol questions: MCP ~20× cheaper. 5+ file narrative synthesis: agent's summarization pays for the spawn overhead.
+
+**Benchmark window (2026-04-16 EOD decision):** compressed from 1-week trust gate to single-day opportunistic schedule. Protocol: `thoughts/shared/benchmarks/jcodemunch-phase4.md`. Actual invocation count is logged in `~/.claude/state/tool-usage.jsonl` — rerun `grep -c "mcp__jcodemunch__" ~/.claude/state/tool-usage.jsonl` to see usage.
 
 ## Review Agent Disambiguation
 

@@ -96,10 +96,10 @@ describe('generateReport', () => {
     });
 
     test('does not recommend undetectable features when missing', () => {
-        // lsp, desktopApp, bedrockSupport, etc. are marked detectable: false —
+        // enterpriseSettings, disableBackgroundTasks are marked detectable: false —
         // they're environment/CLI-only and we can't prove non-use from files.
         const report = generateReport('2.1.101', '/usr/local/bin/claude', '/tmp');
-        const undetectableNames = ['lsp', 'desktopApp', 'vscodeExtension', 'bedrockSupport', 'vertexSupport'];
+        const undetectableNames = ['enterpriseSettings', 'disableBackgroundTasks'];
         const noiseRecs = report.recommendations.filter(r =>
             r.feature && undetectableNames.includes(r.feature)
         );

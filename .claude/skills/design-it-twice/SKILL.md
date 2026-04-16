@@ -47,7 +47,7 @@ If the codebase has relevant context, **read it** — don't ask JM what the code
 
 ### 2. Generate Designs — Parallel Agents
 
-Spawn **3+ `architect` agents** simultaneously via the Agent tool. Each must produce a **radically different** approach.
+Spawn **3+ `architect-low` agents** simultaneously via the Agent tool. Each must produce a **radically different** approach. Use `architect` (opus) only when the design feeds a multi-service PRD or cross-system boundaries — for scoped module/API/data-model design, `architect-low` (sonnet) is sufficient.
 
 Assign divergent constraints:
 

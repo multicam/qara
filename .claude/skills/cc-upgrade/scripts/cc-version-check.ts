@@ -55,17 +55,11 @@ export const FEATURE_REQUIREMENTS: Record<string, FeatureRequirement> = {
     planMode: { minVersion: '2.0.50', description: 'Structured planning with EnterPlanMode/ExitPlanMode' },
 
     // CC 2.0.x features — environment/CLI-only, not detectable from files
-    lsp: { minVersion: '2.0.74', description: 'Language Server Protocol for code intelligence', detectable: false },
-    chromeIntegration: { minVersion: '2.0.72', description: 'Browser control via Chrome extension', detectable: false },
-    desktopApp: { minVersion: '2.0.51', description: 'Native desktop application', detectable: false },
-    vscodeExtension: { minVersion: '2.0.0', description: 'Native VS Code extension', detectable: false },
     enterpriseSettings: { minVersion: '2.0.53', description: 'Managed enterprise configurations', detectable: false },
 
     // CC 2.1.0 features
     modelRouting: { minVersion: '2.1.0', description: 'Per-task model selection (haiku/sonnet/opus)' },
     skillInvocation: { minVersion: '2.1.0', description: 'Skill tool for invoking user-defined skills' },
-    // Runtime flag on Task tool — scanner can't reliably prove non-use from files
-    backgroundTasks: { minVersion: '2.1.0', description: 'run_in_background parameter for Task tool', detectable: false },
     taskResume: { minVersion: '2.1.0', description: 'Resume agents via agent ID' },
     statusLine: { minVersion: '2.1.0', description: 'Custom status line via settings.json' },
     settingsJsonHooks: { minVersion: '2.1.0', description: 'Hooks configuration in settings.json (replaces hooks.json)' },
@@ -75,18 +69,9 @@ export const FEATURE_REQUIREMENTS: Record<string, FeatureRequirement> = {
 
     // CC 2.1.3 features
     mergedSkillsCommands: { minVersion: '2.1.3', description: 'Unified slash commands and skills' },
-    releaseChannelToggle: { minVersion: '2.1.3', description: 'Release channel toggle (stable/latest) in /config', detectable: false },
-    enhancedDoctor: { minVersion: '2.1.3', description: '/doctor detects unreachable permission rules', detectable: false },
-    // Feature raised the ceiling, but "using" it only matters when a specific hook needs >60s.
-    // Absence of >60s timeouts is healthy, not a gap to flag.
-    extendedHookTimeout: { minVersion: '2.1.3', description: 'Hook execution timeout increased to 10 minutes', detectable: false },
 
     // CC 2.1.4 features — CLI env var, not detectable
     disableBackgroundTasks: { minVersion: '2.1.4', description: 'CLAUDE_CODE_DISABLE_BACKGROUND_TASKS env var', detectable: false },
-
-    // Provider integrations — CLI-level config
-    bedrockSupport: { minVersion: '0.2.0', description: 'AWS Bedrock integration', detectable: false },
-    vertexSupport: { minVersion: '0.2.0', description: 'Google Vertex AI integration', detectable: false },
 };
 
 // --- Version utilities (exported for reuse) ---
@@ -141,9 +126,6 @@ export function checkFeatureUsage(targetPath: string): Record<string, boolean> {
             // modelRouting: either a global settings.model OR per-agent model frontmatter
             usage.modelRouting = Boolean(settings.model) || agentsUsePerTaskModels(join(claudeDir, 'agents'));
 
-            // extendedHookTimeout: any hook with timeout > 60s (CC 2.1.3 raised the ceiling to 10min)
-            usage.extendedHookTimeout = hooksUseExtendedTimeout(settings.hooks);
-
             const skillsDir = join(claudeDir, 'skills');
             if (existsSync(skillsDir)) {
                 usage.enhancedSubagents = checkForForkContextSkills(skillsDir);
@@ -157,7 +139,6 @@ export function checkFeatureUsage(targetPath: string): Record<string, boolean> {
     // Content-based detection for features whose usage shows up as patterns in
     // skill/agent/command .md files. Runs once, answers several flags.
     const mdContent = collectMarkdownContent(claudeDir);
-    usage.backgroundTasks = /run_?[iI]n[bB]ackground|runInBackground/.test(mdContent);
     usage.askUserQuestion = /AskUserQuestion/.test(mdContent);
     usage.webSearch = /\bWebSearch\b/.test(mdContent);
     usage.taskResume = /\bTask(Get|List|Output|Stop|Update)\b|\bMonitor\b/.test(mdContent);
@@ -199,22 +180,6 @@ function agentsUsePerTaskModels(agentsDir: string): boolean {
             } catch { /* skip */ }
         }
     } catch { /* skip */ }
-    return false;
-}
-
-function hooksUseExtendedTimeout(hooks: unknown): boolean {
-    if (!hooks || typeof hooks !== 'object') return false;
-    for (const entries of Object.values(hooks as Record<string, unknown>)) {
-        if (!Array.isArray(entries)) continue;
-        for (const entry of entries) {
-            const hookList = (entry as { hooks?: unknown })?.hooks;
-            if (!Array.isArray(hookList)) continue;
-            for (const h of hookList) {
-                const timeout = (h as { timeout?: unknown })?.timeout;
-                if (typeof timeout === 'number' && timeout > 60_000) return true;
-            }
-        }
-    }
     return false;
 }
 

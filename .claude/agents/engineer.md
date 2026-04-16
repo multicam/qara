@@ -17,6 +17,20 @@ Implementation, debugging, optimization, testing. Turn PRDs into production-read
 3. Implement incrementally — small, testable changes
 4. Validate — tests, error handling, edge cases, security
 
+## Code exploration: jcodemunch MCP before Grep/Read
+
+For symbol-level questions ("where is function X", "what's the signature of Y", "who calls Z", "what does this function body look like"), use the jcodemunch MCP. It's ~20× cheaper in tokens for these queries.
+
+- `mcp__jcodemunch__resolve_repo` → get repo ID from a path
+- `mcp__jcodemunch__search_symbols` → find by name / signature / summary
+- `mcp__jcodemunch__get_symbol_source` → pull one function/class body
+- `mcp__jcodemunch__get_file_outline` → signatures of all symbols in a file
+- `mcp__jcodemunch__find_importers`, `get_call_hierarchy`, `get_blast_radius` → impact analysis before refactoring
+
+If tools appear deferred: `ToolSearch` with `"select:mcp__jcodemunch__<name>"` loads schemas.
+
+Fall back to Grep/Read for: prose, markdown, config, files not indexed, narrative cross-file synthesis.
+
 ## Standards
 
 - **Craft** — iterate until it's not just working, but right

@@ -312,7 +312,6 @@ code --list-extensions --show-versions 2>/dev/null | grep "anthropic.claude-code
 |---------|---------|-------------|
 | Model routing | 2.1.0+ | Per-task model selection (haiku/sonnet/opus) |
 | Skill invocation | 2.1.0+ | Skill tool for user-defined skills |
-| Background tasks | 2.1.0+ | run_in_background for async agents |
 | Task resume | 2.1.0+ | Resume agents via agent ID |
 | Status line | 2.1.0+ | Custom status line in settings.json |
 | Enhanced hooks | 2.1.0+ | Hooks in settings.json (replaces hooks.json) |
@@ -322,7 +321,6 @@ code --list-extensions --show-versions 2>/dev/null | grep "anthropic.claude-code
 | Plugin system | 2.1.0+ | Install/manage plugins from marketplaces |
 | Teleport feature | 2.1.0+ | Move sessions between web and terminal |
 | Web interface | 2.1.0+ | claude.com/code for Pro/Max users |
-| VS Code extension | 2.1.0+ | Native IDE integration (beta) |
 | Thinking mode | 2.1.0+ | think/ultrathink for planning |
 | Vim bindings | 2.1.0+ | Vim mode for text input |
 | Hot reload skills | 2.1.0+ | Skills update without restart |
@@ -330,9 +328,6 @@ code --list-extensions --show-versions 2>/dev/null | grep "anthropic.claude-code
 | Merged skills/commands | 2.1.3+ | Unified slash commands and skills |
 | Custom commands (new) | 2.1.3+ | .claude/commands/ markdown files |
 | Plugin marketplaces | 2.1.3+ | Distributed plugin catalogs |
-| Release channel toggle | 2.1.3+ | stable/latest selection in /config |
-| Enhanced /doctor | 2.1.3+ | Detects unreachable permission rules |
-| Extended hook timeout | 2.1.3+ | Hook execution timeout: 10 minutes |
 | Disable background tasks | 2.1.4+ | CLAUDE_CODE_DISABLE_BACKGROUND_TASKS env var |
 
 ---

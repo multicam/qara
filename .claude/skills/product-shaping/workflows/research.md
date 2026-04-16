@@ -16,7 +16,7 @@ Phase 2 is a **thin orchestrator**. It defines what to research and where to put
 ### For web research (competitors, APIs, domain learning):
 
 -> **READ:** `${PAI_DIR}/skills/research/workflows/conduct.md`
--> **EXECUTE:** Use **Extensive mode** (8 agents) with `model: "opus"` and `run_in_background: true`
+-> **EXECUTE:** Use **Extensive mode** (8 agents) with `run_in_background: true` — researcher agents run at their declared tier (haiku), do NOT override to opus
 
 ### For codebase exploration:
 
@@ -43,7 +43,7 @@ Additional streams go to `thoughts/research/{stream-name}.md`.
 
 When running competitive research:
 
-1. Launch **one agent per platform** in parallel with `run_in_background: true, model: "opus"`
+1. Launch **one agent per platform** in parallel with `run_in_background: true` (let agents run at their declared tier — haiku for researchers)
 2. Give each agent the problem framing from Phase 1 so they search with the right lens
 3. Each agent: 3-5 web searches + 2-4 page fetches
 4. Each agent writes `thoughts/research/{platform-name}.md`

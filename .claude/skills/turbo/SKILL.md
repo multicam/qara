@@ -48,9 +48,9 @@ Spawn ALL agents in a single message (parallel). Pick the cheapest sufficient ti
 | Trivial edit: rename, import fix, type annotation | `engineer-low` | haiku |
 | Data-flow trace, implementation analysis | `codebase-analyzer` | sonnet |
 | Standard implementation: add function, wire feature, write tests | `engineer` | sonnet |
-| Routine review: correctness, style, simple security | `reviewer-low` | sonnet |
+| Routine review: correctness, style, simple security | `reviewer-low` | haiku |
 | Cross-cutting refactor, new abstraction, multi-file redesign | `engineer-high` | opus |
-| Security/OWASP review, architectural review | `reviewer` | opus |
+| Security/OWASP review, architectural review | `reviewer` | sonnet |
 | PRD, system design, architecture decisions | `architect` | opus |
 
 **Rule:** start at the lowest tier that plausibly covers the subtask. Escalate via re-dispatch if the low-tier output is insufficient (see Collect → "mark as gap").

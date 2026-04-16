@@ -1,7 +1,7 @@
 ---
 name: reviewer-low
 description: Quick pass/fail code review for small diffs (<50 lines). Checks correctness and obvious issues. Escalates complex reviews.
-model: sonnet
+model: haiku
 tools: [Read, Grep, Glob, Bash]
 ---
 

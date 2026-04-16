@@ -266,4 +266,186 @@ describe("Keyword Router", () => {
       expect(result.stdout).toContain("Drive Mode");
     });
   });
+
+  // ─── Design-skill routes (Phase 3: tune consolidation) ───────────────────
+
+  describe("design-skill routes", () => {
+    beforeEach(() => {
+      createSkill("tune", "# Tune Skill\nVisual intensity dispatcher (bolder/quieter/colorize).");
+    });
+
+    it("should route 'too loud' to tune (quieter mode inferred)", async () => {
+      const result = await runRouter({ prompt: "the hero section is too loud" });
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Tune Skill");
+    });
+
+    it("should route 'too bland' to tune (bolder mode inferred)", async () => {
+      const result = await runRouter({ prompt: "this landing page feels too bland" });
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Tune Skill");
+    });
+
+    it("should route 'too gray' to tune (colorize mode inferred)", async () => {
+      const result = await runRouter({ prompt: "the dashboard looks too gray" });
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Tune Skill");
+    });
+
+    it("should route 'make it bolder' to tune", async () => {
+      const result = await runRouter({ prompt: "make it bolder and more memorable" });
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Tune Skill");
+    });
+
+    it("should route 'tone it down' to tune (quieter)", async () => {
+      const result = await runRouter({ prompt: "tone it down a bit" });
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Tune Skill");
+    });
+
+    it("should route 'needs more color' to tune (colorize)", async () => {
+      const result = await runRouter({ prompt: "this interface needs more color" });
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Tune Skill");
+    });
+
+    it("should NOT route informational 'what is bolder' to tune", async () => {
+      const result = await runRouter({ prompt: "what is too bold in this design" });
+      expect(result.exitCode).toBe(0);
+      // "what is" triggers the informational filter
+      expect(result.stdout).toBe("");
+    });
+  });
+
+  // ─── Typography routes (Phase 4: impeccable-typeset wrapper) ────────────
+
+  describe("impeccable-typeset routes", () => {
+    beforeEach(() => {
+      createSkill("impeccable-typeset", "# Typeset Wrapper\nTypography diagnosis per impeccable/reference/typography.md.");
+    });
+
+    it("should route 'fix the typography' to impeccable-typeset", async () => {
+      const result = await runRouter({ prompt: "fix the typography on this page" });
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Typeset Wrapper");
+    });
+
+    it("should route 'fonts look wrong' to impeccable-typeset", async () => {
+      const result = await runRouter({ prompt: "the fonts look wrong here" });
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Typeset Wrapper");
+    });
+
+    it("should route 'type hierarchy broken' to impeccable-typeset", async () => {
+      const result = await runRouter({ prompt: "the type hierarchy broken" });
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Typeset Wrapper");
+    });
+
+    it("should route 'readability issues' to impeccable-typeset", async () => {
+      const result = await runRouter({ prompt: "there are readability issues" });
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Typeset Wrapper");
+    });
+  });
+
+  // ─── Tokens alias routes (Phase 5) ──────────────────────────────────────
+
+  describe("tokens alias routes", () => {
+    beforeEach(() => {
+      createSkill("tokens", "# Tokens Alias\nDelegates to /impeccable extract for design-system work.");
+    });
+
+    it("should route 'design tokens' to tokens", async () => {
+      const result = await runRouter({ prompt: "extract design tokens from this repo" });
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Tokens Alias");
+    });
+
+    it("should route 'design system' to tokens", async () => {
+      const result = await runRouter({ prompt: "we need to build a design system here" });
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Tokens Alias");
+    });
+
+    it("should route 'hardcoded colors' to tokens", async () => {
+      const result = await runRouter({ prompt: "these hardcoded colors are everywhere" });
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Tokens Alias");
+    });
+  });
+
+  // ─── Flows routes + shape-vs-flows disambiguation (Phase 6) ─────────────
+
+  describe("flows routes", () => {
+    beforeEach(() => {
+      createSkill("flows", "# Flows Skill\nProduct-scoped user journey and IA work.");
+      createSkill("shape", "# Shape Skill\nFeature-scoped UX planning.");
+    });
+
+    it("should route 'user journey' to flows", async () => {
+      const result = await runRouter({ prompt: "map the user journey for signup" });
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Flows Skill");
+    });
+
+    it("should route 'information architecture' to flows", async () => {
+      const result = await runRouter({ prompt: "audit the information architecture" });
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Flows Skill");
+    });
+
+    it("should route 'site map' to flows", async () => {
+      const result = await runRouter({ prompt: "draw the sitemap for this product" });
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Flows Skill");
+    });
+
+    it("should route 'menu hierarchy' to flows", async () => {
+      const result = await runRouter({ prompt: "the menu hierarchy needs work" });
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Flows Skill");
+    });
+
+    // Disambiguation: shape-related triggers (not routed by router, but must not leak to flows)
+    it("should NOT route 'plan this feature' to flows", async () => {
+      const result = await runRouter({ prompt: "plan the UX for this button feature" });
+      expect(result.exitCode).toBe(0);
+      // Neither flows nor shape routes match this phrasing — expect empty output
+      expect(result.stdout).toBe("");
+    });
+  });
+
+  // ─── State-phrase routes to polish (Phase 7: replaces killed `states` skill) ─
+
+  describe("polish state routes", () => {
+    beforeEach(() => {
+      createSkill("polish", "# Polish Skill\nFinal pre-ship quality pass including state coverage.");
+    });
+
+    it("should route 'empty state' to polish", async () => {
+      const result = await runRouter({ prompt: "how should I design the empty state" });
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Polish Skill");
+    });
+
+    it("should route 'loading state' to polish", async () => {
+      const result = await runRouter({ prompt: "add a loading state to the dashboard" });
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Polish Skill");
+    });
+
+    it("should route 'skeleton screen' to polish", async () => {
+      const result = await runRouter({ prompt: "design the skeleton screen" });
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Polish Skill");
+    });
+
+    it("should route 'error state' to polish", async () => {
+      const result = await runRouter({ prompt: "improve the error state appearance" });
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("Polish Skill");
+    });
+  });
 });

@@ -204,8 +204,9 @@ describe('Skills System', () => {
   describe('SKILL.md Frontmatter Validation', () => {
     // Local skills require full frontmatter (name, context, description)
     const localSkills = ['CORE', 'research', 'system-create-skill'];
-    // External/symlinked skills only require name + description (context is PAI-specific)
-    const externalSkills = ['frontend-design'];
+    // External/symlinked skills only require name + description (context is PAI-specific).
+    // Updated 2026-04-16: frontend-design was renamed to impeccable.
+    const externalSkills = ['impeccable'];
 
     for (const skillName of localSkills) {
       it(`${skillName} should have valid SKILL.md`, () => {

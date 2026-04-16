@@ -79,6 +79,12 @@ env:
 
 **READ** `.claude/context/routing-cheatsheet.md` for all routing triggers, documentation paths, skill triggers, and agent selection.
 
+**READ** `.claude/context/design-skills-map.md` for the design-skill landscape, pipeline, and lifecycle coverage (20 skills, consolidated 2026-04-16).
+
+**READ** `.claude/context/design-cookbook.md` for 15 recipes covering common design tasks (feature build, critique → fix, tune, typography, tokens, flows, responsive, a11y, performance, states, pre-ship).
+
+**First-touch for code exploration:** `jcodemunch` MCP before Grep/Read on `.ts`/`.py`/`.js` files. See `.claude/context/delegation-guide.md` §"MCP Tools (jcodemunch)" for the full tool→situation map and `.claude/context/routing-cheatsheet.md` §6a for the quick reference.
+
 Execution modes (drive, cruise, turbo) compose skills — e.g., drive uses tdd-qa, critic, and verifier. Modes are activated via keyword triggers.
 
 ---

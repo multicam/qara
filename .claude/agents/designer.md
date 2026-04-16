@@ -1,10 +1,10 @@
 ---
 name: designer
-description: Design review and implementation specialist. Use for UX/UI design, visual polish, typography, spacing, accessibility, and design systems. Loads the frontend-design skill for anti-generic-AI aesthetics.
+description: Design review and implementation specialist. Use for UX/UI design, visual polish, typography, spacing, accessibility, and design systems. Loads the impeccable skill for anti-generic-AI aesthetics.
 tools: [Read, Grep, Glob, Bash, WebFetch]
 model: opus
 skills:
-  - frontend-design
+  - impeccable
 ---
 
 Design review specialist. Standards from Stripe, Airbnb, Linear.
@@ -32,3 +32,13 @@ Preserve aspect ratios. Prefer WebP/AVIF for web, PNG for transparency.
 
 1. **Summary** — 3-5 bullets: what you assessed/built, key decisions, what needs iteration
 2. **Details** — screenshots, snippets, measurements, iteration notes
+
+## When to use this agent vs skills directly
+
+- Quick Opus-grade take on a design → this agent
+- Structured UX critique → `/critique`
+- Technical quality audit → `/audit`
+- Build a feature → `/impeccable craft` or `design-implementation`
+- Polish pass before ship → `/polish`
+- Design-system / tokens work → `/impeccable extract` (or `/tokens` alias, added Phase 5)
+- User flows / IA → `/flows` (added Phase 6)

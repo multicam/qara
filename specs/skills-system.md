@@ -82,12 +82,20 @@ External skill content is git-tracked at `.claude/skills-external/<name>/`. `~/.
 
 **visual-explainer** — v0.6.3. Generate HTML diagrams, Mermaid, slides, data tables, diff reviews, project recaps. HTML outputs land in `thoughts/shared/diagrams/` via `~/.agent/diagrams` symlink.
 
-**Design sub-skills (12):** adapt, animate, audit, bolder, clarify, colorize, critique, harden, optimize, polish, quieter, typeset.
+**Active design sub-skills (post-consolidation 2026-04-16):** `adapt`, `animate`, `audit`, `clarify`, `critique`, `harden`, `layout`, `optimize`, `polish`, `shape`, `visual-explainer` (12 upstream symlinked) + local wrappers `tune` (merges bolder/quieter/colorize), `impeccable-typeset` (wraps typeset), `tokens` (thin alias for `/impeccable extract`), `flows` (user journey + IA). See `.claude/context/design-skills-map.md` for the landscape and `.claude/context/design-cookbook.md` for recipes.
 
-### Migration & prune history (2026-04-15)
+### Migration & prune history
 
-- **Impeccable v2.1.1:** `arrange` → `layout`; `normalize` + `onboard` → absorbed into `polish`; `frontend-design` + `teach-impeccable` → superseded by `impeccable`.
-- **Prune (redundant with impeccable's scope):** `extract` (use `impeccable extract`), `delight`, `distill`, `overdrive` removed.
+**2026-04-16 (plan v1.2):**
+- `bolder` + `quieter` + `colorize` → merged into local `tune` dispatcher; 3 upstream symlinks removed, mirrors preserved.
+- `typeset` → wrapped by local `impeccable-typeset`; upstream symlink removed, mirror preserved.
+- `states` (proposed) → killed; state phrases routed to `polish` (copy/interaction already covered by impeccable refs).
+- New local skills: `tune`, `impeccable-typeset`, `tokens`, `flows`.
+- `designer` agent: `skills: [frontend-design]` → `[impeccable]` (was broken since 2026-04-11 rename).
+
+**2026-04-15 (Impeccable v2.1.1 migration + prune):**
+- `arrange` → `layout`; `normalize` + `onboard` → absorbed into `polish`; `frontend-design` + `teach-impeccable` → superseded by `impeccable`.
+- Pruned as redundant with impeccable's scope: `extract` (use `impeccable extract`), `delight`, `distill`, `overdrive`.
 
 ## Skill Dependencies
 
