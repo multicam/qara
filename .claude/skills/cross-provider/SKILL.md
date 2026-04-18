@@ -41,7 +41,9 @@ Get independent perspectives from multiple models on the same question, then syn
 
 ### Model Tracking
 
-Track model evolution in `references/model-candidates.md`. Evaluate new models on:
+→ **READ:** `references/model-candidates.md` for the tracked model roster.
+
+Evaluate new models on:
 - Cost (API vs local)
 - Latency (response time)
 - Quality (accuracy on domain tasks)

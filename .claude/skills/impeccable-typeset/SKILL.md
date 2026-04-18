@@ -11,7 +11,7 @@ argument-hint: "[target]"
 
 Local procedural wrapper for typography work. Diagnoses and fixes type issues per impeccable's typography doctrine.
 
-**Doctrine source of truth:** `impeccable/reference/typography.md`. This skill provides the procedure; doctrine lives in impeccable.
+**Doctrine source of truth:** `../impeccable/reference/typography.md`. This skill provides the procedure; doctrine lives in impeccable.
 
 ## Workflow Routing (SYSTEM PROMPT)
 
@@ -23,7 +23,7 @@ The procedure below runs in order: assess → plan → improve → verify.
 
 Design Context must be loaded (see CORE's Design Context Session Guard). If not loaded, run `/impeccable teach` first.
 
-Additionally consult `impeccable/reference/typography.md` for: modular scale ratios, font pairing, `font-display` strategies, fluid vs fixed type (apps vs marketing), OpenType features, accessibility.
+Additionally consult `../impeccable/reference/typography.md` for: modular scale ratios, font pairing, `font-display` strategies, fluid vs fixed type (apps vs marketing), OpenType features, accessibility.
 
 ## Assess Current Typography
 
@@ -42,7 +42,7 @@ Additionally consult `impeccable/reference/typography.md` for: modular scale rat
 - **Weight strategy** — clear roles per weight (Regular body, Semibold labels, Bold headings)
 - **Spacing** — line-height per context; letter-spacing intentional
 
-Consult `impeccable/reference/typography.md` for scale details and pairing options.
+Consult `../impeccable/reference/typography.md` for scale details and pairing options.
 
 ## Improve Systematically
 
@@ -81,4 +81,4 @@ After typography pass, recommend:
 - `/review` — UX + technical review including a11y contrast and font performance
 - `/finish` — pre-ship final pass
 
-Doctrine source of truth: `impeccable/reference/typography.md`.
+Doctrine source of truth: `../impeccable/reference/typography.md`.

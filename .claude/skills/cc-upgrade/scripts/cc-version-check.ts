@@ -72,6 +72,18 @@ export const FEATURE_REQUIREMENTS: Record<string, FeatureRequirement> = {
 
     // CC 2.1.4 features — CLI env var, not detectable
     disableBackgroundTasks: { minVersion: '2.1.4', description: 'CLAUDE_CODE_DISABLE_BACKGROUND_TASKS env var', detectable: false },
+
+    // CC 2.1.105 — PreCompact hook can block compaction (exit 2 or decision:block)
+    preCompactBlocking: { minVersion: '2.1.105', description: 'PreCompact hook can block compaction via exit 2 / decision:block', detectable: false },
+
+    // CC 2.1.110 — mobile push notifications via PushNotification tool
+    pushNotificationTool: { minVersion: '2.1.110', description: 'PushNotification tool for mobile notifications (opt-in via Remote Control)', detectable: false },
+
+    // CC 2.1.111 — xhigh effort level for Opus 4.7
+    xhighEffort: { minVersion: '2.1.111', description: 'xhigh effort level between high and max (Opus 4.7 only)', detectable: false },
+
+    // CC 2.1.113 — sandbox network domain denylist
+    sandboxDeniedDomains: { minVersion: '2.1.113', description: 'sandbox.network.deniedDomains setting for network isolation', detectable: false },
 };
 
 // --- Version utilities (exported for reuse) ---

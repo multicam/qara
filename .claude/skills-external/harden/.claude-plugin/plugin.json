@@ -1,0 +1,7 @@
+{
+  "name": "harden",
+  "version": "1.0.0",
+  "description": "Improve interface resilience through better error handling, i18n support, text overflow handling, and edge case management.",
+  "maintenance": "local",
+  "note": "PAI-maintained. Content git-tracked at .claude/skills-external/harden/. See DECISIONS.md 2026-04-15 for rationale. Preserved across nightly rsync via skills-sync-nightly.sh --exclude=.claude-plugin/."
+}

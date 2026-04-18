@@ -4,9 +4,9 @@ PAI-specific deep analysis extending `cc-upgrade/workflows/external-skills-audit
 
 ## Prerequisites
 
--> READ: `../../cc-upgrade/workflows/external-skills-audit.md` (base methodology)
--> READ: `../../cc-upgrade/references/skills-ecosystem-sources.md`
--> READ: `../references/external-skills-registry.md` (current inventory)
+→ **READ:** `../../cc-upgrade/workflows/external-skills-audit.md` (base methodology)
+→ **READ:** `../../cc-upgrade/references/skills-ecosystem-sources.md`
+→ **READ:** `../references/external-skills-registry.md` (current inventory)
 
 ## When to Use
 
@@ -100,7 +100,7 @@ gh api repos/VoltAgent/awesome-agent-skills/commits \
   --jq '.[0] | "\(.sha[0:7]) \(.commit.message | split("\n")[0]) (\(.commit.author.date[0:10]))"'
 ```
 
-Evaluation criteria: -> READ: `../../cc-upgrade/references/skills-ecosystem-sources.md` ("Evaluation Criteria for New Skills")
+Evaluation criteria: → **READ:** `../../cc-upgrade/references/skills-ecosystem-sources.md` ("Evaluation Criteria for New Skills")
 
 ### Phase 3: Strategic Analysis
 

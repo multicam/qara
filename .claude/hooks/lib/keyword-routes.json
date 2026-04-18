@@ -149,5 +149,18 @@
       "\\bdesign direction\\b"
     ],
     "skill": "design-research"
+  },
+  "harden": {
+    "patterns": [
+      "\\bmake (?:it |this )?(?:robust|resilient|production.?ready)\\b",
+      "\\bharden (?:this|the (?:interface|UI|component))\\b",
+      "\\b(?:handle|cover) edge cases?\\b",
+      "\\bi18n\\b",
+      "\\binternationali[sz]ation\\b",
+      "\\btext overflow\\b",
+      "\\bgraceful (?:degradation|fallback)\\b",
+      "\\berror (?:handling|recovery|boundaries?)\\b"
+    ],
+    "skill": "harden"
   }
 }

@@ -107,6 +107,12 @@ export interface InboxState {
    * (decision X: obsolescence findings are exempt from grandfathering).
    */
   grandfathered: string[];
+  /**
+   * Set on the first successful non-dry-run invocation. Used to ensure the
+   * grandfather pass runs exactly once across the lifetime of the state
+   * file — cheaper than inferring "first run" from emptiness heuristics.
+   */
+  firstRunCompleted?: boolean;
 }
 
 /** Freshly-constructed empty state. */

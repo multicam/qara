@@ -186,6 +186,43 @@ function findVersionGaps(entries: ChangelogEntry[]): string[] {
     return gaps;
 }
 
+// --- Baseline filtering ---
+
+/**
+ * Parse a semver-ish version string into a tuple of numeric components.
+ * Accepts `v1.2.3`, `1.2.3`, or `1.2.3-rc1` (prerelease suffix ignored).
+ * Shared with cc-version-check's compareVersions — kept local to avoid a
+ * cross-script import cycle.
+ */
+function parseVer(v: string): number[] {
+    return v.replace(/^v/, '').split('-')[0].split('.').map(n => parseInt(n, 10) || 0);
+}
+
+function compareVer(a: string, b: string): number {
+    const aa = parseVer(a);
+    const bb = parseVer(b);
+    for (let i = 0; i < Math.max(aa.length, bb.length); i++) {
+        const av = aa[i] || 0;
+        const bv = bb[i] || 0;
+        if (av > bv) return 1;
+        if (av < bv) return -1;
+    }
+    return 0;
+}
+
+/**
+ * Return changelog entries with version strictly greater than `baseline`.
+ * Used by `--since-baseline <v>` to surface only what's new since the last
+ * review. When baseline is empty string or null, returns entries unchanged.
+ */
+export function filterSinceBaseline(
+    entries: ChangelogEntry[],
+    baseline: string | null,
+): ChangelogEntry[] {
+    if (!baseline) return entries;
+    return entries.filter(e => compareVer(e.version, baseline) > 0);
+}
+
 // --- Fetch ---
 
 async function fetchChangelog(): Promise<string | null> {
@@ -255,31 +292,66 @@ function formatReport(report: FeatureSyncReport): string {
 
 // --- Main ---
 
+/**
+ * Extract `--since-baseline <version>` from argv. Returns the version string
+ * or null when the flag is absent. `=` form (`--since-baseline=2.1.98`) is
+ * also supported.
+ */
+export function parseBaselineArg(argv: string[]): string | null {
+    const eqForm = argv.find(a => a.startsWith('--since-baseline='));
+    if (eqForm) return eqForm.slice('--since-baseline='.length) || null;
+    const idx = argv.indexOf('--since-baseline');
+    if (idx >= 0 && idx + 1 < argv.length) return argv[idx + 1];
+    return null;
+}
+
 async function main(): Promise<void> {
-    console.log('Fetching CC CHANGELOG.md from GitHub...\n');
+    const useJson = process.argv.includes('--json');
+    const jsonOnly = process.argv.includes('--json-only');
+    const baseline = parseBaselineArg(process.argv);
+
+    if (!jsonOnly) console.log('Fetching CC CHANGELOG.md from GitHub...\n');
 
     const content = await fetchChangelog();
 
     if (!content) {
-        console.error('[warn] Could not fetch changelog — operating in offline mode');
-        console.log('\n--- TRACKED FEATURES (local only, no remote data) ---\n');
-        const keys = Object.keys(FEATURE_REQUIREMENTS);
-        for (const key of keys) {
-            const req = FEATURE_REQUIREMENTS[key];
-            console.log(`  ${key.padEnd(28)} v${req.minVersion}+  ${req.description}`);
+        if (!jsonOnly) {
+            console.error('[warn] Could not fetch changelog — operating in offline mode');
+            console.log('\n--- TRACKED FEATURES (local only, no remote data) ---\n');
+            const keys = Object.keys(FEATURE_REQUIREMENTS);
+            for (const key of keys) {
+                const req = FEATURE_REQUIREMENTS[key];
+                console.log(`  ${key.padEnd(28)} v${req.minVersion}+  ${req.description}`);
+            }
+        } else {
+            // In json-only mode emit an empty report so callers have valid JSON.
+            const emptyReport: FeatureSyncReport = {
+                timestamp: new Date().toISOString(),
+                changelogVersion: null,
+                trackedFeatureCount: Object.keys(FEATURE_REQUIREMENTS).length,
+                newCandidates: [],
+                versionGaps: [],
+                summary: 'offline: could not fetch changelog',
+            };
+            console.log(JSON.stringify(emptyReport, null, 2));
         }
         process.exit(0);
     }
 
-    const entries = parseChangelog(content);
-    log(`Parsed ${entries.length} changelog sections`);
+    const allEntries = parseChangelog(content);
+    log(`Parsed ${allEntries.length} changelog sections`);
+    const entries = filterSinceBaseline(allEntries, baseline);
+    if (baseline) log(`Filtered to ${entries.length} entries since baseline v${baseline}`);
 
-    const latestVersion = entries[0]?.version ?? null;
+    // Latest version always taken from the full set — baseline filtering only
+    // narrows the candidates/gaps we emit, not the "what's the newest CC" fact.
+    const latestVersion = allEntries[0]?.version ?? null;
     const newCandidates = findNewCandidates(entries);
     const versionGaps = findVersionGaps(entries);
 
+    const baselineNote = baseline ? ` (since v${baseline})` : '';
     const summary = [
-        `${entries.length} changelog sections parsed.`,
+        `${entries.length} changelog sections parsed${baselineNote}.`,
         `${versionGaps.length} versions in changelog not covered by FEATURE_REQUIREMENTS.`,
         `${newCandidates.length} potential new features not yet tracked.`,
         newCandidates.length > 0
@@ -296,9 +368,14 @@ async function main(): Promise<void> {
         summary,
     };
 
+    if (jsonOnly) {
+        console.log(JSON.stringify(report, null, 2));
+        return;
+    }
+
     console.log(formatReport(report));
 
-    if (process.argv.includes('--json')) {
+    if (useJson) {
         console.log('\n--- JSON OUTPUT ---\n');
         console.log(JSON.stringify(report, null, 2));
     }
@@ -317,6 +394,8 @@ export {
     type FeatureSyncReport,
     type NewFeatureCandidate,
 };
+
+// Note: `filterSinceBaseline` and `parseBaselineArg` are exported inline where defined.
 
 // Direct execution guard
 const isDirectExecution =

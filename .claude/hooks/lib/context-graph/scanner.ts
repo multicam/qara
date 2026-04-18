@@ -378,6 +378,71 @@ export function extractReferences(
 }
 
 /**
+ * Extract advisory broken table-cell references from a single file.
+ *
+ * Returns refs whose first path segment matches a sibling-skill directory
+ * name and whose target does not resolve on disk — the pattern that arises
+ * when a cross-skill reference is missing the required `../` prefix
+ * (e.g., `impeccable/reference/X.md` from review/SKILL.md).
+ *
+ * Heuristic:
+ *   - Must have ≥3 path segments (skip `grill-me/SKILL.md`-style upstream refs)
+ *   - First segment must match an existing sibling-skill directory name
+ *   - resolveReference must return a non-existent path
+ *   - Skip refs starting with `thoughts/` (runtime output paths)
+ *
+ * Advisory — false positives tolerated (documentation/upstream tables). Used
+ * by findOrphans to surface the class of bug caught by FIX-1 without blocking.
+ */
+export function extractAdvisoryBrokenTableRefs(
+  filePath: string,
+  content: string,
+  skillsDir: string,
+): Array<{ source: string; ref: string; lineNumber: number }> {
+  const paiDir = resolve(skillsDir, '..');
+  const ownSkill = getSkillName(filePath, skillsDir);
+  const siblings = existsSync(skillsDir)
+    ? new Set(
+        readdirSync(skillsDir).filter(name => {
+          if (name === ownSkill) return false;
+          try {
+            return statSync(join(skillsDir, name)).isDirectory();
+          } catch {
+            return false;
+          }
+        }),
+      )
+    : new Set<string>();
+  if (siblings.size === 0) return [];
+
+  const advisories: Array<{ source: string; ref: string; lineNumber: number }> = [];
+  const seen = new Set<string>();
+  const lines = content.split('\n');
+  let inCodeBlock = false;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (line.trimStart().startsWith('```')) { inCodeBlock = !inCodeBlock; continue; }
+    if (inCodeBlock) continue;
+
+    for (const match of line.matchAll(TABLE_PATTERN)) {
+      const ref = match[1];
+      if (ref.startsWith('thoughts/')) continue;
+      const segments = ref.split('/');
+      if (segments.length < 3) continue;
+      if (!siblings.has(segments[0])) continue;
+      const target = resolveReference(ref, filePath, paiDir, skillsDir);
+      if (target && existsSync(target)) continue;
+      const key = `${ref}@${i + 1}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      advisories.push({ source: filePath, ref, lineNumber: i + 1 });
+    }
+  }
+  return advisories;
+}
+
+/**
  * Scan all nodes and extract all edges
  */
 export function scanAll(paiDir: string): { nodes: ContextNode[]; edges: ContextEdge[] } {

@@ -13,8 +13,8 @@
  * 16 tests in `.claude/tests/validate-skill.test.ts`.
  */
 
-import { readFileSync, readdirSync, existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
+import { basename, join } from 'node:path';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -309,6 +309,62 @@ export function scanActivationTriggers(description: string): SkillViolation[] {
         }];
     }
     return [];
+}
+
+/**
+ * Detect cross-skill references missing the required `../` prefix.
+ *
+ * Inside a skill's SKILL.md body, backticked paths like `other-skill/foo.md`
+ * are **broken** — they resolve relative to the skill's own directory. The
+ * correct form is `../other-skill/foo.md` (or `${PAI_DIR}/skills/...`).
+ *
+ * Rule: for every backticked `<segment>/<rest>.md` in the body, if
+ * `<segment>` matches the name of a sibling skill directory (and is not the
+ * current skill itself), emit a `cross-skill-ref-unprefixed` warning. The
+ * regex requires the first char after the opening backtick to be alphanumeric,
+ * which automatically excludes `../`-prefixed refs (start with `.`),
+ * `${PAI_DIR}`-prefixed refs (start with `$`), and absolute paths (start
+ * with `/`).
+ *
+ * Same-skill refs like `workflows/foo.md` and `references/bar.md` are also
+ * excluded because `workflows` / `references` are not sibling skill names.
+ */
+export function validateCrossSkillRefs(
+    skillDir: string,
+    skillsDir: string,
+    body: string,
+): SkillViolation[] {
+    if (!existsSync(skillsDir)) return [];
+
+    const ownSkill = basename(skillDir);
+    const siblings = new Set(
+        readdirSync(skillsDir).filter(name => {
+            if (name === ownSkill) return false;
+            try {
+                return statSync(join(skillsDir, name)).isDirectory();
+            } catch {
+                return false;
+            }
+        }),
+    );
+    if (siblings.size === 0) return [];
+
+    const pattern = /`([A-Za-z][A-Za-z0-9_-]*)\/([^`]+\.md)`/g;
+    const seen = new Set<string>();
+    const violations: SkillViolation[] = [];
+    for (const match of body.matchAll(pattern)) {
+        const first = match[1];
+        if (!siblings.has(first)) continue;
+        const refPath = `${first}/${match[2]}`;
+        if (seen.has(refPath)) continue;
+        seen.add(refPath);
+        violations.push({
+            rule: 'cross-skill-ref-unprefixed',
+            severity: 'warning',
+            detail: `cross-skill reference \`${refPath}\` must use \`../\` prefix (e.g., \`../${refPath}\`) or \`\${PAI_DIR}/skills/${refPath}\``,
+        });
+    }
+    return violations;
 }
 
 // ── Internal helpers ─────────────────────────────────────────────────────────

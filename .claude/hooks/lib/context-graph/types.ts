@@ -42,6 +42,19 @@ export interface OrphanReport {
     target: string;
     lineNumber: number;
   }>;
+  /**
+   * Advisory (non-blocking) broken references: table-cell refs whose first path
+   * segment matches a sibling skill directory name but whose target does not
+   * exist. Captures the "missing `../` prefix" pattern (e.g., a review skill
+   * referencing `impeccable/reference/X.md` when it should be `../impeccable/reference/X.md`).
+   * False positives are possible (e.g., cc-upgrade-pai's upstream documentation
+   * tables), which is why these are advisory rather than errors.
+   */
+  advisoryBrokenReferences: Array<{
+    source: string;
+    ref: string;
+    lineNumber: number;
+  }>;
 }
 
 export interface ImpactReport {

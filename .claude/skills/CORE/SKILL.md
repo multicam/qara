@@ -69,7 +69,7 @@ env:
 
 **READ** `.claude/context/routing-cheatsheet.md` for all routing triggers, documentation paths, skill triggers, and agent selection.
 
-Design skills and recipes load via keyword-router on design tasks — see `design-skills-map.md` and `design-cookbook.md` in `.claude/context/`.
+Design skills and recipes load via keyword-router on design tasks — see [design-skills-map](../../context/design-skills-map.md) and [design-cookbook](../../context/design-cookbook.md) in `.claude/context/`.
 
 Execution modes (drive, cruise, turbo) compose skills and are activated via keyword triggers.
 

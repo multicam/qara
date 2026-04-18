@@ -76,6 +76,17 @@ Examples: "phrase 1", "phrase 2", "phrase 3"
 -> **REASON:** Why delegation is required
 ```
 
+### Cross-Skill References (path resolution rule)
+
+Inside a SKILL.md, same-skill paths (`workflows/X.md`, `references/X.md`) resolve relative to the skill's own directory. **Cross-skill references** — paths like `impeccable/reference/typography.md` — do **not** resolve the way they read: from `review/SKILL.md`, the scanner tries `review/impeccable/reference/typography.md`, not the sibling skill.
+
+Two valid forms:
+
+1. **Relative to source file:** `` `../impeccable/reference/typography.md` ``
+2. **Absolute via PAI_DIR:** `` `${PAI_DIR}/skills/impeccable/reference/typography.md` ``
+
+Bare `other-skill/...` refs are flagged by `validateCrossSkillRefs` (warning: `cross-skill-ref-unprefixed`) and surface as advisory broken refs in `context-graph orphans`. Upstream documentation tables (e.g. `grill-me/SKILL.md` as an external source) are short-form (2 segments) and pass the heuristic.
+
 ## The 8-Category Activation Pattern
 
 Cover ALL of these for comprehensive triggers:

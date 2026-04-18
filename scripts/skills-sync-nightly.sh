@@ -48,6 +48,12 @@ RSYNC_EXCLUDES=()
 for s in "${EXCLUDED_SKILLS[@]}"; do
     RSYNC_EXCLUDES+=(--exclude="$s/" --exclude="$s")
 done
+# Preserve PAI-local metadata: `.claude-plugin/plugin.json` carries the
+# `maintenance: "local"` flag for skills deliberately not upstream-tracked
+# (see DECISIONS.md 2026-04-15, 2026-04-18). Without this exclude, nightly
+# rsync wipes the file and skill-pulse-check reverts to false-positive
+# "no repository URL" errors.
+RSYNC_EXCLUDES+=(--exclude=".claude-plugin/")
 
 # Helper for the detection loop (bash's `for` should skip excluded dirs)
 is_excluded() {

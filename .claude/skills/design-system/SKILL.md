@@ -11,7 +11,7 @@ argument-hint: "[generate|consume|extract|enforce] [target]"
 
 Design system lifecycle management. Four modes: generate (create DESIGN.md from a website), consume (load DESIGN.md as context), extract (6-step token extraction), enforce (lint against design system).
 
-**Source heritage:** Subsumes tokens v1.0.0 (was alias for `/impeccable extract`). Protocol: `impeccable/reference/extract.md`. Format: VoltAgent awesome-design-md / Google Stitch DESIGN.md spec.
+**Source heritage:** Subsumes tokens v1.0.0 (was alias for `/impeccable extract`). Protocol: `../impeccable/reference/extract.md`. Format: VoltAgent awesome-design-md / Google Stitch DESIGN.md spec.
 
 ## Workflow Routing (SYSTEM PROMPT)
 
@@ -163,7 +163,7 @@ A structured summary of loaded design context, plus a drift report if the codeba
 
 ## Mode: extract
 
-The 6-step extraction protocol from `impeccable/reference/extract.md`. Extracts reusable tokens and components from an existing codebase.
+The 6-step extraction protocol from `../impeccable/reference/extract.md`. Extracts reusable tokens and components from an existing codebase.
 
 ### 6-Step Protocol
 
@@ -213,4 +213,4 @@ After design-system work:
 - `/finish` — final quality pass after token migration
 - `/impeccable craft` — build using the new design system
 
-Doctrine: `impeccable/reference/extract.md` (6-step protocol)
+Doctrine: `../impeccable/reference/extract.md` (6-step protocol)

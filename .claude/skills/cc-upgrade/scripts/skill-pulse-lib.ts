@@ -17,6 +17,16 @@ export interface InstalledSkill {
     githubRepo: string | null;        // e.g. "nicobailon/visual-explainer"
     installedAt: string | null;
     updatedAt: string | null;
+    /**
+     * `upstream` (default) — skill is tracked against an external GitHub repo
+     * and should participate in pulse/outdated checks.
+     * `local` — skill is deliberately PAI-maintained (content lives in
+     * skills-external/ and is git-tracked here). Opt-in via
+     * `.claude-plugin/plugin.json` → `"maintenance": "local"`. Such skills
+     * are excluded from "no repository URL" advisories and from upstream
+     * fetches. See DECISIONS.md 2026-04-15 for the tracking-model rationale.
+     */
+    maintenance: 'upstream' | 'local';
 }
 
 export interface UpstreamData {
@@ -166,6 +176,22 @@ export function readInstalledVersion(resolvedPath: string): string | null {
 }
 
 /**
+ * Read the `maintenance` classification from `.claude-plugin/plugin.json`.
+ * Returns `"local"` only when the field is exactly `"local"`; otherwise `"upstream"`
+ * (the default for all externally-sourced skills).
+ */
+export function readMaintenance(resolvedPath: string): 'upstream' | 'local' {
+    const pluginJsonPath = join(resolvedPath, '.claude-plugin', 'plugin.json');
+    if (!existsSync(pluginJsonPath)) return 'upstream';
+    try {
+        const data = JSON.parse(readFileSync(pluginJsonPath, 'utf-8'));
+        return data.maintenance === 'local' ? 'local' : 'upstream';
+    } catch {
+        return 'upstream';
+    }
+}
+
+/**
  * Try to determine the GitHub repo from plugin.json repository field
  * or package.json repository field. Returns "owner/repo" format or null.
  */
@@ -248,6 +274,7 @@ export function findSymlinkedSkills(skillsPath: string, lockFile: LockFile | nul
             }
 
             const installedVersion = readInstalledVersion(resolvedPath);
+            const maintenance = readMaintenance(resolvedPath);
 
             skills.push({
                 name: entry,
@@ -256,6 +283,7 @@ export function findSymlinkedSkills(skillsPath: string, lockFile: LockFile | nul
                 githubRepo,
                 installedAt,
                 updatedAt,
+                maintenance,
             });
 
             log(`Found skill: ${entry}  repo=${githubRepo ?? 'unknown'}  version=${installedVersion ?? 'unknown'}`);
@@ -268,6 +296,19 @@ export function findSymlinkedSkills(skillsPath: string, lockFile: LockFile | nul
 }
 
 // --- GitHub API ---
+
+/** Empty upstream record — shared default shape. `fetchError` lets the caller
+ *  distinguish "intentionally skipped" (null) from "tried and failed" (string). */
+export function emptyUpstreamData(fetchError: string | null = null): UpstreamData {
+    return {
+        latestTag: null,
+        latestCommitDate: null,
+        stars: null,
+        openIssues: null,
+        defaultBranch: null,
+        fetchError,
+    };
+}
 
 export async function fetchUpstream(repo: string, token: string | null): Promise<UpstreamData> {
     const headers: Record<string, string> = {
@@ -356,6 +397,7 @@ export const ACTIVITY_LABELS: Record<string, string> = {
     slow: 'SLOW  ',
     stale: 'STALE ',
     unknown: '?     ',
+    local: 'LOCAL ',
 };
 
 export function formatReport(report: PulseReport): string {
@@ -390,11 +432,16 @@ export function formatReport(report: PulseReport): string {
             ? `${upstream.stars} stars`
             : 'stars unknown';
         const outdatedFlag = entry.isOutdated ? ' [OUTDATED]' : '';
-        const activityLabel = ACTIVITY_LABELS[entry.activityStatus];
+        const isLocal = skill.maintenance === 'local';
+        const activityLabel = isLocal
+            ? ACTIVITY_LABELS.local
+            : ACTIVITY_LABELS[entry.activityStatus];
 
-        lines.push(`[${activityLabel}] ${skill.name.padEnd(22)} installed=${versionDisplay.padEnd(12)} upstream=${upstreamTag.padEnd(12)} ${starsDisplay}${outdatedFlag}`);
+        lines.push(`[${activityLabel}] ${skill.name.padEnd(22)} installed=${versionDisplay.padEnd(12)} upstream=${isLocal ? 'pai-maintained'.padEnd(12) : upstreamTag.padEnd(12)} ${isLocal ? 'local' : starsDisplay}${outdatedFlag}`);
 
-        if (upstream.fetchError) {
+        if (isLocal) {
+            // PAI-local skills intentionally skip upstream tracking.
+        } else if (upstream.fetchError) {
             lines.push(`           Error: ${upstream.fetchError}`);
         } else if (entry.daysSinceUpstreamCommit !== null) {
             lines.push(`           Last push: ${entry.daysSinceUpstreamCommit} days ago  |  Open issues: ${upstream.openIssues ?? '?'}`);
@@ -430,8 +477,20 @@ export function formatReport(report: PulseReport): string {
         lines.push('');
     }
 
-    // Skills without GitHub tracking
-    const untracked = report.entries.filter(e => !e.skill.githubRepo);
+    // PAI-locally-maintained skills (intentionally no upstream)
+    const local = report.entries.filter(e => e.skill.maintenance === 'local');
+    if (local.length > 0) {
+        lines.push('--- LOCALLY MAINTAINED (no upstream by design) ---\n');
+        for (const e of local) {
+            lines.push(`  ${e.skill.name}: PAI-maintained via skills-external/ (see DECISIONS.md 2026-04-15)`);
+        }
+        lines.push('');
+    }
+
+    // Skills without GitHub tracking — excludes local-maintenance ones
+    const untracked = report.entries.filter(
+        e => !e.skill.githubRepo && e.skill.maintenance !== 'local',
+    );
     if (untracked.length > 0) {
         lines.push('--- SKILLS WITHOUT GITHUB TRACKING ---\n');
         for (const e of untracked) {

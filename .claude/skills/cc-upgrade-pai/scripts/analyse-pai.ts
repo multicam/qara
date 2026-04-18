@@ -295,6 +295,37 @@ export const PAI_MODULES: Record<string, AnalyzerFunction> = {
 
 // --- Main ---
 
+/**
+ * Auto-append analyse-pai findings to the cc-upgrade inbox state.
+ * Opt-in via `--append-inbox` to keep the normal audit path unchanged.
+ * Opt-out via env `ANALYSE_PAI_NO_INBOX_APPEND=1` for test isolation.
+ */
+async function maybeAppendToInbox(report: ReturnType<typeof runAnalysis>): Promise<void> {
+    if (!process.argv.includes('--append-inbox')) return;
+    if (process.env.ANALYSE_PAI_NO_INBOX_APPEND) return;
+
+    const { paiAuditFeed } = await import('../../../hooks/lib/cc-upgrade-inbox/feeds/pai-audit.ts');
+    const { loadInboxState, saveInboxState } = await import(
+        '../../../hooks/lib/cc-upgrade-inbox/state.ts'
+    );
+    const { INBOX_STATE_PATH } = await import(
+        '../../../hooks/lib/cc-upgrade-inbox/review-cli.ts'
+    );
+
+    const findings = paiAuditFeed({ report });
+    if (findings.length === 0) return;
+
+    const state = loadInboxState(INBOX_STATE_PATH);
+    // Record a "last-reviewed-at" watermark so the inbox knows analyse-pai
+    // has contributed. The value is the report timestamp.
+    state.lastReviewedVersion['pai-audit'] = report.timestamp;
+    // We append nothing to reviewedKeys here — the inbox CLI surfaces the
+    // findings on next invocation. The intent is simply to refresh the
+    // watermark so "is this feed fresh?" checks see the latest run.
+    saveInboxState(INBOX_STATE_PATH, state);
+    console.log(`\n[inbox] ${findings.length} PAI-audit findings available for /cc-upgrade-review`);
+}
+
 async function main(): Promise<void> {
     const paiPath = process.argv[2] || process.cwd();
 
@@ -307,6 +338,8 @@ async function main(): Promise<void> {
         console.log('\n--- JSON OUTPUT ---\n');
         console.log(JSON.stringify(report, null, 2));
     }
+
+    await maybeAppendToInbox(report);
 }
 
 // Direct execution guard

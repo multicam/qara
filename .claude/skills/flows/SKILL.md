@@ -74,8 +74,8 @@ Step 2: {action}
 
 ### Reference doctrine
 
-- State machine patterns — `impeccable/reference/interaction-design.md`
-- Label and microcopy — `impeccable/reference/ux-writing.md`
+- State machine patterns — `../impeccable/reference/interaction-design.md`
+- Label and microcopy — `../impeccable/reference/ux-writing.md`
 
 ---
 
@@ -150,4 +150,4 @@ Flow work usually precedes or follows other skills:
 - **Don't redesign individual features.** That's `/shape` + `/impeccable craft`.
 - **Don't skip the Context Gathering Protocol.** Generic journeys = generic screens = AI slop.
 
-Doctrine source of truth for states and copy: `impeccable/reference/interaction-design.md` + `impeccable/reference/ux-writing.md`.
+Doctrine source of truth for states and copy: `../impeccable/reference/interaction-design.md` + `../impeccable/reference/ux-writing.md`.

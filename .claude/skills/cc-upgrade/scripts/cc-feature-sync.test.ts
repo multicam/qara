@@ -18,6 +18,8 @@ import {
   findNewCandidates,
   findVersionGaps,
   formatReport,
+  filterSinceBaseline,
+  parseBaselineArg,
   type ChangelogEntry,
   type FeatureSyncReport,
 } from "./cc-feature-sync";
@@ -251,5 +253,67 @@ describe("formatReport", () => {
     };
     const output = formatReport(report);
     expect(output).toContain("... and 5 more");
+  });
+});
+
+// ─── filterSinceBaseline ────────────────────────────────────────────────────
+
+describe("filterSinceBaseline", () => {
+  const makeEntry = (version: string): ChangelogEntry => ({
+    version,
+    date: null,
+    features: [],
+    raw: "",
+  });
+
+  it("returns all entries when baseline is null", () => {
+    const entries = [makeEntry("2.1.5"), makeEntry("2.1.4")];
+    expect(filterSinceBaseline(entries, null)).toEqual(entries);
+  });
+
+  it("returns only entries strictly greater than baseline", () => {
+    const entries = [
+      makeEntry("2.1.98"),
+      makeEntry("2.1.97"),
+      makeEntry("2.1.96"),
+    ];
+    const filtered = filterSinceBaseline(entries, "2.1.97");
+    expect(filtered.map(e => e.version)).toEqual(["2.1.98"]);
+  });
+
+  it("handles missing patch components", () => {
+    const entries = [makeEntry("2.2"), makeEntry("2.1.0")];
+    expect(filterSinceBaseline(entries, "2.1.99").map(e => e.version)).toEqual(["2.2"]);
+  });
+
+  it("handles v-prefixed baselines", () => {
+    const entries = [makeEntry("2.1.98"), makeEntry("2.1.97")];
+    expect(filterSinceBaseline(entries, "v2.1.97").map(e => e.version)).toEqual(["2.1.98"]);
+  });
+
+  it("returns empty when baseline is at or above every entry", () => {
+    const entries = [makeEntry("2.1.5")];
+    expect(filterSinceBaseline(entries, "9.0.0")).toEqual([]);
+    expect(filterSinceBaseline(entries, "2.1.5")).toEqual([]);
+  });
+});
+
+// ─── parseBaselineArg ───────────────────────────────────────────────────────
+
+describe("parseBaselineArg", () => {
+  it("returns null when --since-baseline is absent", () => {
+    expect(parseBaselineArg(["bun", "script.ts"])).toBeNull();
+  });
+
+  it("parses --since-baseline <value> form", () => {
+    expect(parseBaselineArg(["bun", "script.ts", "--since-baseline", "2.1.98"])).toBe("2.1.98");
+  });
+
+  it("parses --since-baseline=<value> form", () => {
+    expect(parseBaselineArg(["bun", "script.ts", "--since-baseline=2.1.98"])).toBe("2.1.98");
+  });
+
+  it("returns null when --since-baseline appears without a value", () => {
+    expect(parseBaselineArg(["bun", "script.ts", "--since-baseline"])).toBeNull();
   });
 });

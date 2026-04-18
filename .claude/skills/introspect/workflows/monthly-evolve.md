@@ -36,11 +36,9 @@ Writes **proposals**, not direct edits. JM reviews before applying. Output to `~
 
 From miner's monthly output:
 - Compare current CC version vs last month
-- If changed:
-  - Note progression ("2.1.73 → 2.1.85 over March")
-  - Major jumps (>2 minor versions)
-  - Recommend checking CC changelog
-  - Flag new hook events, tools, features
+- If changed, note progression ("2.1.73 → 2.1.85 over March") and major jumps (>2 minor versions).
+
+**Then run `/cc-upgrade-review`** (or note pending inbox items). The iterative review inbox (`.claude/skills/cc-upgrade-pai/workflows/review-inbox.md`) consolidates changelog diffs, new hook events, new tools/features, and every other audit feed into one decision stream with persistent state. Skipping changelog review here is fine — the inbox does that work for you.
 
 ## 4. Harness Code Proposals
 

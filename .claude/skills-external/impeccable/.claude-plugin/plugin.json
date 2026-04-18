@@ -1,0 +1,8 @@
+{
+  "name": "impeccable",
+  "version": "2.1.1",
+  "description": "Create distinctive, production-grade frontend interfaces. Fork of Anthropic's frontend-design skill.",
+  "license": "Apache-2.0",
+  "maintenance": "local",
+  "note": "PAI-maintained fork of Anthropic's frontend-design skill. Content git-tracked at .claude/skills-external/impeccable/. See DECISIONS.md 2026-04-15 and external-skills-registry.md Source 0 for provenance. Preserved across nightly rsync via skills-sync-nightly.sh --exclude=.claude-plugin/."
+}

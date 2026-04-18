@@ -19,6 +19,7 @@ import {
     validateRouteCount,
     scanActivationTriggers,
     extractRoutingSection,
+    validateCrossSkillRefs,
     type SkillFrontmatter,
     type SkillViolation,
 } from '../hooks/lib/skill-validator-lib.ts';
@@ -310,5 +311,99 @@ describe('scanActivationTriggers', () => {
 
     test('empty description → no violation (description-missing covers it)', () => {
         expect(scanActivationTriggers('')).toEqual([]);
+    });
+});
+
+// ── validateCrossSkillRefs ───────────────────────────────────────────────────
+
+describe('validateCrossSkillRefs', () => {
+    function makeSkillsDir(skillNames: string[]): { skillsDir: string; skillDir: string; cleanup: () => void } {
+        const skillsDir = mkdtempSync(join(tmpdir(), 'cross-skill-'));
+        for (const name of skillNames) {
+            mkdirSync(join(skillsDir, name));
+        }
+        const skillDir = join(skillsDir, skillNames[0]);
+        return {
+            skillsDir,
+            skillDir,
+            cleanup: () => rmSync(skillsDir, { recursive: true, force: true }),
+        };
+    }
+
+    test('same-skill ref `workflows/X.md` → no violation', () => {
+        const { skillsDir, skillDir, cleanup } = makeSkillsDir(['review', 'impeccable', 'tune']);
+        try {
+            const body = 'See `workflows/audit.md` for details.';
+            expect(validateCrossSkillRefs(skillDir, skillsDir, body)).toEqual([]);
+        } finally { cleanup(); }
+    });
+
+    test('same-skill ref `references/X.md` → no violation', () => {
+        const { skillsDir, skillDir, cleanup } = makeSkillsDir(['review', 'impeccable']);
+        try {
+            const body = 'Doctrine: `references/patterns.md`';
+            expect(validateCrossSkillRefs(skillDir, skillsDir, body)).toEqual([]);
+        } finally { cleanup(); }
+    });
+
+    test('cross-skill ref without ../ prefix → cross-skill-ref-unprefixed warning', () => {
+        const { skillsDir, skillDir, cleanup } = makeSkillsDir(['review', 'impeccable']);
+        try {
+            const body = 'Consult `impeccable/reference/typography.md`.';
+            const v = validateCrossSkillRefs(skillDir, skillsDir, body);
+            expect(rulesOf(v)).toContain('cross-skill-ref-unprefixed');
+            expect(v[0].severity).toBe('warning');
+            expect(v[0].detail).toContain('impeccable/reference/typography.md');
+            expect(v[0].detail).toContain('../');
+        } finally { cleanup(); }
+    });
+
+    test('cross-skill ref with ../ prefix → no violation', () => {
+        const { skillsDir, skillDir, cleanup } = makeSkillsDir(['review', 'impeccable']);
+        try {
+            const body = 'Consult `../impeccable/reference/typography.md`.';
+            expect(validateCrossSkillRefs(skillDir, skillsDir, body)).toEqual([]);
+        } finally { cleanup(); }
+    });
+
+    test('${PAI_DIR}-prefixed cross-skill ref → no violation', () => {
+        const { skillsDir, skillDir, cleanup } = makeSkillsDir(['review', 'impeccable']);
+        try {
+            const body = 'Load `${PAI_DIR}/skills/impeccable/reference/typography.md`.';
+            expect(validateCrossSkillRefs(skillDir, skillsDir, body)).toEqual([]);
+        } finally { cleanup(); }
+    });
+
+    test('ref with non-sibling first segment → no violation (external/unknown)', () => {
+        const { skillsDir, skillDir, cleanup } = makeSkillsDir(['review', 'impeccable']);
+        try {
+            const body = 'See upstream `mattpocock/skills/some-skill.md`.';
+            expect(validateCrossSkillRefs(skillDir, skillsDir, body)).toEqual([]);
+        } finally { cleanup(); }
+    });
+
+    test('ref to the skill itself → no violation (it is same-skill)', () => {
+        const { skillsDir, skillDir, cleanup } = makeSkillsDir(['review', 'impeccable']);
+        try {
+            const body = 'Docs at `review/workflows/audit.md`.';
+            expect(validateCrossSkillRefs(skillDir, skillsDir, body)).toEqual([]);
+        } finally { cleanup(); }
+    });
+
+    test('multiple cross-skill refs → each gets a violation (deduped by ref path)', () => {
+        const { skillsDir, skillDir, cleanup } = makeSkillsDir(['review', 'impeccable', 'tune']);
+        try {
+            const body =
+                'See `impeccable/reference/typography.md` and `tune/workflows/bolder.md`.\n' +
+                'Also `impeccable/reference/typography.md` again (same ref).';
+            const v = validateCrossSkillRefs(skillDir, skillsDir, body);
+            expect(v.length).toBe(2);
+            expect(v.every(x => x.rule === 'cross-skill-ref-unprefixed')).toBe(true);
+        } finally { cleanup(); }
+    });
+
+    test('missing skillsDir → no violations (graceful)', () => {
+        const body = 'Consult `impeccable/reference/typography.md`.';
+        expect(validateCrossSkillRefs('/tmp/nonexistent-skill', '/tmp/nonexistent-skills', body)).toEqual([]);
     });
 });

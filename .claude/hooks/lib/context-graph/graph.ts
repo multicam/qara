@@ -6,9 +6,9 @@
  */
 
 import { join } from 'path';
-import { existsSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { PAI_DIR } from '../pai-paths';
-import { scanAll } from './scanner';
+import { scanAll, extractAdvisoryBrokenTableRefs } from './scanner';
 import type {
   ContextGraph,
   ContextEdge,
@@ -111,7 +111,26 @@ export function findOrphans(graph: ContextGraph): OrphanReport {
       lineNumber: e.lineNumber,
     }));
 
-  return { unreferencedFiles, brokenReferences };
+  // Advisory broken table-cell refs (missing `../` prefix pattern). Re-scan
+  // SKILL.md nodes because the regular scanner skips unresolvable table refs
+  // by design, to avoid false positives from upstream-source documentation
+  // tables.
+  const advisoryBrokenReferences: OrphanReport['advisoryBrokenReferences'] = [];
+  for (const node of graph.nodes.values()) {
+    if (node.kind !== 'skill') continue;
+    if (!node.skillName) continue;
+    const skillsDir = node.id.slice(0, node.id.lastIndexOf('/' + node.skillName + '/'));
+    try {
+      const content = readFileSync(node.id, 'utf-8');
+      advisoryBrokenReferences.push(
+        ...extractAdvisoryBrokenTableRefs(node.id, content, skillsDir),
+      );
+    } catch {
+      // Skip unreadable files
+    }
+  }
+
+  return { unreferencedFiles, brokenReferences, advisoryBrokenReferences };
 }
 
 /**

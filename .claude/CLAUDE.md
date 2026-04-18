@@ -26,4 +26,16 @@ NEVER use CC-generated random names (e.g. `snuggly-painting-bee.md`, `splendid-f
 
 When plan mode assigns a random filename, rename it immediately before writing content.
 
+## Documentation Hygiene (Agent-Facing)
+
+Applies to append-only logs Claude writes for Claude's recall — `DECISIONS.md`, `IMPROVEMENT_LOG.md`, `patterns/*.md`, and any file carrying the pointer `Style: see .claude/CLAUDE.md § Documentation Hygiene`. Does **not** apply to memory files, plans, research, specs, or policy docs.
+
+**Keep:** the decision / observation itself, alternatives rejected, the *why* that changes future behavior, thresholds / rules / retry-limits, revisit triggers, exact file paths if referenced later, measured deltas (test counts, scores, $).
+
+**Drop:** narrative lead-ins, "why it matters" paragraphs, recap tables, verbose file lists unless load-bearing, duplicated reasoning, example pairs, rhetorical framing, per-change LOC deltas.
+
+**Target:** 1–3 sentences per section. Bullet lists over prose. Back-trim older entries when touched.
+
+**Archive:** when a file ≥400 lines, move entries older than the current year to `<stem>/YYYY.md`. Add a pointer at the top of the live file: `Older entries: [YYYY](<stem>/YYYY.md).`
+
 Project-specific instructions are in each repo's root `CLAUDE.md`.

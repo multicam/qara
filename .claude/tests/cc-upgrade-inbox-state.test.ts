@@ -75,11 +75,26 @@ describe('loadInboxState / saveInboxState', () => {
         },
       ],
       grandfathered: ['orphan:/some/path.md'],
+      firstRunCompleted: true,
     };
 
     saveInboxState(statePath, original);
     const loaded = loadInboxState(statePath);
     expect(loaded).toEqual(original);
+  });
+
+  it('loads firstRunCompleted as false when absent from persisted state', () => {
+    const statePath = join(workDir, 'state.json');
+    writeFileSync(
+      statePath,
+      JSON.stringify({
+        version: 1,
+        lastReviewedVersion: {},
+        reviewedKeys: [],
+        grandfathered: [],
+      }),
+    );
+    expect(loadInboxState(statePath).firstRunCompleted).toBe(false);
   });
 
   it('writes atomically via temp-file + rename', () => {

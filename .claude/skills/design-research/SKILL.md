@@ -197,4 +197,4 @@ Research briefs feed directly into downstream skills:
 - Don't make design decisions. Research presents options; the user decides.
 - Don't skip the Context Gathering Protocol. Generic research = generic design.
 
-Doctrine: `impeccable/reference/{typography, color-and-contrast, spatial-design}.md` for pattern classification.
+Doctrine: `../impeccable/reference/{typography, color-and-contrast, spatial-design}.md` for pattern classification.

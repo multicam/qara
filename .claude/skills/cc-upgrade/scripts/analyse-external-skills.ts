@@ -101,7 +101,8 @@ function findSymlinkedSkills(skillsPath: string): ExternalSkill[] {
         hasSKILLmd,
         frontmatter,
         lineCount,
-        hasReferences: existsSync(join(resolvedTarget, "references")),
+        hasReferences: existsSync(join(resolvedTarget, "references"))
+                    || existsSync(join(resolvedTarget, "reference")),
         hasScripts: existsSync(join(resolvedTarget, "scripts")),
         hasWorkflows: existsSync(join(resolvedTarget, "workflows")),
       });
@@ -271,7 +272,7 @@ export const analyzeSkillQuality: AnalyzerFunction = (basePath: string): Analysi
   const withReferences = skills.filter(s => s.hasReferences);
   if (withReferences.length > 0) {
     result.score += 5;
-    result.findings.push(`${withReferences.length}/${skills.length} external skills use progressive disclosure (references/)`);
+    result.findings.push(`${withReferences.length}/${skills.length} external skills use progressive disclosure (references/ or reference/)`);
   } else {
     result.findings.push("No external skills use progressive disclosure");
     result.recommendations.push("External skills should use references/ for detailed content");

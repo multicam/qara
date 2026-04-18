@@ -9,7 +9,7 @@ user-invocable: true
 argument-hint: "[layout|motion|responsive|performance] [target]"
 ---
 
-Thin dispatcher for four enhancement dimensions. Each sub-mode is a procedure outline — doctrine lives in `impeccable/reference/*.md`. This skill dispatches procedure; it does not own rules.
+Thin dispatcher for four enhancement dimensions. Each sub-mode is a procedure outline — doctrine lives in `../impeccable/reference/*.md`. This skill dispatches procedure; it does not own rules.
 
 **Source heritage:** Absorbs layout v2.1.1, animate v2.1.1, adapt v2.1.1, optimize v2.1.1. Upstream preserved at `skills-external/{layout,animate,adapt,optimize}/`.
 
@@ -32,7 +32,7 @@ Design Context must be loaded (see CORE's Design Context Session Guard). If not 
 
 ## Mode: layout
 
-Improve spatial rhythm, visual hierarchy, and composition. Doctrine: `impeccable/reference/spatial-design.md`.
+Improve spatial rhythm, visual hierarchy, and composition. Doctrine: `../impeccable/reference/spatial-design.md`.
 
 ### Assess current layout
 
@@ -67,7 +67,7 @@ Squint test, rhythm consistency, hierarchy clarity, breathing room, responsive b
 
 ## Mode: motion
 
-Add purposeful animation and micro-interactions. Doctrine: `impeccable/reference/motion-design.md`.
+Add purposeful animation and micro-interactions. Doctrine: `../impeccable/reference/motion-design.md`.
 
 ### Assess animation opportunities
 
@@ -107,7 +107,7 @@ Six categories:
 
 ## Mode: responsive
 
-Adapt for different screen sizes and devices. Doctrine: `impeccable/reference/responsive-design.md`.
+Adapt for different screen sizes and devices. Doctrine: `../impeccable/reference/responsive-design.md`.
 
 ### Assess adaptation challenge
 
@@ -194,4 +194,4 @@ After enhancement, recommend next steps:
 - `/review` — verify the enhancement resolved the issues
 - `/finish` — pre-ship quality pass (always run before shipping)
 
-Doctrine source of truth is always `impeccable/reference/*.md`. This skill dispatches procedure; it does not own rules.
+Doctrine source of truth is always `../impeccable/reference/*.md`. This skill dispatches procedure; it does not own rules.

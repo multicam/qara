@@ -28,7 +28,7 @@ Domain extensions: `cc-upgrade-pai` (Personal AI Infrastructure repos).
 -> RUN: `bun run scripts/skill-pulse-check.ts`
 
 **Thorough/interactive audit**: "full audit", "interview me about my setup"
--> READ: `workflows/interactive-audit.md`
+→ **READ:** `workflows/interactive-audit.md`
 
 **CC version check / general audit**: continue with Core Workflow below.
 

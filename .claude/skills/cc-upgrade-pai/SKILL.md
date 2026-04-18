@@ -13,17 +13,20 @@ Extends `cc-upgrade` with PAI-specific analysis.
 ## Workflow Routing
 
 **PAI external skills analysis / Qara skill review**: "audit PAI skills", "deep skill analysis", "PAI skill redundancies", "visual-explainer audit", "mattpocock sync", "skill wrapping opportunities"
--> READ: `workflows/external-skills-deep-analysis.md`
+→ **READ:** `workflows/external-skills-deep-analysis.md`
 
 **External skills registry / inventory**: "external skills registry", "skill inventory", "what skills are installed"
--> READ: `references/external-skills-registry.md`
+→ **READ:** `references/external-skills-registry.md`
+
+**Iterative review inbox**: "cc upgrade review", "review inbox", "audit inbox", "process pending audit findings"
+→ **READ:** `workflows/review-inbox.md`
 
 **General PAI CC audit**: continue below.
 
 ## Prerequisites
 
--> READ: `../cc-upgrade/references/cc-trusted-sources.md`
--> READ: `../cc-upgrade/references/12-factor-checklist.md`
+→ **READ:** `../cc-upgrade/references/cc-trusted-sources.md`
+→ **READ:** `../cc-upgrade/references/12-factor-checklist.md`
 
 ## PAI-Specific Analysis
 
@@ -290,6 +293,7 @@ In addition to base cc-upgrade review:
 
 **DECISIONS.md health**:
 - Exists, follows template (Chosen/Alternatives/Why/Trade-offs/Revisit if)
+- Complies with `.claude/CLAUDE.md` § Documentation Hygiene (Agent-Facing): concise, 1–3 sentences per section, archive pointer present when live file ≥400 lines
 - "Revisit if" conditions — flag any now true
 - No stale entries referencing deleted files
 

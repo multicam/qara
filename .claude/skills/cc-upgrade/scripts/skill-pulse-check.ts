@@ -18,6 +18,7 @@ import {
     readLockFile,
     findSymlinkedSkills,
     fetchUpstream,
+    emptyUpstreamData,
     getGithubToken,
     isOutdated,
     daysSince,
@@ -70,17 +71,12 @@ async function main(): Promise<void> {
         const results = await Promise.all(batch.map(async (skill) => {
             let upstream: UpstreamData;
 
-            if (skill.githubRepo) {
+            if (skill.maintenance === 'local') {
+                upstream = emptyUpstreamData();
+            } else if (skill.githubRepo) {
                 upstream = await fetchUpstream(skill.githubRepo, token);
             } else {
-                upstream = {
-                    latestTag: null,
-                    latestCommitDate: null,
-                    stars: null,
-                    openIssues: null,
-                    defaultBranch: null,
-                    fetchError: 'No GitHub repository identified',
-                };
+                upstream = emptyUpstreamData('No GitHub repository identified');
             }
 
             const days = upstream.latestCommitDate

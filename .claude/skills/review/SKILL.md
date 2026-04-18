@@ -43,7 +43,7 @@ Evaluate:
 
 **Holistic Design Review:** Visual hierarchy (eye flow, primary action clarity), information architecture (structure, grouping, cognitive load), emotional resonance (brand/audience match), discoverability (interactive elements obvious?), composition (balance, whitespace, rhythm), typography (hierarchy, readability, font choices), color (purposeful, cohesive, accessible), states & edge cases (empty, loading, error, success), microcopy (clarity, tone, helpfulness).
 
-**Cognitive Load** (consult `impeccable/reference/cognitive-load.md`):
+**Cognitive Load** (consult `../impeccable/reference/cognitive-load.md`):
 - Run the 8-item checklist. 0-1 failures = low (good), 2-3 = moderate, 4+ = critical.
 - Count visible options at each decision point. Flag if >4.
 - Check progressive disclosure: is complexity revealed only when needed?
@@ -53,7 +53,7 @@ Evaluate:
 - Peak-end rule: most intense moment positive? Experience ends well?
 - Emotional valleys: anxiety spikes at high-stakes moments (payment, delete). Design interventions present?
 
-**Nielsen's Heuristics** (consult `impeccable/reference/heuristics-scoring.md`):
+**Nielsen's Heuristics** (consult `../impeccable/reference/heuristics-scoring.md`):
 Score each of the 10 heuristics 0-4.
 
 ### Assessment B: Automated Detection
@@ -112,7 +112,7 @@ Be honest. A 4 means genuinely excellent. Most real interfaces score 20-32.
 - Fix — concrete suggestion
 - Suggested command — from new names: `/enhance layout`, `/enhance motion`, `/enhance responsive`, `/enhance performance`, `/finish polish`, `/finish copy`, `/tune bolder`, `/tune quieter`, `/tune colorize`, `/harden`, `/impeccable-typeset`
 
-**Persona Red Flags** (consult `impeccable/reference/personas.md`):
+**Persona Red Flags** (consult `../impeccable/reference/personas.md`):
 Auto-select 2-3 relevant personas. Walk through primary action, list specific red flags. Be specific — name exact elements and interactions.
 
 **Minor Observations:** Quick notes on smaller issues.
@@ -219,4 +219,4 @@ End with `/finish` as the final step if any fixes were recommended.
 
 **Diagrams:** For full reviews with 10+ findings, use `/visual-explainer` to produce a visual audit report (scored dimensions, severity breakdown, architecture diagram of the review scope).
 
-**Doctrine:** `impeccable/reference/{cognitive-load, heuristics-scoring, personas}.md`
+**Doctrine:** `../impeccable/reference/{cognitive-load, heuristics-scoring, personas}.md`

@@ -15,7 +15,7 @@
  */
 
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
-import { join, basename } from 'node:path';
+import { join, basename, dirname } from 'node:path';
 import {
     splitSkillMd,
     validateFrontmatter,
@@ -25,6 +25,7 @@ import {
     validateRouteCount,
     scanActivationTriggers,
     extractRoutingSection,
+    validateCrossSkillRefs,
     type SkillViolation,
     type SkillValidationResult,
 } from '../../../hooks/lib/skill-validator-lib.ts';
@@ -74,6 +75,7 @@ export async function validateSkill(skillDir: string): Promise<ValidationResult>
         ...scanOrphans(skillDir, body),
         ...validateRouteCount(routingSection, workflowCount),
         ...scanActivationTriggers(`${description} ${whenToUse}`.trim()),
+        ...validateCrossSkillRefs(skillDir, dirname(skillDir), body),
     ];
 
     const hasErrors = violations.some(v => v.severity === 'error');

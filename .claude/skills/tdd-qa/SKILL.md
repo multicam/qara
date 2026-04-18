@@ -52,7 +52,8 @@ description: |
 
 Workflow steps are typed **deterministic** or **agentic** (Stripe Minions pattern). See `references/blueprint-pattern.md`.
 
-> **Bombadil (v0.3.2)** is experimental — invoke explicitly (`explore-bombadil`), not routed by default.
+> **Bombadil (v0.3.2)** is experimental — invoke explicitly, not routed by default.
+> → **READ:** `workflows/explore-bombadil.md` when user asks for Bombadil exploration.
 
 ## Lifecycle Completion
 

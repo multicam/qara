@@ -240,4 +240,4 @@ After finish, the feature is ready for:
 - `/review technical` — quick scan to confirm no regressions from the polish/copy changes. This is a lightweight gate, not a full review.
 - Ship if the technical scan returns clean.
 
-Doctrine: `impeccable/reference/{ux-writing, interaction-design}.md`
+Doctrine: `../impeccable/reference/{ux-writing, interaction-design}.md`

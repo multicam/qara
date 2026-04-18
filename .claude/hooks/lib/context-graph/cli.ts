@@ -61,6 +61,8 @@ function runScan(graph: ContextGraph): void {
 function runOrphans(graph: ContextGraph): void {
   const report = findOrphans(graph);
 
+  const paiRel = paiDirOverride || process.env.PAI_DIR || '';
+
   if (jsonOutput) {
     console.log(JSON.stringify({
       unreferencedFiles: report.unreferencedFiles.map(n => ({
@@ -69,9 +71,14 @@ function runOrphans(graph: ContextGraph): void {
         tokenEstimate: n.tokenEstimate,
       })),
       brokenReferences: report.brokenReferences.map(b => ({
-        source: relative(paiDirOverride || process.env.PAI_DIR || '', b.source),
-        target: relative(paiDirOverride || process.env.PAI_DIR || '', b.target),
+        source: relative(paiRel, b.source),
+        target: relative(paiRel, b.target),
         lineNumber: b.lineNumber,
+      })),
+      advisoryBrokenReferences: report.advisoryBrokenReferences.map(a => ({
+        source: relative(paiRel, a.source),
+        ref: a.ref,
+        lineNumber: a.lineNumber,
       })),
     }, null, 2));
     return;
@@ -93,9 +100,18 @@ function runOrphans(graph: ContextGraph): void {
   } else {
     console.log(`Broken references (target not found):`);
     for (const br of report.brokenReferences) {
-      const src = relative(paiDirOverride || process.env.PAI_DIR || '', br.source);
-      const tgt = relative(paiDirOverride || process.env.PAI_DIR || '', br.target);
+      const src = relative(paiRel, br.source);
+      const tgt = relative(paiRel, br.target);
       console.log(`  ${src}:${br.lineNumber} → ${tgt} (not found)`);
+    }
+  }
+
+  if (report.advisoryBrokenReferences.length > 0) {
+    console.log('');
+    console.log(`Advisory table-cell refs (cross-skill path likely missing ../ prefix):`);
+    for (const adv of report.advisoryBrokenReferences) {
+      const src = relative(paiRel, adv.source);
+      console.log(`  ${src}:${adv.lineNumber} → \`${adv.ref}\` (sibling skill; use \`../${adv.ref}\`)`);
     }
   }
 }
@@ -229,6 +245,7 @@ function runAudit(graph: ContextGraph): void {
         tokenEstimate: n.tokenEstimate,
       })),
       brokenReferences: orphanReport.brokenReferences,
+      advisoryBrokenReferences: orphanReport.advisoryBrokenReferences,
     }, cycles }, null, 2));
     return;
   }

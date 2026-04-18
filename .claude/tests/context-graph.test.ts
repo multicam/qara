@@ -280,6 +280,40 @@ describe('Analysis', () => {
     }
   });
 
+  it('findOrphans — advisoryBrokenReferences is defined and an array', () => {
+    graph = graph || buildGraph(PAI_DIR);
+    const report = findOrphans(graph);
+    expect(Array.isArray(report.advisoryBrokenReferences)).toBe(true);
+  });
+
+  it('findOrphans — advisoryBrokenReferences flags cross-skill refs missing ../ prefix', () => {
+    graph = graph || buildGraph(PAI_DIR);
+    const report = findOrphans(graph);
+    // Post FIX-1, no skill should have bare `impeccable/reference/X.md` table
+    // references. This test acts as a regression guard: if the bad pattern
+    // reappears, it should surface here.
+    const badPattern = report.advisoryBrokenReferences.filter(r =>
+      /\/impeccable\/reference\/[^/]+\.md$/.test(r.ref) && !r.ref.startsWith('../')
+    );
+    expect(badPattern.length).toBe(0);
+  });
+
+  it('findOrphans — advisoryBrokenReferences detects simulated cross-skill ref', () => {
+    // Build a minimal graph with a synthetic broken cross-skill ref and
+    // confirm the advisory surfaces it. Uses the scanner's extractor directly.
+    const syntheticContent =
+      '## Table\n\n| A | B |\n|---|---|\n| foo | `impeccable/reference/nonexistent-xyz-abc.md` |\n';
+    const { extractAdvisoryBrokenTableRefs } = require('../hooks/lib/context-graph/scanner');
+    const advisories = extractAdvisoryBrokenTableRefs(
+      join(SKILLS_DIR, 'review/SKILL.md'),
+      syntheticContent,
+      SKILLS_DIR,
+    );
+    const hit = advisories.find((a: { ref: string }) => a.ref.endsWith('nonexistent-xyz-abc.md'));
+    expect(hit).toBeDefined();
+    expect(hit.ref).toContain('impeccable/reference/');
+  });
+
   it('analyzeImpact — CONSTITUTION.md has CORE/SKILL.md as direct dependent', () => {
     graph = graph || buildGraph(PAI_DIR);
     const report = analyzeImpact(graph, 'CONSTITUTION.md');

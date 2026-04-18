@@ -41,6 +41,7 @@ export function loadInboxState(filePath: string): InboxState {
       lastReviewedVersion: parsed.lastReviewedVersion ?? {},
       reviewedKeys: parsed.reviewedKeys ?? [],
       grandfathered: parsed.grandfathered ?? [],
+      firstRunCompleted: parsed.firstRunCompleted ?? false,
     };
   } catch {
     return emptyInboxState();

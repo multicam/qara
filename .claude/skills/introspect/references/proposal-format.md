@@ -75,3 +75,4 @@ Each proposal file contains one or more proposals in this format:
 - Monthly report includes a summary table linking to each proposal
 - Approved proposals get logged in `IMPROVEMENT_LOG.md`
 - Significant proposals also get a `DECISIONS.md` entry
+- Both follow `.claude/CLAUDE.md` § Documentation Hygiene (Agent-Facing): concise prose, 1–3 sentences per section, archive-by-year at `<stem>/YYYY.md` when ≥400 lines

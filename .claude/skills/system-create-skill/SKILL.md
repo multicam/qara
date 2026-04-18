@@ -36,6 +36,7 @@ Every skill creation/update request MUST follow architectural compliance validat
 3. **Every secondary file must be linked** from main SKILL.md body
 4. **Follow canonical archetype** (Minimal/Standard/Complex)
 5. **Progressive disclosure:** SKILL.md → workflows → documentation → references
+6. **Cross-skill refs use `../` or `${PAI_DIR}/` prefix** — bare `other-skill/path.md` resolves relative to the current skill, not the sibling. See `${PAI_DIR}/skills/CORE/skill-structure.md` § Cross-Skill References. Enforced by `validateCrossSkillRefs` (warning).
 
 ## Quality Gates
 
