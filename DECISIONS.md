@@ -22,7 +22,7 @@ Older entries live in `decisions/` year archives: [2025](decisions/2025.md) · [
 
 **Net:** Tests **2000 → 2022 pass** (+22 new: 8 memory-warning + 13 GC + 1 rename cascade). PAI audit **214/214** holds. 94 test files (+1). ~60 lines of permanent custom code + ~86 lines of Bash; throwaway script deleted post-run.
 
-**Revisit if:** CC ships native compaction/cross-project memory/budget-warning (all candidates to remove), warning at 70 % fires too rarely to prevent truncation loss (bump to 60 %), or stub MEMORY.md regenerates faster than daily sweep (investigate CC harness behavior). Plan: `thoughts/shared/plans/infra--memory-system-redesign-v1.md`.
+**Revisit if:** CC ships native compaction/cross-project memory/budget-warning (all candidates to remove), warning at 70 % fires too rarely to prevent truncation loss (bump to 60 %), or stub MEMORY.md regenerates faster than daily sweep (investigate CC harness behavior). Plan: `thoughts/shared/plans/archive/2026-04/infra--memory-system-redesign-v1.md` (archived 2026-04-19).
 
 ---
 
@@ -132,7 +132,7 @@ Older entries live in `decisions/` year archives: [2025](decisions/2025.md) · [
 - `skills-validation.test.ts`: NON_SKILL_DIRS excludes `thoughts/` (fixes 7 pre-existing failures).
 - Codified MEMORY.md session-boundary write rule (cache stability).
 
-**Net:** ~33.6KB (~8,400 tokens) savings/session. Skills 44 → 34 (32 local + 2 symlinked). Plan: `thoughts/shared/plans/infra--memory-pointer-migration-v1.md`. Research: `thoughts/shared/plans/research--pointers-in-context-memory-v1.md`.
+**Net:** ~33.6KB (~8,400 tokens) savings/session. Skills 44 → 34 (32 local + 2 symlinked). Plan: `thoughts/shared/plans/archive/2026-04/infra--memory-pointer-migration-v1.md`. Research: `thoughts/shared/plans/archive/2026-04/research--pointers-in-context-memory-v1.md`.
 
 ---
 
@@ -213,7 +213,7 @@ Older entries live in `decisions/` year archives: [2025](decisions/2025.md) · [
 - Patch `skills-sync-nightly.sh` broken-symlink repair — over-engineered; existing reaper is additive, retargeting is one-time.
 - Keep `lsp-integration.md` for hypothetical LSP adoption — contradicts the signal; restore from git if needed.
 
-**Net:** 1834 tests, 0 fail. Folder audit 90/90, external skills 45/50 → 46/50. Report 27 rows → 16 (every row now relevant). Plan: `thoughts/shared/plans/infra--cc-feature-cleanup-v1.md`.
+**Net:** 1834 tests, 0 fail. Folder audit 90/90, external skills 45/50 → 46/50. Report 27 rows → 16 (every row now relevant). Plan: `thoughts/shared/plans/archive/2026-04/infra--cc-feature-cleanup-v1.md`.
 
 ---
 
