@@ -5,7 +5,7 @@ Activated by `cruise/SKILL.md` when `ModeState.planPath` is set. Replaces cruise
 ## Prerequisites
 
 - `ModeState.planPath` set (keyword-router extracts `plans/*.md` from activation text).
-- Plan file already read during cruise's Plan-Aware Entry; `decisions.md` populated.
+- Plan file already read during cruise's Plan-Aware Entry; `mode-decisions.md` populated.
 - Plan follows `plan-template.md` structure (`## Phase N:` headings + `#### Automated Verification:` subsections). Readiness enforced upstream by `plan-readiness-assessment.md`.
 
 ## Plan Cache
@@ -153,7 +153,7 @@ Pass → output completion summary (commits, phases completed, test count), deac
 
 ## Working Memory (Batched)
 
-4-file memory at `$STATE_DIR/sessions/{session_id}/memory/`: `decisions.md`, `learnings.md`, `issues.md`, `problems.md`.
+4-file memory at `$STATE_DIR/sessions/{session_id}/memory/`: `mode-decisions.md`, `learnings.md`, `issues.md`, `problems.md`.
 
 **Batching rule:** accumulate observations in-context during a phase. Flush once at phase transition with a single Write per touched memory file. Do NOT flush on every small event — batch.
 

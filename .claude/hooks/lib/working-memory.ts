@@ -2,10 +2,11 @@
  * Working Memory — Session-scoped structured memory for execution modes.
  *
  * Four-file memory persists across Stop hook continuations:
- * - learnings.md  — discoveries, unexpected findings
- * - decisions.md  — choices made and why
- * - issues.md     — bugs found, concerns raised
- * - problems.md   — blockers, open questions
+ * - learnings.md      — discoveries, unexpected findings
+ * - mode-decisions.md — choices made and why (renamed from `decisions.md` to
+ *                       disambiguate from qara's root DECISIONS.md — G6 fix)
+ * - issues.md         — bugs found, concerns raised
+ * - problems.md       — blockers, open questions
  *
  * Storage: STATE_DIR/sessions/{sessionId}/memory/
  * Injected into continuation messages by the Stop hook so critical
@@ -16,13 +17,13 @@ import { existsSync, readFileSync, writeFileSync, appendFileSync, mkdirSync, ren
 import { join } from "path";
 import { getSessionsDir, getSessionId } from "./pai-paths";
 
-const MEMORY_FILES = ["learnings.md", "decisions.md", "issues.md", "problems.md"] as const;
+const MEMORY_FILES = ["learnings.md", "mode-decisions.md", "issues.md", "problems.md"] as const;
 type MemoryFile = (typeof MEMORY_FILES)[number];
 type MemoryCategory = "learning" | "decision" | "issue" | "problem";
 
 const CATEGORY_TO_FILE: Record<MemoryCategory, MemoryFile> = {
   learning: "learnings.md",
-  decision: "decisions.md",
+  decision: "mode-decisions.md",
   issue: "issues.md",
   problem: "problems.md",
 };

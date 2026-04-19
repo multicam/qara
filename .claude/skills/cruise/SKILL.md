@@ -18,7 +18,7 @@ Before Phase 1, check: was cruise activated with a plan file path (e.g. `cruise:
 1. Read the plan file fully.
 2. Verify it has implementation phases with success criteria (not just an outline).
 3. **Valid plan**:
-   - Populate `decisions.md` with key discoveries, constraints, approach.
+   - Populate `mode-decisions.md` with key discoveries, constraints, approach.
    - Confirm `ModeState.planPath` is set (keyword-router writes it when activation text matches `plans/*.md`).
    - Skip Phases 1–4 below.
    - Delegate to `workflows/plan-entry.md` for the full per-phase loop.
@@ -36,14 +36,14 @@ Before Phase 1, check: was cruise activated with a plan file path (e.g. `cruise:
 1. Extract key nouns from task (module names, file names, feature names).
 2. Per noun: `Grep` codebase. Read top 3 matching files.
 3. Per file: extract imports → dependency list.
-4. Write `decisions.md`: affected files, dependencies, constraints.
+4. Write `mode-decisions.md`: affected files, dependencies, constraints.
 5. Checkpoint: `DISCOVER COMPLETE: {files} files, {deps} deps`.
 
-EXIT: `decisions.md` has discovery entry. 3 iterations without checkpoint → escalate.
+EXIT: `mode-decisions.md` has discovery entry. 3 iterations without checkpoint → escalate.
 
 ## Phase 2: Plan (max 2 iterations)
 
-Write to `decisions.md`:
+Write to `mode-decisions.md`:
 ```
 ## Implementation Plan
 - Create: {paths}

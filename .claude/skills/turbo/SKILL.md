@@ -17,13 +17,13 @@ If activated with a plan file path (e.g. `turbo: implement plans/foo-v1.md`):
 
 1. Read the plan file fully.
 2. Check independence: no phase references output from another phase.
-3. Independent → use phases as subtasks, map each to an agent type + tier (see Dispatch matrix). Write to `decisions.md`. Skip to step 2 (Dispatch). Output: `PLAN DECOMPOSED: {N} independent subtasks`.
+3. Independent → use phases as subtasks, map each to an agent type + tier (see Dispatch matrix). Write to `mode-decisions.md`. Skip to step 2 (Dispatch). Output: `PLAN DECOMPOSED: {N} independent subtasks`.
 4. Sequential/dependent → deactivate turbo, activate cruise with plan reference. Output: `PLAN IS SEQUENTIAL: falling back to cruise`.
 5. `<2` phases → fall back to cruise.
 
 ## 1. Decompose
 
-2–5 independent subtasks. Write to `decisions.md`:
+2–5 independent subtasks. Write to `mode-decisions.md`:
 
 ```
 Subtask {n}: {title}
@@ -95,7 +95,7 @@ All pass → deactivate `complete`.
 
 ## Working Memory (Batched)
 
-4-file memory in `$STATE_DIR/sessions/{session_id}/memory/`: `decisions.md`, `learnings.md`, `problems.md`, `issues.md`.
+4-file memory in `$STATE_DIR/sessions/{session_id}/memory/`: `mode-decisions.md`, `learnings.md`, `problems.md`, `issues.md`.
 
 **Batch writes.** Flush at: decomposition complete, after each agent completes, during synthesis, at mode deactivation. No per-event flushing.
 

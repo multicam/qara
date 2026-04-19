@@ -74,7 +74,7 @@ describe("Working Memory", () => {
       appendDecision("chose approach A", "append-test-2");
       appendDecision("chose approach B", "append-test-2");
       const dir = getMemoryDir("append-test-2");
-      const content = readFileSync(join(dir, "decisions.md"), "utf-8");
+      const content = readFileSync(join(dir, "mode-decisions.md"), "utf-8");
       expect(content).toContain("chose approach A");
       expect(content).toContain("chose approach B");
       // Header only once

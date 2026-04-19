@@ -85,7 +85,7 @@ When `allStoriesPassing(prd) == true`:
 
 ## Working Memory (Batched)
 
-4-file memory in `$STATE_DIR/sessions/{session_id}/memory/`: `decisions.md`, `learnings.md`, `problems.md`, `issues.md`.
+4-file memory in `$STATE_DIR/sessions/{session_id}/memory/`: `mode-decisions.md`, `learnings.md`, `problems.md`, `issues.md`.
 
 **Batch writes.** Accumulate observations in-context during a story. Flush once per story transition (or immediately on critic/verifier rejection, blocker, or bug discovery).
 

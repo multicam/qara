@@ -15,7 +15,7 @@
 import { existsSync, readFileSync, writeFileSync, readdirSync, statSync, unlinkSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
-import { SKILLS_DIR, QARA_DIR, STATE_DIR, getSessionsDir } from './lib/pai-paths';
+import { PAI_DIR, SKILLS_DIR, QARA_DIR, STATE_DIR, getSessionsDir } from './lib/pai-paths';
 import { setTerminalTabTitle } from './lib/tab-titles';
 import { readTDDStateRaw, clearTDDState, isStateValid } from './lib/tdd-state';
 import { loadCheckpoint, clearCheckpoint, formatCheckpointSummary } from './lib/compact-checkpoint';
@@ -24,6 +24,13 @@ import { getISOTimestamp } from './lib/datetime-utils';
 
 const DEBOUNCE_MS = 2000;
 const LEDGER_TTL_MS = 86400000; // 24 hours
+
+// Memory warning: CC truncates MEMORY.md at 200 lines OR 25 KB (v2.1.98),
+// dropping NEWEST entries first (GitHub #39811). Warn early so older entries
+// can be archived before new learnings vanish. Single tunable constant.
+const MEMORY_WARN_PCT = 70;
+const MEMORY_MAX_LINES = 200;
+const MEMORY_MAX_BYTES = 25_000;
 
 /**
  * Check if this is a subagent session
@@ -67,6 +74,40 @@ function loadCoreContext(): void {
 
   const skillContent = readFileSync(skillPath, 'utf-8');
   console.log(`<system-reminder>\n${skillContent}\n</system-reminder>`);
+}
+
+/**
+ * Check whether the current project's MEMORY.md is near CC's silent-truncation cap.
+ * Returns a formatted <system-reminder> string to emit, or null if under threshold.
+ *
+ * Pure function — exported for unit testing. Takes paiDir and cwd as params so tests
+ * can use fixture directories without touching the live filesystem.
+ */
+export function checkMemoryBudget(paiDir: string, cwd: string): string | null {
+  if (!cwd.startsWith('/')) return null;
+
+  const slug = cwd.replace(/^\//, '').replace(/\//g, '-');
+  const memoryPath = join(paiDir, 'projects', `-${slug}`, 'memory', 'MEMORY.md');
+  if (!existsSync(memoryPath)) return null;
+
+  let content: string;
+  try {
+    content = readFileSync(memoryPath, 'utf-8');
+  } catch {
+    return null;
+  }
+
+  const lines = content.split('\n').length;
+  const bytes = Buffer.byteLength(content, 'utf-8');
+  const linePct = (lines / MEMORY_MAX_LINES) * 100;
+  const bytePct = (bytes / MEMORY_MAX_BYTES) * 100;
+  const worstPct = Math.max(linePct, bytePct);
+
+  if (worstPct < MEMORY_WARN_PCT) return null;
+
+  const kb = Math.round(bytes / 1024);
+  const maxKb = Math.round(MEMORY_MAX_BYTES / 1024);
+  return `<system-reminder>MEMORY.md is ${lines}/${MEMORY_MAX_LINES} lines, ${kb}/${maxKb} KB (${Math.round(worstPct)}% of budget). CC truncates NEWEST entries first when over cap (GitHub #39811) — move older entries to an archive file before recent learnings vanish. Pattern: mirror DECISIONS.md — create MEMORY-YYYY.md with older content and add "Older entries: [archive](MEMORY-YYYY.md)" at the top of the live file.</system-reminder>`;
 }
 
 /**
@@ -170,6 +211,13 @@ async function main() {
     const hintsPath = join(QARA_DIR, 'thoughts', 'shared', 'introspection', 'session-hints.md');
     if (existsSync(hintsPath)) contextLoaded.push('session-hints');
 
+    // Memory budget warning (D13) — protects against CC's silent newest-first truncation
+    const memWarning = checkMemoryBudget(PAI_DIR, process.env.PWD || process.cwd());
+    if (memWarning) {
+      console.log(memWarning);
+      contextLoaded.push('memory-budget-warning');
+    }
+
     // Log context utilization for introspection pipeline
     try {
       appendJsonl(join(STATE_DIR, 'session-checkpoints.jsonl'), {
@@ -192,4 +240,8 @@ async function main() {
   }
 }
 
-main();
+// Direct-run guard: only invoke main() when executed as the hook, not when
+// imported by tests (prevents test imports from firing the real hook).
+if (import.meta.path === Bun.main) {
+  main();
+}

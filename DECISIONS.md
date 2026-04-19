@@ -8,6 +8,24 @@ Older entries live in `decisions/` year archives: [2025](decisions/2025.md) · [
 
 ---
 
+## 2026-04-19 — Memory system redesign: minimal-elegant, mirror DECISIONS.md pattern
+
+**Problem:** Two native memory systems (CC's auto-injected MEMORY.md + PAI's session/memory/) with 8 gaps — chiefly G3 (CC silently truncates newest entries first past 200 lines OR 25 KB per v2.1.98 / #39811), G1 (session→project handoff missing), G6 (`DECISIONS.md` vs session `decisions.md` grep collision), G2/G7 (session-dir + stub MEMORY.md accumulation).
+
+**Actions:**
+- `session-start.ts` gains `checkMemoryBudget()` pure export + call site. Fires at 70 % of line-OR-byte budget (max(linePct, bytePct)). Single tunable `MEMORY_WARN_PCT = 70`. Direct-run guard added so tests can import the pure function.
+- `~/.claude/scripts/memory-gc.sh` (86 lines Bash, cron-safe): two sweeps — empty session dirs > 14 d (three gates: mtime + no compact-checkpoint.json + empty memory/) + stub MEMORY.md (≤ 2 lines). `set -e` pitfall with `[ ] && cmd` found during TDD; rewritten with `if/then/fi`. Session-id treated as opaque (UUID or slug).
+- Renamed session `decisions.md` → `mode-decisions.md` across `working-memory.ts`, 3 test files, 5 skill/doc files. One-shot migration script ran once (5 on-disk files renamed), then deleted.
+- `memory-format.md` (Tier-2 pointer-gist convention) + global-tier "Cross-project pointers" section in `~/.claude/CLAUDE.md`.
+
+**Why:** Ultrathink collapsed a 7-phase auto-distill + shared-primitive design down to 4 targeted changes after the CC native audit. DECISIONS.md already demonstrates the elegant pattern — grow append-only, hand-curated, archive oldest when near threshold. Only irreducible automation is the warning, because `#39811` drops newest entries silently. Everything else (compaction engine, `/distill-session` skill, CLI, primitive, retrofit) was preventively solving problems JM handles in 2 minutes manually. During implementation, discovered `loadCheckpoint()` is already wired at `session-start.ts:154` — the original G4 "dormant code" claim was wrong.
+
+**Net:** Tests **2000 → 2022 pass** (+22 new: 8 memory-warning + 13 GC + 1 rename cascade). PAI audit **214/214** holds. 94 test files (+1). ~60 lines of permanent custom code + ~86 lines of Bash; throwaway script deleted post-run.
+
+**Revisit if:** CC ships native compaction/cross-project memory/budget-warning (all candidates to remove), warning at 70 % fires too rarely to prevent truncation loss (bump to 60 %), or stub MEMORY.md regenerates faster than daily sweep (investigate CC harness behavior). Plan: `thoughts/shared/plans/infra--memory-system-redesign-v1.md`.
+
+---
+
 ## 2026-04-18 — cc-upgrade iterative review inbox: unify 8 audit feeds + obsolescence detector
 
 **Problem:** Eight audit feeds (cc-feature-sync, context-graph orphans/advisory/broken-refs, validateCrossSkillRefs, skill-pulse-check, analyse-pai, analyse-external-skills, cc-version-check feature-unused) accumulate findings the human never processes. April's monthly run tracked 13 CC version bumps but promoted zero features. Failure point = the human gate, not the detectors.

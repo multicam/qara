@@ -80,7 +80,7 @@ JM's shorthand "coverage 100%" does NOT mean literal line coverage. It means "do
 - every quality improvement to cruise currently bypasses `/implement_plan` users
 - `/implement_plan` today is missing: critic gate, quality sniff step, verifier agent
 - adding all three to `/implement_plan` is "re-implement cruise"
-- **cruise is already plan-native** — it has `Plan-Aware Entry` in its SKILL.md, reads plan files directly, writes notes to `decisions.md`, and uses plan phases as the execution guide. No refactor needed to make cruise accept plans, only to add the missing quality gates.
+- **cruise is already plan-native** — it has `Plan-Aware Entry` in its SKILL.md, reads plan files directly, writes notes to `mode-decisions.md`, and uses plan phases as the execution guide. No refactor needed to make cruise accept plans, only to add the missing quality gates.
 
 ### Why cruise, not drive
 

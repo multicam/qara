@@ -39,3 +39,14 @@ Applies to append-only logs Claude writes for Claude's recall — `DECISIONS.md`
 **Archive:** when a file ≥400 lines, move entries older than the current year to `<stem>/YYYY.md`. Add a pointer at the top of the live file: `Older entries: [YYYY](<stem>/YYYY.md).`
 
 Project-specific instructions are in each repo's root `CLAUDE.md`.
+
+## Cross-project pointers (global memory tier)
+
+Patterns that apply across projects, not just qara. Add an entry only when something is genuinely cross-project (3+ repos). Keep this list tight — under ~15 lines. Mirror-style pointers to canonical docs, not content.
+
+- [Hook gotchas](qara/.claude/hooks/lib/pai-paths.ts) — chmod +x, exit(0) always, stdin via resolveSessionId (not getSessionId), 2000ms timeouts on Stop/PostToolUse
+- [Bun over node/npm](#tool-enforcement-all-repos) — 15× startup; standard across all repos
+- [Memory format](../.claude/projects/-home-jean-marc-qara/memory/memory-format.md) — pointer-gist convention for new Tier-2 memory files
+- *(add more as the need is genuinely cross-project)*
+
+Build this surface manually via the Write-with-confirmation flow (D8 from the memory redesign). Auto-distill never writes here. If CC ships native global memory, migrate entries to the native path.

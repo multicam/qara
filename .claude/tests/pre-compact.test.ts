@@ -90,7 +90,7 @@ describe("PreCompact Hook", () => {
     // Create working memory for the session
     const memDir = join(TEST_SESSIONS_DIR, "sessions", "pre-compact-test-session", "memory");
     mkdirSync(memDir, { recursive: true });
-    writeFileSync(join(memDir, "decisions.md"), "# Decisions\n\n- use TDD\n");
+    writeFileSync(join(memDir, "mode-decisions.md"), "# Decisions\n\n- use TDD\n");
 
     const result = await runHook({ session_id: "pre-compact-test-session" });
     expect(result.stdout).toContain("CHECKPOINT SAVED");
